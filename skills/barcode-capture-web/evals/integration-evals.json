@@ -1,0 +1,222 @@
+{
+  "skill_name": "barcode-capture-web",
+  "evals": [
+    {
+      "id": 0,
+      "prompt": "I want to build a barcode scanning web app from scratch using BarcodeCapture. I don't have any existing code yet.",
+      "expected_output": "The skill offers the pre-built sample as the starting point, asks whether the user is using React or vanilla JS, provides the relevant sample URL, and guides them through cloning it and replacing the license key and symbologies.",
+      "files": [],
+      "assertions": [
+        {
+          "text": "The pre-built sample is offered before any manual integration code is shown"
+        },
+        {
+          "text": "The vanilla JS sample URL (BarcodeCaptureSimpleSample) or the React sample URL (BarcodeCaptureReactSample) is mentioned"
+        },
+        {
+          "text": "The user is asked whether they are using React or plain JS/TypeScript (or a similar framework question)"
+        },
+        {
+          "text": "Replacing the license key placeholder is mentioned"
+        },
+        {
+          "text": "Adjusting symbologies is mentioned"
+        }
+      ]
+    },
+    {
+      "id": 1,
+      "prompt": "I want to add BarcodeCapture to my web app. Here's my main file: empty-app.ts. I need to scan EAN-13 and Code 128 barcodes for a retail app.",
+      "expected_output": "The skill reads integration.md, writes complete BarcodeCapture integration code into empty-app.ts, and shows the setup checklist.",
+      "files": [
+        "eval-fixtures/empty-app.ts"
+      ],
+      "assertions": [
+        {
+          "text": "Setup checklist is shown (mentions @scandit/web-datacapture-core and @scandit/web-datacapture-barcode npm packages)"
+        },
+        {
+          "text": "DataCaptureContext.forLicenseKey( is present with libraryLocation and moduleLoaders"
+        },
+        {
+          "text": "barcodeCaptureLoader() is present in moduleLoaders"
+        },
+        {
+          "text": "License key placeholder (e.g. ENTER YOUR SCANDIT LICENSE KEY or similar) is present"
+        },
+        {
+          "text": "BarcodeCaptureSettings is created with new BarcodeCaptureSettings()"
+        },
+        {
+          "text": "enableSymbologies is called on settings"
+        },
+        {
+          "text": "Symbology.EAN13UPCA is enabled"
+        },
+        {
+          "text": "Symbology.Code128 is enabled"
+        },
+        {
+          "text": "No symbologies except EAN13UPCA and Code128 are enabled"
+        },
+        {
+          "text": "Camera.pickBestGuess() is called"
+        },
+        {
+          "text": "BarcodeCapture.recommendedCameraSettings is used"
+        },
+        {
+          "text": "BarcodeCapture.forContext( is present and awaited"
+        },
+        {
+          "text": "addListener with didScan callback is present"
+        },
+        {
+          "text": "session.newlyRecognizedBarcode is accessed inside didScan"
+        },
+        {
+          "text": "await barcodeCapture.setEnabled(false) is called inside didScan before processing the scan result"
+        },
+        {
+          "text": "DataCaptureView.forContext( is present and awaited"
+        },
+        {
+          "text": "view.connectToElement( is called"
+        },
+        {
+          "text": "BarcodeCaptureOverlay.withBarcodeCaptureForView( is present and awaited"
+        },
+        {
+          "text": "switchToDesiredState(FrameSourceState.On) is called to start the camera"
+        },
+        {
+          "text": "The barcodeCaptureListener is stored in a named variable so it can be removed"
+        },
+        {
+          "text": "removeListener is called on the barcodeCapture instance in cleanup (unmount or equivalent)"
+        },
+        {
+          "text": "switchToDesiredState(FrameSourceState.Off) is called in cleanup"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "I have a basic React app and need to integrate BarcodeCapture barcode scanning. I want to scan EAN-13 and Code 128. Here's my component: empty-react-app.tsx.",
+      "expected_output": "The skill integrates BarcodeCapture into the React component using a useRef for the capture element, useEffect for initialization and cleanup, and proper async patterns.",
+      "files": [
+        "eval-fixtures/empty-react-app.tsx"
+      ],
+      "assertions": [
+        {
+          "text": "useRef is used to reference the capture DOM element"
+        },
+        {
+          "text": "useEffect is used for initialization"
+        },
+        {
+          "text": "DataCaptureContext.forLicenseKey( is present with moduleLoaders and barcodeCaptureLoader()"
+        },
+        {
+          "text": "License key placeholder is present"
+        },
+        {
+          "text": "BarcodeCaptureSettings is created and enableSymbologies is called"
+        },
+        {
+          "text": "Symbology.EAN13UPCA and Symbology.Code128 are enabled"
+        },
+        {
+          "text": "BarcodeCapture.forContext( is present"
+        },
+        {
+          "text": "addListener with didScan callback is present"
+        },
+        {
+          "text": "view.connectToElement is called with the ref element"
+        },
+        {
+          "text": "switchToDesiredState(FrameSourceState.Off) is called in the useEffect cleanup return"
+        },
+        {
+          "text": "removeListener is called on the barcodeCapture instance in the useEffect cleanup return"
+        },
+        {
+          "text": "Setup checklist mentions @scandit/web-datacapture-core and @scandit/web-datacapture-barcode npm packages"
+        },
+        {
+          "text": "The capture element div has position: fixed or position: absolute set with non-zero width and height"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "I want to filter duplicate scans in my BarcodeCapture app. Suppress the same barcode from being reported again for 1 second after it's first scanned.",
+      "expected_output": "The skill sets codeDuplicateFilter to 1000 on BarcodeCaptureSettings and preserves the existing integration.",
+      "files": [
+        "eval-fixtures/integrated-app.ts"
+      ],
+      "assertions": [
+        {
+          "text": "settings.codeDuplicateFilter = 1000 or equivalent (a number, not TimeInterval)"
+        },
+        {
+          "text": "The codeDuplicateFilter is set on BarcodeCaptureSettings before BarcodeCapture.forContext is called, OR applySettings is used"
+        },
+        {
+          "text": "Existing integration code (DataCaptureContext, BarcodeCapture, listener, view, mount/unmount) is preserved"
+        }
+      ]
+    },
+    {
+      "id": 3.5,
+      "prompt": "I want to show the image of the scanned barcode in my app. How do I capture the frame when a barcode is scanned?",
+      "expected_output": "The skill updates didScan to include the frameData parameter and uses frameData.toBlob('image/jpeg', 0.3) without awaiting it, using .then()/.catch() to handle the result. SymbologyDescription is used for a readable symbology name.",
+      "files": [
+        "eval-fixtures/integrated-app.ts"
+      ],
+      "assertions": [
+        {
+          "text": "frameData is added as the third parameter of didScan"
+        },
+        {
+          "text": "frameData.toBlob(\"image/jpeg\", 0.3) is called (or equivalent JPEG blob conversion)"
+        },
+        {
+          "text": "toBlob is NOT awaited — .then()/.catch() is used instead"
+        },
+        {
+          "text": "A .catch() fallback handles the case where blob conversion fails"
+        },
+        {
+          "text": "FrameData is imported from @scandit/web-datacapture-core"
+        },
+        {
+          "text": "Existing integration code (DataCaptureContext, BarcodeCapture, DataCaptureView, mount/unmount) is preserved"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "When a barcode is scanned in my app, I want to reject it if the data starts with '00' and disable the overlay highlight for those barcodes. All other barcodes should be accepted.",
+      "expected_output": "The skill updates the didScan listener to check barcode.data and call overlay.setBrush(Brush.transparent) for rejected codes, preserving the existing integration.",
+      "files": [
+        "eval-fixtures/integrated-app.ts"
+      ],
+      "assertions": [
+        {
+          "text": "barcode.data check for codes starting with '00' is present (startsWith or equivalent)"
+        },
+        {
+          "text": "Brush.transparent or equivalent transparent brush is set on the overlay for rejected barcodes"
+        },
+        {
+          "text": "The overlay reference is available to the listener (either stored as a variable or passed in)"
+        },
+        {
+          "text": "Existing integration code (DataCaptureContext, BarcodeCapture, DataCaptureView, mount/unmount) is preserved"
+        }
+      ]
+    }
+  ]
+}

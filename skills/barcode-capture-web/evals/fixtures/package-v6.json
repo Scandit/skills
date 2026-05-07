@@ -1,0 +1,8 @@
+{
+  "name": "my-scanning-app",
+  "version": "1.0.0",
+  "dependencies": {
+    "scandit-web-datacapture-core": "6.28.0",
+    "scandit-web-datacapture-barcode": "6.28.0"
+  }
+}
