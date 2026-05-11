@@ -1,0 +1,70 @@
+{
+  "skill_name": "matrixscan-ar-ios",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Migrate my MatrixScan Batch code to MatrixScan AR. File: BarcodeBatchViewController.swift",
+      "expected_output": "The skill replaces the BarcodeBatch / DataCaptureView / BarcodeBatchBasicOverlay pipeline with a BarcodeArView. BarcodeBatch → BarcodeAr, BarcodeBatchSettings → BarcodeArSettings, the manual Camera + DataCaptureView + overlay setup is replaced with a single BarcodeArView(parentView:barcodeAr:settings:cameraSettings:) call. Lifecycle moves from camera.switch(toDesiredState:) to barcodeArView.start()/stop(). The BarcodeBatchListener is replaced with BarcodeArListener. The existing `results` accumulation logic is preserved.",
+      "files": [
+        "eval-fixtures/BarcodeBatchViewController.swift"
+      ],
+      "assertions": [
+        {"text": "BarcodeBatch is replaced with BarcodeAr everywhere in the file (no occurrence of `BarcodeBatch` or `BarcodeBatchSettings` or `BarcodeBatchSession` or `BarcodeBatchListener` or `BarcodeBatchBasicOverlay` remains)"},
+        {"text": "BarcodeArSettings is constructed and the five symbologies (.ean13UPCA, .ean8, .upce, .code39, .code128) are all preserved"},
+        {"text": "BarcodeAr(context: context, settings: settings) is constructed"},
+        {"text": "BarcodeArView is constructed via BarcodeArView(parentView:barcodeAr:settings:cameraSettings:) with a BarcodeArViewSettings and BarcodeAr.recommendedCameraSettings"},
+        {"text": "The manual DataCaptureView construction, view.addSubview(captureView), view.sendSubviewToBack(captureView), and the BarcodeBatchBasicOverlay instantiation are all removed"},
+        {"text": "The explicit Camera property and camera.switch(toDesiredState:) calls are removed (the view now owns the camera lifecycle)"},
+        {"text": "context.setFrameSource(camera, ...) is removed"},
+        {"text": "barcodeArView.start() replaces camera.switch(toDesiredState: .on) (called in the equivalent lifecycle hook — viewWillAppear or the existing startTracking method)"},
+        {"text": "barcodeArView.stop() replaces camera.switch(toDesiredState: .off)"},
+        {"text": "BarcodeArListener conformance replaces BarcodeBatchListener (the extension is renamed and the callback signature uses barcodeAr(_:didUpdate: BarcodeArSession, frameData:))"},
+        {"text": "The `results: [String: Barcode]` dictionary and the accumulation logic inside the listener callback (results[data] = $0 or equivalent) are preserved"},
+        {"text": "session.trackedBarcodes access inside the listener is preserved (the property exists under the same name on BarcodeArSession)"},
+        {"text": "The license key placeholder and DataCaptureContext.initialize(licenseKey:) + shared pattern are preserved"}
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Migrate my MatrixScan code to use BarcodeAr. File: BarcodeTrackingViewController.swift",
+      "expected_output": "The fixture uses the legacy v6 API names (BarcodeTracking, BarcodeTrackingSettings, BarcodeTrackingBasicOverlay, BarcodeTrackingListener, BarcodeTrackingSession). The skill recognizes this, flags that BarcodeAr is available from SDK 7.1.0 so the project must be on that version or later, and migrates all of those names to the BarcodeAr equivalents plus rewrites the view / camera / listener layers the same way as the v7+ path.",
+      "files": [
+        "eval-fixtures/BarcodeTrackingViewController.swift"
+      ],
+      "assertions": [
+        {"text": "The response mentions that BarcodeAr requires SDK 7.1.0 or later (flagging this as a prerequisite before the code migration)"},
+        {"text": "BarcodeTracking, BarcodeTrackingSettings, BarcodeTrackingBasicOverlay, BarcodeTrackingListener, and BarcodeTrackingSession are ALL absent from the final file"},
+        {"text": "BarcodeArSettings is constructed and the four symbologies (.ean13UPCA, .ean8, .code39, .code128) are all preserved"},
+        {"text": "BarcodeAr(context: context, settings: settings) is constructed"},
+        {"text": "BarcodeArView is constructed via BarcodeArView(parentView:barcodeAr:settings:cameraSettings:)"},
+        {"text": "The manual DataCaptureView, view.addSubview(captureView), view.sendSubviewToBack(captureView), and BarcodeTrackingBasicOverlay instantiation are removed"},
+        {"text": "The explicit Camera property, camera.switch(toDesiredState:) calls, context.setFrameSource are removed"},
+        {"text": "BarcodeArListener conformance replaces BarcodeTrackingListener"},
+        {"text": "The `results` accumulation logic inside the listener callback is preserved"},
+        {"text": "session.trackedBarcodes access inside the listener is preserved"}
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Migrate my MatrixScan Batch code with the advanced overlay to MatrixScan AR. File: BarcodeBatchAdvancedOverlayViewController.swift",
+      "expected_output": "The skill migrates the pipeline (BarcodeBatch → BarcodeAr, DataCaptureView + basic overlay + advanced overlay → BarcodeArView, camera lifecycle → view-managed, BarcodeBatchListener → removed or trivially preserved). It removes the BarcodeBatchAdvancedOverlay instantiation, the BarcodeBatchAdvancedOverlayDelegate conformance, and the three delegate methods (viewFor / anchorFor / offsetFor) because no equivalent exists in AR. It preserves the user-owned StockOverlay / StockModel / Constants / stockOverlay(for:) / canShowOverlay(of:) code untouched — those belong to the app. The response tells the user that rebuilding the per-barcode UIView layer requires the matrixscan-ar-annotation-ios sibling skill, and leaves a clear TODO in the file marking where the annotation provider needs to be wired.",
+      "files": [
+        "eval-fixtures/BarcodeBatchAdvancedOverlayViewController.swift"
+      ],
+      "assertions": [
+        {"text": "BarcodeBatch, BarcodeBatchSettings, BarcodeBatchSession, BarcodeBatchListener, BarcodeBatchBasicOverlay, BarcodeBatchAdvancedOverlay, and BarcodeBatchAdvancedOverlayDelegate are ALL absent from the final file"},
+        {"text": "BarcodeAr(context: context, settings: settings) is constructed with the five symbologies preserved"},
+        {"text": "BarcodeArView(parentView:barcodeAr:settings:cameraSettings:) is constructed with BarcodeArViewSettings and BarcodeAr.recommendedCameraSettings (with preferredResolution = .uhd4k preserved)"},
+        {"text": "The DataCaptureView construction, view.addSubview(captureView), view.sendSubviewToBack(captureView), the BarcodeBatchBasicOverlay instantiation, and the BarcodeBatchAdvancedOverlay instantiation are ALL removed"},
+        {"text": "The BarcodeBatchAdvancedOverlayDelegate conformance extension and its three methods (viewFor, anchorFor, offsetFor) are removed (those protocols do not exist in MatrixScan AR)"},
+        {"text": "The explicit Camera property, context.setFrameSource, and camera.switch(toDesiredState:) calls are removed"},
+        {"text": "barcodeArView.start() and barcodeArView.stop() replace the camera-switch calls in the equivalent lifecycle hooks (viewWillAppear / viewDidDisappear OR the freeze/unfreeze methods)"},
+        {"text": "NO BarcodeArAnnotationProvider conformance or BarcodeArInfoAnnotation / BarcodeArPopoverAnnotation / BarcodeArStatusIconAnnotation / BarcodeArAnnotation code is inlined (annotations are strictly out of scope for this skill)"},
+        {"text": "NO BarcodeArHighlightProvider conformance is inlined"},
+        {"text": "The user-owned StockOverlay / StockModel references and the stockOverlay(for:) / canShowOverlay(of:) helper methods are preserved (or clearly marked as kept for later reuse) — they are not deleted as dead code"},
+        {"text": "The response explicitly tells the user that rebuilding the per-barcode UIView layer requires the matrixscan-ar-annotation-ios sibling skill (names it explicitly, or clearly defers the annotation wiring)"},
+        {"text": "The migrated file contains a TODO comment (or an equivalent clear marker) near where an annotation provider should be wired, so the follow-up work is discoverable"}
+      ]
+    }
+  ]
+}

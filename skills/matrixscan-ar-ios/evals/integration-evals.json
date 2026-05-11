@@ -1,0 +1,183 @@
+{
+  "skill_name": "matrixscan-ar-ios",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Add MatrixScan AR to my app. The user will pick symbologies later — go with a reasonable default set. File: NonScanditViewController.swift",
+      "expected_output": "The skill adds MatrixScan AR to the existing ScanViewController: imports ScanditBarcodeCapture, wires up the DataCaptureContext singleton, builds a BarcodeAr mode with a default symbology set, creates a BarcodeArView using BarcodeAr.recommendedCameraSettings, and calls start()/stop() in viewWillAppear/viewWillDisappear. The response also shows the setup checklist (SPM, Info.plist, license key).",
+      "files": [
+        "eval-fixtures/NonScanditViewController.swift"
+      ],
+      "assertions": [
+        {"text": "import ScanditBarcodeCapture is present"},
+        {"text": "DataCaptureContext.initialize(licenseKey:) is called (not a direct DataCaptureContext(licenseKey:) init), followed by returning DataCaptureContext.shared"},
+        {"text": "The license key placeholder '-- ENTER YOUR SCANDIT LICENSE KEY HERE --' appears in the code"},
+        {"text": "BarcodeArSettings is constructed and at least two symbologies are enabled via settings.set(symbology:enabled:)"},
+        {"text": "BarcodeAr(context: context, settings: settings) is constructed"},
+        {"text": "BarcodeArView(parentView:barcodeAr:settings:cameraSettings:) is constructed with BarcodeAr.recommendedCameraSettings"},
+        {"text": "barcodeArView.start() is called in viewWillAppear"},
+        {"text": "barcodeArView.stop() is called in viewWillDisappear"},
+        {"text": "The existing ScanViewController class is preserved (not renamed or removed); the titleLabel IBOutlet or viewDidLoad title assignment is preserved or the user is told it was kept"},
+        {"text": "The response includes the setup checklist: SPM URL (https://github.com/Scandit/datacapture-spm), NSCameraUsageDescription in Info.plist, replace the license key placeholder"},
+        {"text": "No BarcodeArHighlightProvider conformance is added (highlights are out of scope)"},
+        {"text": "No BarcodeArAnnotationProvider conformance is added (annotations are out of scope)"}
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Add MatrixScan AR to my SwiftUI app. File: NonScanditSwiftUIView.swift",
+      "expected_output": "The skill adds a UIKit ScanViewController with the full MatrixScan AR pipeline, wraps it in a UIViewControllerRepresentable, and changes the existing SwiftUI ScanView body to use that representable. No Scandit API calls live on the SwiftUI side.",
+      "files": [
+        "eval-fixtures/NonScanditSwiftUIView.swift"
+      ],
+      "assertions": [
+        {"text": "import ScanditBarcodeCapture is present"},
+        {"text": "A UIViewController subclass (ScanViewController or equivalent) is added with the full MatrixScan AR setup: DataCaptureContext, BarcodeAr mode + BarcodeArSettings, BarcodeArView with BarcodeAr.recommendedCameraSettings, start()/stop() in viewWillAppear/viewWillDisappear"},
+        {"text": "A UIViewControllerRepresentable-conforming struct is added that makes/updates the UIKit scan view controller"},
+        {"text": "The existing SwiftUI ScanView body uses the new representable (no longer the plain Text placeholder)"},
+        {"text": "No Scandit API call (DataCaptureContext, BarcodeAr, BarcodeArView, etc.) appears inside the SwiftUI View struct body"},
+        {"text": "No Scandit API call appears inside makeUIViewController or updateUIViewController beyond constructing the UIKit view controller"},
+        {"text": "The response includes the setup checklist (SPM, Info.plist, license key)"}
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Also enable QR codes in my MatrixScan AR app. File: IntegratedBarcodeArViewController.swift",
+      "expected_output": "The skill adds settings.set(symbology: .qr, enabled: true) inside setupRecognition(), preserves the existing five enabled symbologies, and does not touch context / mode / view / lifecycle.",
+      "files": [
+        "eval-fixtures/IntegratedBarcodeArViewController.swift"
+      ],
+      "assertions": [
+        {"text": "settings.set(symbology: .qr, enabled: true) is present"},
+        {"text": "The five existing enabled symbologies (.ean13UPCA, .ean8, .upce, .code39, .code128) are all still enabled"},
+        {"text": "No existing symbology line was removed or replaced"},
+        {"text": "Existing context, BarcodeAr construction, BarcodeArView construction, and viewWillAppear/viewWillDisappear lifecycle are preserved"},
+        {"text": "No duplicate BarcodeAr, BarcodeArView, or DataCaptureContext instantiation is introduced"}
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "In my MatrixScan AR app, Code 39 barcodes are always between 10 and 14 characters. Configure that. File: IntegratedBarcodeArViewController.swift",
+      "expected_output": "The skill accesses the Code 39 SymbologySettings via settings.settings(for: .code39) and sets activeSymbolCounts to the range 10...14, inside setupRecognition(), before constructing BarcodeAr.",
+      "files": [
+        "eval-fixtures/IntegratedBarcodeArViewController.swift"
+      ],
+      "assertions": [
+        {"text": "settings.settings(for: .code39) is called to get the SymbologySettings"},
+        {"text": "activeSymbolCounts is assigned a Set<Int> covering 10 through 14 (e.g. Set(10...14) or equivalent)"},
+        {"text": "The assignment happens inside setupRecognition(), before 'BarcodeAr(context:' is constructed"},
+        {"text": ".code39 is still enabled (the new configuration is layered on the existing settings.set(symbology: .code39, enabled: true))"},
+        {"text": "Existing context, BarcodeAr construction, BarcodeArView construction, and lifecycle are preserved"}
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "Switch my MatrixScan AR scanner to use the front camera. File: IntegratedBarcodeArViewController.swift",
+      "expected_output": "The skill sets viewSettings.defaultCameraPosition = .userFacing on the BarcodeArViewSettings before constructing the BarcodeArView.",
+      "files": [
+        "eval-fixtures/IntegratedBarcodeArViewController.swift"
+      ],
+      "assertions": [
+        {"text": "viewSettings.defaultCameraPosition = .userFacing is set (or equivalent using a documented CameraPosition case)"},
+        {"text": "The assignment happens on BarcodeArViewSettings, NOT on CameraSettings or BarcodeArView"},
+        {"text": "The assignment happens BEFORE the BarcodeArView(parentView:barcodeAr:settings:cameraSettings:) constructor is called"},
+        {"text": "Existing BarcodeArView construction is preserved"},
+        {"text": "Existing symbology configuration, BarcodeAr construction, and lifecycle are preserved"}
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "Use 4K resolution for the camera in my MatrixScan AR app. File: IntegratedBarcodeArViewController.swift",
+      "expected_output": "The skill starts from BarcodeAr.recommendedCameraSettings (already in the fixture) and sets preferredResolution to .uhd4k before passing the CameraSettings into the BarcodeArView initializer.",
+      "files": [
+        "eval-fixtures/IntegratedBarcodeArViewController.swift"
+      ],
+      "assertions": [
+        {"text": "recommendedCameraSettings.preferredResolution = .uhd4k is set (or equivalent VideoResolution case for 4K)"},
+        {"text": "The assignment uses the existing recommendedCameraSettings value (starts from BarcodeAr.recommendedCameraSettings, not a new CameraSettings())"},
+        {"text": "The assignment happens before the BarcodeArView constructor is called"},
+        {"text": "Existing BarcodeArView construction still passes this CameraSettings as cameraSettings:"},
+        {"text": "Existing symbology configuration, BarcodeAr construction, and lifecycle are preserved"}
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "Show a torch button in my MatrixScan AR view. File: IntegratedBarcodeArViewController.swift",
+      "expected_output": "The skill sets barcodeArView.shouldShowTorchControl = true after the BarcodeArView is constructed, inside setupRecognition().",
+      "files": [
+        "eval-fixtures/IntegratedBarcodeArViewController.swift"
+      ],
+      "assertions": [
+        {"text": "barcodeArView.shouldShowTorchControl = true is set"},
+        {"text": "The assignment is on the BarcodeArView instance (not on BarcodeArViewSettings — this property lives on the view)"},
+        {"text": "The assignment happens AFTER the BarcodeArView(parentView:barcodeAr:settings:cameraSettings:) constructor call"},
+        {"text": "Existing BarcodeArView construction, symbology configuration, BarcodeAr construction, and lifecycle are preserved"}
+      ]
+    },
+    {
+      "id": 8,
+      "prompt": "Mute both the beep and the vibration in my MatrixScan AR app. File: IntegratedBarcodeArViewController.swift",
+      "expected_output": "The skill sets viewSettings.soundEnabled = false and viewSettings.hapticEnabled = false on BarcodeArViewSettings before the BarcodeArView is constructed. A custom BarcodeArFeedback is NOT needed for this simple on/off case.",
+      "files": [
+        "eval-fixtures/IntegratedBarcodeArViewController.swift"
+      ],
+      "assertions": [
+        {"text": "viewSettings.soundEnabled = false is set"},
+        {"text": "viewSettings.hapticEnabled = false is set"},
+        {"text": "Both assignments are on the BarcodeArViewSettings instance (NOT on BarcodeArView)"},
+        {"text": "Both assignments happen BEFORE the BarcodeArView constructor is called"},
+        {"text": "No BarcodeArFeedback instance is constructed (for a simple mute, toggling the view-settings flags is sufficient — a custom feedback object is over-engineering)"},
+        {"text": "Existing symbology configuration, BarcodeAr construction, BarcodeArView construction, and lifecycle are preserved"}
+      ]
+    },
+    {
+      "id": 9,
+      "prompt": "What's the difference between barcodeArView.pause() and barcodeArView.stop() in MatrixScan AR?",
+      "expected_output": "The skill explains that stop() tears down the camera (use when the screen is going away, e.g. viewWillDisappear), while pause() halts scanning without tearing down the camera (use when scanning should pause but the screen remains, e.g. a modal is shown over the scan view). Also mentions that resuming from pause is done by calling start() again. Includes a link to the official docs.",
+      "files": [],
+      "assertions": [
+        {"text": "The response explains that stop() stops the camera / tears down the scanning session"},
+        {"text": "The response explains that pause() halts scanning WITHOUT tearing down the camera"},
+        {"text": "The response gives a usage example or rule of thumb for each (stop for viewWillDisappear / screen going away; pause for a modal / dialog over the scan view)"},
+        {"text": "The response mentions start() as the way to resume scanning after pause"},
+        {"text": "The response does NOT invent methods that are not documented (e.g. resume(), unpause(), continueScanning())"},
+        {"text": "The response includes a link to the Scandit iOS documentation (scandit.com/sdks/ios or scandit.com/data-capture-sdk/ios)"},
+        {"text": "No files are written or edited"}
+      ]
+    },
+    {
+      "id": 10,
+      "prompt": "Customize the highlight drawn over each barcode in my MatrixScan AR app to be a red rectangle. File: IntegratedBarcodeArViewController.swift",
+      "expected_output": "The skill recognizes that customizing the highlight shape and color is out of scope for this skill and tells the user to use the matrixscan-ar-highlight-ios skill instead. No highlight-provider code is written.",
+      "files": [
+        "eval-fixtures/IntegratedBarcodeArViewController.swift"
+      ],
+      "assertions": [
+        {"text": "The response defers highlight customization to the matrixscan-ar-highlight-ios sibling skill (names it explicitly, or clearly says highlight customization is out of scope for this skill)"},
+        {"text": "No BarcodeArHighlightProvider conformance is added to the code"},
+        {"text": "No BarcodeArRectangleHighlight, BarcodeArCircleHighlight, or Brush construction is added to the code"},
+        {"text": "No barcodeArView.highlightProvider = ... assignment is added"},
+        {"text": "Existing integration code (context, BarcodeAr, BarcodeArView, lifecycle) is preserved (not torn down while refusing)"}
+      ]
+    },
+    {
+      "id": 11,
+      "prompt": "In my MatrixScan AR app, print the data of every newly detected barcode from the listener callback. File: IntegratedBarcodeArViewController.swift",
+      "expected_output": "The skill adds a BarcodeArListener conformance on the view controller, calls barcodeAr.addListener(self) after the mode is constructed, implements the barcodeAr(_:didUpdate:frameData:) callback iterating session.addedTrackedBarcodes (the documented property name, shared with BarcodeBatchSession), and wraps the print call in DispatchQueue.main.async because the listener fires on a background queue. Existing context / mode / view / lifecycle are preserved; no highlight or annotation provider is added.",
+      "files": [
+        "eval-fixtures/IntegratedBarcodeArViewController.swift"
+      ],
+      "assertions": [
+        {"text": "BarcodeArListener conformance is added on the view controller (e.g. via an extension)"},
+        {"text": "The callback is implemented with the exact signature barcodeAr(_ barcodeAr: BarcodeAr, didUpdate session: BarcodeArSession, frameData: any FrameData) — NOT a renamed variant, NOT the session parameter typed as BarcodeBatchSession, and NOT a listener-on-view variant like barcodeArView(_:didUpdate:)"},
+        {"text": "barcodeAr.addListener(self) is called after the BarcodeAr mode is constructed (so the view controller actually receives callbacks)"},
+        {"text": "session.addedTrackedBarcodes is used to iterate newly detected barcodes (not session.trackedBarcodes — that would also include already-tracked ones — and not a hallucinated property like session.newBarcodes)"},
+        {"text": "The print call uses barcode.data (the documented property on Barcode)"},
+        {"text": "DispatchQueue.main.async (or equivalent main-thread hop) wraps any UIKit / main-thread-sensitive work in the callback — the skill's integration.md explicitly notes the listener fires on a background queue"},
+        {"text": "No BarcodeArHighlightProvider conformance is added (out of scope — listener is independent)"},
+        {"text": "No BarcodeArAnnotationProvider conformance is added (out of scope)"},
+        {"text": "Existing DataCaptureContext, BarcodeAr mode, BarcodeArSettings, BarcodeArView initialization, and start()/stop() lifecycle are preserved — the listener is additive, not a rewrite"}
+      ]
+    }
+  ]
+}
