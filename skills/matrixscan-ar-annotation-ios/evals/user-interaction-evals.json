@@ -1,0 +1,142 @@
+{
+  "skill_name": "matrixscan-ar-annotation-ios",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "When the user taps the info annotation in my MatrixScan AR app, print the barcode data. File: IntegratedBarcodeArWithInfoAnnotationViewController.swift",
+      "expected_output": "The skill adds BarcodeArInfoAnnotationDelegate conformance, assigns annotation.delegate = self on the constructed BarcodeArInfoAnnotation inside the existing provider, implements the whole-annotation-tap callback, and prints barcode.data. Existing provider and integration code are preserved.",
+      "files": [
+        "eval-fixtures/IntegratedBarcodeArWithInfoAnnotationViewController.swift"
+      ],
+      "assertions": [
+        {"text": "BarcodeArInfoAnnotationDelegate conformance is present on the view controller"},
+        {"text": "annotation.delegate = self is assigned inside the provider before returning / completing"},
+        {"text": "annotation.isEntireAnnotationTappable = true is set (required for a tap anywhere on the info annotation to reach the whole-annotation delegate callback; default is false, which only fires per-element callbacks)"},
+        {"text": "A BarcodeArInfoAnnotationDelegate tap callback is implemented (e.g. the whole-annotation tap method documented on the BarcodeArInfoAnnotation page)"},
+        {"text": "print( is used in the delegate callback"},
+        {"text": "barcode.data is referenced in the delegate callback (directly or via optional binding)"},
+        {"text": "BarcodeArViewUIDelegate is NOT used (that delegate is for highlight taps, not annotation taps)"},
+        {"text": "barcodeArView.uiDelegate = self is NOT assigned (annotation interaction does not go through the view's uiDelegate)"},
+        {"text": "Existing BarcodeArAnnotationProvider conformance is preserved"},
+        {"text": "Existing annotation(for:completionHandler:) method is preserved"},
+        {"text": "Existing integration code (context, BarcodeAr, barcodeArView, lifecycle, annotationProvider assignment) is preserved"}
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "When the user taps the 'Details' button in the popover annotation, present a details screen (call showDetails(for: barcode.data ?? \"\")). When they tap 'Add to cart', call addToCart(barcode.data ?? \"\"). File: IntegratedBarcodeArViewController.swift. The popover should have these two buttons.",
+      "expected_output": "The skill adds a BarcodeArAnnotationProvider that constructs a BarcodeArPopoverAnnotation with two BarcodeArPopoverAnnotationButton instances, conforms to BarcodeArPopoverAnnotationDelegate, assigns the annotation's delegate property, and dispatches to showDetails / addToCart based on which button was tapped.",
+      "files": [
+        "eval-fixtures/IntegratedBarcodeArViewController.swift"
+      ],
+      "assertions": [
+        {"text": "BarcodeArAnnotationProvider conformance is present"},
+        {"text": "BarcodeArPopoverAnnotation is constructed with two BarcodeArPopoverAnnotationButton instances"},
+        {"text": "'Details' appears as a button label"},
+        {"text": "'Add to cart' appears as a button label"},
+        {"text": "BarcodeArPopoverAnnotationDelegate conformance is present"},
+        {"text": "annotation.delegate = self is assigned on the popover annotation inside the provider"},
+        {"text": "A BarcodeArPopoverAnnotationDelegate button-tap callback is implemented (didTap or equivalent, per the documented delegate)"},
+        {"text": "The callback dispatches to showDetails(for:) for the Details button"},
+        {"text": "The callback dispatches to addToCart( for the Add to cart button"},
+        {"text": "BarcodeArViewUIDelegate is NOT used (that delegate is for highlight taps, not annotation taps)"},
+        {"text": "Existing integration code (context, BarcodeAr, barcodeArView, lifecycle) is preserved"}
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "How do I handle taps on a MatrixScan AR annotation?",
+      "expected_output": "The skill explains that each tappable annotation type has its own delegate (BarcodeArInfoAnnotationDelegate for BarcodeArInfoAnnotation, BarcodeArPopoverAnnotationDelegate for BarcodeArPopoverAnnotation), clarifies that BarcodeArViewUIDelegate is NOT used for annotation taps, notes that BarcodeArStatusIconAnnotation self-handles its tap (expand/collapse) without a delegate, and includes a link to the official Scandit iOS docs. No code is written to any file.",
+      "files": [],
+      "assertions": [
+        {"text": "The response names BarcodeArInfoAnnotationDelegate as the delegate for BarcodeArInfoAnnotation taps"},
+        {"text": "The response names BarcodeArPopoverAnnotationDelegate as the delegate for BarcodeArPopoverAnnotation taps"},
+        {"text": "The response explicitly states that BarcodeArViewUIDelegate is NOT used for annotation interaction (it is for highlight taps)"},
+        {"text": "The response mentions that BarcodeArStatusIconAnnotation self-handles its tap (expand/collapse) without a delegate"},
+        {"text": "The response does NOT invent a single umbrella annotation delegate type (e.g. BarcodeArAnnotationDelegate, BarcodeArAnnotationTapDelegate)"},
+        {"text": "The response includes a link to the Scandit iOS documentation (scandit.com/sdks/ios or scandit.com/data-capture-sdk/ios)"},
+        {"text": "No files are written or edited"}
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "My info annotation has a header with the product name. When the user taps the header specifically (not elsewhere on the annotation), call showProductDetails(for: barcode.data ?? \"\"). File: IntegratedBarcodeArWithInfoAnnotationViewController.swift. Add a header to the annotation too.",
+      "expected_output": "The skill adds a BarcodeArInfoAnnotationHeader to the existing BarcodeArInfoAnnotation, conforms to BarcodeArInfoAnnotationDelegate, assigns annotation.delegate = self, and implements the header-tap delegate callback (not the whole-annotation callback) to call showProductDetails. isEntireAnnotationTappable must be false (default) so the granular header-tap callback fires.",
+      "files": [
+        "eval-fixtures/IntegratedBarcodeArWithInfoAnnotationViewController.swift"
+      ],
+      "assertions": [
+        {"text": "BarcodeArInfoAnnotationHeader is constructed"},
+        {"text": "annotation.header is assigned to the constructed header"},
+        {"text": "BarcodeArInfoAnnotationDelegate conformance is present on the view controller"},
+        {"text": "annotation.delegate = self is assigned inside the provider"},
+        {"text": "A header-tap specific delegate callback is implemented (a didTap*Header or equivalent granular method, NOT the whole-annotation callback)"},
+        {"text": "showProductDetails(for:) is called inside the header-tap callback"},
+        {"text": "isEntireAnnotationTappable is NOT set to true (the default false is required for granular header taps to fire)"},
+        {"text": "BarcodeArViewUIDelegate is NOT used"},
+        {"text": "Existing BarcodeArInfoAnnotation construction is preserved"},
+        {"text": "Existing integration code (context, BarcodeAr, barcodeArView, lifecycle, annotationProvider assignment) is preserved"}
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "In my SwiftUI MatrixScan AR app, when the info annotation is tapped, log the barcode data. File: IntegratedBarcodeArWithInfoAnnotationSwiftUIView.swift",
+      "expected_output": "The skill adds BarcodeArInfoAnnotationDelegate conformance on the wrapped UIKit ScanViewController (not on the SwiftUI View or the UIViewControllerRepresentable), assigns the annotation's delegate property inside the provider, and logs barcode.data in the delegate callback. The SwiftUI wrapper types are left intact.",
+      "files": [
+        "eval-fixtures/IntegratedBarcodeArWithInfoAnnotationSwiftUIView.swift"
+      ],
+      "assertions": [
+        {"text": "BarcodeArInfoAnnotationDelegate conformance is added on ScanViewController (not on the SwiftUI View or the UIViewControllerRepresentable)"},
+        {"text": "annotation.delegate = self is assigned inside the provider on the BarcodeArInfoAnnotation instance"},
+        {"text": "annotation.isEntireAnnotationTappable = true is set (required for a tap anywhere on the info annotation to reach the whole-annotation delegate callback; default is false)"},
+        {"text": "A BarcodeArInfoAnnotationDelegate tap callback is implemented on ScanViewController"},
+        {"text": "The delegate callback logs barcode.data (via print or NSLog)"},
+        {"text": "The SwiftUI ScanView struct is preserved (no Scandit API calls added to it)"},
+        {"text": "The ScanViewControllerRepresentable struct is preserved (makeUIViewController/updateUIViewController unchanged structurally)"},
+        {"text": "Existing BarcodeArAnnotationProvider conformance is preserved"},
+        {"text": "Existing annotation(for:completionHandler:) method is preserved"},
+        {"text": "Existing integration code (context, BarcodeAr, barcodeArView, lifecycle, annotationProvider assignment) is preserved"}
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "I want the status icon annotation in my MatrixScan AR app to only appear after the user taps the highlight, not automatically when the barcode is scanned. File: IntegratedBarcodeArWithStatusIconAnnotationViewController.swift",
+      "expected_output": "This is a visibility-trigger change, not an interaction change. The skill sets annotation.annotationTrigger = .highlightTap (or equivalent documented tap-only case) inside the existing provider. No delegate / BarcodeArInfoAnnotationDelegate / BarcodeArPopoverAnnotationDelegate / BarcodeArViewUIDelegate / UITapGestureRecognizer is added, because the trigger change alone satisfies the request.",
+      "files": [
+        "eval-fixtures/IntegratedBarcodeArWithStatusIconAnnotationViewController.swift"
+      ],
+      "assertions": [
+        {"text": "annotation.annotationTrigger is assigned to a documented BarcodeArAnnotationTrigger case representing tap-only (e.g. .highlightTap)"},
+        {"text": "No delegate assignment is added to the annotation (annotation.delegate = ... is NOT introduced)"},
+        {"text": "No BarcodeArInfoAnnotationDelegate conformance is added"},
+        {"text": "No BarcodeArPopoverAnnotationDelegate conformance is added"},
+        {"text": "BarcodeArViewUIDelegate conformance is NOT added (this is not a highlight tap)"},
+        {"text": "barcodeArView.uiDelegate = self is NOT assigned"},
+        {"text": "No UITapGestureRecognizer is added"},
+        {"text": "Existing BarcodeArStatusIconAnnotation construction is preserved"},
+        {"text": "Existing integration code (context, BarcodeAr, barcodeArView, lifecycle, annotationProvider assignment) is preserved"}
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "I'm using a BarcodeArResponsiveAnnotation in my MatrixScan AR app — close-up is an info annotation with details, far-away is a minimal info annotation. When the user taps the close-up annotation, log the barcode data. File: IntegratedBarcodeArViewController.swift",
+      "expected_output": "Interaction on a BarcodeArResponsiveAnnotation goes through the inner BarcodeArInfoAnnotation, not through the wrapper. The skill adds a BarcodeArAnnotationProvider that constructs two BarcodeArInfoAnnotation instances (close-up and far-away), assigns delegate = self on the close-up info annotation (NOT on the responsive wrapper), wraps both in BarcodeArResponsiveAnnotation, and conforms to BarcodeArInfoAnnotationDelegate to handle the tap.",
+      "files": [
+        "eval-fixtures/IntegratedBarcodeArViewController.swift"
+      ],
+      "assertions": [
+        {"text": "BarcodeArAnnotationProvider conformance is present"},
+        {"text": "Two BarcodeArInfoAnnotation instances are constructed (one for close-up, one for far-away)"},
+        {"text": "BarcodeArResponsiveAnnotation( is constructed with closeUp: and farAway: arguments wrapping the two info annotations"},
+        {"text": "BarcodeArInfoAnnotationDelegate conformance is present on the view controller"},
+        {"text": "The delegate is assigned on the inner BarcodeArInfoAnnotation (the close-up info annotation), NOT on the BarcodeArResponsiveAnnotation wrapper"},
+        {"text": "responsiveAnnotation.delegate = self is NOT present (the wrapper has no delegate property)"},
+        {"text": "isEntireAnnotationTappable = true is set on the close-up BarcodeArInfoAnnotation (required for a tap anywhere on the close-up annotation to reach the whole-annotation delegate callback; default is false)"},
+        {"text": "A BarcodeArInfoAnnotationDelegate tap callback is implemented"},
+        {"text": "The tap callback logs barcode.data (via print or NSLog)"},
+        {"text": "BarcodeArViewUIDelegate is NOT used"},
+        {"text": "Existing integration code (context, BarcodeAr, barcodeArView, lifecycle) is preserved"}
+      ]
+    }
+  ]
+}

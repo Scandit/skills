@@ -1,0 +1,196 @@
+{
+  "skill_name": "matrixscan-ar-annotation-ios",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Add a status icon annotation on each barcode in my MatrixScan AR app. File: IntegratedBarcodeArViewController.swift",
+      "expected_output": "The skill detects MatrixScan AR is already integrated, adds a BarcodeArAnnotationProvider conformance returning a BarcodeArStatusIconAnnotation, and assigns annotationProvider on the existing barcodeArView. No context/mode/settings/lifecycle code is re-created.",
+      "files": [
+        "eval-fixtures/IntegratedBarcodeArViewController.swift"
+      ],
+      "assertions": [
+        {"text": "BarcodeArAnnotationProvider conformance is present"},
+        {"text": "annotation(for barcode: Barcode, completionHandler:) method is implemented"},
+        {"text": "BarcodeArStatusIconAnnotation(barcode: barcode) is used to construct the annotation"},
+        {"text": "completionHandler is called with the constructed annotation"},
+        {"text": "barcodeArView.annotationProvider = self is assigned"},
+        {"text": "Existing DataCaptureContext initialization is preserved (not re-created)"},
+        {"text": "Existing BarcodeAr mode and BarcodeArSettings are preserved (not re-created)"},
+        {"text": "Existing barcodeArView initialization is preserved"},
+        {"text": "Existing start() / stop() lifecycle calls are preserved"},
+        {"text": "No duplicate DataCaptureContext, BarcodeAr, or BarcodeArView instantiation is introduced"}
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Attach info annotations to barcodes in my MatrixScan AR view. File: IntegratedBarcodeArViewController.swift",
+      "expected_output": "The skill adds a BarcodeArAnnotationProvider that returns a BarcodeArInfoAnnotation for each barcode and assigns annotationProvider on the existing barcodeArView.",
+      "files": [
+        "eval-fixtures/IntegratedBarcodeArViewController.swift"
+      ],
+      "assertions": [
+        {"text": "BarcodeArAnnotationProvider conformance is present"},
+        {"text": "BarcodeArInfoAnnotation(barcode: barcode) is used to construct the annotation"},
+        {"text": "completionHandler is called with the constructed annotation"},
+        {"text": "barcodeArView.annotationProvider = self is assigned"},
+        {"text": "Existing integration code (context, BarcodeAr, barcodeArView, lifecycle) is preserved"}
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Show a popover annotation on each barcode with two buttons: 'Details' and 'Add to cart'. File: IntegratedBarcodeArViewController.swift",
+      "expected_output": "The skill adds a BarcodeArAnnotationProvider returning a BarcodeArPopoverAnnotation constructed with an array of two BarcodeArPopoverAnnotationButton instances (labeled 'Details' and 'Add to cart'), and assigns annotationProvider.",
+      "files": [
+        "eval-fixtures/IntegratedBarcodeArViewController.swift"
+      ],
+      "assertions": [
+        {"text": "BarcodeArAnnotationProvider conformance is present"},
+        {"text": "BarcodeArPopoverAnnotation( is present with a barcode: and buttons: argument"},
+        {"text": "Two BarcodeArPopoverAnnotationButton instances are constructed in the buttons array"},
+        {"text": "'Details' appears as a button label"},
+        {"text": "'Add to cart' appears as a button label"},
+        {"text": "barcodeArView.annotationProvider = self is assigned"},
+        {"text": "Existing integration code (context, BarcodeAr, barcodeArView, lifecycle) is preserved"}
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "I want close-up and far-away annotations in my MatrixScan AR view — a detailed info annotation when the barcode is close, and a minimal one when it's far. File: IntegratedBarcodeArViewController.swift",
+      "expected_output": "The skill adds a BarcodeArAnnotationProvider returning a BarcodeArResponsiveAnnotation that wraps two BarcodeArInfoAnnotation instances (one for close-up, one for far-away), and assigns annotationProvider.",
+      "files": [
+        "eval-fixtures/IntegratedBarcodeArViewController.swift"
+      ],
+      "assertions": [
+        {"text": "BarcodeArAnnotationProvider conformance is present"},
+        {"text": "BarcodeArResponsiveAnnotation( is present"},
+        {"text": "The responsive annotation is constructed with closeUp: and farAway: arguments"},
+        {"text": "Two BarcodeArInfoAnnotation instances are constructed (one for close-up, one for far-away — the prompt explicitly asked for both)"},
+        {"text": "barcodeArView.annotationProvider = self is assigned"},
+        {"text": "Existing integration code (context, BarcodeAr, barcodeArView, lifecycle) is preserved"}
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "In my MatrixScan AR app, only show a detailed info annotation when the user is close to the barcode — show nothing when they are far away. File: IntegratedBarcodeArViewController.swift",
+      "expected_output": "The skill uses BarcodeArResponsiveAnnotation with a non-nil close-up BarcodeArInfoAnnotation and a nil far-away. The responsive wrapper is returned from the provider.",
+      "files": [
+        "eval-fixtures/IntegratedBarcodeArViewController.swift"
+      ],
+      "assertions": [
+        {"text": "BarcodeArAnnotationProvider conformance is present"},
+        {"text": "BarcodeArResponsiveAnnotation( is present"},
+        {"text": "A BarcodeArInfoAnnotation is constructed for the close-up side"},
+        {"text": "farAway: nil is passed (no far-away annotation is constructed — the user asked for nothing at far distance)"},
+        {"text": "Only ONE BarcodeArInfoAnnotation is constructed (not two) — the far-away side is nil, not a new info annotation"},
+        {"text": "barcodeArView.annotationProvider = self is assigned"},
+        {"text": "Existing integration code (context, BarcodeAr, barcodeArView, lifecycle) is preserved"}
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "My MatrixScan AR code uses async/await. Add status icon annotations to each barcode. File: AsyncBarcodeArViewController.swift",
+      "expected_output": "Because the surrounding file already uses async/await, the skill conforms to BarcodeArAnnotationProvider using the async variant of annotation(for:) instead of the completion-handler variant.",
+      "files": [
+        "eval-fixtures/AsyncBarcodeArViewController.swift"
+      ],
+      "assertions": [
+        {"text": "BarcodeArAnnotationProvider conformance is present"},
+        {"text": "The async variant is used: func annotation(for barcode: Barcode) async -> (any UIView & BarcodeArAnnotation)?"},
+        {"text": "BarcodeArStatusIconAnnotation(barcode: barcode) is returned from the async method"},
+        {"text": "barcodeArView.annotationProvider = self is assigned"},
+        {"text": "Existing async integration code (Task, loadConfiguration) is preserved"},
+        {"text": "Existing integration code (context, BarcodeAr, barcodeArView, lifecycle) is preserved"}
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "My MatrixScan AR app currently shows status icon annotations. Switch to info annotations. File: IntegratedBarcodeArWithStatusIconAnnotationViewController.swift",
+      "expected_output": "The skill replaces the BarcodeArStatusIconAnnotation construction inside the existing provider with a BarcodeArInfoAnnotation. The provider conformance, completion-handler invocation, and integration code are preserved.",
+      "files": [
+        "eval-fixtures/IntegratedBarcodeArWithStatusIconAnnotationViewController.swift"
+      ],
+      "assertions": [
+        {"text": "BarcodeArInfoAnnotation( is present"},
+        {"text": "BarcodeArStatusIconAnnotation is NOT present in the output (fully replaced)"},
+        {"text": "BarcodeArAnnotationProvider conformance is preserved"},
+        {"text": "annotation(for:completionHandler:) method is preserved"},
+        {"text": "completionHandler is still invoked with the constructed annotation"},
+        {"text": "barcodeArView.annotationProvider = self assignment is preserved"},
+        {"text": "Existing integration code (context, BarcodeAr, barcodeArView, lifecycle) is preserved"}
+      ]
+    },
+    {
+      "id": 8,
+      "prompt": "Add status icon annotations to my MatrixScan AR SwiftUI app. File: IntegratedBarcodeArSwiftUIView.swift",
+      "expected_output": "The skill detects that MatrixScan AR is wired up inside the UIViewControllerRepresentable's wrapped ScanViewController, adds a BarcodeArAnnotationProvider conformance on ScanViewController, and assigns annotationProvider on the existing barcodeArView. The SwiftUI wrapper types are not modified.",
+      "files": [
+        "eval-fixtures/IntegratedBarcodeArSwiftUIView.swift"
+      ],
+      "assertions": [
+        {"text": "BarcodeArAnnotationProvider conformance is added on ScanViewController (not on the SwiftUI View)"},
+        {"text": "annotation(for barcode: Barcode, completionHandler:) method is implemented"},
+        {"text": "BarcodeArStatusIconAnnotation(barcode: barcode) is used to construct the annotation"},
+        {"text": "barcodeArView.annotationProvider = self is assigned inside the ScanViewController (e.g. in setupRecognition)"},
+        {"text": "The SwiftUI ScanView struct is preserved (no Scandit API calls added to it)"},
+        {"text": "The ScanViewControllerRepresentable struct is preserved (makeUIViewController/updateUIViewController unchanged structurally)"},
+        {"text": "Existing integration code on ScanViewController (context, BarcodeAr, barcodeArView, lifecycle) is preserved"},
+        {"text": "No duplicate DataCaptureContext, BarcodeAr, or BarcodeArView instantiation is introduced"}
+      ]
+    },
+    {
+      "id": 9,
+      "prompt": "I want to add MatrixScan AR annotations to my app. File: NonScanditViewController.swift",
+      "expected_output": "The skill detects that MatrixScan AR is not integrated in this file (no BarcodeArView, no BarcodeAr, no ScanditBarcodeCapture import), stops, and tells the user that greenfield MatrixScan AR setup is out of scope for the annotations skill and will be handled by the MatrixScan AR integration skill. No MatrixScan AR bootstrap code is written.",
+      "files": [
+        "eval-fixtures/NonScanditViewController.swift"
+      ],
+      "assertions": [
+        {"text": "The assistant does NOT write DataCaptureContext initialization code into the file"},
+        {"text": "The assistant does NOT write BarcodeAr or BarcodeArSettings instantiation code into the file"},
+        {"text": "The assistant does NOT write BarcodeArView instantiation code into the file"},
+        {"text": "The assistant does NOT add import ScanditBarcodeCapture to the file"},
+        {"text": "The assistant does NOT write a BarcodeArAnnotationProvider conformance into the file (there's no BarcodeArView to attach it to)"},
+        {"text": "The response explicitly tells the user MatrixScan AR is not integrated yet"},
+        {"text": "The response defers greenfield MatrixScan AR setup to a dedicated integration skill or indicates it is out of scope for this skill"}
+      ]
+    },
+    {
+      "id": 10,
+      "prompt": "What annotation types does MatrixScan AR support on iOS?",
+      "expected_output": "The skill answers with the documented annotation types (BarcodeArStatusIconAnnotation, BarcodeArInfoAnnotation, BarcodeArPopoverAnnotation, and BarcodeArResponsiveAnnotation), and includes a link to the official docs. No code is written to any file.",
+      "files": [],
+      "assertions": [
+        {"text": "The response names BarcodeArStatusIconAnnotation"},
+        {"text": "The response names BarcodeArInfoAnnotation"},
+        {"text": "The response names BarcodeArPopoverAnnotation"},
+        {"text": "The response names BarcodeArResponsiveAnnotation"},
+        {"text": "The response does NOT invent or name any non-documented annotation types (e.g. BarcodeArBubbleAnnotation, BarcodeArLabelAnnotation, BarcodeArTooltipAnnotation, BarcodeArTextAnnotation)"},
+        {"text": "The response includes a link to the Scandit iOS documentation (scandit.com/sdks/ios or scandit.com/data-capture-sdk/ios)"},
+        {"text": "No files are written or edited"}
+      ]
+    },
+    {
+      "id": 11,
+      "prompt": "I want a custom price-badge annotation on each barcode in my MatrixScan AR app — a rounded blue pill with a price label positioned above the barcode. The four built-in annotation types don't fit my design. Assume a `priceLookup: [String: String]` is already available on the view controller. File: IntegratedBarcodeArViewController.swift",
+      "expected_output": "The skill declares a new UIView subclass that conforms to BarcodeArAnnotation, implements update(with location: Quadrilateral, highlight: (any UIView & BarcodeArHighlight)?) to position the badge above the barcode using the quadrilateral's top corners, provides the required annotationTrigger stored property, stores the barcode at init (since the protocol has no barcode property), adds a BarcodeArAnnotationProvider conformance that returns the custom class with the price from priceLookup, and assigns annotationProvider on the existing barcodeArView. Does NOT fall back to any built-in annotation type. Existing integration code is preserved.",
+      "files": [
+        "eval-fixtures/IntegratedBarcodeArViewController.swift"
+      ],
+      "assertions": [
+        {"text": "A new UIView subclass (distinct from BarcodeArStatusIconAnnotation, BarcodeArInfoAnnotation, BarcodeArPopoverAnnotation, and BarcodeArResponsiveAnnotation) is declared in the file"},
+        {"text": "That new class conforms to BarcodeArAnnotation (the conformance appears on its declaration, e.g. `class FooAnnotation: UIView, BarcodeArAnnotation`)"},
+        {"text": "The class implements func update(with location: Quadrilateral, highlight: (any UIView & BarcodeArHighlight)?) with that exact two-parameter signature (not the one-parameter highlight variant, not update(_:), not update(quadrilateral:))"},
+        {"text": "The class declares a stored var annotationTrigger: BarcodeArAnnotationTrigger property (required by the protocol — it is NOT optional and cannot be omitted)"},
+        {"text": "The update(with:highlight:) implementation references at least one of the Quadrilateral corner properties (topLeft, topRight, bottomLeft, bottomRight) to compute the badge's position — proving it knows the struct's actual shape"},
+        {"text": "The class stores the Barcode at construction time (e.g. via an `init(barcode: Barcode, ...)` that assigns it to a stored property) — because BarcodeArAnnotation has no barcode property, the class must capture it explicitly if the annotation needs it later"},
+        {"text": "BarcodeArAnnotationProvider conformance is present on the view controller"},
+        {"text": "annotation(for barcode: Barcode, completionHandler:) method is implemented"},
+        {"text": "The provider returns an instance of the custom UIView subclass (NOT BarcodeArStatusIconAnnotation, NOT BarcodeArInfoAnnotation, NOT BarcodeArPopoverAnnotation, NOT BarcodeArResponsiveAnnotation — those are wrong answers for a bespoke badge design)"},
+        {"text": "The provider references priceLookup (or equivalent lookup on the view controller) to get the price string for the barcode before constructing the annotation"},
+        {"text": "barcodeArView.annotationProvider = self is assigned"},
+        {"text": "No manual `update(with:highlight:)` call is present in the view-controller code — the SDK drives that callback"},
+        {"text": "Existing DataCaptureContext, BarcodeAr mode, BarcodeArSettings, barcodeArView initialization, and start()/stop() lifecycle are all preserved"}
+      ]
+    }
+  ]
+}
