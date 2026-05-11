@@ -1,0 +1,195 @@
+{
+  "skill_name": "matrixscan-ar-highlight-ios",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Add rectangle highlights to my MatrixScan AR app. Here's the view controller: IntegratedBarcodeArViewController.swift",
+      "expected_output": "The skill detects MatrixScan AR is already integrated, adds a BarcodeArHighlightProvider conformance with BarcodeArRectangleHighlight, and assigns highlightProvider on the existing barcodeArView. No context/mode/settings/lifecycle code is re-created.",
+      "files": [
+        "eval-fixtures/IntegratedBarcodeArViewController.swift"
+      ],
+      "assertions": [
+        {"text": "BarcodeArHighlightProvider conformance is present"},
+        {"text": "highlight(for barcode: Barcode, completionHandler:) method is implemented"},
+        {"text": "BarcodeArRectangleHighlight(barcode: barcode) is used to construct the highlight"},
+        {"text": "completionHandler is called with the constructed highlight"},
+        {"text": "barcodeArView.highlightProvider = self is assigned"},
+        {"text": "Existing DataCaptureContext initialization is preserved (not re-created)"},
+        {"text": "Existing BarcodeAr mode and BarcodeArSettings are preserved (not re-created)"},
+        {"text": "Existing barcodeArView initialization is preserved"},
+        {"text": "Existing start() / stop() lifecycle calls are preserved"},
+        {"text": "No duplicate DataCaptureContext, BarcodeAr, or BarcodeArView instantiation is introduced"}
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Use circular highlights on each barcode in my MatrixScan AR view. Use the .dot preset. File: IntegratedBarcodeArViewController.swift",
+      "expected_output": "The skill adds a BarcodeArHighlightProvider that returns a BarcodeArCircleHighlight constructed with the .dot preset, and assigns highlightProvider on the existing barcodeArView.",
+      "files": [
+        "eval-fixtures/IntegratedBarcodeArViewController.swift"
+      ],
+      "assertions": [
+        {"text": "BarcodeArHighlightProvider conformance is present"},
+        {"text": "BarcodeArCircleHighlight( is present"},
+        {"text": "preset: .dot is passed to the BarcodeArCircleHighlight initializer"},
+        {"text": "BarcodeArCircleHighlight is not constructed with only a barcode argument (preset is required)"},
+        {"text": "barcodeArView.highlightProvider = self is assigned"},
+        {"text": "Existing integration code (context, BarcodeAr, barcodeArView, lifecycle) is preserved"}
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Make the highlight in my MatrixScan AR app green — green fill and green stroke. Here's the file: IntegratedBarcodeArWithProviderViewController.swift",
+      "expected_output": "The skill modifies the existing BarcodeArHighlightProvider's highlight(for:completionHandler:) to assign a green Brush on the highlight before passing it to the completion handler. The existing BarcodeArRectangleHighlight is kept.",
+      "files": [
+        "eval-fixtures/IntegratedBarcodeArWithProviderViewController.swift"
+      ],
+      "assertions": [
+        {"text": "Brush( is constructed inside the highlight provider"},
+        {"text": "The Brush initializer uses the fill:, stroke:, and strokeWidth: arguments"},
+        {"text": "A green UIColor (UIColor.systemGreen, .systemGreen, .green, or equivalent) is used for both fill and stroke"},
+        {"text": "highlight.brush is assigned to the Brush instance"},
+        {"text": "Existing BarcodeArRectangleHighlight construction is preserved"},
+        {"text": "completionHandler is still invoked with the configured highlight"},
+        {"text": "Existing integration code (context, BarcodeAr, barcodeArView, lifecycle, highlightProvider assignment) is preserved"}
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "On each highlight in my MatrixScan AR app I want a checkmark icon. File: IntegratedBarcodeArWithProviderViewController.swift",
+      "expected_output": "The skill builds a ScanditIcon using ScanditIconBuilder with a checkmark icon type and assigns it to highlight.icon inside the existing provider.",
+      "files": [
+        "eval-fixtures/IntegratedBarcodeArWithProviderViewController.swift"
+      ],
+      "assertions": [
+        {"text": "ScanditIconBuilder() is instantiated"},
+        {"text": ".withIcon(.checkmark) is called on the builder"},
+        {"text": ".build() is called to produce the ScanditIcon"},
+        {"text": "highlight.icon is assigned to the built ScanditIcon"},
+        {"text": "Existing BarcodeArRectangleHighlight construction is preserved"},
+        {"text": "Existing integration code (context, BarcodeAr, barcodeArView, lifecycle, highlightProvider assignment) is preserved"}
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "In my MatrixScan AR app use circular highlights that are 48 points wide and pulse. File: IntegratedBarcodeArViewController.swift",
+      "expected_output": "The skill adds a BarcodeArHighlightProvider returning a BarcodeArCircleHighlight with size = 48 and isPulsing = true, and assigns highlightProvider.",
+      "files": [
+        "eval-fixtures/IntegratedBarcodeArViewController.swift"
+      ],
+      "assertions": [
+        {"text": "BarcodeArHighlightProvider conformance is present"},
+        {"text": "BarcodeArCircleHighlight(barcode: barcode, preset: is used with a documented BarcodeArCircleHighlightPreset value (.dot or .icon)"},
+        {"text": "highlight.size = 48 is set"},
+        {"text": "highlight.isPulsing = true is set"},
+        {"text": "barcodeArView.highlightProvider = self is assigned"},
+        {"text": "Existing integration code (context, BarcodeAr, barcodeArView, lifecycle) is preserved"}
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "My file loads some config asynchronously with async/await. I want to add a rectangle highlight to my MatrixScan AR integration. File: AsyncBarcodeArViewController.swift",
+      "expected_output": "Because the surrounding file already uses async/await, the skill conforms to BarcodeArHighlightProvider using the async variant of highlight(for:) instead of the completion-handler variant.",
+      "files": [
+        "eval-fixtures/AsyncBarcodeArViewController.swift"
+      ],
+      "assertions": [
+        {"text": "BarcodeArHighlightProvider conformance is present"},
+        {"text": "The async variant is used: func highlight(for barcode: Barcode) async -> (any UIView & BarcodeArHighlight)?"},
+        {"text": "The completion-handler variant (highlight(for:completionHandler:)) is NOT used"},
+        {"text": "BarcodeArRectangleHighlight(barcode: barcode) is returned from the async method"},
+        {"text": "barcodeArView.highlightProvider = self is assigned"},
+        {"text": "Existing async integration code (Task, loadConfiguration) is preserved"},
+        {"text": "Existing integration code (context, BarcodeAr, barcodeArView, lifecycle) is preserved"}
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "My MatrixScan AR integration currently uses rectangle highlights. Switch to circle highlights (use the .icon preset). File: IntegratedBarcodeArWithProviderViewController.swift",
+      "expected_output": "The skill replaces the BarcodeArRectangleHighlight construction inside the existing BarcodeArHighlightProvider with a BarcodeArCircleHighlight using a required preset. The provider conformance, completion-handler invocation, and all integration code are preserved.",
+      "files": [
+        "eval-fixtures/IntegratedBarcodeArWithProviderViewController.swift"
+      ],
+      "assertions": [
+        {"text": "BarcodeArCircleHighlight( is present"},
+        {"text": "preset: .icon is passed to the BarcodeArCircleHighlight initializer"},
+        {"text": "BarcodeArRectangleHighlight is NOT present in the output (fully replaced)"},
+        {"text": "BarcodeArHighlightProvider conformance is preserved"},
+        {"text": "highlight(for:completionHandler:) method is preserved"},
+        {"text": "completionHandler is still invoked with the constructed highlight"},
+        {"text": "barcodeArView.highlightProvider = self assignment is preserved"},
+        {"text": "Existing integration code (context, BarcodeAr, barcodeArView, lifecycle) is preserved"}
+      ]
+    },
+    {
+      "id": 8,
+      "prompt": "Add rectangle highlights to my MatrixScan AR SwiftUI app. File: IntegratedBarcodeArSwiftUIView.swift",
+      "expected_output": "The skill detects that MatrixScan AR is wired up inside the UIViewControllerRepresentable's wrapped ScanViewController, adds a BarcodeArHighlightProvider conformance on ScanViewController, and assigns highlightProvider on the existing barcodeArView. The SwiftUI wrapper (ScanViewControllerRepresentable, ScanView) is not modified structurally.",
+      "files": [
+        "eval-fixtures/IntegratedBarcodeArSwiftUIView.swift"
+      ],
+      "assertions": [
+        {"text": "BarcodeArHighlightProvider conformance is added on ScanViewController (not on the SwiftUI View)"},
+        {"text": "highlight(for barcode: Barcode, completionHandler:) method is implemented"},
+        {"text": "BarcodeArRectangleHighlight(barcode: barcode) is used to construct the highlight"},
+        {"text": "completionHandler is called with the constructed highlight"},
+        {"text": "barcodeArView.highlightProvider = self is assigned inside the ScanViewController (e.g. in setupRecognition)"},
+        {"text": "The SwiftUI ScanView struct is preserved (no Scandit API calls added to it)"},
+        {"text": "The ScanViewControllerRepresentable struct is preserved (makeUIViewController/updateUIViewController unchanged structurally)"},
+        {"text": "Existing integration code on ScanViewController (context, BarcodeAr, barcodeArView, lifecycle) is preserved"},
+        {"text": "No duplicate DataCaptureContext, BarcodeAr, or BarcodeArView instantiation is introduced"}
+      ]
+    },
+    {
+      "id": 9,
+      "prompt": "I want to add MatrixScan AR highlights to my app. File: NonScanditViewController.swift",
+      "expected_output": "The skill detects that MatrixScan AR is not integrated in this file (no BarcodeArView, no BarcodeAr, no ScanditBarcodeCapture import), stops, and tells the user that greenfield MatrixScan AR setup is out of scope for the highlights skill and will be handled by the MatrixScan AR integration skill. No MatrixScan AR bootstrap code is written.",
+      "files": [
+        "eval-fixtures/NonScanditViewController.swift"
+      ],
+      "assertions": [
+        {"text": "The assistant does NOT write DataCaptureContext initialization code into the file"},
+        {"text": "The assistant does NOT write BarcodeAr or BarcodeArSettings instantiation code into the file"},
+        {"text": "The assistant does NOT write BarcodeArView instantiation code into the file"},
+        {"text": "The assistant does NOT add import ScanditBarcodeCapture to the file"},
+        {"text": "The assistant does NOT write a BarcodeArHighlightProvider conformance into the file (there's no BarcodeArView to attach it to)"},
+        {"text": "The response explicitly tells the user MatrixScan AR is not integrated yet"},
+        {"text": "The response defers greenfield MatrixScan AR setup to a dedicated integration skill or indicates it is out of scope for this skill"}
+      ]
+    },
+    {
+      "id": 10,
+      "prompt": "What highlight types does MatrixScan AR support on iOS?",
+      "expected_output": "The skill answers with the two documented highlight types (BarcodeArRectangleHighlight and BarcodeArCircleHighlight), notes that BarcodeArCircleHighlight requires a BarcodeArCircleHighlightPreset (.dot or .icon) at construction, and includes a link to the official docs. No code is written to any file.",
+      "files": [],
+      "assertions": [
+        {"text": "The response names BarcodeArRectangleHighlight"},
+        {"text": "The response names BarcodeArCircleHighlight"},
+        {"text": "The response mentions that BarcodeArCircleHighlight takes a BarcodeArCircleHighlightPreset (or names the .dot and .icon preset values)"},
+        {"text": "The response does NOT invent or name any non-documented highlight types (e.g. BarcodeArPolygonHighlight, BarcodeArOvalHighlight, BarcodeArIconHighlight, or similar)"},
+        {"text": "The response includes a link to the Scandit iOS documentation (scandit.com/sdks/ios or scandit.com/data-capture-sdk/ios)"},
+        {"text": "No files are written or edited"}
+      ]
+    },
+    {
+      "id": 11,
+      "prompt": "I want a triangle-shaped highlight over each barcode in my MatrixScan AR app. Neither the rectangle nor the circle fits — I need a custom shape. File: IntegratedBarcodeArViewController.swift",
+      "expected_output": "The skill declares a new UIView subclass that conforms to BarcodeArHighlight, implements update(with location: Quadrilateral) to draw a triangle using the quadrilateral's four corners, adds a BarcodeArHighlightProvider conformance that returns an instance of the custom class, and assigns highlightProvider on the existing barcodeArView. It does NOT try to fake a triangle out of BarcodeArRectangleHighlight or BarcodeArCircleHighlight (those cannot produce a triangle). Existing integration code is preserved.",
+      "files": [
+        "eval-fixtures/IntegratedBarcodeArViewController.swift"
+      ],
+      "assertions": [
+        {"text": "A new UIView subclass (distinct from BarcodeArRectangleHighlight and BarcodeArCircleHighlight) is declared in the file"},
+        {"text": "That new class conforms to BarcodeArHighlight (the conformance appears on its declaration, e.g. `class FooHighlight: UIView, BarcodeArHighlight`)"},
+        {"text": "The class implements func update(with location: Quadrilateral) with that exact signature (not update(_:), not update(quadrilateral:), not update(with rect: CGRect))"},
+        {"text": "The update(with:) implementation references at least two of the Quadrilateral corner properties (topLeft, topRight, bottomLeft, bottomRight) to compute the triangle geometry — proving it knows the struct's actual shape rather than guessing at a rect-style API"},
+        {"text": "BarcodeArHighlightProvider conformance is present on the view controller"},
+        {"text": "highlight(for barcode: Barcode, completionHandler:) method is implemented"},
+        {"text": "The provider returns an instance of the custom UIView subclass (NOT BarcodeArRectangleHighlight and NOT BarcodeArCircleHighlight — both are wrong answers for a triangle)"},
+        {"text": "barcodeArView.highlightProvider = self is assigned"},
+        {"text": "No manual `update(with:)` call is present in the view-controller code — the SDK drives that callback"},
+        {"text": "Existing DataCaptureContext, BarcodeAr mode, BarcodeArSettings, barcodeArView initialization, and start()/stop() lifecycle are all preserved"}
+      ]
+    }
+  ]
+}

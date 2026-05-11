@@ -1,0 +1,98 @@
+{
+  "skill_name": "matrixscan-ar-highlight-ios",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "When the user taps a highlight in my MatrixScan AR app, print the barcode data. File: IntegratedBarcodeArWithProviderViewController.swift",
+      "expected_output": "The skill adds BarcodeArViewUIDelegate conformance, implements the tap callback to read barcode.data and print it, and assigns barcodeArView.uiDelegate. Existing highlight provider and integration code are preserved.",
+      "files": [
+        "eval-fixtures/IntegratedBarcodeArWithProviderViewController.swift"
+      ],
+      "assertions": [
+        {"text": "BarcodeArViewUIDelegate conformance is present"},
+        {"text": "barcodeArView.uiDelegate = self is assigned"},
+        {"text": "A delegate method with didTapHighlightFor is implemented"},
+        {"text": "Inside the tap callback, barcode.data is read (directly or via optional binding)"},
+        {"text": "print( is used to output the barcode data in the tap callback"},
+        {"text": "DispatchQueue.main.async is NOT used inside the tap callback (the UI delegate already runs on the main queue)"},
+        {"text": "Existing BarcodeArHighlightProvider conformance is preserved"},
+        {"text": "Existing highlight(for:completionHandler:) method is preserved"},
+        {"text": "Existing BarcodeArRectangleHighlight construction is preserved"},
+        {"text": "Existing integration code (context, BarcodeAr, barcodeArView, lifecycle, highlightProvider assignment) is preserved"}
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "When a highlight is tapped in my MatrixScan AR app, if the barcode data is '123456789' show a UIAlertController saying 'Rejected'. Otherwise navigate by calling showDetails(for: barcode.data ?? \"\"). File: IntegratedBarcodeArWithProviderViewController.swift",
+      "expected_output": "The skill adds BarcodeArViewUIDelegate conformance with branching logic on barcode.data inside the tap callback, assigns uiDelegate, and preserves the existing highlight provider.",
+      "files": [
+        "eval-fixtures/IntegratedBarcodeArWithProviderViewController.swift"
+      ],
+      "assertions": [
+        {"text": "BarcodeArViewUIDelegate conformance is present"},
+        {"text": "barcodeArView.uiDelegate = self is assigned"},
+        {"text": "A didTapHighlightFor callback is implemented"},
+        {"text": "The tap callback branches on barcode.data == \"123456789\" or equivalent"},
+        {"text": "UIAlertController is constructed in the rejection branch"},
+        {"text": "'Rejected' appears as the alert text"},
+        {"text": "self.present( is called to show the alert"},
+        {"text": "showDetails(for:) is called in the non-rejection branch"},
+        {"text": "Existing BarcodeArHighlightProvider conformance is preserved"},
+        {"text": "Existing integration code (context, BarcodeAr, barcodeArView, lifecycle) is preserved"}
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "My MatrixScan AR view has no highlights yet. I want circular highlights that are tappable — when a user taps one, log the barcode data. File: IntegratedBarcodeArViewController.swift",
+      "expected_output": "The skill adds BOTH a BarcodeArHighlightProvider (returning BarcodeArCircleHighlight) AND a BarcodeArViewUIDelegate, assigning both highlightProvider and uiDelegate on the existing barcodeArView.",
+      "files": [
+        "eval-fixtures/IntegratedBarcodeArViewController.swift"
+      ],
+      "assertions": [
+        {"text": "BarcodeArHighlightProvider conformance is present"},
+        {"text": "BarcodeArCircleHighlight( is used to construct the highlight"},
+        {"text": "preset: is passed to BarcodeArCircleHighlight (a documented preset value)"},
+        {"text": "barcodeArView.highlightProvider = self is assigned"},
+        {"text": "BarcodeArViewUIDelegate conformance is present"},
+        {"text": "barcodeArView.uiDelegate = self is assigned"},
+        {"text": "A didTapHighlightFor callback is implemented"},
+        {"text": "The tap callback logs barcode.data (via print or NSLog)"},
+        {"text": "Existing integration code (context, BarcodeAr, barcodeArView, lifecycle) is preserved"}
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "How do I handle taps on MatrixScan AR highlights in iOS?",
+      "expected_output": "The skill answers by naming BarcodeArViewUIDelegate as the interaction hook, points out that it is assigned to BarcodeArView.uiDelegate, mentions the didTapHighlightFor callback, and includes a link to the official Scandit iOS docs. No code is written to any file.",
+      "files": [],
+      "assertions": [
+        {"text": "The response names BarcodeArViewUIDelegate"},
+        {"text": "The response mentions BarcodeArView.uiDelegate (or uiDelegate as the property to assign)"},
+        {"text": "The response references the tap callback (didTapHighlightFor or similar, as documented on the BarcodeArView API page)"},
+        {"text": "The response does NOT invent a non-existent listener or delegate type (e.g. BarcodeArHighlightListener, BarcodeArTapDelegate, BarcodeArInteractionDelegate, onHighlightTap)"},
+        {"text": "The response does NOT instruct the user to add a UITapGestureRecognizer as the primary approach (the uiDelegate route is the documented one)"},
+        {"text": "The response includes a link to the Scandit iOS documentation (scandit.com/sdks/ios or scandit.com/data-capture-sdk/ios)"},
+        {"text": "No files are written or edited"}
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "In my SwiftUI MatrixScan AR app, log the barcode data when a highlight is tapped. File: IntegratedBarcodeArWithProviderSwiftUIView.swift",
+      "expected_output": "The skill adds BarcodeArViewUIDelegate conformance on the wrapped UIKit ScanViewController (not on the SwiftUI View), assigns barcodeArView.uiDelegate = self inside ScanViewController, and implements the tap callback to log barcode.data. The SwiftUI wrapper types are left intact.",
+      "files": [
+        "eval-fixtures/IntegratedBarcodeArWithProviderSwiftUIView.swift"
+      ],
+      "assertions": [
+        {"text": "BarcodeArViewUIDelegate conformance is added on ScanViewController (not on the SwiftUI View or the UIViewControllerRepresentable)"},
+        {"text": "barcodeArView.uiDelegate = self is assigned inside the ScanViewController (e.g. in setupRecognition)"},
+        {"text": "A didTapHighlightFor callback is implemented on ScanViewController"},
+        {"text": "The tap callback logs barcode.data (via print or NSLog)"},
+        {"text": "The SwiftUI ScanView struct is preserved (no Scandit API calls added to it)"},
+        {"text": "The ScanViewControllerRepresentable struct is preserved (makeUIViewController/updateUIViewController unchanged structurally)"},
+        {"text": "Existing BarcodeArHighlightProvider conformance is preserved"},
+        {"text": "Existing highlight(for:completionHandler:) method is preserved"},
+        {"text": "Existing integration code (context, BarcodeAr, barcodeArView, lifecycle, highlightProvider assignment) is preserved"}
+      ]
+    }
+  ]
+}
