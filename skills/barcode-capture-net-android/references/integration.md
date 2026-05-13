@@ -16,6 +16,10 @@ Examples below use C# 12 and an Activity. The same APIs work identically in a Fr
   </ItemGroup>
   ```
   Both packages are published on NuGet.org. Do **not** add `Scandit.DataCapture.Core.Maui` or `Scandit.DataCapture.Barcode.Maui` — those are MAUI-only.
+- `Xamarin.AndroidX.AppCompat` — required because the `CameraPermissionActivity` helper below inherits from `AppCompatActivity`, and the default manifest theme `@style/Theme.AppCompat` resolves through this package. The `dotnet new android` template already pulls it in transitively via `Xamarin.AndroidX.AppCompat.AppCompatResources`, but for manually scaffolded projects add it explicitly:
+  ```xml
+  <PackageReference Include="Xamarin.AndroidX.AppCompat" Version="<latest-version>" />
+  ```
 - A valid Scandit license key:
   - Sign in at https://ssl.scandit.com to generate one.
   - No account yet? Sign up at https://ssl.scandit.com/dashboard/sign-up?p=test.
@@ -25,6 +29,32 @@ Examples below use C# 12 and an Activity. The same APIs work identically in a Fr
   <uses-permission android:name="android.permission.CAMERA" />
   ```
   Request the permission at runtime using `RequestPermissions` before scanning starts (Android API 23+).
+
+### Project scaffolding (new projects only)
+
+If a .NET Android project already exists, skip this subsection and go to the Integration flow below.
+
+**Recommended:** scaffold a buildable shell with the official template, then add BarcodeCapture on top:
+
+```bash
+dotnet new android -o MyApp
+cd MyApp
+```
+
+This produces a project with the correct `OutputType`, an `AndroidManifest.xml` with an `<application>`/`<activity>` declared, a `Resources/values/strings.xml`, and a `Resources/mipmap-*/ic_launcher.*` set. Add the Scandit and `Xamarin.AndroidX.AppCompat` packages from the bullets above and continue with Step 1.
+
+**Manual scaffold (only if `dotnet new android` is unavailable):** the project must contain at minimum:
+
+- `MyApp.csproj` with `<TargetFramework>net10.0-android</TargetFramework>` (or the latest installed Android TFM). Do **not** set `<OutputType>Library</OutputType>` — leave `<OutputType>` unset (the SDK defaults to `Exe` for `*-android` TFMs) or set it explicitly to `Exe`. A `Library` value silently produces an `.aar` instead of an installable `.apk`.
+- `Properties/AndroidManifest.xml` with an `<application>` element and at least one `<activity>` declared, in addition to the camera entries above.
+- `Resources/values/strings.xml` defining every `@string/...` the manifest references (at minimum `app_name`):
+  ```xml
+  <?xml version="1.0" encoding="utf-8"?>
+  <resources>
+    <string name="app_name">MyApp</string>
+  </resources>
+  ```
+- `Resources/mipmap-*/ic_launcher.png` matching the `android:icon` attribute on `<application>`. If you don't have an icon yet, remove the `android:icon` attribute entirely rather than referencing a missing resource.
 
 ## Integration flow
 

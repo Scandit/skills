@@ -31,6 +31,8 @@ Your training data may contain outdated or incorrect Scandit SDK APIs. The Barco
 - Request the `Android.Manifest.Permission.Camera` at runtime before the first scan; the manifest declaration alone is not sufficient on API 23+. The official .NET Android sample uses a `CameraPermissionActivity` base class with `RequestPermissions` and `OnRequestPermissionsResult`.
 - `DataCaptureView.Create(dataCaptureContext)` returns an Android `View`. Add it to a `FrameLayout` container with `LayoutParams.MatchParent` for both dimensions. The .NET binding does **not** take a `Context` parameter in `DataCaptureView.Create` (Kotlin's `DataCaptureView.newInstance(context, dataCaptureContext)` is different).
 - The NuGet packages are `Scandit.DataCapture.Core` and `Scandit.DataCapture.Barcode`. No separate `*.Maui` packages here — those are only for MAUI projects.
+- The `CameraPermissionActivity` helper inherits from `AppCompatActivity`, so `Xamarin.AndroidX.AppCompat` must be in the `.csproj`. The default manifest theme `@style/Theme.AppCompat` resolves through the same package. `dotnet new android` pulls it in transitively; manually scaffolded projects must add it explicitly.
+- When scaffolding a brand-new project, prefer `dotnet new android -o MyApp` over hand-writing the csproj/manifest/resources. It produces a buildable shell with correct `OutputType`, a `strings.xml`, and a launcher icon — all of which the manifest in this skill references. A hand-written csproj with `<OutputType>Library</OutputType>` will silently build an `.aar` instead of an installable `.apk`.
 
 ## Intent Routing
 
