@@ -27,6 +27,22 @@ A shared `data-capture-sdk` skill provides cross-cutting integration knowledge (
 | `matrixscan-batch-{framework}` | [MatrixScan Batch](https://docs.scandit.com/sdks/ios/matrixscan/intro/) (BarcodeBatch, formerly BarcodeTracking) integration — tracking sessions, basic-overlay brushes, and per-barcode AR annotations via the advanced overlay. Available for `android`, `cordova`, `capacitor`, `flutter`, `rn` (React Native). |
 | `label-capture-{framework}` | [Smart Label Capture](https://docs.scandit.com/sdks/ios/label-capture/intro/) integration & migration (regex renames v7.6→v8.0, Validation Flow redesign v8.1→v8.2, optional update callback v8.2→v8.4). Available for `android`, `web`, `cordova`, `capacitor`, `flutter`, `rn` (React Native). |
 
+## Not sure which product you need?
+
+If you're new to Scandit and don't yet know whether your use case fits SparkScan, Barcode Capture, MatrixScan, Smart Label Capture, or ID Capture, start with the `data-capture-sdk` skill. It's an advisor — it asks a few questions about your workflow, recommends the right product, and then points you at the matching implementation skill for your platform.
+
+Install it the same way as any other skill (see [Installation](#installation) below), then just chat with your agent like you would with anyone else — ask open-ended questions, describe your app, paste a screenshot of the screen you want to add scanning to, or drop in a photo of the label, package, or ID you need to capture. The skill will use that context to narrow down the right product. For example:
+
+```
+/data-capture-sdk I need to scan barcodes in a warehouse app — which Scandit product should I use?
+```
+
+```
+/data-capture-sdk here's a photo of the labels we want to capture — what fits best?
+```
+
+Most agents will also pick the skill up automatically from prompts like _"help me choose a Scandit product"_ or _"which Scandit SDK fits my use case?"_. Once you've landed on a product and platform, the advisor hands you off to the right `sparkscan-*`, `barcode-capture-*`, `matrixscan-*-*`, or `label-capture-*` skill from the table above.
+
 ## Installation
 
 ### Skills CLI (45+ agents)
@@ -39,10 +55,13 @@ npx skills add Scandit/scandit-sdk-skills
 
 ### Claude Code plugin
 
-Claude Code can also install the skills as a plugin from the marketplace:
+Claude Code can also install the skills as a plugin from the marketplace. Run the commands one at a time:
 
 ```bash
 /plugin marketplace add Scandit/scandit-sdk-skills
+```
+
+```bash
 /plugin install scandit-sdk@scandit-plugins
 ```
 

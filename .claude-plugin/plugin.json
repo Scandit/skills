@@ -9,7 +9,6 @@
   "homepage": "https://docs.scandit.com",
   "repository": "https://github.com/Scandit/scandit-sdk-skills",
   "license": "MIT",
-  "logo": "assets/logo.svg",
   "keywords": [
     "scandit",
     "barcode",
