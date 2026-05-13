@@ -51,7 +51,7 @@ Examples below use C# 12 and an Activity. The same APIs work identically in a Fr
   <uses-feature android:name="android.hardware.camera" android:required="true" />
   <uses-permission android:name="android.permission.CAMERA" />
   ```
-  Request the permission at runtime using `RequestPermissions` before scanning starts (Android API 23+).
+  Add **only** these `<uses-feature>` / `<uses-permission>` elements. Do **not** add an `<activity>` declaration for `MainActivity` (or any other class decorated with `[Activity]`) — the attribute is the canonical registration in .NET for Android, and the build merges a correctly-named entry into the final manifest using the .NET-derived Java class name (typically `<lowercase-namespace>.MainActivity`). A manual `<activity android:name=".MainActivity">` resolves against `<ApplicationId>` and won't match the generated class, producing `ClassNotFoundException` at launch. Request the permission at runtime using `RequestPermissions` before scanning starts (Android API 23+).
 
 ### Project scaffolding (new projects only)
 
