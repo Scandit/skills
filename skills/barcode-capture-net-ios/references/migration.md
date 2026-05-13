@@ -89,7 +89,35 @@ If the project uses `BarcodeTracking` (MatrixScan) alongside BarcodeCapture, ren
 
 ## Migration: 7 → 8
 
-The 7→8 step for .NET iOS BarcodeCapture is small. The factory methods (`BarcodeCapture.Create(context, settings)`) and the listener / event surface are unchanged.
+The 7→8 step for .NET iOS BarcodeCapture is mostly mechanical. The factory methods (`BarcodeCapture.Create(context, settings)`) and the listener / event surface are unchanged. The one **required** action is adding explicit SDK initialization in `AppDelegate.FinishedLaunching` — without it, the app crashes on the first Scandit API call.
+
+### Explicit SDK initialization is now required
+
+Scandit 8.0 removed the implicit container bootstrap that 6.x/7.x performed automatically. The app must now call `ScanditCaptureCore.Initialize()` and `ScanditBarcodeCapture.Initialize()` before any Scandit type is constructed — `AppDelegate.FinishedLaunching` is the canonical hook.
+
+Open the project's `AppDelegate.cs` (the class with `[Register("AppDelegate")] : UIApplicationDelegate`) and add the two calls at the top of `FinishedLaunching`, before the window / root view controller is created:
+
+```csharp
+public override bool FinishedLaunching(UIApplication application, NSDictionary launchOptions)
+{
+    ScanditCaptureCore.Initialize();
+    ScanditBarcodeCapture.Initialize();
+
+    // ... existing launch code (window creation, root view controller, etc.) stays below
+    return true;
+}
+```
+
+Make sure these `using` directives are present:
+
+```csharp
+using Scandit.DataCapture.Barcode;
+using Scandit.DataCapture.Core;
+```
+
+If the project uses a SwiftUI-style `App` shape (no `AppDelegate.cs`), put the two calls in the equivalent app-startup entry point — they must run before any Scandit type is referenced.
+
+Symptom if this step is skipped: instant launch crash at the first `DataCaptureView.Create` / `BarcodeCapture.Create` call, because the DI container has no registrations.
 
 ### `VideoResolution.Auto` deprecated
 

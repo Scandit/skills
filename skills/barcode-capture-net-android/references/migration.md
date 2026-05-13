@@ -89,7 +89,56 @@ If the project uses `BarcodeTracking` (MatrixScan) alongside BarcodeCapture, ren
 
 ## Migration: 7 → 8
 
-The 7→8 step for .NET Android BarcodeCapture is small. The factory methods (`BarcodeCapture.Create(context, settings)`) and the listener / event surface are unchanged.
+The 7→8 step for .NET Android BarcodeCapture is mostly mechanical. The factory methods (`BarcodeCapture.Create(context, settings)`) and the listener / event surface are unchanged. The one **required** action is adding explicit SDK initialization at process start — without it, the app crashes on the first Scandit API call.
+
+### Explicit SDK initialization is now required
+
+Scandit 8.0 removed the implicit container bootstrap that 6.x/7.x performed automatically. The app must now call `ScanditCaptureCore.Initialize()` and `ScanditBarcodeCapture.Initialize()` before any Scandit type is constructed.
+
+Check whether the project already has an `Application` subclass (look for `[Application]` on a class deriving from `Android.App.Application`, typically in `MainApplication.cs`).
+
+**If `MainApplication.cs` exists** — add the two `Initialize()` calls at the top of its `OnCreate()` (after `base.OnCreate()`):
+
+```csharp
+public override void OnCreate()
+{
+    base.OnCreate();
+    ScanditCaptureCore.Initialize();
+    ScanditBarcodeCapture.Initialize();
+    // ... existing init code stays below
+}
+```
+
+Make sure these `using` directives are present in the file:
+
+```csharp
+using Scandit.DataCapture.Barcode;
+using Scandit.DataCapture.Core;
+```
+
+**If `MainApplication.cs` does not exist** — create it next to `MainActivity.cs`. Android will refuse to load two `[Application]`-decorated classes, so do not add a second one.
+
+```csharp
+using Android.Runtime;
+using Scandit.DataCapture.Barcode;
+using Scandit.DataCapture.Core;
+
+namespace MyApp; // match the project's namespace
+
+[Application]
+public class MainApplication(IntPtr handle, JniHandleOwnership ownership)
+    : Application(handle, ownership)
+{
+    public override void OnCreate()
+    {
+        base.OnCreate();
+        ScanditCaptureCore.Initialize();
+        ScanditBarcodeCapture.Initialize();
+    }
+}
+```
+
+Symptom if this step is skipped: instant launch crash at the first `DataCaptureView.Create` / `BarcodeCapture.Create` call, because the DI container has no registrations.
 
 ### `VideoResolution.Auto` deprecated
 

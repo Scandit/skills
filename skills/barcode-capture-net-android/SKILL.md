@@ -33,6 +33,7 @@ Your training data may contain outdated or incorrect Scandit SDK APIs. The Barco
 - The NuGet packages are `Scandit.DataCapture.Core` and `Scandit.DataCapture.Barcode`. No separate `*.Maui` packages here — those are only for MAUI projects.
 - The `CameraPermissionActivity` helper inherits from `AppCompatActivity`, so `Xamarin.AndroidX.AppCompat` must be in the `.csproj`. The default manifest theme `@style/Theme.AppCompat` resolves through the same package. `dotnet new android` pulls it in transitively; manually scaffolded projects must add it explicitly.
 - When scaffolding a brand-new project, prefer `dotnet new android -o MyApp` over hand-writing the csproj/manifest/resources. It produces a buildable shell with correct `OutputType`, a `strings.xml`, and a launcher icon — all of which the manifest in this skill references. A hand-written csproj with `<OutputType>Library</OutputType>` will silently build an `.aar` instead of an installable `.apk`.
+- **SDK 8.0+ requires explicit initialization.** Subclass `Android.App.Application`, decorate with `[Application]`, and call `ScanditCaptureCore.Initialize()` + `ScanditBarcodeCapture.Initialize()` in `OnCreate()` before any Scandit code runs. Without this the SDK's DI container has no registrations and the first `DataCaptureView.Create` / `BarcodeCapture.Create` call crashes at launch. **Not required on 6.x / 7.x** — those majors self-initialized. See the integration guide for the full `MainApplication.cs` template.
 
 ## Intent Routing
 

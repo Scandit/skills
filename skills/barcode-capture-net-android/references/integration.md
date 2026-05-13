@@ -20,6 +20,29 @@ Examples below use C# 12 and an Activity. The same APIs work identically in a Fr
   ```xml
   <PackageReference Include="Xamarin.AndroidX.AppCompat" Version="<latest-version>" />
   ```
+- **SDK initialization (Scandit 8.0+).** Add a `MainApplication.cs` next to `MainActivity.cs` that initializes the Scandit DI container at process start. Without this, the first `DataCaptureView.Create` / `BarcodeCapture.Create` call crashes because the container has no registrations.
+
+  ```csharp
+  using Android.Runtime;
+  using Scandit.DataCapture.Barcode;
+  using Scandit.DataCapture.Core;
+
+  namespace MyApp;
+
+  [Application]
+  public class MainApplication(IntPtr handle, JniHandleOwnership ownership)
+      : Application(handle, ownership)
+  {
+      public override void OnCreate()
+      {
+          base.OnCreate();
+          ScanditCaptureCore.Initialize();
+          ScanditBarcodeCapture.Initialize();
+      }
+  }
+  ```
+
+  If the project already has an `Application` subclass, add the two `Initialize()` calls to its existing `OnCreate()` rather than creating a second one (Android will refuse to load two `[Application]`-decorated classes). **This step is only required on Scandit SDK 8.0+ — earlier majors (6.x, 7.x) self-initialized, so for those versions skip this file entirely.**
 - A valid Scandit license key:
   - Sign in at https://ssl.scandit.com to generate one.
   - No account yet? Sign up at https://ssl.scandit.com/dashboard/sign-up?p=test.

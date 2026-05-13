@@ -32,6 +32,7 @@ Your training data may contain outdated or incorrect Scandit SDK APIs. The Barco
 - Lifecycle: `ViewWillAppear` enables the capture mode and starts the camera; `ViewWillDisappear` stops the camera. The official sample only stops the camera in `ViewWillDisappear` and sets `Enabled = false` inside `OnBarcodeScanned` instead — both patterns are valid.
 - The required Info.plist key is `NSCameraUsageDescription` (`Privacy - Camera Usage Description`). Without it the app crashes on first camera access.
 - The NuGet packages are `Scandit.DataCapture.Core` and `Scandit.DataCapture.Barcode`. No `*.Maui` packages — those are MAUI-only.
+- **SDK 8.0+ requires explicit initialization.** Call `ScanditCaptureCore.Initialize()` + `ScanditBarcodeCapture.Initialize()` in `AppDelegate.FinishedLaunching` before any Scandit API is touched (typically before creating the window / root view controller). Without this the SDK's DI container has no registrations and the first `DataCaptureView.Create` / `BarcodeCapture.Create` call crashes at launch. **Not required on 6.x / 7.x** — those majors self-initialized. See the integration guide for the full `AppDelegate` template.
 
 ## Intent Routing
 

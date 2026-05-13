@@ -25,6 +25,31 @@ Examples below use C# 12 and a `UIViewController`. The same APIs work in storybo
   <string>Used to scan barcodes.</string>
   ```
   Without this key the app crashes on first camera access. iOS prompts the user for permission automatically the first time the camera is opened; there is no separate runtime-request API to call (the Scandit SDK triggers the standard system prompt when the camera starts).
+- **SDK initialization (Scandit 8.0+).** Initialize the Scandit DI container in `AppDelegate.FinishedLaunching` before any Scandit type is constructed. Without this the first `DataCaptureView.Create` / `BarcodeCapture.Create` call crashes because the container has no registrations.
+
+  ```csharp
+  using Scandit.DataCapture.Barcode;
+  using Scandit.DataCapture.Core;
+
+  [Register("AppDelegate")]
+  public class AppDelegate : UIApplicationDelegate
+  {
+      public override UIWindow? Window { get; set; }
+
+      public override bool FinishedLaunching(UIApplication application, NSDictionary launchOptions)
+      {
+          ScanditCaptureCore.Initialize();
+          ScanditBarcodeCapture.Initialize();
+
+          this.Window = new UIWindow(UIScreen.MainScreen.Bounds);
+          this.Window.RootViewController = new ViewController();
+          this.Window.MakeKeyAndVisible();
+          return true;
+      }
+  }
+  ```
+
+  If the project already has an `AppDelegate`, add the two `Initialize()` calls at the top of `FinishedLaunching` rather than creating a second delegate. **This step is only required on Scandit SDK 8.0+ — earlier majors (6.x, 7.x) self-initialized, so for those versions skip this entirely.**
 
 ## Integration flow
 
