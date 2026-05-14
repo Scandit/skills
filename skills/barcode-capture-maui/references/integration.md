@@ -10,17 +10,27 @@ The examples below follow the structure of the official Scandit MAUI BarcodeCapt
 
 ## Prerequisites
 
-- Scandit Data Capture SDK for .NET MAUI — add **four** NuGet packages. Before pinning a version, fetch the latest published version from `https://www.nuget.org/packages/Scandit.DataCapture.Barcode.Maui/` and use the same version for all four:
-  ```xml
-  <ItemGroup>
-    <PackageReference Include="Scandit.DataCapture.Core" Version="<latest-version>" />
-    <PackageReference Include="Scandit.DataCapture.Core.Maui" Version="<latest-version>" />
-    <PackageReference Include="Scandit.DataCapture.Barcode" Version="<latest-version>" />
-    <PackageReference Include="Scandit.DataCapture.Barcode.Maui" Version="<latest-version>" />
-  </ItemGroup>
-  ```
-  All four are needed. The `*.Maui` packages provide the MAUI builder extensions, handlers, and XAML controls; the plain packages provide the platform bindings they delegate to.
-- A `<UseMaui>true</UseMaui>` MAUI project targeting at least one of `net10.0-android` (min `SupportedOSPlatformVersion="24"`) or `net10.0-ios` (min `SupportedOSPlatformVersion="15.0"`).
+### Step 0 — Fetch the latest SDK version from NuGet (mandatory, do this before any edits)
+
+Before editing the `.csproj`, **WebFetch** `https://www.nuget.org/packages/Scandit.DataCapture.Barcode.Maui/` and read the latest **stable** version number off the page (skip `-beta.*` / `-preview.*` / `-rc.*` suffixes). Use that exact version for all four packages.
+
+Do **not** guess, do **not** reuse a version from training data, and do **not** invent a number like `8.4.0` if only `8.4.0-beta.1` is published. The latest stable version changes regularly — only the live NuGet page is authoritative. If WebFetch fails, fall back to `https://api.nuget.org/v3-flatcontainer/scandit.datacapture.barcode.maui/index.json` (last entry without a pre-release suffix) before proceeding.
+
+Then add **four** NuGet packages, pinned to that same version:
+```xml
+<ItemGroup>
+  <PackageReference Include="Scandit.DataCapture.Core" Version="<latest-stable-from-nuget>" />
+  <PackageReference Include="Scandit.DataCapture.Core.Maui" Version="<latest-stable-from-nuget>" />
+  <PackageReference Include="Scandit.DataCapture.Barcode" Version="<latest-stable-from-nuget>" />
+  <PackageReference Include="Scandit.DataCapture.Barcode.Maui" Version="<latest-stable-from-nuget>" />
+</ItemGroup>
+```
+All four are needed. The `*.Maui` packages provide the MAUI builder extensions, handlers, and XAML controls; the plain packages provide the platform bindings they delegate to.
+
+### Other prerequisites
+
+- A `<UseMaui>true</UseMaui>` MAUI project targeting at least one of `net10.0-android` or `net10.0-ios`.
+- **Android `SupportedOSPlatformVersion` must be at least `24`** — the MAUI template's default is `21`, which is below Scandit's minimum and will produce a `uses-sdk:minSdkVersion 21 cannot be smaller than version 24 declared in library` build error. If the `.csproj` has a lower value for the Android `SupportedOSPlatformVersion`, **update it to `24.0`** as part of the integration. iOS minimum is `15.0` (matches the MAUI template default).
 - A valid Scandit license key:
   - Sign in at https://ssl.scandit.com to generate one.
   - No account yet? Sign up at https://ssl.scandit.com/dashboard/sign-up?p=test.
@@ -37,11 +47,13 @@ Once the user responds, ask which `ContentPage` they'd like to integrate Barcode
 After providing the code, show this setup checklist:
 
 **Setup checklist:**
-1. Add all four `<PackageReference>` entries (`Scandit.DataCapture.Core`, `Scandit.DataCapture.Core.Maui`, `Scandit.DataCapture.Barcode`, `Scandit.DataCapture.Barcode.Maui`) to the `.csproj` with the latest version fetched above.
-2. Update `MauiProgram.cs` to call `.UseScanditCore(configure => configure.AddDataCaptureView()).UseScanditBarcode()`.
-3. Add the `<scandit:...>` XAML namespace and the `<scandit:DataCaptureView>` element to the page.
-4. For iOS: add `NSCameraUsageDescription` to `Platforms/iOS/Info.plist`. For Android: rely on `Permissions.Camera` (MAUI auto-adds the manifest entry) or add `<uses-permission android:name="android.permission.CAMERA" />` to `Platforms/Android/AndroidManifest.xml`.
-5. Replace `-- ENTER YOUR SCANDIT LICENSE KEY HERE --` with your key from https://ssl.scandit.com.
+1. **WebFetch** `https://www.nuget.org/packages/Scandit.DataCapture.Barcode.Maui/` and read the latest **stable** version (skip `-beta.*`/`-preview.*`/`-rc.*`). Do not skip this step — versions from training data are stale and will fail `dotnet restore` with `NU1103`.
+2. Add all four `<PackageReference>` entries (`Scandit.DataCapture.Core`, `Scandit.DataCapture.Core.Maui`, `Scandit.DataCapture.Barcode`, `Scandit.DataCapture.Barcode.Maui`) to the `.csproj`, all pinned to that same version.
+3. If the `.csproj` targets `net*-android` with `SupportedOSPlatformVersion` below `24`, bump it to `24.0`. The MAUI template defaults to `21.0`, which fails the build because Scandit's Android AAR requires API 24+.
+4. Update `MauiProgram.cs` to call `.UseScanditCore(configure => configure.AddDataCaptureView()).UseScanditBarcode()`.
+5. Add the `<scandit:...>` XAML namespace and the `<scandit:DataCaptureView>` element to the page.
+6. For iOS: add `NSCameraUsageDescription` to `Platforms/iOS/Info.plist`. For Android: rely on `Permissions.Camera` (MAUI auto-adds the manifest entry) or add `<uses-permission android:name="android.permission.CAMERA" />` to `Platforms/Android/AndroidManifest.xml`.
+7. Replace `-- ENTER YOUR SCANDIT LICENSE KEY HERE --` with your key from https://ssl.scandit.com.
 
 ## Step 1 — Register MAUI builder extensions
 
@@ -276,6 +288,36 @@ public class MainPageViewModel : BaseViewModel
     }
 }
 ```
+
+#### Re-enabling after a delay
+
+If you want to re-enable scanning after a fixed delay (rather than after a dialog is dismissed), use one of these patterns. Do **not** invent APIs like `MainThread.StartTimer` — that method does not exist on `MainThread`. `StartTimer` is an extension method on `IDispatcher`.
+
+```csharp
+// Option A — async/await with Task.Delay (simplest, idiomatic):
+MainThread.BeginInvokeOnMainThread(async () =>
+{
+    // update UI from barcode.Data, barcode.Symbology
+    await Task.Delay(TimeSpan.FromMilliseconds(500));
+    this.BarcodeCapture.Enabled = true;
+});
+
+// Option B — Dispatcher.StartTimer (from inside a Page or anything with access to a Dispatcher):
+Dispatcher.StartTimer(TimeSpan.FromMilliseconds(500), () =>
+{
+    this.BarcodeCapture.Enabled = true;
+    return false; // return false to stop the timer after one tick
+});
+
+// Option C — Application.Current.Dispatcher.StartTimer (when no Page-level Dispatcher is in scope, e.g. a view model):
+Application.Current!.Dispatcher.StartTimer(TimeSpan.FromMilliseconds(500), () =>
+{
+    this.BarcodeCapture.Enabled = true;
+    return false;
+});
+```
+
+For scans that trigger a network/database lookup, see [Async work after a scan](#async-work-after-a-scan) below — re-enable inside a `finally` block instead.
 
 ### Listener interface alternative
 
@@ -615,13 +657,15 @@ ICollection<Symbology>? licensed = licenseInfo?.LicensedSymbologies;
 
 ## Key rules
 
-1. **Builder chain** — `MauiProgram.cs` must call `.UseScanditCore(c => c.AddDataCaptureView()).UseScanditBarcode()`. `UseScanditBarcode` takes no inner configure.
-2. **Four NuGet packages** — Core + Core.Maui + Barcode + Barcode.Maui. All four.
-3. **DataCaptureView is XAML** — use `<scandit:DataCaptureView>` with the `xmlns:scandit="clr-namespace:Scandit.DataCapture.Core.UI.Maui;assembly=ScanditCaptureCoreMaui"` namespace. Bind `DataCaptureContext` to a VM property.
-4. **Overlay after HandlerChanged** — create `BarcodeCaptureOverlay.Create(barcodeCapture)` inside `dataCaptureView.HandlerChanged`, then attach with `dataCaptureView.AddOverlay(overlay)`. Don't use the two-argument `Create(mode, view)` overload in MAUI.
-5. **MAUI lifecycle** — wire `OnAppearing` → start camera + `Enabled = true`; `OnDisappearing` → stop camera + `Enabled = false`.
-6. **MainThread dispatch** — use `MainThread.BeginInvokeOnMainThread(() => …)`, not `RunOnUiThread` or `DispatchQueue.MainQueue.DispatchAsync`.
-7. **Camera permission** — `await Permissions.CheckStatusAsync<Permissions.Camera>()` + `await Permissions.RequestAsync<Permissions.Camera>()`. On iOS, set `NSCameraUsageDescription` in `Platforms/iOS/Info.plist`.
-8. **Disable inside callback** — set `barcodeCapture.Enabled = false` at the start of `OnBarcodeScanned`. Re-enable when ready for the next scan.
-9. **Event API is idiomatic** — prefer `barcodeCapture.BarcodeScanned += handler` over `AddListener` in MAUI. If using the listener interface, dispose `frameData` at the end of every callback.
-10. **`TimeSpan`, not `TimeInterval`** — `CodeDuplicateFilter` is `TimeSpan`. Use `CodeDuplicate.DefaultDuplicateFilter` / `CodeDuplicate.ReportDataAndSymbologyOnlyOnce` / `TimeSpan.FromMilliseconds(...)` / `TimeSpan.Zero`.
+1. **Fetch the SDK version from NuGet, do not guess** — WebFetch `https://www.nuget.org/packages/Scandit.DataCapture.Barcode.Maui/` for the latest stable version before editing the `.csproj`. Skip `-beta`/`-preview`/`-rc` suffixes. Versions from training data are stale.
+2. **Android `SupportedOSPlatformVersion` ≥ 24** — the MAUI template defaults to `21`; Scandit's Android AAR requires 24. Bump the `.csproj` value if it's lower.
+3. **Builder chain** — `MauiProgram.cs` must call `.UseScanditCore(c => c.AddDataCaptureView()).UseScanditBarcode()`. `UseScanditBarcode` takes no inner configure.
+4. **Four NuGet packages** — Core + Core.Maui + Barcode + Barcode.Maui. All four.
+5. **DataCaptureView is XAML** — use `<scandit:DataCaptureView>` with the `xmlns:scandit="clr-namespace:Scandit.DataCapture.Core.UI.Maui;assembly=ScanditCaptureCoreMaui"` namespace. Bind `DataCaptureContext` to a VM property.
+6. **Overlay after HandlerChanged** — create `BarcodeCaptureOverlay.Create(barcodeCapture)` inside `dataCaptureView.HandlerChanged`, then attach with `dataCaptureView.AddOverlay(overlay)`. Don't use the two-argument `Create(mode, view)` overload in MAUI.
+7. **MAUI lifecycle** — wire `OnAppearing` → start camera + `Enabled = true`; `OnDisappearing` → stop camera + `Enabled = false`.
+8. **MainThread dispatch** — use `MainThread.BeginInvokeOnMainThread(() => …)`, not `RunOnUiThread` or `DispatchQueue.MainQueue.DispatchAsync`. **`MainThread.StartTimer` does not exist** — `StartTimer` is on `IDispatcher` (`Dispatcher.StartTimer(...)` / `Application.Current.Dispatcher.StartTimer(...)`), or use `await Task.Delay(...)` inside a `BeginInvokeOnMainThread(async () => …)` lambda.
+9. **Camera permission** — `await Permissions.CheckStatusAsync<Permissions.Camera>()` + `await Permissions.RequestAsync<Permissions.Camera>()`. On iOS, set `NSCameraUsageDescription` in `Platforms/iOS/Info.plist`.
+10. **Disable inside callback** — set `barcodeCapture.Enabled = false` at the start of `OnBarcodeScanned`. Re-enable when ready for the next scan.
+11. **Event API is idiomatic** — prefer `barcodeCapture.BarcodeScanned += handler` over `AddListener` in MAUI. If using the listener interface, dispose `frameData` at the end of every callback.
+12. **`TimeSpan`, not `TimeInterval`** — `CodeDuplicateFilter` is `TimeSpan`. Use `CodeDuplicate.DefaultDuplicateFilter` / `CodeDuplicate.ReportDataAndSymbologyOnlyOnce` / `TimeSpan.FromMilliseconds(...)` / `TimeSpan.Zero`.
