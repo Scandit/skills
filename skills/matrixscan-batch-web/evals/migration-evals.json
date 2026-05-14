@@ -1,0 +1,56 @@
+{
+  "skill_name": "matrixscan-batch-web",
+  "evals": [
+    {
+      "id": "m0",
+      "prompt": "I want to upgrade my MatrixScan Batch web app from SDK v7 to v8. Here's the file that initializes the SDK: scanner-v7.ts.",
+      "expected_output": "The skill detects v7 from the package, applies the v7→v8 migration: replaces configure()+DataCaptureContext.create() with DataCaptureContext.forLicenseKey(), removes the configure import. No BarcodeBatch-specific class renames are needed for v7→v8.",
+      "files": [
+        "fixtures/scanner-v7.ts"
+      ],
+      "assertions": [
+        {
+          "text": "DataCaptureContext.forLicenseKey( is present in the migrated code"
+        },
+        {
+          "text": "configure( import or call is removed"
+        },
+        {
+          "text": "DataCaptureContext.create() is removed"
+        },
+        {
+          "text": "libraryLocation and moduleLoaders are present inside DataCaptureContext.forLicenseKey("
+        },
+        {
+          "text": "The migration guide links for 7→8 are mentioned (docs.scandit.com/sdks/web/migrate-7-to-8)"
+        }
+      ]
+    },
+    {
+      "id": "m1",
+      "prompt": "I need to migrate my MatrixScan web app from v6 to v7. The app uses BarcodeTracking. Here's the main scanner file.",
+      "expected_output": "The skill applies the v6→v7 migration: renames BarcodeTracking* classes to BarcodeBatch*, updates package names from scandit-web-datacapture-* to @scandit/web-datacapture-*, and updates libraryLocation from build/engine to sdc-lib.",
+      "files": [],
+      "assertions": [
+        {
+          "text": "BarcodeTracking is renamed to BarcodeBatch (semantic)"
+        },
+        {
+          "text": "BarcodeTrackingSettings is renamed to BarcodeBatchSettings (semantic)"
+        },
+        {
+          "text": "BarcodeTrackingBasicOverlay or BarcodeTrackingAdvancedOverlay is renamed to the BarcodeBatch equivalent (semantic)"
+        },
+        {
+          "text": "Package names updated from scandit-web-datacapture-* to @scandit/web-datacapture-* (semantic)"
+        },
+        {
+          "text": "libraryLocation path updated from build/engine to sdc-lib or equivalent (semantic)"
+        },
+        {
+          "text": "The migration guide link for 6→7 is mentioned (docs.scandit.com/sdks/web/migrate-6-to-7)"
+        }
+      ]
+    }
+  ]
+}
