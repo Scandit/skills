@@ -6,7 +6,7 @@
       "prompt": "I have an iOS app using Apple's VisionKit DataScannerViewController for barcode scanning. I want to replace it with SparkScan. Here is my ViewController: VisionViewController.swift",
       "expected_output": "Removes all VisionKit/Vision APIs, adds SparkScan integration with matching symbologies (ean13UPCA, code128, qr), preserves ScannedBarcode model and deduplication logic.",
       "files": [
-        "eval-fixtures/VisionViewController.swift"
+        "fixtures/VisionViewController.swift"
       ],
       "assertions": [
         {"text": "import VisionKit is NOT present in the output"},
@@ -15,7 +15,7 @@
         {"text": "DataScannerViewController is NOT present anywhere in the output"},
         {"text": "DataScannerViewControllerDelegate conformance is NOT present"},
         {"text": "SparkScanListener conformance IS present"},
-        {"text": "SparkScan is initialized with .ean13UPCA, .code128, and .qr symbologies"},,
+        {"text": "SparkScan is initialized with .ean13UPCA, .code128, and .qr symbologies"},
         {"text": "viewWillAppear calls sparkScanView.prepareScanning()"},
         {"text": "viewWillDisappear calls sparkScanView.stopScanning()"},
         {"text": "ScannedBarcode struct is preserved in output"},

@@ -6,7 +6,7 @@
       "prompt": "I'm on Scandit SDK v6 and need to migrate my SparkScan to v7. Here's my scanner file: ScannerViewController_v6.swift",
       "expected_output": "The skill reads migration.md, applies the 6→7 renames and removes deprecated properties in ScannerViewController_v6.swift, and summarizes all changes made.",
       "files": [
-        "eval-fixtures/ScannerViewController_v6.swift"
+        "fixtures/ScannerViewController_v6.swift"
       ],
       "assertions": [
         {"text": "isTorchControlVisible is present in the output file"},
@@ -25,7 +25,7 @@
       "prompt": "We're upgrading our app from Scandit SDK 7 to 8. Here's our SparkScan view controller: ScannerViewController_v7.swift. Please apply any necessary changes.",
       "expected_output": "The skill removes manual camera configuration code and summarizes the change, noting no other breaking SparkScan changes in 7→8.",
       "files": [
-        "eval-fixtures/ScannerViewController_v7.swift"
+        "fixtures/ScannerViewController_v7.swift"
       ],
       "assertions": [
         {"text": "A summary.md is present"},
@@ -38,7 +38,7 @@
       "prompt": "We need to upgrade our SparkScan integration from SDK 6 all the way to v8. Here's our current code: ScannerViewController_v6.swift",
       "expected_output": "The skill applies both migrations in order (6→7 then 7→8) and summarizes all changes organized by migration step.",
       "files": [
-        "eval-fixtures/ScannerViewController_v6.swift"
+        "fixtures/ScannerViewController_v6.swift"
       ],
       "assertions": [
         {"text": "isTorchControlVisible is present (6→7 rename applied)"},
@@ -52,8 +52,8 @@
       "prompt": "I want to upgrade my SparkScan to the latest Scandit SDK version. Here's my code and Package.resolved.",
       "expected_output": "The skill reads Package.resolved to detect v6.28.1, determines the target is v8, applies both migrations without asking the user for their version.",
       "files": [
-        "eval-fixtures/ScannerViewController_v6.swift",
-        "eval-fixtures/Package_v6.resolved"
+        "fixtures/ScannerViewController_v6.swift",
+        "fixtures/Package_v6.resolved"
       ],
       "assertions": [
         {"text": "Summary mentions the detected version (6.28.1 or v6)"},

@@ -6,7 +6,7 @@
       "prompt": "I want to add SparkScan to my app. Here's my main view controller: EmptyViewController.swift. I need to scan EAN-13 and Code 128 barcodes for a retail app.",
       "expected_output": "The skill reads integration.md, writes complete SparkScan integration code into EmptyViewController.swift, and shows the setup checklist.",
       "files": [
-        "eval-fixtures/EmptyViewController.swift"
+        "fixtures/EmptyViewController.swift"
       ],
       "assertions": [
         {"text": "Setup checklist is shown (mentions SPM package and NSCameraUsageDescription)"},
@@ -32,7 +32,7 @@
       "prompt": "Add SparkScan barcode scanning to ProductListViewController.swift. When a barcode is scanned, add it to the scannedProducts array and reload the table view.",
       "expected_output": "The skill adds SparkScan to ProductListViewController alongside the existing table view code. All existing IBOutlets, properties, and methods are preserved.",
       "files": [
-        "eval-fixtures/ProductListViewController.swift"
+        "fixtures/ProductListViewController.swift"
       ],
       "assertions": [
         {"text": "DataCaptureContext.initialize( is present (v7 API, not deprecated constructor)"},
@@ -60,7 +60,7 @@
       "prompt": "When a barcode is scanned in my app, I want to reject it if the data is '123456789' and show an error message 'Wrong barcode' for 30 seconds before resuming scanning. All other barcodes should show success feedback.",
       "expected_output": "The skill adds SparkScanFeedbackDelegate conformance, implements feedback(for:) to return SparkScanBarcodeErrorFeedback for rejected barcodes and SparkScanBarcodeSuccessFeedback for valid ones, and assigns feedbackDelegate on sparkScanView.",
       "files": [
-        "eval-fixtures/IntegratedViewController.swift"
+        "fixtures/IntegratedViewController.swift"
       ],
       "assertions": [
         {"text": "SparkScanFeedbackDelegate conformance is present"},
@@ -79,7 +79,7 @@
       "prompt": "My app is used in a warehouse where workers wear gloves. Enable hardware trigger button support so they can scan using physical device buttons.",
       "expected_output": "The skill enables hardwareTriggerEnabled on SparkScanViewSettings and passes the settings to SparkScanView.",
       "files": [
-        "eval-fixtures/IntegratedViewController.swift"
+        "fixtures/IntegratedViewController.swift"
       ],
       "assertions": [
         {"text": "isHardwareTriggerEnabled = true is set on SparkScanViewSettings"},
@@ -93,7 +93,7 @@
       "prompt": "I want to hide the standard SparkScan trigger button and instead use a custom button in my app's UI. When the custom button is tapped, scanning should start. When tapped again while scanning, it should pause.",
       "expected_output": "The skill hides the standard trigger button (isTriggerButtonVisible = false), creates a custom UIButton, and implements button actions that call sparkScanView.startScanning() and sparkScanView.pauseScanning().",
       "files": [
-        "eval-fixtures/IntegratedViewController.swift"
+        "fixtures/IntegratedViewController.swift"
       ],
       "assertions": [
         {"text": "sparkScanView.isTriggerButtonVisible = false is set"},
@@ -110,7 +110,7 @@
       "prompt": "I need a custom trigger button that changes text and behavior based on the scanner state. Show 'START SCANNING' in IDLE state and 'STOP SCANNING' in ACTIVE state.",
       "expected_output": "The skill implements SparkScanViewUIDelegate, tracks view state changes, and updates the button text and behavior based on IDLE, ACTIVE, INACTIVE, and ERROR states.",
       "files": [
-        "eval-fixtures/IntegratedViewController.swift"
+        "fixtures/IntegratedViewController.swift"
       ],
       "assertions": [
         {"text": "SparkScanViewUIDelegate conformance is present"},
@@ -131,7 +131,7 @@
       "prompt": "When the trigger button is hidden, I want to let users tap on the view behind the SparkScan preview to pause scanning, just like the standard UI. The gesture should only be enabled when scanning is active.",
       "expected_output": "The skill creates a UITapGestureRecognizer, adds it to the view, implements a tap handler that calls sparkScanView.pauseScanning(), and uses SparkScanViewUIDelegate to enable/disable the gesture based on scanner state.",
       "files": [
-        "eval-fixtures/IntegratedViewController.swift"
+        "fixtures/IntegratedViewController.swift"
       ],
       "assertions": [
         {"text": "UITapGestureRecognizer is created with target and action"},
@@ -151,7 +151,7 @@
       "prompt": "I need to set up SparkScan with an 'Aim-to-Scan' workflow for precise barcode scanning in crowded environments. The preview should always be visible (even when not scanning), target mode should always be enabled, and single scan behavior should be used.",
       "expected_output": "The skill configures SparkScanViewSettings with persistent preview behavior and target mode scanning, then passes these settings to SparkScanView.",
       "files": [
-        "eval-fixtures/IntegratedViewController.swift"
+        "fixtures/IntegratedViewController.swift"
       ],
       "assertions": [
         {"text": "SparkScanViewSettings is created"},
@@ -170,7 +170,7 @@
       "prompt": "I'm building a high-volume warehouse scanning app where we need rapid, continuous barcode scanning without pausing between items. Set up SparkScan with CONTINUOUS scanning behavior and PERSISTENT preview so the camera stays visible the whole time.",
       "expected_output": "The skill configures SparkScanViewSettings with continuous scanning behavior and persistent preview behavior (SparkScanPreviewBehavior.persistent), keeping the scanner active and camera always visible.",
       "files": [
-        "eval-fixtures/IntegratedViewController.swift"
+        "fixtures/IntegratedViewController.swift"
       ],
       "assertions": [
         {"text": "SparkScanViewSettings is created"},
@@ -188,7 +188,7 @@
       "prompt": "I need to minimize the UI footprint of SparkScan in my app. Configure it so the camera preview only appears when actively scanning, not when idle. All other times it should be hidden.",
       "expected_output": "The skill configures SparkScanViewSettings with default preview behavior (SparkScanPreviewBehavior.default), making the preview appear on-demand only during active scanning.",
       "files": [
-        "eval-fixtures/IntegratedViewController.swift"
+        "fixtures/IntegratedViewController.swift"
       ],
       "assertions": [
         {"text": "SparkScanViewSettings is created"},
@@ -204,7 +204,7 @@
       "prompt": "I need a high-volume warehouse app with minimal UI footprint. Set up SparkScan with CONTINUOUS scanning behavior and POPUP preview behavior, so scanning happens rapidly and the preview only shows when needed.",
       "expected_output": "The skill configures SparkScanViewSettings with continuous scanning behavior combined with default preview behavior (SparkScanPreviewBehavior.default).",
       "files": [
-        "eval-fixtures/IntegratedViewController.swift"
+        "fixtures/IntegratedViewController.swift"
       ],
       "assertions": [
         {"text": "SparkScanViewSettings is created"},
@@ -222,7 +222,7 @@
       "prompt": "I have a basic empty SwiftUI view and need to integrate SparkScan in it.",
       "expected_output": "The skill integrates SparkScan into a SwiftUI View, including DataCaptureContext setup, SparkScan configuration, SparkScanViewContainer for UIViewRepresentable bridging, and SwiftUI state management for scanned barcodes.",
       "files": [
-        "eval-fixtures/EmptySwiftUIView.swift"
+        "fixtures/EmptySwiftUIView.swift"
       ],
       "assertions": [
         {"text": "DataCaptureContext.initialize( is present"},
@@ -242,7 +242,7 @@
       "prompt": "I need to add SparkScan to my SwiftUI app with custom feedback when barcodes are rejected. Reject barcodes with data '999' and show success for valid ones, all handled through SwiftUI state management.",
       "expected_output": "The skill integrates SparkScanFeedbackDelegate into a SwiftUI-based SparkScan setup, managing feedback and implementing proper rejection logic.",
       "files": [
-        "eval-fixtures/IntegratedSwiftUIView.swift"
+        "fixtures/IntegratedSwiftUIView.swift"
       ],
       "assertions": [
         {"text": "SwiftUI View structure with SparkScan integration is present"},
