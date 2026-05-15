@@ -1,0 +1,113 @@
+{
+  "skill_name": "matrixscan-batch-ios",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I want to add MatrixScan Batch to my iOS app. Here's my empty view controller: EmptyViewController.swift. I need to scan EAN-13 and QR barcodes. Please show me the complete updated view controller code in your response.",
+      "expected_output": "The skill reads integration.md, returns complete BarcodeBatch integration code inline (DataCaptureContext via DataCaptureContext.initialize + .shared, Camera.default with BarcodeBatch.recommendedCameraSettings, BarcodeBatch(context:settings:), DataCaptureView added as subview, BarcodeBatchBasicOverlay, BarcodeBatchListener with barcodeBatch(_:didUpdate:frameData:), lifecycle on viewWillAppear/viewWillDisappear, removeListener in deinit), and shows the setup checklist.",
+      "files": [
+        "fixtures/EmptyViewController.swift"
+      ],
+      "assertions": [
+        {"text": "Setup checklist is shown and mentions adding ScanditBarcodeCapture and ScanditCaptureCore via Swift Package Manager"},
+        {"text": "Setup checklist mentions adding NSCameraUsageDescription to Info.plist"},
+        {"text": "A license key placeholder string is present"},
+        {"text": "import ScanditBarcodeCapture is added"},
+        {"text": "DataCaptureContext.initialize(licenseKey: is called and DataCaptureContext.shared is used"},
+        {"text": "BarcodeBatchSettings is constructed and configured"},
+        {"text": "Symbology .ean13UPCA is enabled via settings.set(symbology:enabled:)"},
+        {"text": "Symbology .qr is enabled"},
+        {"text": "Camera.default is used to obtain the camera"},
+        {"text": "BarcodeBatch.recommendedCameraSettings is applied via camera?.apply(_:completionHandler:)"},
+        {"text": "context.setFrameSource(camera, completionHandler:) is called"},
+        {"text": "BarcodeBatch(context: settings:) convenience initializer is used (not a factory like .forDataCaptureContext)"},
+        {"text": "barcodeBatch.addListener( is called"},
+        {"text": "DataCaptureView(context:frame:) is used and added with view.addSubview"},
+        {"text": "BarcodeBatchBasicOverlay(barcodeBatch:view:) is called"},
+        {"text": "BarcodeBatchListener is implemented with barcodeBatch(_:didUpdate:frameData:)"},
+        {"text": "The didUpdate callback dispatches UI work via DispatchQueue.main.async"},
+        {"text": "viewWillAppear turns the camera on (camera?.switch(toDesiredState: .on)) and sets barcodeBatch.isEnabled = true"},
+        {"text": "viewWillDisappear turns the camera off (camera?.switch(toDesiredState: .off)) and sets barcodeBatch.isEnabled = false"},
+        {"text": "deinit calls barcodeBatch.removeListener(self)"}
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "I want to highlight EAN-13 barcodes in green and CODE128 barcodes in blue in my MatrixScan Batch view controller. Here is my view controller: IntegratedViewController.swift",
+      "expected_output": "The skill conforms to BarcodeBatchBasicOverlayDelegate, implements barcodeBatchBasicOverlay(_:brushFor:) to return colored Brushes per symbology, and assigns overlay.delegate = self.",
+      "files": [
+        "fixtures/IntegratedViewController.swift"
+      ],
+      "assertions": [
+        {"text": "BarcodeBatchBasicOverlayDelegate is adopted (e.g. via an extension)"},
+        {"text": "barcodeBatchBasicOverlay(_:brushFor:) is implemented"},
+        {"text": ".ean13UPCA returns a green Brush"},
+        {"text": ".code128 returns a blue Brush"},
+        {"text": "overlay.delegate = self (or equivalent) is assigned"},
+        {"text": "Response mentions that per-barcode brush customization requires the MatrixScan AR add-on license"},
+        {"text": "Existing integration code (BarcodeBatch initializer, DataCaptureView, BarcodeBatchListener, camera lifecycle) is preserved"}
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "In my MatrixScan Batch view controller I want to log all currently tracked barcodes — their tracking identifier and data — on every frame. Here is my view controller: IntegratedViewController.swift",
+      "expected_output": "The skill updates barcodeBatch(_:didUpdate:frameData:) to iterate over session.trackedBarcodes and log each TrackedBarcode's identifier and barcode.data, copying data out of the session before DispatchQueue.main.async.",
+      "files": [
+        "fixtures/IntegratedViewController.swift"
+      ],
+      "assertions": [
+        {"text": "session.trackedBarcodes is accessed"},
+        {"text": "Each TrackedBarcode's identifier is used"},
+        {"text": "Each TrackedBarcode's barcode.data is used"},
+        {"text": "Data is copied out of the session before DispatchQueue.main.async (session.trackedBarcodes is not accessed inside the async block)"},
+        {"text": "Existing integration code (BarcodeBatch initializer, camera setup, overlay, lifecycle) is preserved"}
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "I want to add MatrixScan Batch to my SwiftUI app. Here's my empty ContentView: ContentView.swift. I need to scan EAN-13 and Code128 barcodes. Please show me the complete updated code in your response.",
+      "expected_output": "The skill recognizes the SwiftUI path, creates a UIKit ScanViewController containing all BarcodeBatch APIs (context, mode, settings, camera, DataCaptureView, BarcodeBatchBasicOverlay, BarcodeBatchListener, lifecycle, deinit cleanup), and wraps it in a UIViewControllerRepresentable. The SwiftUI View struct contains no Scandit-specific code beyond using the representable. The setup checklist is shown.",
+      "files": [
+        "fixtures/ContentView.swift"
+      ],
+      "assertions": [
+        {"text": "A UIViewControllerRepresentable is defined that wraps a UIKit UIViewController"},
+        {"text": "All BarcodeBatch APIs (DataCaptureContext, BarcodeBatch, BarcodeBatchSettings, DataCaptureView, BarcodeBatchListener, camera lifecycle) live inside the UIKit view controller, NOT inside the SwiftUI View struct"},
+        {"text": "The SwiftUI View struct contains no Scandit-specific code beyond referencing the representable"},
+        {"text": "import ScanditBarcodeCapture is added"},
+        {"text": "DataCaptureContext.initialize(licenseKey: is called and DataCaptureContext.shared is used"},
+        {"text": "Symbology .ean13UPCA is enabled via settings.set(symbology:enabled:)"},
+        {"text": "Symbology .code128 is enabled"},
+        {"text": "Camera.default is used and BarcodeBatch.recommendedCameraSettings is applied via camera?.apply(_:completionHandler:)"},
+        {"text": "context.setFrameSource(camera, completionHandler:) is called"},
+        {"text": "BarcodeBatch(context: settings:) convenience initializer is used"},
+        {"text": "DataCaptureView is created and added with view.addSubview inside the view controller"},
+        {"text": "BarcodeBatchBasicOverlay(barcodeBatch:view:) is called"},
+        {"text": "BarcodeBatchListener is implemented with barcodeBatch(_:didUpdate:frameData:)"},
+        {"text": "The didUpdate callback dispatches UI work via DispatchQueue.main.async"},
+        {"text": "viewWillAppear turns the camera on and sets barcodeBatch.isEnabled = true"},
+        {"text": "viewWillDisappear turns the camera off and sets barcodeBatch.isEnabled = false"},
+        {"text": "deinit calls barcodeBatch.removeListener(self)"},
+        {"text": "Setup checklist is shown and mentions adding ScanditBarcodeCapture and ScanditCaptureCore via Swift Package Manager"},
+        {"text": "Setup checklist mentions adding NSCameraUsageDescription to Info.plist"},
+        {"text": "A license key placeholder string is present"}
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "I want to show a small label above each tracked barcode in my MatrixScan Batch view controller — the label should display the barcode's data. Here is my view controller: IntegratedViewController.swift",
+      "expected_output": "The skill adds a BarcodeBatchAdvancedOverlay to the view controller, conforms to BarcodeBatchAdvancedOverlayDelegate, implements barcodeBatchAdvancedOverlay(_:viewFor:) to return a UILabel (or other UIView) showing trackedBarcode.barcode.data, and mentions that BarcodeBatchAdvancedOverlay requires the MatrixScan AR add-on license. Existing integration code (basic overlay, listener, lifecycle) is preserved.",
+      "files": [
+        "fixtures/IntegratedViewController.swift"
+      ],
+      "assertions": [
+        {"text": "BarcodeBatchAdvancedOverlay(barcodeBatch:view:) is created and stored on the view controller"},
+        {"text": "advancedOverlay.delegate = self (or equivalent) is assigned"},
+        {"text": "BarcodeBatchAdvancedOverlayDelegate is adopted (e.g. via an extension)"},
+        {"text": "barcodeBatchAdvancedOverlay(_:viewFor:) is implemented and returns a UIView (e.g. UILabel) that displays trackedBarcode.barcode.data"},
+        {"text": "Response mentions that BarcodeBatchAdvancedOverlay requires the MatrixScan AR add-on license"},
+        {"text": "Existing integration code (BarcodeBatch initializer, BarcodeBatchBasicOverlay, BarcodeBatchListener, camera lifecycle) is preserved"}
+      ]
+    }
+  ]
+}
