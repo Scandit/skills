@@ -1,0 +1,98 @@
+{
+  "skill_name": "matrixscan-ar-web",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I want to add MatrixScan AR to my web app. Here's my app file: empty-app.ts. I need to track EAN-13 and Code 128 barcodes and show a circle highlight on each one.",
+      "expected_output": "The skill reads integration.md, writes complete BarcodeAr* integration code into empty-app.ts, uses BarcodeAr.forContext() and BarcodeArView.create(), assigns a highlightProvider with a BarcodeArCircleHighlight, uses the callback pattern (not return), calls barcodeArView.start(), and shows the setup checklist.",
+      "files": [
+        "fixtures/empty-app.ts"
+      ],
+      "assertions": [
+        {"text": "Setup checklist is shown (mentions @scandit/web-datacapture-core and @scandit/web-datacapture-barcode)"},
+        {"text": "Setup checklist mentions COOP/COEP headers"},
+        {"text": "DataCaptureContext.forLicenseKey( is present"},
+        {"text": "barcodeCaptureLoader() is passed to moduleLoaders"},
+        {"text": "'-- ENTER YOUR SCANDIT LICENSE KEY HERE --' is present"},
+        {"text": "BarcodeAr.forContext( is present"},
+        {"text": "new BarcodeAr( is NOT present (web uses forContext, not constructor)"},
+        {"text": "BarcodeArView.create( is present"},
+        {"text": "BarcodeArView.create is awaited"},
+        {"text": "BarcodeArCircleHighlight.create( is present"},
+        {"text": "highlightProvider is assigned to barcodeArView"},
+        {"text": "highlightForBarcode uses callback( pattern (semantic — result delivered via callback, not returned)"},
+        {"text": "barcodeArView.start() is present and awaited"},
+        {"text": "Symbology.EAN13UPCA is enabled"},
+        {"text": "Symbology.Code128 is enabled"},
+        {"text": "Camera, DataCaptureView, FrameSourceState are NOT imported (BarcodeArView manages camera)"},
+        {"text": "context.frameSource or switchToDesiredState is NOT present"}
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Add a BarcodeArInfoAnnotation to the existing MatrixScan AR integration. The annotation should show the barcode data in the body and appear immediately when a barcode is scanned.",
+      "expected_output": "The skill adds an annotationProvider to the existing barcodeArView. The provider uses the callback pattern. It constructs a BarcodeArInfoAnnotation.create(barcode) with a BarcodeArInfoAnnotationBodyComponent containing the barcode data, sets annotationTrigger to HighlightTapAndBarcodeScan, and delivers via callback(annotation). Existing highlight provider and start() call are preserved.",
+      "files": [
+        "fixtures/integrated-app.ts"
+      ],
+      "assertions": [
+        {"text": "annotationProvider is assigned to barcodeArView"},
+        {"text": "annotationForBarcode( is present"},
+        {"text": "BarcodeArInfoAnnotation.create( is present"},
+        {"text": "BarcodeArInfoAnnotationBodyComponent is used"},
+        {"text": "BarcodeArAnnotationTrigger.HighlightTapAndBarcodeScan is used"},
+        {"text": "callback(annotation) is called (annotation delivered via callback, not returned)"},
+        {"text": "Existing highlight provider is preserved (semantic)"},
+        {"text": "barcodeArView.start() is preserved"},
+        {"text": "BarcodeAr.forContext( is preserved"}
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "I need proper lifecycle management for my MatrixScan AR page — when leaving the page, scanning should stop and the view should be removed from the DOM. When returning, it should restart.",
+      "expected_output": "The skill adds stop() + remove() + context.dispose() for cleanup, and shows how to call start() to restart. Documents that remove() takes BarcodeArView off the DOM, and stop()/start() are for pause/resume without removing.",
+      "files": [
+        "fixtures/integrated-app.ts"
+      ],
+      "assertions": [
+        {"text": "barcodeArView.stop() is shown for stopping"},
+        {"text": "barcodeArView.remove() is shown for removing the DOM element"},
+        {"text": "context.dispose() is shown for full cleanup"},
+        {"text": "barcodeArView.start() is shown for restarting"},
+        {"text": "Camera or FrameSourceState is NOT used (semantic — BarcodeArView manages camera)"},
+        {"text": "Existing barcodeArView.start() call for initial startup is preserved"}
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "I'm migrating my web app from BarcodeBatch to BarcodeAr. I have an existing integration that uses BarcodeBatch.forContext(), DataCaptureView, Camera setup, and an AdvancedOverlay with TrackedBarcodeView bubbles. How do I migrate?",
+      "expected_output": "The skill reads migration.md and provides a step-by-step guide. It explains: replace BarcodeBatch with BarcodeAr.forContext(), replace DataCaptureView+Camera with BarcodeArView.create(), replace the TrackedBarcodeView overlay listener with highlightProvider/annotationProvider using the callback pattern, replace setEnabled(true)+switchToDesiredState(On) with barcodeArView.start().",
+      "files": [],
+      "assertions": [
+        {"text": "BarcodeAr.forContext( is shown as the replacement for BarcodeBatch.forContext("},
+        {"text": "BarcodeArView.create( is shown as the replacement for DataCaptureView + overlay"},
+        {"text": "Manual camera setup (Camera, setFrameSource, switchToDesiredState) removal is mentioned"},
+        {"text": "highlightProvider or annotationProvider is shown as the replacement for the TrackedBarcodeView listener"},
+        {"text": "Callback pattern is explained (callback(highlight) not return highlight)"},
+        {"text": "barcodeArView.start() is shown as the replacement for setEnabled(true)"}
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "I want to show a popover with two buttons (Details and Add to Cart) when the user taps a barcode in my MatrixScan AR web app.",
+      "expected_output": "The skill assigns an annotationProvider to barcodeArView that creates a BarcodeArPopoverAnnotation using BarcodeArPopoverAnnotation.create(barcode). Buttons are created with BarcodeArPopoverAnnotationButton.create() and appended to the annotation via annotation.append(). Click handlers are set on each button. Delivered via callback(annotation).",
+      "files": [
+        "fixtures/integrated-app.ts"
+      ],
+      "assertions": [
+        {"text": "BarcodeArPopoverAnnotation is used"},
+        {"text": "BarcodeArPopoverAnnotation.create( is present"},
+        {"text": "BarcodeArPopoverAnnotationButton is used for the buttons"},
+        {"text": "annotation.append( is used to add buttons"},
+        {"text": "Click event handlers are set on the buttons"},
+        {"text": "callback(annotation) is called (not return annotation)"},
+        {"text": "Existing BarcodeAr mode and barcodeArView.start() are preserved (semantic)"}
+      ]
+    }
+  ]
+}

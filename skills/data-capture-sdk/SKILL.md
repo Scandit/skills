@@ -79,11 +79,13 @@ Phrase the handoff so it works whether or not the skill is already present, e.g.
 | Smart Label Capture | Flutter | `label-capture-flutter` | "Ask me to integrate Label Capture into your Flutter app" |
 | Smart Label Capture | Capacitor | `label-capture-capacitor` | "Ask me to integrate Label Capture into your Capacitor app" |
 | Smart Label Capture | Cordova | `label-capture-cordova` | "Ask me to integrate Label Capture into your Cordova app" |
+| MatrixScan AR | Web | `matrixscan-ar-web` | "Ask me to integrate MatrixScan AR into your web app" |
 | MatrixScan AR | Android | `matrixscan-ar-android` | "Ask me to integrate MatrixScan AR into your Android app" |
 | MatrixScan AR | React Native | `matrixscan-ar-rn` | "Ask me to integrate MatrixScan AR into your React Native app" |
 | MatrixScan AR | Flutter | `matrixscan-ar-flutter` | "Ask me to integrate MatrixScan AR into your Flutter app" |
 | MatrixScan AR | Capacitor | `matrixscan-ar-capacitor` | "Ask me to integrate MatrixScan AR into your Capacitor app" |
 | MatrixScan AR | Cordova | `matrixscan-ar-cordova` | "Ask me to integrate MatrixScan AR into your Cordova app" |
+| MatrixScan Batch | Web | `matrixscan-batch-web` | "Ask me to integrate MatrixScan Batch into your web app" |
 | MatrixScan Batch | Android | `matrixscan-batch-android` | "Ask me to integrate MatrixScan Batch into your Android app" |
 | MatrixScan Batch | React Native | `matrixscan-batch-rn` | "Ask me to integrate MatrixScan Batch into your React Native app" |
 | MatrixScan Batch | Flutter | `matrixscan-batch-flutter` | "Ask me to integrate MatrixScan Batch into your Flutter app" |

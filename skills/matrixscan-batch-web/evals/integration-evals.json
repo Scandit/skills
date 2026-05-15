@@ -1,0 +1,179 @@
+{
+  "skill_name": "matrixscan-batch-web",
+  "evals": [
+    {
+      "id": 0,
+      "prompt": "I want to build a MatrixScan Batch web app from scratch to simultaneously track multiple barcodes. I don't have any existing code yet.",
+      "expected_output": "The skill offers the pre-built sample as the starting point, provides the MatrixScanSimpleSample URL, and guides the user through cloning it, replacing the license key, and adjusting symbologies.",
+      "files": [],
+      "assertions": [
+        {
+          "text": "The pre-built sample is offered before any manual integration code is shown"
+        },
+        {
+          "text": "The MatrixScanSimpleSample URL (datacapture-web-samples/.../MatrixScanSimpleSample) is mentioned"
+        },
+        {
+          "text": "Replacing the license key placeholder is mentioned"
+        },
+        {
+          "text": "Adjusting symbologies is mentioned"
+        },
+        {
+          "text": "Cross-origin headers (COOP/COEP or multithreading) are mentioned as a requirement"
+        }
+      ]
+    },
+    {
+      "id": 1,
+      "prompt": "I want to add MatrixScan Batch to my web app to track multiple barcodes simultaneously. Here's my main file: empty-app.ts. I need to scan EAN-13 and Code 128 barcodes.",
+      "expected_output": "The skill reads integration.md, writes complete BarcodeBatch* integration code into empty-app.ts, mentions COOP/COEP header requirement, and shows the setup checklist.",
+      "files": [
+        "fixtures/empty-app.ts"
+      ],
+      "assertions": [
+        {
+          "text": "Setup checklist is shown (mentions @scandit/web-datacapture-core and @scandit/web-datacapture-barcode)"
+        },
+        {
+          "text": "DataCaptureContext.forLicenseKey( is present with libraryLocation and moduleLoaders"
+        },
+        {
+          "text": "barcodeCaptureLoader() is present in moduleLoaders"
+        },
+        {
+          "text": "License key placeholder (e.g. ENTER YOUR SCANDIT LICENSE KEY or similar) is present"
+        },
+        {
+          "text": "BarcodeBatch.forContext( is present (async factory pattern, not new BarcodeBatch())"
+        },
+        {
+          "text": "await is used before BarcodeBatch.forContext("
+        },
+        {
+          "text": "BarcodeBatchSettings is created with new BarcodeBatchSettings()"
+        },
+        {
+          "text": "enableSymbologies is called on settings"
+        },
+        {
+          "text": "Symbology.EAN13UPCA is enabled"
+        },
+        {
+          "text": "Symbology.Code128 is enabled"
+        },
+        {
+          "text": "BarcodeBatch.recommendedCameraSettings is referenced as a static property (not a method call)"
+        },
+        {
+          "text": "switchToDesiredState(FrameSourceState.On) is present"
+        },
+        {
+          "text": "BarcodeBatchBasicOverlay.withBarcodeBatchForView or withBarcodeBatchForViewWithStyle is awaited"
+        },
+        {
+          "text": "Cross-origin isolation headers (COOP/COEP or multithreading requirement) are mentioned"
+        },
+        {
+          "text": "Import from '@scandit/web-datacapture-core' is present"
+        },
+        {
+          "text": "Import from '@scandit/web-datacapture-barcode' is present"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "In my MatrixScan Batch web app I need to react to tracked barcodes each frame. Show me how to receive addedTrackedBarcodes, updatedTrackedBarcodes, and removedTrackedBarcodes, and iterate all currently tracked barcodes. File: empty-app.ts.",
+      "expected_output": "The skill implements a BarcodeBatchListener with didUpdateSession, accesses session.addedTrackedBarcodes, session.updatedTrackedBarcodes, session.removedTrackedBarcodes (noting these are strings), and iterates Object.values(session.trackedBarcodes).",
+      "files": [
+        "fixtures/empty-app.ts"
+      ],
+      "assertions": [
+        {
+          "text": "didUpdateSession is implemented in the BarcodeBatchListener"
+        },
+        {
+          "text": "session.addedTrackedBarcodes is accessed (semantic)"
+        },
+        {
+          "text": "session.updatedTrackedBarcodes is accessed (semantic)"
+        },
+        {
+          "text": "session.removedTrackedBarcodes is accessed (semantic)"
+        },
+        {
+          "text": "session.trackedBarcodes is accessed and iterated (semantic)"
+        },
+        {
+          "text": "removedTrackedBarcodes identifiers are noted or treated as strings (semantic — e.g. parseInt or string type annotation)"
+        },
+        {
+          "text": "barcodeBatch.addListener( is called with the listener"
+        },
+        {
+          "text": "BarcodeBatch.forContext( is present"
+        },
+        {
+          "text": "'-- ENTER YOUR SCANDIT LICENSE KEY HERE --' is present"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "I want to color the barcode highlights differently: EAN-13 barcodes in green, Code 128 in blue, and hide everything else. Use brushForTrackedBarcode. File: integrated-app.ts.",
+      "expected_output": "The skill sets overlay.listener with a brushForTrackedBarcode callback that returns a green Brush for EAN13UPCA, a blue Brush for Code128, and null (or transparent Brush) for everything else.",
+      "files": [
+        "fixtures/integrated-app.ts"
+      ],
+      "assertions": [
+        {
+          "text": "brushForTrackedBarcode callback is implemented on overlay.listener"
+        },
+        {
+          "text": "A green Brush is returned for Symbology.EAN13UPCA (semantic)"
+        },
+        {
+          "text": "A blue Brush is returned for Symbology.Code128 (semantic)"
+        },
+        {
+          "text": "null or a transparent Brush is returned for other symbologies (semantic)"
+        },
+        {
+          "text": "Brush is imported from @scandit/web-datacapture-core"
+        },
+        {
+          "text": "BarcodeBatchBasicOverlay is present (withBarcodeBatchForView or withBarcodeBatchForViewWithStyle)"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "I want to add custom AR bubbles above each tracked barcode in my MatrixScan Batch web app. Each bubble should show the barcode's data value. File: integrated-app.ts.",
+      "expected_output": "The skill implements BarcodeBatchAdvancedOverlay with TrackedBarcodeView.withHTMLElement to attach custom HTML elements to each tracked barcode, using anchorForTrackedBarcode and offsetForTrackedBarcode for positioning.",
+      "files": [
+        "fixtures/integrated-app.ts"
+      ],
+      "assertions": [
+        {
+          "text": "BarcodeBatchAdvancedOverlay.withBarcodeBatchForView is awaited"
+        },
+        {
+          "text": "TrackedBarcodeView.withHTMLElement is used (not a subclass)"
+        },
+        {
+          "text": "A DOM element (e.g. document.createElement) is created and populated with barcode data (semantic)"
+        },
+        {
+          "text": "anchorForTrackedBarcode or setAnchorForTrackedBarcode is present"
+        },
+        {
+          "text": "offsetForTrackedBarcode or setOffsetForTrackedBarcode is present"
+        },
+        {
+          "text": "TrackedBarcodeView is imported from @scandit/web-datacapture-barcode"
+        }
+      ]
+    }
+  ]
+}
