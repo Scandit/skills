@@ -1,6 +1,6 @@
 ---
 name: barcode-capture-ios
-description: Use when BarcodeCapture is involved in an iOS project — whether the user mentions BarcodeCapture directly, or the codebase already uses BarcodeCapture as its barcode scanning library and something needs to be added, changed, fixed, or migrated. This includes adding BarcodeCapture to a new iOS app, modifying scan settings, handling scan results, customizing the BarcodeCapture overlay, upgrading or migrating between SDK versions (v6→v7, v7→v8, or any bump of the Scandit SDK), troubleshooting BarcodeCapture behavior, or replacing a third-party barcode scanning library (such as AVFoundation `AVCaptureMetadataOutput`, VisionKit `DataScannerViewController`, or ZXing/MLKit) with BarcodeCapture. If the project is iOS and BarcodeCapture is in play — including any question about upgrading the Scandit iOS SDK — use this skill.
+description: Use when BarcodeCapture is involved in an iOS project — whether the user mentions BarcodeCapture directly, or the codebase already uses BarcodeCapture as its barcode scanning library and something needs to be added, changed, fixed, or migrated. This includes adding BarcodeCapture to a new iOS app, modifying scan settings, handling scan results, customizing the BarcodeCapture overlay, upgrading between SDK versions, troubleshooting BarcodeCapture behavior, or replacing a third-party barcode scanning library with BarcodeCapture. If the project is iOS and BarcodeCapture is in play, use this skill.
 license: MIT
 metadata:
   author: scandit
