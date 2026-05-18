@@ -19,9 +19,9 @@ Your training data may contain outdated or incorrect Scandit SDK APIs. The Barco
 
 Based on the user's request, load the appropriate reference file before responding:
 
-- **Integrating BarcodeCapture from scratch, configuring settings, customizing feedback, adding a viewfinder, handling scans, or doing async work after a scan** (e.g. "add BarcodeCapture to my app", "set up barcode scanning", "how do I use BarcodeCapture in iOS", "filter duplicate scans", "suppress the beep", "add a viewfinder", "disable scanning while I look up the barcode") → read `references/integration.md` and follow the instructions there. Before writing any integration code, determine whether the project uses UIKit or SwiftUI (check for `import SwiftUI`, an `@main` `App` struct, `SceneDelegate`/`AppDelegate`, `.storyboard`/`.xib` files, etc.) and load the matching Get Started page from the References table below.
+- **Integrating BarcodeCapture from scratch, configuring settings, customizing feedback, adding a viewfinder, handling scans, or doing async work after a scan** (e.g. "add BarcodeCapture to my app", "set up barcode scanning", "how do I use BarcodeCapture in iOS", "filter duplicate scans", "suppress the beep", "add a viewfinder", "disable scanning while I look up the barcode") → read `references/integration.md` and follow the instructions there.
 - **Migrating or upgrading an existing BarcodeCapture integration** (e.g. "upgrade from v6 to v7", "migrate my BarcodeCapture", "bump the Scandit SDK to v8", "what changed between SDK versions") → read `references/migration.md` and follow the instructions there.
-- **Replacing a third-party barcode scanner with BarcodeCapture** (e.g. "replace AVCaptureMetadataOutput with BarcodeCapture", "migrate from VisionKit DataScannerViewController to Scandit", "switch from MLKit to BarcodeCapture on iOS") → read `references/third-party-migration.md` and follow the instructions there.
+- **Replacing a third-party barcode scanner with BarcodeCapture** (e.g. "replace my [scanner] with BarcodeCapture", "migrate from [framework] to BarcodeCapture", "switch from [library] barcode scanning to BarcodeCapture") → read `references/third-party-migration.md` and follow the instructions there.
 
 ## API Usage Policy
 
