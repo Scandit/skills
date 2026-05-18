@@ -1,6 +1,6 @@
 # Agent Skills for the Scandit SDK
 
-[![Install via skills.sh](https://img.shields.io/badge/skills.sh-install-green)](https://skills.sh/Scandit/skills)
+[![Install via skills.sh](https://img.shields.io/badge/skills.sh-install-green)](https://skills.sh/scandit/skills)
 [![Install in Cursor](https://img.shields.io/badge/Install%20in-Cursor-blue?style=flat-square&logo=cursor)](https://cursor.com/marketplace/scandit)
 
 AI agent skills for integrating the [Scandit Data Capture SDK](https://docs.scandit.com).
