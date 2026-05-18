@@ -1,6 +1,7 @@
-# Scandit SDK Skills
+# Agent Skills for the Scandit SDK
 
-[![Install via skills.sh](https://img.shields.io/badge/skills.sh-install-green)](https://skills.sh/Scandit/scandit-sdk-skills)
+[![Install via skills.sh](https://img.shields.io/badge/skills.sh-install-green)](https://skills.sh/Scandit/skills)
+[![Install in Cursor](https://img.shields.io/badge/Install%20in-Cursor-blue?style=flat-square&logo=cursor)](https://cursor.com/marketplace/scandit)
 
 AI agent skills for integrating the [Scandit Data Capture SDK](https://docs.scandit.com).
 
@@ -52,7 +53,7 @@ Most agents will also pick the skill up automatically from prompts like _"help m
 The [`skills`](https://github.com/vercel-labs/skills) CLI from Vercel installs skills into any supported agent (Claude Code, Codex, Cursor, Antigravity, GitHub Copilot, Cline, Continue, Windsurf, and 35+ others). Run it and follow the interactive prompts to pick agent and skills:
 
 ```bash
-npx skills add Scandit/scandit-sdk-skills
+npx skills add Scandit/skills
 ```
 
 ### Claude Code plugin
@@ -60,7 +61,7 @@ npx skills add Scandit/scandit-sdk-skills
 Claude Code can also install the skills as a plugin from the marketplace. Run the commands one at a time:
 
 ```bash
-/plugin marketplace add Scandit/scandit-sdk-skills
+/plugin marketplace add Scandit/skills
 ```
 
 ```bash
@@ -85,11 +86,11 @@ Two ways the skill is invoked:
 
 ## Support
 
-If you hit issues with a skill or have questions, search for an existing issue or open a new one in the [GitHub issue tracker](https://github.com/Scandit/scandit-sdk-skills/issues).
+If you hit issues with a skill or have questions, search for an existing issue or open a new one in the [GitHub issue tracker](https://github.com/Scandit/skills/issues).
 
 ## Contributing
 
 We welcome feedback that improves the quality of these skills:
 
-- **Report issues.** File bugs, outdated SDK patterns, or incorrect guidance in the [issue tracker](https://github.com/Scandit/scandit-sdk-skills/issues).
+- **Report issues.** File bugs, outdated SDK patterns, or incorrect guidance in the [issue tracker](https://github.com/Scandit/skills/issues).
 - **Request new skills.** If a Scandit product, framework, or workflow you need isn't covered, open a feature request.
