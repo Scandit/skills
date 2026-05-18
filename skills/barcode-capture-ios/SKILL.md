@@ -15,18 +15,6 @@ Your training data may contain outdated or incorrect Scandit SDK APIs. The Barco
 
 **Always verify APIs against the references provided in this skill before writing or suggesting code.** Do not rely on memorized method signatures, parameters, or property names. If you cannot find an API in the provided references, fetch the relevant documentation page before responding.
 
-iOS-specific gotchas worth flagging:
-- The v7+ context API is `DataCaptureContext.initialize(licenseKey:)` + `DataCaptureContext.shared`. The bare `DataCaptureContext(licenseKey:)` constructor is the v6 form and is deprecated — do not use it in new code.
-- `BarcodeCapture(context:settings:)` is the canonical Swift constructor on iOS. There is no `forDataCaptureContext` factory — that's an Android name.
-- The listener callback is `barcodeCapture(_:didScanIn:frameData:)` and runs on a background thread. Any UI update must be dispatched via `DispatchQueue.main.async { … }`.
-- Symbology enum cases are camelCase Swift names: `.ean13UPCA`, `.code128`, `.qr`, `.dataMatrix`, `.interleavedTwoOfFive` — not the Android underscore form (`EAN13_UPCA`, `QR_CODE`).
-- `BarcodeCapture.recommendedCameraSettings` is a **static property**, not a method — no parentheses.
-- Set `barcodeCapture.isEnabled = false` at the top of `barcodeCapture(_:didScanIn:frameData:)` before doing any work, to prevent duplicate or racing scans. Re-enable when ready.
-- `codeDuplicateFilter` on `BarcodeCaptureSettings` is a `TimeInterval` measured in **seconds** (Swift `Double`). For 500 ms, set `0.5`. `0` reports every detection; `-1` reports each code once until scanning stops; `-2` (default) uses smart filtering based on scan intention.
-- Drive the camera with `camera?.switch(toDesiredState: .on)` in `viewWillAppear` and `.off` in `viewWillDisappear`. The camera must not be active while the screen is off-screen or backgrounded.
-- Add `NSCameraUsageDescription` to `Info.plist` — without it the camera will not start.
-- For a silent scan (no beep / vibration) assign `barcodeCapture.feedback.success = Feedback(vibration: nil, sound: nil)` — there is no `BarcodeCaptureFeedback()` empty constructor like on Android.
-
 ## Intent Routing
 
 Based on the user's request, load the appropriate reference file before responding:
@@ -51,7 +39,7 @@ Direct users to the right resource based on their question:
 
 | Topic | Resource |
 |---|---|
-| UIKit integration | [Get Started (UIKit)](https://docs.scandit.com/sdks/ios/barcode-capture/get-started/) · [Sample](https://github.com/Scandit/datacapture-ios-samples/tree/master/01_Single_Scanning_Samples/02_Barcode_Scanning_with_Low_Level_API/BarcodeCaptureSimpleSample) |
+| UIKit integration | [Get Started (UIKit)](https://docs.scandit.com/sdks/ios/barcode-capture/get-started/) · [Sample](https://github.com/Scandit/datacapture-ios-samples/tree/master/01_Single_Scanning_Samples/02_Barcode_Scanning_with_Low_Level_API/BarcodeCaptureSimpleSampleSwift) |
 | SwiftUI integration | [Get Started (SwiftUI)](https://docs.scandit.com/sdks/ios/barcode-capture/get-started-with-swift-ui/) |
 | Migration between major SDK versions | [6 → 7](https://docs.scandit.com/sdks/ios/migrate-6-to-7/) · [7 → 8](https://docs.scandit.com/sdks/ios/migrate-7-to-8/) |
 | Full API reference | [BarcodeCapture API](https://docs.scandit.com/data-capture-sdk/ios/barcode-capture/api.html) |
