@@ -189,7 +189,64 @@ When recommending a product, always include the relevant **docs link** and **sam
 - **What it is**: Simultaneously captures and parses information from multiple barcodes and multiple fields of printed text (OCR) on a label in a single scan action.
 - **Use when**: The user needs to read text AND barcodes from labels — expiry dates, serial/lot numbers, unit prices, weights. If the workflow requires capturing any printed text, Smart Label Capture is the only option.
 - **Key traits**: OCR + barcode in one capture. Semantic approach — define what information you need (e.g., "expiry date") and the system finds it across many label layouts without per-layout templates.
-- **This is the only Scandit product with OCR capability.** No other product can read printed text.
+- **This is the only Scandit product with OCR capability.** No other product can read printed text. "Text Capture" is **not** a Scandit product — do not propose it under any circumstances. When the user needs OCR but does not have an SLC license and *every* field they need is encoded in a barcode, the only legitimate fallback is **MatrixScan Batch**, with the caveat that the developer must correlate the reads themselves (no schema, no single-frame multi-field guarantee).
+
+#### Pre-built Fields
+
+Match these by name when the user's description fits. Sourced from the live `features.json` feature matrix; verify per-platform support there for exact SDK versions.
+
+| Field | Category | Use case |
+|---|---|---|
+| `SerialNumberBarcode` | Barcode | Electronics / appliance serial numbers |
+| `PartNumberBarcode` | Barcode | Manufacturing & inventory part numbers |
+| `ImeiOneBarcode` | Barcode | First IMEI on mobile devices |
+| `ImeiTwoBarcode` | Barcode | Second IMEI on dual-SIM devices |
+| `UnitPriceText` | Text | Retail / grocery unit price |
+| `TotalPriceText` | Text | Retail / grocery total price |
+| `WeightText` | Text | Shipping & logistics weight |
+| `PackingDateText` | Text | Food & beverage packing date |
+| `ExpiryDateText` | Text | Pharma & food expiry / best-before |
+| `DateText` | Text | Generic date (configurable via `LabelDateFormat`) |
+| `CustomBarcode` | Custom | User-defined symbology + regex |
+| `CustomText` | Custom | User-defined regex for arbitrary text |
+
+#### Pre-built Labels
+
+Full label definitions that ship with SLC — drop them in instead of designing a schema from scratch.
+
+| Label | What it captures |
+|---|---|
+| `Price Label` | Barcode + price text — built for price-checking scenarios |
+| `VIN Label` | Vehicle Identification Number (text and/or barcode) |
+| `7-Segment Display` | Numeric values from digital scales, meters, displays |
+| `Receipt Scanning` | Structured receipt data (store info, payment, line items). Requires the **Adaptive Recognition Engine** |
+
+#### Use-case → pre-built mapping
+
+When the user describes one of these scenarios, name the pre-built definition directly rather than walking through a custom schema:
+
+- **Smartphone box / IMEI + serial** → `ImeiOneBarcode` (+ `ImeiTwoBarcode` for dual-SIM) + `SerialNumberBarcode`, plus the box's product barcode
+- **Grocery shelf-edge / unit price** → `Price Label` (or `UnitPriceText` + `TotalPriceText` + product barcode)
+- **Vehicle VIN** → `VIN Label`
+- **Scale, meter, or digital readout** → `7-Segment Display`
+- **Receipt / till slip / POS receipt** → `Receipt Scanning` (call out the Adaptive Recognition Engine requirement)
+- **Expiry / best-before / use-by date** → `ExpiryDateText` (or `DateText` with a configured format)
+- **Shipping weight on a label** → `WeightText`
+
+#### Language and character-set limitation
+
+SLC's OCR currently recognizes **only** the Latin character set:
+
+```
+0123456789 A-Z a-z ( ) - . / : , $ ¶ "
+```
+
+Non-Latin scripts — Japanese (hiragana, katakana, kanji), Chinese, Korean, Cyrillic, Arabic, Hebrew, Thai, Devanagari, etc. — and accented Latin characters are **not** supported by the OCR engine. When a user shares an image or describes a label in one of these scripts, surface this limitation up front before recommending SLC.
+
+**Barcodes on the same label remain readable** regardless of the printed script. A Japanese carton's JAN/EAN/QR code is still captured even though kanji on the box is not. If barcodes alone are sufficient for the user's workflow, SLC (or MatrixScan Batch) can still solve it.
+
+For the canonical per-platform version matrix of pre-built fields, labels, and Adaptive Recognition Engine availability, fetch `features.json` from the live data sources listed in `SKILL.md`.
+
 - **Platforms**: iOS, Android, Web, React Native, Flutter, .NET, Capacitor, Cordova
 - **Docs**:
   - iOS: https://docs.scandit.com/sdks/ios/label-capture/intro

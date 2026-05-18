@@ -1,5 +1,7 @@
 # Scandit SDK Skills
 
+[![Install via skills.sh](https://img.shields.io/badge/skills.sh-install-green)](https://skills.sh/Scandit/scandit-sdk-skills)
+
 AI agent skills for integrating the [Scandit Data Capture SDK](https://docs.scandit.com).
 
 Each skill teaches your coding assistant how to integrate a specific Scandit SDK correctly. Instead of pasting docs snippets into your AI editor, install a skill once and your agent follows Scandit's recommended patterns whenever you ask it to add a Scandit feature.
@@ -80,3 +82,14 @@ Two ways the skill is invoked:
   ```
 
 - **Automatic pickup.** Most agents read the skill's description and load it automatically when your prompt matches relevant keywords. With `sparkscan-ios` installed, asking _"add a SparkScan view to the home screen"_ pulls in the skill without explicit invocation.
+
+## Support
+
+If you hit issues with a skill or have questions, search for an existing issue or open a new one in the [GitHub issue tracker](https://github.com/Scandit/scandit-sdk-skills/issues).
+
+## Contributing
+
+We welcome feedback that improves the quality of these skills:
+
+- **Report issues.** File bugs, outdated SDK patterns, or incorrect guidance in the [issue tracker](https://github.com/Scandit/scandit-sdk-skills/issues).
+- **Request new skills.** If a Scandit product, framework, or workflow you need isn't covered, open a feature request.

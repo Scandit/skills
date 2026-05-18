@@ -17,6 +17,22 @@ Your training data may contain outdated product names, discontinued features, or
 
 **Always base your recommendations on the product catalog and decision guide provided in this skill's references.** Do not rely on memorized product descriptions. If you cannot find information in the provided references to support a claim, state that explicitly rather than guessing.
 
+### Phantom products — never recommend these
+
+The model frequently invents these names from training data. They are **not** current Scandit products and must never appear in recommendations, fallbacks, or alternatives:
+
+- **"Text Capture"** — does not exist. Smart Label Capture is the only Scandit product with OCR. Even when the user lacks an SLC license, do not suggest "Text Capture" as a fallback. The only legitimate fallback when *every* field is encoded in a barcode is **MatrixScan Batch**, and you must explicitly state that the developer is responsible for correlating reads across frames (no schema, no single-frame multi-field guarantee).
+- **"BarcodeTracking"** standalone — superseded by MatrixScan Batch / BarcodeBatch in SDK v7+. Refer to it only when explaining renames.
+
+If you would otherwise mention these names, stop and re-read `references/product-catalog.md`.
+
+### Smart Label Capture — known limits to surface proactively
+
+When recommending Smart Label Capture, always check the limits in `references/product-catalog.md` before answering:
+
+- **Character set is Latin-only** for OCR. Non-Latin scripts (Japanese, Chinese, Korean, Cyrillic, Arabic, Hebrew, Thai, Devanagari, etc.) and accented Latin characters are **not** recognized by the OCR engine. Barcodes on the same label (JAN/EAN/QR/etc.) are still readable regardless of the printed script — call this out so the user understands what they can and cannot extract.
+- **Pre-built fields and labels** exist for the most common use cases (IMEI, serial number, expiry date, unit/total price, weight, VIN, 7-segment displays, receipts, price labels). When the user's description matches a pre-built definition, name it directly instead of describing a custom schema. The catalog in `references/product-catalog.md` lists them with use-case mapping.
+
 ## Intent Routing
 
 When a user asks for help choosing a Scandit product, load both reference files before responding:
@@ -42,22 +58,46 @@ When a user asks for help choosing a Scandit product, load both reference files 
 
 ## Handoff to Implementation Skills
 
-Once a product and platform are identified, **always include the relevant docs.scandit.com link** from the product catalog. Then check this table for an available implementation skill. If one exists, suggest a concrete invocation alongside the docs link.
+The goal of every recommendation is to take the user from *"I know what to use"* to *"I'm integrating it"* with as little friction as possible. That means **leading with the implementation skill as the next action** — not handing the user a list of docs links and walking away. Docs and sample apps are supplementary references; the implementation skill is the offer.
 
-The implementation skills below ship in the same repository as this skill (`Scandit/scandit-sdk-skills`) but are distributed as separate packages — the user may not have them installed locally. After naming the skill, tell the user how to install it if they don't already have it:
+### Step 1 — Detect the platform from the project before asking
 
-- **Skills CLI (works with Claude Code, Codex, Cursor, Copilot, Cline, Windsurf, and 40+ others):**
-  ```bash
-  npx skills add Scandit/scandit-sdk-skills
-  ```
-  The interactive prompt lets them pick the specific skill (e.g. `sparkscan-rn`).
-- **Claude Code plugin marketplace:**
-  ```
-  /plugin marketplace add Scandit/scandit-sdk-skills
-  /plugin install scandit-sdk@scandit-plugins
-  ```
+When the user is inside a project directory, check for framework markers before asking which platform they target. A confirmation question ("I see `pubspec.yaml` — Flutter, right?") is faster and feels more grounded than asking from scratch. Look for:
 
-Phrase the handoff so it works whether or not the skill is already present, e.g. *"If you have the `sparkscan-rn` skill installed, ask me to integrate SparkScan into your React Native app. If not, install it with `npx skills add Scandit/scandit-sdk-skills` and pick `sparkscan-rn`."*
+| Marker | Platform |
+|---|---|
+| `package.json` with a `react-native` dependency, or `metro.config.js` | React Native |
+| `pubspec.yaml` | Flutter |
+| `Podfile`, `*.xcodeproj`, `*.xcworkspace`, or Swift/ObjC sources at root | iOS |
+| `build.gradle` (root or `app/`), `AndroidManifest.xml` | Android |
+| `capacitor.config.{json,ts,js}` | Capacitor |
+| `config.xml` plus a `www/` directory | Cordova |
+| `*.csproj` with a MAUI target (`<UseMaui>true</UseMaui>`) | .NET MAUI |
+| `package.json` without `react-native`, with `index.html` / Vite / Next / etc. | Web |
+
+If nothing matches or the workspace is empty, then ask. Either way, **always confirm the platform with the user before proposing a skill** — don't silently guess.
+
+### Step 2 — Lead with the matching implementation skill
+
+Once product + platform are confirmed, find the matching row in the table below. If a skill exists, **propose the integration as the immediate next action**. Use this shape:
+
+> "I'll use the `label-capture-rn` skill to integrate Smart Label Capture into your app. If you don't have it installed yet, add it with `npx skills add Scandit/scandit-sdk-skills` (pick `label-capture-rn`) — or, in Claude Code, `/plugin marketplace add Scandit/scandit-sdk-skills` then `/plugin install scandit-sdk@scandit-plugins`. Ready to start?"
+
+Rules for the handoff:
+
+- **Lead with the action, not the conditional.** Do not say *"If you have the skill installed, ask me to integrate it."* Say *"I'll use the skill to integrate it — install it if you don't have it yet, then we'll start."* The conditional phrasing is passive and forces the user to drive the next step; the active phrasing forces *you* to drive it.
+- **Name the skill explicitly** (e.g., `label-capture-rn`, `sparkscan-ios`). Don't say "an implementation skill exists" — name it.
+- **Always include install instructions** (Skills CLI and Claude Code plugin marketplace) so users without it can install it on the spot. Skills CLI works with Claude Code, Codex, Cursor, Copilot, Cline, Windsurf, and 40+ others.
+- **End with a ready-to-go question** (e.g., "Want me to start?", "Shall I begin the integration?") so the user has a single-word path forward.
+- **Put docs and sample-app links *after* the handoff offer**, not before. They're supplementary. The product catalog has the canonical docs URLs and sample-app paths — include the docs link from the user's platform row and the matching sample-app path.
+
+### Step 3 — Fallback when no skill exists for that combo
+
+For product + platform combinations not in the table (e.g., MatrixScan Batch on Web, .NET MAUI generally), the implementation skill doesn't exist yet. In that case, fall back to the sample app as the reference implementation and offer to adapt it:
+
+> "There's no dedicated skill for MatrixScan Batch on Web yet, but the `MatrixScanSimpleSample` ([link]) is a complete working reference. I can walk through it and help you adapt it to your project — want me to start there?"
+
+Always include both the docs.scandit.com link and the platform-specific sample-app link from the product catalog. The sample is the working starting point; the docs are the reference.
 
 | Product | Platform | Skill | Suggested Invocation |
 |---|---|---|---|

@@ -279,6 +279,52 @@
         {"type": "content_check", "text": "Does NOT include code snippets"}
       ],
       "files": []
+    },
+    {
+      "id": 24,
+      "prompt": "I need to create an app for my mPOS system. I sell smartphones, and I need to scan the box barcode and get the serial number and IMEI code too — all in one frame. My app is in React Native. What should I use?",
+      "expected_output": "Recommends Smart Label Capture because it captures barcode + printed text fields in a single frame with a declared schema. Names at least one pre-built field (ImeiOneBarcode, ImeiTwoBarcode, or SerialNumberBarcode). Does NOT mention 'Text Capture' under any circumstances. Leads the handoff with the matching implementation skill (`label-capture-rn`) and proactively offers to start the integration with a ready-to-go question (e.g., 'Want me to start?'). Includes install instructions (Skills CLI and/or Claude Code plugin marketplace). If a fallback is mentioned for users without an SLC license, the only acceptable fallback is MatrixScan Batch with an explicit correlation caveat. Includes a docs.scandit.com link for Smart Label Capture as supplementary context.",
+      "assertions": [
+        {"type": "content_check", "text": "Recommends Smart Label Capture as the primary product"},
+        {"type": "content_check", "text": "Names at least one pre-built field: ImeiOneBarcode, ImeiTwoBarcode, or SerialNumberBarcode"},
+        {"type": "content_check", "text": "Does NOT mention 'Text Capture' as a product, alternative, or fallback"},
+        {"type": "content_check", "text": "Names the `label-capture-rn` implementation skill explicitly"},
+        {"type": "content_check", "text": "Proactively proposes to use the skill to integrate (not 'if you have it installed, ask me' phrasing) and ends with a ready-to-go question such as 'Want me to start?' or 'Ready to begin?'"},
+        {"type": "content_check", "text": "Includes install instructions for the skill (Skills CLI `npx skills add` and/or Claude Code `/plugin marketplace add`)"},
+        {"type": "content_check", "text": "If any fallback is mentioned, it is MatrixScan Batch with an explicit caveat that the developer must correlate the reads themselves"},
+        {"type": "content_check", "text": "Includes a docs.scandit.com link for Smart Label Capture (either upfront, or deferred until platform is confirmed if the user has not yet specified a platform)"}
+      ],
+      "files": []
+    },
+    {
+      "id": 25,
+      "prompt": "I need to extract the information from this Japanese food label — ingredients, expiry date, volume. What can I use?",
+      "expected_output": "Recommends Smart Label Capture as the only OCR product. Explicitly states SLC's OCR is currently Latin-only and does NOT support Japanese characters or other non-Latin scripts. Notes that barcodes on the same label (JAN/EAN) remain readable regardless of script. Does NOT claim Japanese OCR support. Does NOT mention 'Text Capture'. Asks the user what platform they are targeting before proposing a specific implementation skill (since no platform was given) and explains that, once known, it will use the matching skill (e.g., `label-capture-rn`, `label-capture-android`) to start the integration.",
+      "assertions": [
+        {"type": "content_check", "text": "Recommends Smart Label Capture as the OCR product"},
+        {"type": "content_check", "text": "Explicitly states that SLC's OCR is Latin-only and does NOT support Japanese characters / non-Latin scripts"},
+        {"type": "content_check", "text": "Notes that barcodes on the same label (JAN/EAN/QR) remain readable regardless of script"},
+        {"type": "content_check", "text": "Does NOT claim that SLC supports Japanese, kanji, or non-Latin OCR"},
+        {"type": "content_check", "text": "Does NOT mention 'Text Capture' as a product, alternative, or fallback"},
+        {"type": "content_check", "text": "Asks for the target platform (since none was given), or checks the working directory for framework markers before asking"},
+        {"type": "content_check", "text": "States or implies that, once the platform is known, it will use the matching implementation skill (label-capture-*) to drive the integration"}
+      ],
+      "files": []
+    },
+    {
+      "id": 26,
+      "prompt": "I want to scan paper receipts from our point-of-sale terminals and pull out the store info, the totals, and the line items. Which Scandit product should I use?",
+      "expected_output": "Recommends Smart Label Capture. Explicitly names the Receipt Scanning pre-built label and that it requires the Adaptive Recognition Engine. Does NOT propose a custom label schema as the primary path. Asks for the target platform (or detects it from the project) before proposing a specific implementation skill, and explains that the matching `label-capture-*` skill will be used to drive the integration. Includes a docs.scandit.com link for Smart Label Capture as supplementary context.",
+      "assertions": [
+        {"type": "content_check", "text": "Recommends Smart Label Capture as the primary product"},
+        {"type": "content_check", "text": "Explicitly names the Receipt Scanning pre-built label"},
+        {"type": "content_check", "text": "Mentions that Receipt Scanning requires the Adaptive Recognition Engine"},
+        {"type": "content_check", "text": "Does NOT propose a custom label schema as the primary recommendation when Receipt Scanning fits"},
+        {"type": "content_check", "text": "Asks for the target platform (or detects it from the project) before proposing a specific implementation skill"},
+        {"type": "content_check", "text": "States or implies that, once the platform is known, it will use the matching label-capture-* implementation skill to drive the integration"},
+        {"type": "content_check", "text": "Includes a docs.scandit.com link for Smart Label Capture (either upfront, or deferred until platform is confirmed if the user has not yet specified a platform)"}
+      ],
+      "files": []
     }
   ]
 }
