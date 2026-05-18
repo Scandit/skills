@@ -1,0 +1,33 @@
+{
+  "skill_name": "barcode-capture-net-android",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I need to upgrade my .NET for Android BarcodeCapture app from Scandit SDK v6 to v7. Here is my current Activity: ActivityV6.cs.",
+      "expected_output": "The skill replaces the manual CameraSettings/VideoResolution.Auto block with BarcodeCapture.RecommendedCameraSettings, informs the user about the new default ScanIntention.Smart, and notes the composite-codes default change. It does NOT rename BarcodeCapture.Create — the .NET factory is unchanged.",
+      "files": [
+        "fixtures/ActivityV6.cs"
+      ],
+      "assertions": [
+        {"text": "The CameraSettings with VideoResolution.Auto block is removed"},
+        {"text": "camera.ApplySettingsAsync(BarcodeCapture.RecommendedCameraSettings) is used"},
+        {"text": "The user is informed about the new default ScanIntention.Smart in v7"},
+        {"text": "The migration guide URL (https://docs.scandit.com/sdks/net/android/migrate-6-to-7/) is provided"},
+        {"text": "BarcodeCapture.Create( is preserved (not renamed to something else)"},
+        {"text": "The IBarcodeCaptureListener implementation (OnBarcodeScanned, etc.) is preserved"}
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "I'm upgrading my Scandit .NET Android barcode scanning SDK from v7 to v8. What do I need to change in my code?",
+      "expected_output": "The skill explains that .NET Android BarcodeCapture has no breaking factory-method changes in v7→v8. Mentions the formal VideoResolution.Auto deprecation, and that BarcodeCaptureLicenseInfo is available from 8.4 and SelectionMode from 8.5.",
+      "files": [],
+      "assertions": [
+        {"text": "The skill mentions there are no breaking factory-method changes for .NET Android BarcodeCapture in v7→v8"},
+        {"text": "VideoResolution.Auto deprecation is mentioned"},
+        {"text": "The skill does NOT instruct the user to replace BarcodeCapture.Create with new BarcodeCapture(settings) plus AddMode (that is a cross-platform SDK change, not .NET Android)"},
+        {"text": "Migration guide URL (https://docs.scandit.com/sdks/net/android/migrate-7-to-8/) is provided"}
+      ]
+    }
+  ]
+}

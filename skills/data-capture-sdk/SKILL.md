@@ -69,6 +69,9 @@ Phrase the handoff so it works whether or not the skill is already present, e.g.
 | SparkScan | Capacitor | `sparkscan-capacitor` | "Ask me to integrate SparkScan into your Capacitor app" |
 | SparkScan | Cordova | `sparkscan-cordova` | "Ask me to integrate SparkScan into your Cordova app" |
 | Barcode Capture | Android | `barcode-capture-android` | "Ask me to integrate Barcode Capture into your Android app" |
+| Barcode Capture | .NET for Android | `barcode-capture-net-android` | "Ask me to integrate Barcode Capture into your .NET Android app" |
+| Barcode Capture | .NET for iOS | `barcode-capture-net-ios` | "Ask me to integrate Barcode Capture into your .NET iOS app" |
+| Barcode Capture | .NET MAUI | `barcode-capture-maui` | "Ask me to integrate Barcode Capture into your .NET MAUI app" |
 | Barcode Capture | React Native | `barcode-capture-rn` | "Ask me to integrate Barcode Capture into your React Native app" |
 | Barcode Capture | Flutter | `barcode-capture-flutter` | "Ask me to integrate Barcode Capture into your Flutter app" |
 | Barcode Capture | Capacitor | `barcode-capture-capacitor` | "Ask me to integrate Barcode Capture into your Capacitor app" |

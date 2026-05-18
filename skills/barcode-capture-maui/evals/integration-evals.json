@@ -1,0 +1,121 @@
+{
+  "skill_name": "barcode-capture-maui",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I want to add BarcodeCapture to my .NET MAUI app. Here's my empty page: EmptyMainPage.xaml + EmptyMainPage.xaml.cs, and my MauiProgram: EmptyMauiProgram.cs. I need to scan EAN-13 and Code 128 barcodes for a retail app.",
+      "expected_output": "The skill reads integration.md, fetches the latest Scandit MAUI NuGet versions, updates MauiProgram.cs with .UseScanditCore(c => c.AddDataCaptureView()).UseScanditBarcode(), adds <scandit:DataCaptureView> to MainPage.xaml with the correct namespace, writes complete BarcodeCapture integration into MainPage.xaml.cs (BarcodeCapture.Create, BarcodeScanned event or IBarcodeCaptureListener, BarcodeCaptureOverlay created in HandlerChanged, OnAppearing/OnDisappearing lifecycle, Permissions.Camera). Shows the setup checklist (four NuGet packages, NSCameraUsageDescription on iOS, license key).",
+      "files": [
+        "fixtures/EmptyMainPage.xaml",
+        "fixtures/EmptyMainPage.xaml.cs",
+        "fixtures/EmptyMauiProgram.cs"
+      ],
+      "assertions": [
+        {"text": "Setup checklist mentions all four NuGet packages: Scandit.DataCapture.Core, Scandit.DataCapture.Core.Maui, Scandit.DataCapture.Barcode, Scandit.DataCapture.Barcode.Maui"},
+        {"text": "MauiProgram.cs is updated to call .UseScanditCore("},
+        {"text": "MauiProgram.cs UseScanditCore call invokes configure.AddDataCaptureView()"},
+        {"text": "MauiProgram.cs is updated to call .UseScanditBarcode()"},
+        {"text": "MauiProgram.cs does NOT call .UseScanditBarcode( with an inner configure argument (e.g. AddBarcodeCaptureView)"},
+        {"text": "MainPage.xaml adds the xmlns:scandit=\"clr-namespace:Scandit.DataCapture.Core.UI.Maui;assembly=ScanditCaptureCoreMaui\" namespace"},
+        {"text": "MainPage.xaml contains a <scandit:DataCaptureView> element"},
+        {"text": "<scandit:DataCaptureView> binds its DataCaptureContext property (via {Binding ...} or x:Name + code-behind)"},
+        {"text": "Setup checklist mentions adding NSCameraUsageDescription to Platforms/iOS/Info.plist"},
+        {"text": "A license key placeholder string is present"},
+        {"text": "DataCaptureContext.ForLicenseKey( is used to create the context"},
+        {"text": "BarcodeCapture.RecommendedCameraSettings is used (as a property, not VideoResolution.Auto)"},
+        {"text": "Camera.GetCamera(CameraPosition.WorldFacing) or Camera.GetDefaultCamera() is used to obtain the camera"},
+        {"text": "camera.ApplySettingsAsync(BarcodeCapture.RecommendedCameraSettings) is called"},
+        {"text": "BarcodeCaptureSettings.Create() is used (not new BarcodeCaptureSettings())"},
+        {"text": "Symbology.Ean13Upca is enabled"},
+        {"text": "Symbology.Code128 is enabled"},
+        {"text": "No symbologies other than Ean13Upca and Code128 are enabled"},
+        {"text": "BarcodeCapture.Create(dataCaptureContext, settings) is used to create the mode"},
+        {"text": "barcodeCapture.BarcodeScanned += handler is wired (or barcodeCapture.AddListener if using IBarcodeCaptureListener)"},
+        {"text": "dataCaptureView.HandlerChanged is subscribed to in the page code-behind"},
+        {"text": "BarcodeCaptureOverlay.Create(barcodeCapture) is called inside the HandlerChanged handler (single-argument overload)"},
+        {"text": "dataCaptureView.AddOverlay(overlay) is called to attach the overlay"},
+        {"text": "OnAppearing is overridden and calls Permissions.CheckStatusAsync<Permissions.Camera>() or Permissions.RequestAsync<Permissions.Camera>()"},
+        {"text": "OnAppearing turns the camera on (SwitchToDesiredStateAsync(FrameSourceState.On))"},
+        {"text": "OnDisappearing turns the camera off (SwitchToDesiredStateAsync(FrameSourceState.Off))"},
+        {"text": "barcodeCapture.Enabled = false is set inside the BarcodeScanned event handler (or OnBarcodeScanned)"},
+        {"text": "MainThread.BeginInvokeOnMainThread is used to dispatch UI work (not RunOnUiThread, not DispatchQueue.MainQueue.DispatchAsync)"}
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Add barcode scanning to my existing .NET MAUI page. Here's the page: EmptyMainPage.xaml + EmptyMainPage.xaml.cs and MauiProgram: EmptyMauiProgram.cs. I want to scan QR codes and Data Matrix. When a barcode is scanned, show a DisplayAlert with the value.",
+      "expected_output": "The skill integrates BarcodeCapture into the page with QR and Data Matrix enabled, shows a DisplayAlert in the BarcodeScanned handler (dispatched via MainThread.BeginInvokeOnMainThread), updates MauiProgram.cs with the Scandit builder chain, and shows the setup checklist.",
+      "files": [
+        "fixtures/EmptyMainPage.xaml",
+        "fixtures/EmptyMainPage.xaml.cs",
+        "fixtures/EmptyMauiProgram.cs"
+      ],
+      "assertions": [
+        {"text": "Symbology.Qr is enabled"},
+        {"text": "Symbology.DataMatrix is enabled"},
+        {"text": "No symbologies other than Qr and DataMatrix are enabled"},
+        {"text": "BarcodeCapture.Create( is used"},
+        {"text": "The BarcodeScanned event handler (or OnBarcodeScanned) reads args.Session.NewlyRecognizedBarcode or session.NewlyRecognizedBarcode"},
+        {"text": "DisplayAlert is called with barcode.Data (or equivalent shown UI feedback)"},
+        {"text": "MainThread.BeginInvokeOnMainThread is used to dispatch the DisplayAlert"},
+        {"text": "MauiProgram.cs calls .UseScanditCore and .UseScanditBarcode()"},
+        {"text": "Setup checklist mentions all four NuGet packages"}
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "When a barcode is scanned in my .NET MAUI BarcodeCapture app, I want to disable scanning, look up the barcode in a remote API (an async Task call), and re-enable scanning when the lookup completes. Wire this up safely.",
+      "expected_output": "The skill sets barcodeCapture.Enabled = false at the start of the BarcodeScanned handler, awaits the async lookup, and re-enables scanning in a finally block. UI updates are dispatched via MainThread.BeginInvokeOnMainThread.",
+      "files": [
+        "fixtures/IntegratedMainPage.xaml",
+        "fixtures/IntegratedMainPage.xaml.cs"
+      ],
+      "assertions": [
+        {"text": "barcodeCapture.Enabled = false is set inside the BarcodeScanned handler before the async work"},
+        {"text": "An async/await call or a Task continuation is used to perform the lookup"},
+        {"text": "barcodeCapture.Enabled = true is set after the lookup completes (typically in a finally block)"},
+        {"text": "MainThread.BeginInvokeOnMainThread is used to dispatch UI work after the async lookup"},
+        {"text": "Existing integration code (DataCaptureContext, barcodeCapture, camera, HandlerChanged overlay creation) is preserved"}
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "I want to suppress the default beep and vibration when a barcode is scanned in my .NET MAUI app — silent scanning. Update the BarcodeCapture feedback.",
+      "expected_output": "The skill reassigns barcodeCapture.Feedback.Success to a Feedback constructed with null vibration and null sound (or replaces the whole BarcodeCaptureFeedback with one whose Success has no audio or haptic effect).",
+      "files": [
+        "fixtures/IntegratedMainPage.xaml.cs"
+      ],
+      "assertions": [
+        {"text": "barcodeCapture.Feedback.Success is assigned to a Feedback with no sound and no vibration (Feedback(vibration: null, sound: null) or equivalent)"},
+        {"text": "Existing integration code (DataCaptureContext, barcodeCapture, camera, HandlerChanged overlay creation) is preserved"}
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "Add a square viewfinder to my .NET MAUI BarcodeCapture preview so users can see where to aim.",
+      "expected_output": "The skill creates a RectangularViewfinder with RectangularViewfinderStyle.Square and assigns it to overlay.Viewfinder inside the HandlerChanged handler (so it is set after the overlay is created).",
+      "files": [
+        "fixtures/IntegratedMainPage.xaml.cs"
+      ],
+      "assertions": [
+        {"text": "A RectangularViewfinder is constructed with RectangularViewfinderStyle.Square"},
+        {"text": "The viewfinder is assigned to BarcodeCaptureOverlay.Viewfinder (overlay.Viewfinder = ...)"},
+        {"text": "The viewfinder assignment happens inside the HandlerChanged handler (i.e. after the overlay has been created)"},
+        {"text": "Existing integration code (DataCaptureContext, barcodeCapture, camera, HandlerChanged overlay creation) is preserved"}
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "I need to filter scans so duplicates of the same code within 500 milliseconds are ignored. Update my .NET MAUI BarcodeCapture settings.",
+      "expected_output": "The skill sets settings.CodeDuplicateFilter = TimeSpan.FromMilliseconds(500) on the BarcodeCaptureSettings instance (using TimeSpan, not a bare integer, double, or TimeInterval).",
+      "files": [
+        "fixtures/IntegratedMainPage.xaml.cs"
+      ],
+      "assertions": [
+        {"text": "CodeDuplicateFilter is set to TimeSpan.FromMilliseconds(500) (not a bare integer 500, not a double, not TimeInterval)"},
+        {"text": "CodeDuplicateFilter is set before BarcodeCapture.Create( or via barcodeCapture.ApplySettingsAsync"},
+        {"text": "Existing integration code (DataCaptureContext, barcodeCapture, camera, HandlerChanged overlay creation) is preserved"}
+      ]
+    }
+  ]
+}

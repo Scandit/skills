@@ -28,6 +28,12 @@
     "flutter",
     "capacitor",
     "cordova",
+    "dotnet",
+    "net",
+    "net-android",
+    "net-ios",
+    "maui",
+    "xamarin",
     "sdk",
     "smart-data-capture"
   ],

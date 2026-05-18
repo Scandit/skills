@@ -1,0 +1,37 @@
+{
+  "skill_name": "barcode-capture-net-ios",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I have a .NET iOS app using ZXing.Net.Mobile for barcode scanning. I want to replace it with BarcodeCapture. Here is my view controller: ZxingViewController.cs",
+      "expected_output": "Removes all ZXing.Net.Mobile APIs (MobileBarcodeScanner, MobileBarcodeScanningOptions, ZXing.BarcodeFormat), adds BarcodeCapture integration with matching symbologies (Ean13Upca, Code128, Qr), and preserves the ScannedBarcode record and deduplication logic.",
+      "files": [
+        "fixtures/ZxingViewController.cs"
+      ],
+      "assertions": [
+        {"text": "ZXing.Mobile / ZXing using directives are NOT present in the output"},
+        {"text": "MobileBarcodeScanner is NOT instantiated in the new code (may appear in a before/after summary table)"},
+        {"text": "MobileBarcodeScanningOptions is NOT present in the new code"},
+        {"text": "Scandit.DataCapture using directives ARE present"},
+        {"text": "The ViewController implements IBarcodeCaptureListener (or subscribes to BarcodeScanned via EventHandler<BarcodeCaptureEventArgs>)"},
+        {"text": "Symbology.Ean13Upca is enabled"},
+        {"text": "Symbology.Code128 is enabled"},
+        {"text": "Symbology.Qr is enabled (not Symbology.QrCode, which does not exist)"},
+        {"text": "Symbology.QrCode does NOT appear as a Symbology enum value (BarcodeFormat.QR_CODE in a summary table is acceptable)"},
+        {"text": "DataCaptureView.Create(dataCaptureContext, this.View!.Bounds) (or this.View.Bounds) is used — the second argument is a CGRect / bounds"},
+        {"text": "BarcodeCaptureOverlay.Create( is called"},
+        {"text": "ViewWillAppear turns the camera on (SwitchToDesiredStateAsync(FrameSourceState.On))"},
+        {"text": "ViewWillDisappear turns the camera off (SwitchToDesiredStateAsync(FrameSourceState.Off))"},
+        {"text": "frameData.Dispose() is called inside OnBarcodeScanned"},
+        {"text": "ScannedBarcode record is preserved in output"},
+        {"text": "scannedBarcodes list is preserved in output"},
+        {"text": "Deduplication logic (checking for existing value before adding) is preserved"},
+        {"text": "A summary of changes is shown with what was removed and what was added"},
+        {"text": "Setup checklist mentions Scandit.DataCapture.Barcode as a NuGet package"},
+        {"text": "Setup checklist mentions Scandit.DataCapture.Core as a NuGet package"},
+        {"text": "A concrete version number is used for the dependencies (not a [version] placeholder)"},
+        {"text": "Setup checklist mentions NSCameraUsageDescription"}
+      ]
+    }
+  ]
+}

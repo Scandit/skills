@@ -1,0 +1,34 @@
+{
+  "skill_name": "barcode-capture-maui",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I need to upgrade my .NET MAUI BarcodeCapture app from Scandit SDK v6 to v7. Here is my current page code-behind: MainPageV6.xaml.cs.",
+      "expected_output": "The skill replaces the manual CameraSettings/VideoResolution.Auto block with BarcodeCapture.RecommendedCameraSettings, informs the user about the new default ScanIntention.Smart, and notes the composite-codes default change. It does NOT rename BarcodeCapture.Create — the .NET factory is unchanged. Confirms the MauiProgram.cs UseScanditCore + UseScanditBarcode chain is present.",
+      "files": [
+        "fixtures/MainPageV6.xaml.cs"
+      ],
+      "assertions": [
+        {"text": "The CameraSettings with VideoResolution.Auto block is removed"},
+        {"text": "camera.ApplySettingsAsync(BarcodeCapture.RecommendedCameraSettings) is used"},
+        {"text": "The user is informed about the new default ScanIntention.Smart in v7"},
+        {"text": "At least one of the v6→v7 migration guide URLs (https://docs.scandit.com/sdks/net/android/migrate-6-to-7/ or https://docs.scandit.com/sdks/net/ios/migrate-6-to-7/) is provided"},
+        {"text": "BarcodeCapture.Create( is preserved (not renamed to something else)"},
+        {"text": "The BarcodeScanned event subscription (or IBarcodeCaptureListener implementation) is preserved"},
+        {"text": "The HandlerChanged overlay-creation pattern is preserved or introduced"}
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "I'm upgrading my Scandit .NET MAUI barcode scanning SDK from v7 to v8. What do I need to change in my code?",
+      "expected_output": "The skill explains that .NET MAUI BarcodeCapture has no breaking factory-method changes in v7→v8. Mentions the formal VideoResolution.Auto deprecation, that BarcodeCaptureLicenseInfo is available from 8.4 and SelectionMode from 8.5, and confirms the HandlerChanged overlay pattern is still required.",
+      "files": [],
+      "assertions": [
+        {"text": "The skill mentions there are no breaking factory-method changes for .NET MAUI BarcodeCapture in v7→v8"},
+        {"text": "VideoResolution.Auto deprecation is mentioned"},
+        {"text": "The skill does NOT instruct the user to replace BarcodeCapture.Create with new BarcodeCapture(settings) plus AddMode (that is a cross-platform SDK change, not .NET MAUI)"},
+        {"text": "At least one of the v7→v8 migration guide URLs (https://docs.scandit.com/sdks/net/android/migrate-7-to-8/ or https://docs.scandit.com/sdks/net/ios/migrate-7-to-8/) is provided"}
+      ]
+    }
+  ]
+}

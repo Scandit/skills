@@ -1,0 +1,124 @@
+{
+  "skill_name": "barcode-capture-net-android",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I want to add BarcodeCapture to my .NET for Android app. Here's my empty Activity: EmptyActivity.cs. I need to scan EAN-13 and Code 128 barcodes for a retail app.",
+      "expected_output": "The skill reads integration.md, fetches the latest Scandit NuGet versions, writes complete BarcodeCapture integration code into EmptyActivity.cs (BarcodeCapture.Create, IBarcodeCaptureListener implementation, Camera, DataCaptureView, BarcodeCaptureOverlay, OnResume/OnPause lifecycle), and shows the setup checklist (NuGet packages, AndroidManifest permissions, runtime permission, license key).",
+      "files": [
+        "fixtures/EmptyActivity.cs"
+      ],
+      "assertions": [
+        {"text": "Setup checklist is shown and mentions adding the Scandit.DataCapture.Barcode and Scandit.DataCapture.Core NuGet packages"},
+        {"text": "Setup checklist mentions adding android.permission.CAMERA to AndroidManifest.xml"},
+        {"text": "Setup checklist mentions requesting the CAMERA permission at runtime"},
+        {"text": "A license key placeholder string is present"},
+        {"text": "DataCaptureContext.ForLicenseKey( is used to create the context"},
+        {"text": "BarcodeCapture.RecommendedCameraSettings is used (as a property, not VideoResolution.Auto)"},
+        {"text": "Camera.GetDefaultCamera() is used to obtain the camera"},
+        {"text": "camera.ApplySettingsAsync(BarcodeCapture.RecommendedCameraSettings) is called"},
+        {"text": "dataCaptureContext.SetFrameSourceAsync( is called with the camera"},
+        {"text": "BarcodeCaptureSettings.Create() is used to construct settings (not new BarcodeCaptureSettings())"},
+        {"text": "Symbology.Ean13Upca is enabled"},
+        {"text": "Symbology.Code128 is enabled"},
+        {"text": "No symbologies other than Ean13Upca and Code128 are enabled"},
+        {"text": "BarcodeCapture.Create(dataCaptureContext, settings) is used to create the mode (not BarcodeCapture.ForDataCaptureContext or new BarcodeCapture())"},
+        {"text": "barcodeCapture.AddListener( is called (or barcodeCapture.BarcodeScanned += is wired)"},
+        {"text": "DataCaptureView.Create( is used to create the view"},
+        {"text": "BarcodeCaptureOverlay.Create(barcodeCapture, dataCaptureView) is called"},
+        {"text": "The Activity implements IBarcodeCaptureListener (or subscribes to BarcodeScanned via EventHandler<BarcodeCaptureEventArgs>)"},
+        {"text": "OnBarcodeScanned (or the BarcodeScanned event handler) reads session.NewlyRecognizedBarcode"},
+        {"text": "OnSessionUpdated, OnObservationStarted, and OnObservationStopped are implemented if using the listener interface"},
+        {"text": "barcodeCapture.Enabled = false is set inside OnBarcodeScanned"},
+        {"text": "camera.SwitchToDesiredStateAsync(FrameSourceState.On) is called in OnResume (or equivalent)"},
+        {"text": "camera.SwitchToDesiredStateAsync(FrameSourceState.Off) is called in OnPause (or equivalent)"},
+        {"text": "barcodeCapture.RemoveListener( is called in OnDestroy (or the event handler is unsubscribed)"}
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Add barcode scanning to my existing .NET Android Activity. Here's the Activity: EmptyActivity.cs. I want to scan QR codes and Data Matrix. When a barcode is scanned, log the barcode data.",
+      "expected_output": "The skill integrates BarcodeCapture into EmptyActivity.cs with QR and Data Matrix symbologies enabled. OnBarcodeScanned logs the barcode data via Android.Util.Log.Debug or similar. Shows the setup checklist.",
+      "files": [
+        "fixtures/EmptyActivity.cs"
+      ],
+      "assertions": [
+        {"text": "Symbology.Qr is enabled"},
+        {"text": "Symbology.DataMatrix is enabled"},
+        {"text": "No symbologies other than Qr and DataMatrix are enabled"},
+        {"text": "BarcodeCapture.Create( is used"},
+        {"text": "OnBarcodeScanned (or BarcodeScanned event) is implemented and accesses barcode.Data"},
+        {"text": "The scan result is logged (Log.Debug, System.Diagnostics.Debug.WriteLine, Console.WriteLine, or similar)"},
+        {"text": "OnResume turns the camera on"},
+        {"text": "OnPause turns the camera off"},
+        {"text": "Setup checklist mentions Scandit.DataCapture.Barcode and Scandit.DataCapture.Core NuGet packages"}
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "When a barcode is scanned in my .NET Android BarcodeCapture app, I want to disable scanning, look up the barcode in a remote API (an async Task call), and re-enable scanning when the lookup completes. Wire this up safely.",
+      "expected_output": "The skill sets barcodeCapture.Enabled = false at the start of OnBarcodeScanned, awaits the async lookup, and re-enables scanning in a finally block. UI updates are dispatched via RunOnUiThread.",
+      "files": [
+        "fixtures/IntegratedActivity.cs"
+      ],
+      "assertions": [
+        {"text": "barcodeCapture.Enabled = false is set inside OnBarcodeScanned (or the BarcodeScanned event handler) before the async work"},
+        {"text": "An async/await call or a Task continuation is used to perform the lookup"},
+        {"text": "barcodeCapture.Enabled = true is set after the lookup completes (typically in a finally block)"},
+        {"text": "RunOnUiThread is used to dispatch UI work after the async lookup"},
+        {"text": "Existing integration code (DataCaptureContext, barcodeCapture, camera, listener/event) is preserved"}
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "I want to suppress the default beep and vibration when a barcode is scanned in my .NET Android app — silent scanning. Update the BarcodeCapture feedback.",
+      "expected_output": "The skill reassigns barcodeCapture.Feedback.Success to a Feedback constructed with null vibration and null sound (or replaces the whole BarcodeCaptureFeedback with one whose Success has no audio or haptic effect).",
+      "files": [
+        "fixtures/IntegratedActivity.cs"
+      ],
+      "assertions": [
+        {"text": "barcodeCapture.Feedback.Success is assigned to a Feedback with no sound and no vibration (Feedback(vibration: null, sound: null) or equivalent)"},
+        {"text": "Existing integration code (DataCaptureContext, barcodeCapture, camera, listener) is preserved"}
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "Add a square viewfinder to my .NET Android BarcodeCapture preview so users can see where to aim.",
+      "expected_output": "The skill creates a RectangularViewfinder with RectangularViewfinderStyle.Square and assigns it to overlay.Viewfinder.",
+      "files": [
+        "fixtures/IntegratedActivity.cs"
+      ],
+      "assertions": [
+        {"text": "A RectangularViewfinder is constructed with RectangularViewfinderStyle.Square"},
+        {"text": "The viewfinder is assigned to BarcodeCaptureOverlay.Viewfinder (overlay.Viewfinder = ...)"},
+        {"text": "Existing integration code (DataCaptureContext, barcodeCapture, camera, listener) is preserved"}
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "I need to filter scans so duplicates of the same code within 500 milliseconds are ignored. Update my .NET Android BarcodeCapture settings.",
+      "expected_output": "The skill sets settings.CodeDuplicateFilter = TimeSpan.FromMilliseconds(500) on the BarcodeCaptureSettings instance (using TimeSpan, not a bare integer, and not TimeInterval).",
+      "files": [
+        "fixtures/IntegratedActivity.cs"
+      ],
+      "assertions": [
+        {"text": "CodeDuplicateFilter is set to TimeSpan.FromMilliseconds(500) (not a bare integer 500, not TimeInterval.Millis, not TimeInterval.millis)"},
+        {"text": "CodeDuplicateFilter is set before BarcodeCapture.Create( or via barcodeCapture.ApplySettingsAsync"},
+        {"text": "Existing integration code (DataCaptureContext, barcodeCapture, camera, listener) is preserved"}
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "Clean up my .NET Android BarcodeCapture integration properly when the Activity is destroyed — remove the listener and turn off the camera.",
+      "expected_output": "The skill ensures OnDestroy calls barcodeCapture.RemoveListener(this) (or unsubscribes the BarcodeScanned handler), and that OnPause calls camera.SwitchToDesiredStateAsync(FrameSourceState.Off).",
+      "files": [
+        "fixtures/IntegratedActivity.cs"
+      ],
+      "assertions": [
+        {"text": "OnDestroy calls barcodeCapture.RemoveListener(this) or unsubscribes the BarcodeScanned/SessionUpdated event handlers"},
+        {"text": "OnPause (or OnDestroy) calls camera.SwitchToDesiredStateAsync(FrameSourceState.Off)"},
+        {"text": "Existing integration code (DataCaptureContext, barcodeCapture, camera, listener) is preserved"}
+      ]
+    }
+  ]
+}
