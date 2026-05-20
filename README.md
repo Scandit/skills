@@ -23,14 +23,14 @@ If you're new to Scandit and don't yet know whether your use case fits SparkScan
 Install it the same way as any other skill (see [Installation](#installation) below), then just chat with your agent like you would with anyone else — ask open-ended questions, describe your app, paste a screenshot of the screen you want to add scanning to, or drop in a photo of the label, package, or ID you need to capture. The skill will use that context to narrow down the right product. For example:
 
 ```
+# Example 1
 /data-capture-sdk I need to scan barcodes in a warehouse app — which Scandit product should I use?
-```
 
-```
+# Example 2
 /data-capture-sdk here's a photo of the labels we want to capture — what fits best?
 ```
 
-Most agents will also pick the skill up automatically from prompts like _"help me choose a Scandit product"_ or _"which Scandit SDK fits my use case?"_. Once you've landed on a product and platform, the advisor hands you off to the right `sparkscan-*`, `barcode-capture-*`, `matrixscan-*-*`, or `label-capture-*` skill from the table below.
+The skill will also be picked up automatically from prompts like _"help me choose a Scandit product"_ or _"which Scandit SDK fits my use case?"_, no explicit invocation needed. Once you've landed on a product and platform, the advisor hands you off to the right product-framework skill (e.g. `barcode-capture-flutter`) from the table below.
 
 ## Available skills
 
@@ -98,3 +98,7 @@ We welcome feedback that improves the quality of these skills:
 
 - **Report issues.** File bugs, outdated SDK patterns, or incorrect guidance in the [issue tracker](https://github.com/scandit/skills/issues).
 - **Request new skills.** If a Scandit product, framework, or workflow you need isn't covered, open a feature request.
+
+## License
+
+See the [LICENSE](./LICENSE) file for licensing information.
