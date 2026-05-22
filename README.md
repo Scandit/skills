@@ -80,6 +80,24 @@ Auto-update is off by default for third-party marketplaces, so we recommend turn
 
 Install the official Scandit plugin in Cursor with one click from the [Cursor marketplace](https://cursor.com/marketplace/scandit). Cursor manages plugin updates automatically — installed plugins are kept current through the marketplace without manual action.
 
+### GitHub Copilot CLI plugin
+
+[GitHub Copilot CLI](https://docs.github.com/en/copilot/how-tos/copilot-cli) can also install the skills as a plugin from the marketplace:
+
+```bash
+copilot plugin marketplace add scandit/skills
+```
+
+```bash
+copilot plugin install scandit-sdk@scandit-plugins
+```
+
+Copilot CLI does not auto-update plugins — re-run periodically to pull the latest skills:
+
+```bash
+copilot plugin update scandit-sdk
+```
+
 ## Using a skill
 
 Two ways the skill is invoked:
