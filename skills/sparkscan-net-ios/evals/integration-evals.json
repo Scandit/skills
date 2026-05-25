@@ -1,0 +1,135 @@
+{
+  "skill_name": "sparkscan-net-ios",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I want to add SparkScan to my .NET for iOS app. Here's my empty ViewController: EmptyViewController.cs. I need to scan EAN-13 and Code 128 barcodes for a retail app.",
+      "expected_output": "The skill reads integration.md, fetches the latest Scandit NuGet versions, writes complete SparkScan integration code into EmptyViewController.cs (new SparkScan(settings), SparkScanView.Create with this.View as parent, ISparkScanFeedbackDelegate, BarcodeScanned event or ISparkScanListener, ViewWillAppear/ViewWillDisappear → PrepareScanning/StopScanning, IFrameData / ImageBuffers using-disposal), and shows the setup checklist (NuGet packages, NSCameraUsageDescription, AppDelegate.FinishedLaunching initialize for SDK 8.0+, license key).",
+      "files": [
+        "fixtures/EmptyViewController.cs"
+      ],
+      "assertions": [
+        {"text": "Setup checklist is shown and mentions adding the Scandit.DataCapture.Barcode and Scandit.DataCapture.Core NuGet packages"},
+        {"text": "Setup checklist mentions adding NSCameraUsageDescription to Info.plist"},
+        {"text": "Setup checklist mentions calling ScanditCaptureCore.Initialize() and ScanditBarcodeCapture.Initialize() in AppDelegate.FinishedLaunching (required for SDK 8.0+)"},
+        {"text": "A license key placeholder string is present"},
+        {"text": "DataCaptureContext.ForLicenseKey( is used to create the context"},
+        {"text": "new SparkScanSettings() is used (not SparkScanSettings.Create(), which does not exist)"},
+        {"text": "new SparkScan(settings) is used (not SparkScan.Create(...), which does not exist)"},
+        {"text": "Symbology.Ean13Upca is enabled"},
+        {"text": "Symbology.Code128 is enabled"},
+        {"text": "No symbologies other than Ean13Upca and Code128 are enabled"},
+        {"text": "SparkScanView.Create( is called with this.View (or this.View!) as the parentView argument — NOT a SparkScanCoordinatorLayout (which is Android-only)"},
+        {"text": "SparkScanView.Create( receives the DataCaptureContext as the context argument"},
+        {"text": "SparkScanView.Create( receives the SparkScan instance as the sparkScan argument"},
+        {"text": "SparkScanView.Create( receives a SparkScanViewSettings as the settings argument"},
+        {"text": "sparkScan.BarcodeScanned += handler is wired (or sparkScan.AddListener if using ISparkScanListener)"},
+        {"text": "ViewWillAppear forwards to sparkScanView.PrepareScanning() (not sparkScanView.OnResume, which does not exist on iOS)"},
+        {"text": "ViewWillDisappear forwards to sparkScanView.StopScanning() (not sparkScanView.OnPause)"},
+        {"text": "OnPause / OnResume are NOT used (those are Android-only)"},
+        {"text": "No call to BarcodeCapture.Create or barcodeCapture.AddListener appears (SparkScan is not the same API as BarcodeCapture)"},
+        {"text": "No DataCaptureView is created (SparkScan has its own pre-built UI)"},
+        {"text": "No BarcodeCaptureOverlay is created"},
+        {"text": "No Camera.GetDefaultCamera() or dataCaptureContext.SetFrameSourceAsync(...) call is present (SparkScan manages its own camera)"}
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Add SparkScan to my existing .NET iOS ViewController. Here's the ViewController: EmptyViewController.cs. I want to scan QR codes and Data Matrix. When a barcode is scanned, log the barcode data.",
+      "expected_output": "The skill integrates SparkScan into EmptyViewController.cs with QR and Data Matrix enabled. The BarcodeScanned handler logs the barcode data via Console.WriteLine or NSLog. Shows the setup checklist.",
+      "files": [
+        "fixtures/EmptyViewController.cs"
+      ],
+      "assertions": [
+        {"text": "Symbology.Qr is enabled"},
+        {"text": "Symbology.DataMatrix is enabled"},
+        {"text": "No symbologies other than Qr and DataMatrix are enabled"},
+        {"text": "new SparkScan( is used (not SparkScan.Create)"},
+        {"text": "The BarcodeScanned event handler (or OnBarcodeScanned) reads args.Session.NewlyRecognizedBarcode or session.NewlyRecognizedBarcode"},
+        {"text": "barcode.Data is accessed"},
+        {"text": "The scan result is logged (Console.WriteLine, System.Diagnostics.Debug.WriteLine, NSLog, or similar)"},
+        {"text": "ViewWillAppear forwards to sparkScanView.PrepareScanning()"},
+        {"text": "ViewWillDisappear forwards to sparkScanView.StopScanning()"},
+        {"text": "Setup checklist mentions Scandit.DataCapture.Barcode and Scandit.DataCapture.Core NuGet packages"},
+        {"text": "Setup checklist mentions NSCameraUsageDescription"}
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "In my .NET iOS SparkScan app, I want to reject barcodes whose value starts with '000' and show an error message in the SparkScan UI for 5 seconds before scanning resumes. Wire this up.",
+      "expected_output": "The skill implements ISparkScanFeedbackDelegate, builds a SparkScanBarcodeSuccessFeedback and a SparkScanBarcodeErrorFeedback(message, resumeCapturingDelay), assigns the delegate to sparkScanView.Feedback, and returns the error feedback when barcode.Data starts with '000'.",
+      "files": [
+        "fixtures/IntegratedViewController.cs"
+      ],
+      "assertions": [
+        {"text": "The view controller (or a dedicated class) implements ISparkScanFeedbackDelegate"},
+        {"text": "GetFeedbackForBarcode(Barcode barcode) is implemented"},
+        {"text": "new SparkScanBarcodeErrorFeedback( is constructed with a message argument and a resumeCapturingDelay argument"},
+        {"text": "resumeCapturingDelay uses TimeSpan.FromSeconds(5) (or TimeSpan.FromMilliseconds(5000)) — not a bare integer 5, not a double, not a TimeInterval"},
+        {"text": "new SparkScanBarcodeSuccessFeedback() (or one of its multi-argument constructors) is used for the success case"},
+        {"text": "sparkScanView.Feedback is assigned to the delegate instance (typically this)"},
+        {"text": "GetFeedbackForBarcode inspects barcode.Data and returns the error feedback when it starts with '000'"},
+        {"text": "GetFeedbackForBarcode does NOT call DispatchQueue.MainQueue.DispatchAsync or any UI dispatcher (the delegate runs on a background thread)"},
+        {"text": "Existing integration code (DataCaptureContext, SparkScan, SparkScanView, PrepareScanning/StopScanning lifecycle) is preserved"}
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "Hide the torch and trigger buttons on my .NET iOS SparkScanView and add a custom UIButton that calls StartScanning() programmatically.",
+      "expected_output": "The skill sets sparkScanView.TorchControlVisible = false and sparkScanView.TriggerButtonVisible = false, then wires a UIButton's TouchUpInside handler to call sparkScanView.StartScanning(). Uses the renamed v7 property TorchControlVisible (not the v6 TorchButtonVisible).",
+      "files": [
+        "fixtures/IntegratedViewController.cs"
+      ],
+      "assertions": [
+        {"text": "sparkScanView.TorchControlVisible = false is set (not TorchButtonVisible, which was removed in v7)"},
+        {"text": "sparkScanView.TriggerButtonVisible = false is set"},
+        {"text": "sparkScanView.StartScanning() is called from a UIButton's TouchUpInside event handler (or equivalent control event)"},
+        {"text": "Existing integration code (DataCaptureContext, SparkScan, SparkScanView, lifecycle) is preserved"}
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "I need to filter scans so duplicates of the same code within 500 milliseconds are ignored in my .NET iOS SparkScan app.",
+      "expected_output": "The skill sets settings.CodeDuplicateFilter = TimeSpan.FromMilliseconds(500) on the SparkScanSettings instance (using TimeSpan, not a bare integer, not a double 0.5, not TimeInterval).",
+      "files": [
+        "fixtures/IntegratedViewController.cs"
+      ],
+      "assertions": [
+        {"text": "settings.CodeDuplicateFilter is set to TimeSpan.FromMilliseconds(500) (not a bare integer 500, not a double 0.5, not TimeInterval)"},
+        {"text": "The value is applied to a SparkScanSettings instance (not BarcodeCaptureSettings)"},
+        {"text": "Either CodeDuplicateFilter is set before new SparkScan(settings), or sparkScan.ApplySettingsAsync(settings) is invoked after the change"},
+        {"text": "Existing integration code (DataCaptureContext, SparkScan, SparkScanView, lifecycle) is preserved"}
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "I'm extracting a thumbnail of the scanned barcode by reading args.FrameData?.ImageBuffers in OnBarcodeScanned, but the SparkScan camera preview freezes after the first scan in my .NET iOS app. Help me fix it.",
+      "expected_output": "The skill identifies that the iOS .NET binding requires explicit disposal of every IFrameData and the ImageBuffer / FrameDataImage. Replaces ad-hoc access with `using var imageBuffer = args.FrameData?.ImageBuffers.LastOrDefault();` and `using var frame = imageBuffer?.ToImage();` patterns.",
+      "files": [
+        "fixtures/IntegratedViewController.cs"
+      ],
+      "assertions": [
+        {"text": "The skill identifies that IFrameData / ImageBuffer / FrameDataImage must be disposed on iOS"},
+        {"text": "The skill explains that failing to dispose the frame causes a frozen / non-responsive / stuttering preview"},
+        {"text": "The fix uses a `using var imageBuffer = args.FrameData?.ImageBuffers.LastOrDefault();` pattern (or an equivalent explicit Dispose() call)"},
+        {"text": "If a UIImage / frame image is derived, a `using var frame = imageBuffer?.ToImage();` pattern is used"},
+        {"text": "Existing integration code (DataCaptureContext, SparkScan, SparkScanView, PrepareScanning/StopScanning lifecycle) is preserved"}
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "When a barcode is scanned in my .NET iOS SparkScan app, I want to disable scanning, look up the barcode via an async HTTP call, and re-enable scanning when the lookup completes. Wire this up safely.",
+      "expected_output": "The skill sets sparkScan.Enabled = false at the start of the BarcodeScanned handler, awaits the async lookup, and re-enables scanning in a finally block. UI updates are dispatched via DispatchQueue.MainQueue.DispatchAsync. The IFrameData using-disposal is preserved.",
+      "files": [
+        "fixtures/IntegratedViewController.cs"
+      ],
+      "assertions": [
+        {"text": "sparkScan.Enabled = false is set inside the BarcodeScanned handler before the async work"},
+        {"text": "An async/await call or a Task continuation is used to perform the lookup"},
+        {"text": "sparkScan.Enabled = true is set after the lookup completes (typically in a finally block)"},
+        {"text": "DispatchQueue.MainQueue.DispatchAsync is used to dispatch UI work after the async lookup (not RunOnUiThread, which is Android-only)"},
+        {"text": "Existing integration code (DataCaptureContext, SparkScan, SparkScanView, PrepareScanning/StopScanning lifecycle) is preserved"}
+      ]
+    }
+  ]
+}

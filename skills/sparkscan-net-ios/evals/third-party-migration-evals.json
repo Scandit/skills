@@ -1,0 +1,38 @@
+{
+  "skill_name": "sparkscan-net-ios",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I have a .NET iOS app using ZXing.Net.Mobile for barcode scanning. I want to replace it with SparkScan. Here is my view controller: ZxingViewController.cs",
+      "expected_output": "Removes all ZXing.Net.Mobile APIs (MobileBarcodeScanner, MobileBarcodeScanningOptions, ZXing.BarcodeFormat). Adds SparkScan integration with matching symbologies (Ean13Upca, Code128, Qr) using new SparkScan(settings) + SparkScanView.Create with this.View as parent. Preserves the ScannedBarcode record and deduplication logic.",
+      "files": [
+        "fixtures/ZxingViewController.cs"
+      ],
+      "assertions": [
+        {"text": "ZXing.Mobile / ZXing using directives are NOT present in the new code"},
+        {"text": "MobileBarcodeScanner is NOT instantiated in the new code (may appear in a before/after summary table)"},
+        {"text": "MobileBarcodeScanningOptions is NOT present in the new code"},
+        {"text": "Scandit.DataCapture using directives ARE present"},
+        {"text": "Symbology.Ean13Upca is enabled"},
+        {"text": "Symbology.Code128 is enabled"},
+        {"text": "Symbology.Qr is enabled (not Symbology.QrCode, which does not exist)"},
+        {"text": "Symbology.QrCode does NOT appear as a Symbology enum value (BarcodeFormat.QR_CODE in a summary table is acceptable)"},
+        {"text": "new SparkScan(settings) is used (not SparkScan.Create or BarcodeCapture.Create)"},
+        {"text": "SparkScanView.Create( is called with this.View (or this.View!) as the parentView argument (NOT a SparkScanCoordinatorLayout, which is Android-only)"},
+        {"text": "Either sparkScan.BarcodeScanned += handler is wired, or ISparkScanListener is implemented"},
+        {"text": "ViewWillAppear forwards to sparkScanView.PrepareScanning()"},
+        {"text": "ViewWillDisappear forwards to sparkScanView.StopScanning()"},
+        {"text": "If args.FrameData / ImageBuffers are accessed, they are wrapped in `using var` (or explicitly disposed)"},
+        {"text": "ScannedBarcode record is preserved in the output"},
+        {"text": "scannedBarcodes list is preserved in the output"},
+        {"text": "Deduplication logic (checking for existing value before adding) is preserved"},
+        {"text": "A summary of changes is shown with what was removed and what was added"},
+        {"text": "Setup checklist mentions Scandit.DataCapture.Barcode as a NuGet package"},
+        {"text": "Setup checklist mentions Scandit.DataCapture.Core as a NuGet package"},
+        {"text": "A concrete version number is used for the dependencies (not a [version] placeholder)"},
+        {"text": "Setup checklist mentions NSCameraUsageDescription"},
+        {"text": "Setup checklist mentions calling ScanditCaptureCore.Initialize() and ScanditBarcodeCapture.Initialize() in AppDelegate.FinishedLaunching (required for SDK 8.0+)"}
+      ]
+    }
+  ]
+}

@@ -1,0 +1,43 @@
+{
+  "skill_name": "sparkscan-net-ios",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I need to upgrade my .NET for iOS SparkScan app from Scandit SDK v6 to v7. Here is my current ViewController: ViewControllerV6.cs.",
+      "expected_output": "The skill renames v6-era SparkScan APIs: TorchButtonVisible → TorchControlVisible, SoundModeOn → SoundEnabled, HapticModeOn → HapticEnabled. Removes ContinuousCaptureTimeout (deleted in v7). Replaces the v6 SparkScanFeedback POCO assigned to sparkScan.Feedback with the v7 ISparkScanFeedbackDelegate assigned to sparkScanView.Feedback (using SparkScanBarcodeSuccessFeedback / SparkScanBarcodeErrorFeedback). It does NOT rename new SparkScan(settings) — the .NET constructor is unchanged.",
+      "files": [
+        "fixtures/ViewControllerV6.cs"
+      ],
+      "assertions": [
+        {"text": "sparkScanView.TorchButtonVisible is replaced with sparkScanView.TorchControlVisible"},
+        {"text": "viewSettings.SoundModeOn is replaced with viewSettings.SoundEnabled (a bool)"},
+        {"text": "viewSettings.HapticModeOn is replaced with viewSettings.HapticEnabled (a bool)"},
+        {"text": "viewSettings.ContinuousCaptureTimeout is removed (no replacement; controlled internally)"},
+        {"text": "sparkScan.Feedback = new SparkScanFeedback { ... } is removed"},
+        {"text": "The SparkScanFeedback POCO (with Success / Error Feedback properties) is no longer present in the updated code"},
+        {"text": "A class implementing ISparkScanFeedbackDelegate is introduced (or the view controller itself implements it)"},
+        {"text": "GetFeedbackForBarcode(Barcode) is implemented and returns SparkScanBarcodeSuccessFeedback / SparkScanBarcodeErrorFeedback"},
+        {"text": "sparkScanView.Feedback is assigned to the delegate instance (not sparkScan.Feedback)"},
+        {"text": "new SparkScan(settings) is preserved (not renamed to SparkScan.Create or anything else)"},
+        {"text": "new SparkScanSettings() is preserved"},
+        {"text": "ISparkScanListener.OnBarcodeScanned / OnSessionUpdated callbacks (or the BarcodeScanned event subscription) are preserved"},
+        {"text": "sparkScanView.PrepareScanning() / StopScanning() lifecycle calls are preserved (the iOS-specific methods, not Android's OnPause/OnResume)"},
+        {"text": "The migration guide URL (https://docs.scandit.com/sdks/net/ios/migrate-6-to-7/) is provided"}
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "I'm upgrading my Scandit .NET iOS SparkScan SDK from v7 to v8. What do I need to change in my code?",
+      "expected_output": "The skill explains that v8 requires explicit SDK initialization in AppDelegate.FinishedLaunching — ScanditCaptureCore.Initialize() and ScanditBarcodeCapture.Initialize() must be called before any Scandit type is constructed. The SparkScan factory pattern (new SparkScan(settings)) is unchanged. Reinforces the canonical IFrameData using-disposal pattern. Provides the v7→v8 migration guide URL.",
+      "files": [],
+      "assertions": [
+        {"text": "The skill explains that SDK 8.0+ requires explicit initialization via ScanditCaptureCore.Initialize() and ScanditBarcodeCapture.Initialize()"},
+        {"text": "The skill instructs the user to add the initialization calls to AppDelegate.FinishedLaunching (or equivalent iOS app-startup hook), not to ViewController.ViewDidLoad"},
+        {"text": "The skill does NOT instruct the user to replace new SparkScan(settings) with anything else — the .NET SparkScan constructor is unchanged in v7→v8"},
+        {"text": "The skill does NOT instruct the user to add a sparkScan AddMode/RemoveMode call (that is a cross-platform native SDK change, not .NET iOS)"},
+        {"text": "The skill reinforces the IFrameData using-disposal pattern (using var imageBuffer = args.FrameData?.ImageBuffers.LastOrDefault() or equivalent explicit Dispose)"},
+        {"text": "Migration guide URL (https://docs.scandit.com/sdks/net/ios/migrate-7-to-8/) is provided"}
+      ]
+    }
+  ]
+}

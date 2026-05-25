@@ -1,0 +1,129 @@
+{
+  "skill_name": "sparkscan-maui",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I want to add SparkScan to my .NET MAUI app. Here's my empty page: EmptyMainPage.xaml + EmptyMainPage.xaml.cs, and my MauiProgram: EmptyMauiProgram.cs. I need to scan EAN-13 and Code 128 barcodes for a retail app.",
+      "expected_output": "The skill reads integration.md, fetches the latest Scandit MAUI NuGet versions, updates MauiProgram.cs with .UseScanditCore().UseScanditBarcode(c => c.AddSparkScanView()), adds <scandit:SparkScanView> to MainPage.xaml with the correct namespace and three bindable properties (DataCaptureContext, SparkScan, SparkScanViewSettings), writes complete SparkScan integration into MainPage.xaml.cs (new SparkScan(settings), BarcodeScanned event, ISparkScanFeedbackDelegate, OnAppearing/OnDisappearing forwarded to the SparkScan control, Permissions.Camera). Shows the setup checklist (four NuGet packages, NSCameraUsageDescription on iOS, SupportedOSPlatformVersion ≥ 24 for Android, license key).",
+      "files": [
+        "fixtures/EmptyMainPage.xaml",
+        "fixtures/EmptyMainPage.xaml.cs",
+        "fixtures/EmptyMauiProgram.cs"
+      ],
+      "assertions": [
+        {"text": "Setup checklist mentions all four NuGet packages: Scandit.DataCapture.Core, Scandit.DataCapture.Core.Maui, Scandit.DataCapture.Barcode, Scandit.DataCapture.Barcode.Maui"},
+        {"text": "MauiProgram.cs is updated to call .UseScanditCore()"},
+        {"text": "MauiProgram.cs UseScanditCore call does NOT receive a configure lambda (i.e. no AddDataCaptureView() inside it) for the SparkScan-only case"},
+        {"text": "MauiProgram.cs is updated to call .UseScanditBarcode( with a configure lambda"},
+        {"text": "The UseScanditBarcode configure lambda invokes AddSparkScanView() (not AddDataCaptureView, which is on UseScanditCore for BarcodeCapture, and not AddBarcodeCaptureView)"},
+        {"text": "MainPage.xaml adds the xmlns:scandit=\"clr-namespace:Scandit.DataCapture.Barcode.Spark.UI.Maui;assembly=ScanditBarcodeCaptureMaui\" namespace (assembly is ScanditBarcodeCaptureMaui, no dots)"},
+        {"text": "MainPage.xaml contains a <scandit:SparkScanView> element (not <scandit:DataCaptureView>, which is BarcodeCapture's control)"},
+        {"text": "<scandit:SparkScanView> binds its DataCaptureContext property (via {Binding ...} or x:Name + code-behind)"},
+        {"text": "<scandit:SparkScanView> binds its SparkScan property"},
+        {"text": "<scandit:SparkScanView> binds its SparkScanViewSettings property"},
+        {"text": "Setup checklist mentions adding NSCameraUsageDescription to Platforms/iOS/Info.plist"},
+        {"text": "Setup checklist mentions setting SupportedOSPlatformVersion to 24 (or higher) for the Android target"},
+        {"text": "A license key placeholder string is present"},
+        {"text": "DataCaptureContext.ForLicenseKey( is used to create the context"},
+        {"text": "new SparkScanSettings() is used (not SparkScanSettings.Create(), which does not exist)"},
+        {"text": "new SparkScan(settings) is used (not SparkScan.Create(...), which does not exist)"},
+        {"text": "Symbology.Ean13Upca is enabled"},
+        {"text": "Symbology.Code128 is enabled"},
+        {"text": "No symbologies other than Ean13Upca and Code128 are enabled"},
+        {"text": "sparkScan.BarcodeScanned += handler is wired (or sparkScan.AddListener if using ISparkScanListener)"},
+        {"text": "The page's OnAppearing forwards to this.SparkScanView.OnAppearing() (the MAUI control's own lifecycle method)"},
+        {"text": "The page's OnDisappearing forwards to this.SparkScanView.OnDisappearing()"},
+        {"text": "Permissions.CheckStatusAsync<Permissions.Camera>() or Permissions.RequestAsync<Permissions.Camera>() is called from OnAppearing (or equivalent)"},
+        {"text": "MainThread.BeginInvokeOnMainThread is used to dispatch UI work (not RunOnUiThread, which is Android-only, and not DispatchQueue.MainQueue.DispatchAsync, which is iOS-only)"},
+        {"text": "OnPause/OnResume are NOT called on the SparkScan control (those are the non-MAUI Android binding lifecycle methods)"},
+        {"text": "PrepareScanning/StopScanning are NOT called on the SparkScan control (those are the non-MAUI iOS binding lifecycle methods)"},
+        {"text": "No explicit ScanditCaptureCore.Initialize() / ScanditBarcodeCapture.Initialize() call is added in MauiProgram.cs, MainApplication.cs, or AppDelegate.cs (the UseScanditCore/UseScanditBarcode builder handles it for MAUI)"}
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Add SparkScan to my existing .NET MAUI page. Here's the page: EmptyMainPage.xaml + EmptyMainPage.xaml.cs and MauiProgram: EmptyMauiProgram.cs. I want to scan QR codes and Data Matrix. When a barcode is scanned, show a DisplayAlertAsync with the value.",
+      "expected_output": "The skill integrates SparkScan into the page with QR and Data Matrix enabled, shows a DisplayAlertAsync in the BarcodeScanned handler (dispatched via MainThread.BeginInvokeOnMainThread), updates MauiProgram.cs with the SparkScan builder chain, and shows the setup checklist.",
+      "files": [
+        "fixtures/EmptyMainPage.xaml",
+        "fixtures/EmptyMainPage.xaml.cs",
+        "fixtures/EmptyMauiProgram.cs"
+      ],
+      "assertions": [
+        {"text": "Symbology.Qr is enabled"},
+        {"text": "Symbology.DataMatrix is enabled"},
+        {"text": "No symbologies other than Qr and DataMatrix are enabled"},
+        {"text": "new SparkScan( is used"},
+        {"text": "The BarcodeScanned event handler reads args.Session.NewlyRecognizedBarcode"},
+        {"text": "DisplayAlertAsync (or DisplayAlert) is called with barcode.Data shown"},
+        {"text": "MainThread.BeginInvokeOnMainThread is used to dispatch the DisplayAlert"},
+        {"text": "MauiProgram.cs calls .UseScanditCore() (no configure lambda) and .UseScanditBarcode(c => c.AddSparkScanView())"},
+        {"text": "Setup checklist mentions all four NuGet packages"}
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "In my .NET MAUI SparkScan app, I want to reject barcodes whose value starts with '000' and show an error message in the SparkScan UI for 5 seconds before scanning resumes. Wire this up.",
+      "expected_output": "The skill implements ISparkScanFeedbackDelegate on the page (or view model), builds a SparkScanBarcodeSuccessFeedback and a SparkScanBarcodeErrorFeedback(message, resumeCapturingDelay), assigns the delegate to this.SparkScanView.Feedback (or binds via the Feedback bindable property), and returns the error feedback when barcode.Data starts with '000'.",
+      "files": [
+        "fixtures/IntegratedMainPage.xaml",
+        "fixtures/IntegratedMainPage.xaml.cs"
+      ],
+      "assertions": [
+        {"text": "The page (or a dedicated class) implements ISparkScanFeedbackDelegate"},
+        {"text": "GetFeedbackForBarcode(Barcode barcode) is implemented"},
+        {"text": "new SparkScanBarcodeErrorFeedback( is constructed with a message argument and a resumeCapturingDelay argument"},
+        {"text": "resumeCapturingDelay uses TimeSpan.FromSeconds(5) (or TimeSpan.FromMilliseconds(5000)) — not a bare integer 5, not a double, not a TimeInterval"},
+        {"text": "new SparkScanBarcodeSuccessFeedback() (or one of its multi-argument constructors) is used for the success case"},
+        {"text": "this.SparkScanView.Feedback is assigned to the delegate instance, OR the <scandit:SparkScanView> Feedback bindable property is bound to the delegate"},
+        {"text": "GetFeedbackForBarcode inspects barcode.Data and returns the error feedback when it starts with '000'"},
+        {"text": "GetFeedbackForBarcode does NOT call MainThread.BeginInvokeOnMainThread or any UI dispatcher (the delegate runs on a background thread)"},
+        {"text": "Existing integration code (DataCaptureContext, SparkScan, SparkScanView bindings, OnAppearing/OnDisappearing) is preserved"}
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "Hide the torch and trigger buttons on my .NET MAUI <scandit:SparkScanView> and add a custom Start button (a MAUI Button) that calls StartScanning() on the control programmatically.",
+      "expected_output": "The skill sets this.SparkScanView.TorchControlVisible = false and this.SparkScanView.TriggerButtonVisible = false from the code-behind, then wires a MAUI Button.Clicked handler to call this.SparkScanView.StartScanning(). Uses the renamed v7 property TorchControlVisible (not the v6 TorchButtonVisible).",
+      "files": [
+        "fixtures/IntegratedMainPage.xaml",
+        "fixtures/IntegratedMainPage.xaml.cs"
+      ],
+      "assertions": [
+        {"text": "this.SparkScanView.TorchControlVisible = false is set (not TorchButtonVisible, which was removed in v7)"},
+        {"text": "this.SparkScanView.TriggerButtonVisible = false is set"},
+        {"text": "this.SparkScanView.StartScanning() is called from a MAUI Button Clicked event (or equivalent)"},
+        {"text": "Existing integration code (DataCaptureContext, SparkScan, SparkScanView bindings, OnAppearing/OnDisappearing) is preserved"}
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "I need to filter scans so duplicates of the same code within 500 milliseconds are ignored in my .NET MAUI SparkScan app.",
+      "expected_output": "The skill sets settings.CodeDuplicateFilter = TimeSpan.FromMilliseconds(500) on the SparkScanSettings instance (using TimeSpan, not a bare integer, not a double, not TimeInterval).",
+      "files": [
+        "fixtures/IntegratedMainPage.xaml.cs"
+      ],
+      "assertions": [
+        {"text": "settings.CodeDuplicateFilter is set to TimeSpan.FromMilliseconds(500) (not a bare integer 500, not a double 0.5, not TimeInterval)"},
+        {"text": "The value is applied to a SparkScanSettings instance (not BarcodeCaptureSettings)"},
+        {"text": "Either CodeDuplicateFilter is set before new SparkScan(settings), or sparkScan.ApplySettingsAsync(settings) is invoked after the change"},
+        {"text": "Existing integration code (DataCaptureContext, SparkScan, SparkScanView bindings, OnAppearing/OnDisappearing) is preserved"}
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "When a barcode is scanned in my .NET MAUI SparkScan app, I want to disable scanning, look up the barcode via an async HTTP call, and re-enable scanning when the lookup completes. Wire this up safely.",
+      "expected_output": "The skill sets this.SparkScan.Enabled = false at the start of the BarcodeScanned handler, awaits the async lookup, and re-enables scanning in a finally block. UI updates are dispatched via MainThread.BeginInvokeOnMainThread.",
+      "files": [
+        "fixtures/IntegratedMainPage.xaml.cs"
+      ],
+      "assertions": [
+        {"text": "this.SparkScan.Enabled = false (or sparkScan.Enabled = false) is set inside the BarcodeScanned handler before the async work"},
+        {"text": "An async/await call or a Task continuation is used to perform the lookup"},
+        {"text": "this.SparkScan.Enabled = true (or sparkScan.Enabled = true) is set after the lookup completes (typically in a finally block)"},
+        {"text": "MainThread.BeginInvokeOnMainThread is used to dispatch UI work after the async lookup (not RunOnUiThread, not DispatchQueue.MainQueue.DispatchAsync)"},
+        {"text": "Existing integration code (DataCaptureContext, SparkScan, SparkScanView bindings, OnAppearing/OnDisappearing) is preserved"}
+      ]
+    }
+  ]
+}

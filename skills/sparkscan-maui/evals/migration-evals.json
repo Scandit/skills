@@ -1,0 +1,42 @@
+{
+  "skill_name": "sparkscan-maui",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I need to upgrade my .NET MAUI SparkScan app from Scandit SDK v6 to v7. Here is my current page code-behind: MainPageV6.xaml.cs.",
+      "expected_output": "The skill renames v6-era SparkScan APIs: TorchButtonVisible → TorchControlVisible, SoundModeOn → SoundEnabled, HapticModeOn → HapticEnabled. Removes ContinuousCaptureTimeout (deleted in v7). Replaces the v6 SparkScanFeedback POCO assigned to SparkScan.Feedback with the v7 ISparkScanFeedbackDelegate assigned to SparkScanView.Feedback (using SparkScanBarcodeSuccessFeedback / SparkScanBarcodeErrorFeedback). Preserves new SparkScan(settings) and the OnAppearing/OnDisappearing forwarding pattern on the MAUI control. Confirms the MauiProgram.cs UseScanditCore + UseScanditBarcode(c => c.AddSparkScanView()) chain is correct.",
+      "files": [
+        "fixtures/MainPageV6.xaml.cs"
+      ],
+      "assertions": [
+        {"text": "SparkScanView.TorchButtonVisible is replaced with SparkScanView.TorchControlVisible"},
+        {"text": "viewSettings.SoundModeOn is replaced with viewSettings.SoundEnabled (a bool)"},
+        {"text": "viewSettings.HapticModeOn is replaced with viewSettings.HapticEnabled (a bool)"},
+        {"text": "viewSettings.ContinuousCaptureTimeout is removed (no replacement; controlled internally)"},
+        {"text": "SparkScan.Feedback = new SparkScanFeedback { ... } is removed"},
+        {"text": "The SparkScanFeedback POCO (with Success / Error Feedback properties) is no longer present in the updated code"},
+        {"text": "A class implementing ISparkScanFeedbackDelegate is introduced (or the page itself implements it)"},
+        {"text": "GetFeedbackForBarcode(Barcode) is implemented and returns SparkScanBarcodeSuccessFeedback / SparkScanBarcodeErrorFeedback"},
+        {"text": "this.SparkScanView.Feedback is assigned to the delegate (or the Feedback bindable property is bound)"},
+        {"text": "new SparkScan(settings) is preserved (not renamed to SparkScan.Create or anything else)"},
+        {"text": "new SparkScanSettings() is preserved"},
+        {"text": "The BarcodeScanned event subscription (or ISparkScanListener implementation) is preserved"},
+        {"text": "this.SparkScanView.OnAppearing() and this.SparkScanView.OnDisappearing() lifecycle calls are preserved"},
+        {"text": "At least one of the v6→v7 migration guide URLs (https://docs.scandit.com/sdks/net/android/migrate-6-to-7/ or https://docs.scandit.com/sdks/net/ios/migrate-6-to-7/) is provided"}
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "I'm upgrading my Scandit .NET MAUI SparkScan SDK from v7 to v8. What do I need to change in my code?",
+      "expected_output": "The skill explains that MAUI projects do NOT need to add explicit ScanditCaptureCore.Initialize() / ScanditBarcodeCapture.Initialize() calls — the .UseScanditCore() / .UseScanditBarcode(...) builder extensions handle initialization. The SparkScan factory pattern (new SparkScan(settings)) is unchanged. Confirms the SparkScan MAUI builder chain (.UseScanditCore().UseScanditBarcode(c => c.AddSparkScanView())) is the correct shape. Provides at least one v7→v8 migration guide URL.",
+      "files": [],
+      "assertions": [
+        {"text": "The skill explains that the MAUI builder extensions (UseScanditCore / UseScanditBarcode) handle SDK 8.0+ initialization, so no manual ScanditCaptureCore.Initialize() / ScanditBarcodeCapture.Initialize() call is needed in MauiProgram.cs, MainApplication.cs, or AppDelegate.cs"},
+        {"text": "The skill does NOT instruct the user to replace new SparkScan(settings) with anything else — the .NET SparkScan constructor is unchanged in v7→v8"},
+        {"text": "The skill does NOT instruct the user to add a sparkScan AddMode/RemoveMode call (that is a cross-platform native SDK change, not .NET MAUI)"},
+        {"text": "The MAUI builder chain shape is reaffirmed: .UseScanditCore() takes no configure lambda for SparkScan, and .UseScanditBarcode( takes a configure lambda invoking AddSparkScanView()"},
+        {"text": "At least one of the v7→v8 migration guide URLs (https://docs.scandit.com/sdks/net/android/migrate-7-to-8/ or https://docs.scandit.com/sdks/net/ios/migrate-7-to-8/) is provided"}
+      ]
+    }
+  ]
+}
