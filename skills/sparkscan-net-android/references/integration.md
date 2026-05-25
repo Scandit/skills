@@ -8,11 +8,19 @@ Examples below use C# 12 and an `AppCompatActivity`. The same APIs work identica
 
 ## Prerequisites
 
-- Scandit Data Capture SDK for .NET — add via NuGet. Before pinning a version, fetch the latest published version from `https://www.nuget.org/packages/Scandit.DataCapture.Barcode/` and read the latest stable version number from the page. Then add both packages to the `.csproj`:
+### Step 0 — Fetch the latest SDK version from NuGet (mandatory, do this before any edits)
+
+Before editing the `.csproj`, **WebFetch** `https://www.nuget.org/packages/Scandit.DataCapture.Barcode/` and read the latest **stable** version number off the page (skip `-beta.*` / `-preview.*` / `-rc.*` suffixes). Use that exact version for both packages.
+
+Do **not** guess, do **not** reuse a version from training data, and do **not** invent a number like `8.13.0` when only `8.4.0` is the latest stable — `dotnet restore` will fail with `Unable to find package Scandit.DataCapture.Core with version (>= 8.13.0)`. The latest stable version changes regularly; only the live NuGet page is authoritative. If WebFetch fails, fall back to `https://api.nuget.org/v3-flatcontainer/scandit.datacapture.barcode/index.json` (last entry without a pre-release suffix) before proceeding.
+
+### Other prerequisites
+
+- Scandit Data Capture SDK for .NET — add both packages to the `.csproj`, pinned to the version fetched in Step 0:
   ```xml
   <ItemGroup>
-    <PackageReference Include="Scandit.DataCapture.Core" Version="<latest-version>" />
-    <PackageReference Include="Scandit.DataCapture.Barcode" Version="<latest-version>" />
+    <PackageReference Include="Scandit.DataCapture.Core" Version="<step-0-version>" />
+    <PackageReference Include="Scandit.DataCapture.Barcode" Version="<step-0-version>" />
   </ItemGroup>
   ```
   Both packages are published on NuGet.org. Do **not** add `Scandit.DataCapture.Core.Maui` or `Scandit.DataCapture.Barcode.Maui` — those are MAUI-only.
@@ -21,6 +29,11 @@ Examples below use C# 12 and an `AppCompatActivity`. The same APIs work identica
   <PackageReference Include="Xamarin.AndroidX.AppCompat" Version="<latest-version-with-xamarin-suffix>" />
   ```
   **When fetching the latest version, pick the highest available including any Xamarin-revision suffix — e.g. `1.7.0.5`, not bare `1.7.0`.** The `.X` suffix marks Xamarin-binding patch revisions and carries critical transitive-dep updates.
+- **`Theme.AppCompat` descendant required on the activity.** Because the activity inherits from `AppCompatActivity`, its theme must be a `Theme.AppCompat` descendant or `SetContentView` crashes at launch with `IllegalStateException: You need to use a Theme.AppCompat theme (or descendant) with this activity`. The `dotnet new android` template's default theme is **not** AppCompat-based, so set one explicitly on the `[Activity]` attribute (`NoActionBar` since `SparkScanView` overlays its own UI):
+  ```csharp
+  [Activity(Label = "@string/app_name", MainLauncher = true, Theme = "@style/Theme.AppCompat.Light.NoActionBar")]
+  ```
+  Or apply it app-wide via `android:theme="@style/Theme.AppCompat.Light.NoActionBar"` on the `<application>` element in `AndroidManifest.xml`.
 - The official .NET Android SparkScan sample also references `Xamarin.AndroidX.RecyclerView`, `Xamarin.AndroidX.ConstraintLayout`, `Xamarin.AndroidX.Activity`, `Xamarin.AndroidX.Fragment`, `Xamarin.AndroidX.Lifecycle.ViewModel`, and `Xamarin.Google.Android.Material` — only add the ones the activity layout actually uses. The minimum set needed for SparkScan itself is just `Xamarin.AndroidX.AppCompat`.
 - **`SupportedOSPlatformVersion` must be at least `24`** in the `.csproj`:
   ```xml
@@ -87,13 +100,14 @@ Once the user responds, ask which Activity (or Fragment) they'd like to integrat
 After providing the code, show this setup checklist:
 
 **Setup checklist:**
-1. Add `<PackageReference Include="Scandit.DataCapture.Barcode" Version="<version>" />` and `<PackageReference Include="Scandit.DataCapture.Core" Version="<version>" />` to the `.csproj` (the version was already fetched and filled in above).
+1. Add `<PackageReference Include="Scandit.DataCapture.Barcode" Version="<step-0-version>" />` and `<PackageReference Include="Scandit.DataCapture.Core" Version="<step-0-version>" />` to the `.csproj` (use the version pinned in **Step 0** above — do not guess).
 2. Ensure `<SupportedOSPlatformVersion>24.0</SupportedOSPlatformVersion>` is set in the `.csproj`.
 3. Add `<uses-permission android:name="android.permission.CAMERA" />` and the `<uses-feature>` element to `AndroidManifest.xml`.
 4. Request the `CAMERA` permission at runtime before scanning starts (the `CameraPermissionActivity` helper below).
 5. Create `MainApplication.cs` with `ScanditCaptureCore.Initialize()` and `ScanditBarcodeCapture.Initialize()` (SDK 8.0+).
-6. Wrap the activity layout in `<com.scandit.datacapture.barcode.spark.ui.SparkScanCoordinatorLayout>` (see Step 5 for the full XML).
-7. Replace `-- ENTER YOUR SCANDIT LICENSE KEY HERE --` with your key from https://ssl.scandit.com.
+6. Set `Theme = "@style/Theme.AppCompat.Light.NoActionBar"` on the `[Activity]` attribute (required by `AppCompatActivity`).
+7. Wrap the activity layout in `<com.scandit.datacapture.barcode.spark.ui.SparkScanCoordinatorLayout>` (see Step 5 for the full XML).
+8. Replace `-- ENTER YOUR SCANDIT LICENSE KEY HERE --` with your key from https://ssl.scandit.com.
 
 ## Step 1 — Create the DataCaptureContext
 
@@ -545,7 +559,7 @@ using Scandit.DataCapture.Core.Capture;
 
 namespace MyApp;
 
-[Activity(Label = "@string/app_name", MainLauncher = true)]
+[Activity(Label = "@string/app_name", MainLauncher = true, Theme = "@style/Theme.AppCompat.Light.NoActionBar")]
 public class MainActivity : CameraPermissionActivity, ISparkScanFeedbackDelegate
 {
     public const string SCANDIT_LICENSE_KEY = "-- ENTER YOUR SCANDIT LICENSE KEY HERE --";
@@ -812,3 +826,4 @@ private async void OnBarcodeScanned(object? sender, SparkScanEventArgs args)
 10. **`TimeSpan`, not `TimeInterval`** — `CodeDuplicateFilter`, `TriggerButtonCollapseTimeout`, `InactiveStateTimeout`, and `SparkScanBarcodeErrorFeedback.resumeCapturingDelay` are all `TimeSpan`.
 11. **Symbologies are PascalCase** — `Symbology.Ean13Upca`, not `EAN13_UPCA`.
 12. **No `<activity>` in the manifest** — `[Activity(MainLauncher = true, …)]` is the canonical registration.
+13. **Set a `Theme.AppCompat` descendant on the activity** — `[Activity(..., Theme = "@style/Theme.AppCompat.Light.NoActionBar")]`. Required because the activity inherits from `AppCompatActivity`; without it `SetContentView` throws `IllegalStateException` at launch.
