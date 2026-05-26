@@ -23,9 +23,22 @@ Capacitor-specific gotchas worth flagging:
 - After installing or upgrading Scandit packages, run `npx cap sync` (and `cd ios/App && pod install` for iOS).
 - Camera permission: iOS requires `NSCameraUsageDescription` in `ios/App/App/Info.plist`. Android: declared automatically by the plugin; request at runtime via `@capacitor/camera` or `@capgo/permission` if `minSdkVersion >= 23`.
 
+## Product Guidance
+
+Apply these rules whenever the user is making a design decision, not just an API question. They reflect how Scandit recommends Label Capture be integrated.
+
+- **Default to the Validation Flow.** New integrations should use `LabelCaptureValidationFlowOverlay`, not `LabelCaptureBasicOverlay`. Recommend the basic/advanced overlay path only when the customer explicitly needs a live AR overlay or a UI that the Validation Flow's fixed layout cannot produce. See `references/validation-flow.md`.
+- **Validation Flow must be rendered full-screen.** Do not place it inside a card, half-sheet, modal slice, or partial-height widget — the layout assumes full-screen height for the field checklist, manual-entry sheet, and keyboard.
+- **Prefer pre-made labels first, then pre-made fields, then custom.** Try in this order: (1) does a **pre-made label definition** cover the use case? — `LabelDefinition.createVinLabelDefinition(name)`, `LabelDefinition.createPriceCaptureDefinition(name)`, `LabelDefinition.createSevenSegmentDisplayLabelDefinition(name)`. (2) Can the label be built from **pre-made fields**? — `ExpiryDateText`, `PackingDateText`, `DateText`, `WeightText`, `UnitPriceText`, `TotalPriceText`, `SerialNumberBarcode`, `PartNumberBarcode`, `ImeiOneBarcode`, `ImeiTwoBarcode`. (3) Only as a last resort, fall back to `CustomText` / `CustomBarcode`.
+- **Start from the sample app on greenfield integrations.** If the user is starting from scratch, recommend cloning `LabelCaptureSimpleSample` (link in the References table) and adapting it.
+- **Hand off to the `data-capture-sdk` skill for non-Label-Capture questions.** If the user asks about another Scandit product (Barcode Capture, SparkScan, MatrixScan, ID Capture, etc.) or about choosing between products, defer to the `data-capture-sdk` skill instead of guessing.
+
 ## Intent Routing
 
-- **Integrating Label Capture from scratch** → read `references/integration.md`.
+- **Integrating Label Capture from scratch** → read `references/integration.md`. By default, integrate the Validation Flow (the integration guide leads with it).
+- **Validation Flow questions** ("how do I customize it", "what can we change", "why is it implemented this way", "how do I react to manual edits", "can I change the colors") → read `references/validation-flow.md`.
+- **Visual customization beyond the Validation Flow** ("live AR overlay", "draw a tag next to each captured field", "get the camera frame during scanning") → read `references/customization.md`.
+- **Adaptive Recognition Engine / cloud fallback / receipt scanning** ("how do I enable ARE", "use cloud recognition", "scan a receipt", "AdaptiveRecognitionMode", "is ARE available in production") → read `references/adaptive-recognition.md`.
 - **Migrating or upgrading an existing Label Capture integration** → read `references/migration.md`.
 
 ## API Usage Policy

@@ -16,9 +16,59 @@ Label Capture (Smart Label Capture) extracts multiple fields from a single label
   - iOS: add `NSCameraUsageDescription` to `ios/Runner/Info.plist`.
   - Android: the manifest permission is declared by the plugin; request it at runtime with `permission_handler` (or equivalent) before pushing the scan screen.
 
+## Recognition Limits
+
+Before defining fields, sanity-check whether Smart Label Capture can read the customer's labels at all. These limits apply to **text** fields (barcodes are not subject to them).
+
+- **Supported character set**: ``0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz ()-./:,$¶"`` — digits, Latin upper/lower case, and a small set of punctuation. **Diacritics (é, ñ, ü, etc.), accented letters, and non-Latin scripts (CJK, Cyrillic, Arabic, etc.) are not in the supported set.** If the customer's labels contain characters outside this set, Smart Label Capture is not the right tool for those fields.
+- **Handwriting is not supported.** Only printed text. There is no partial-support path — if the field value is handwritten, the OCR will not read it.
+- **Capture conditions matter**: glare, motion blur, low contrast, and oblique angles all degrade recognition. There is no documented minimum font size or contrast threshold — recommend the customer test with their actual labels.
+
+If the customer needs handwriting recognition, non-Latin scripts, or characters outside the supported set, surface the limit explicitly before writing code rather than letting them discover it after integration.
+
+## Language Coverage for Pre-Made Text Fields
+
+The pre-made text fields ship with **default anchor regexes (`anchorRegexes`) in English, German, and French**. These cover the contextual keywords used to locate the value on the label (e.g. `EXP`, `Verfallsdatum`, `À consommer avant`):
+
+| Field | Out-of-the-box languages |
+|---|---|
+| `ExpiryDateText` | EN / DE / FR |
+| `PackingDateText` | EN / DE / FR |
+| `UnitPriceText` | EN / DE / FR |
+| `TotalPriceText` | EN / DE / FR |
+| `WeightText` | EN / DE / FR |
+| `DateText` | Generic — no language-specific anchors (used when no specific date type fits). |
+| Barcode fields (`SerialNumberBarcode`, `PartNumberBarcode`, `ImeiOneBarcode`, `ImeiTwoBarcode`) | Not language-bound — they match barcode symbologies and the data they encode. |
+
+**If the customer's labels are in another language** (Italian, Spanish, Polish, Portuguese, etc.), they have two options:
+1. **Override the anchor regex(es)** on the preset field builder with localized keywords:
+   ```dart
+   final expiry = ExpiryDateTextBuilder()
+       .setAnchorRegexes(['Scadenza', 'Da consumarsi entro', 'Caducidad']) // Italian / Spanish
+       .isOptional(false)
+       .build('Expiry Date');
+   ```
+   This keeps the preset's value-recognition logic (date parsing, price parsing, etc.) and only swaps the localization layer.
+2. **Rebuild from scratch with `CustomText`** — set both `anchorRegexes` and `valueRegexes` manually. Use this when the preset's value pattern itself doesn't match the customer's label format.
+
+Option 1 is preferred when the only mismatch is the keyword language; option 2 when the value format also differs (e.g. dot-separated dates vs. slash-separated, comma decimals vs. dot decimals).
+
 ## Interactive Label Definition
 
 Before writing any code, walk the user through their label. Ask one question at a time.
+
+**Question 0 — Is this one of the pre-made label types?** Before defining individual fields, check whether the SDK already ships a complete `LabelDefinition` for this use case. If yes, use it directly — the schema is baked in native-side.
+
+| Use case | How |
+|---|---|
+| Vehicle identification number (VIN) on a car / dashboard | `LabelDefinition.vinLabelDefinitionWithName('<name>')` |
+| Retail price tag (price + unit price + weight) | `LabelDefinition.priceCaptureDefinitionWithName('<name>')` — **not** compatible with the Validation Flow; see `references/validation-flow.md` |
+| Seven-segment digital display (scales, meters, glucose monitors) | `LabelDefinition.sevenSegmentDisplayLabelDefinitionWithName('<name>')` |
+| Full receipt (store name, line items, total) | Use `LabelCaptureAdaptiveRecognitionOverlay` — different product path, requires ARE. See `references/adaptive-recognition.md`. |
+
+**Pre-made labels are sealed.** Do NOT call `.addField(...)` or otherwise mutate the returned `LabelDefinition`. The schema is fixed native-side; mixing in custom fields is not supported. If the customer needs a hybrid (e.g. "VIN plus an inventory barcode"), build the whole definition manually with custom fields — do not modify a pre-made one.
+
+If a pre-made label fits, **stop here** — skip Questions A/B/C and just instantiate the pre-made definition. Only proceed with the field-by-field interactive flow below when no pre-made label matches.
 
 **Question A — What's on your label?** Present this checklist of supported field types:
 
@@ -29,9 +79,11 @@ Before writing any code, walk the user through their label. Ask one question at 
 *Text fields (custom):* `CustomText` — any text, user provides a regex.
 
 **Question B — For each selected field:**
-- Required or optional?
+- Required or optional? (required = label is not considered captured until this field matches.)
+- Does the user need at least N instances of the same field matched before the label is considered captured? If so, call `.setNumberOfMandatoryInstances(N)` on the field builder. Leave unset (default `null`) for one-instance behavior.
 - For `CustomBarcode`: which **symbologies**? Mention to the user that enabling only the symbologies they actually need improves scanning performance and accuracy.
-- For `CustomText`: what **regex pattern**? (`setValueRegex(...)` on the builder)
+- For `CustomText` and date/text presets: what **value regex(es)** should the text match? Set via `.setValueRegex('<pattern>')` (or `.setValueRegexes(['<p1>', '<p2>'])` for multiple). `setValueRegex` **appends** — to replace the full set, use `setValueRegexes`.
+- Optionally, **anchor regex(es)** — context words near the value that help the SDK locate the field (e.g. `EXP:`, `Best before`, `LOT`). Set via `.setAnchorRegex('<pattern>')` / `.setAnchorRegexes([...])` on the builder. To clear after the field is built, the only way is to rebuild the field — there is no public setter on the field instance. The presets ship with default anchor regexes — override only if the default doesn't match the customer's labels.
 
 **Question C — Which file should the integration code go in?** Then write the code directly into that file.
 
@@ -147,9 +199,9 @@ class _ScanScreenState extends State<ScanScreen> {
 }
 ```
 
-## Step 7 — Validation Flow (optional)
+## Step 7 — Validation Flow (recommended default)
 
-If the user wants to confirm OCR results, manually correct errors, or capture missing fields without rescanning, add `LabelCaptureValidationFlowOverlay`.
+`LabelCaptureValidationFlowOverlay` is the recommended default UX. It ships the guided field checklist, manual-entry sheet, and final-result callback — features the customer would otherwise have to build themselves on top of `LabelCaptureBasicOverlay`. Render it **full-screen** (do not embed it inside a card / partial-height container). To customize the texts (the only customization surface — colors, layout, fonts are **not** customizable), see `references/validation-flow.md`.
 
 ```dart
 class _ScanScreenState extends State<ScanScreen>
@@ -195,6 +247,8 @@ class _ScanScreenState extends State<ScanScreen>
 > **Listener naming.** On Flutter the methods are iOS-style: `didCaptureLabelWithFields`, `didSubmitManualInputForField`, `didUpdateValidationFlowResult`. Web names (`onValidationFlowLabelCaptured`, `onManualInput`) do not exist on Flutter.
 
 ## Step 8 — Result handling without the Validation Flow
+
+Use this path only when the customer needs a live AR overlay or a custom UI the Validation Flow can't produce (otherwise stick with Step 7). The `getFrameData` argument is the supported hook for retrieving the camera frame during scanning ("image listener") — call it inside the callback to get the frame that produced the update.
 
 If you only use `LabelCaptureBasicOverlay`, attach a `LabelCaptureListener` to the mode:
 

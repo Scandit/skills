@@ -19,9 +19,57 @@ Label Capture (Smart Label Capture) extracts multiple fields from a single label
   - iOS: add `NSCameraUsageDescription` to `ios/<App>/Info.plist`.
   - Android: the manifest permission is declared by the plugin; request at runtime via `PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.CAMERA)` before rendering the scan screen.
 
+## Recognition Limits
+
+Before defining fields, sanity-check whether Smart Label Capture can read the customer's labels at all. These limits apply to **text** fields (barcodes are not subject to them).
+
+- **Supported character set**: ``0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz ()-./:,$¶"`` — digits, Latin upper/lower case, and a small set of punctuation. **Diacritics (é, ñ, ü, etc.), accented letters, and non-Latin scripts (CJK, Cyrillic, Arabic, etc.) are not in the supported set.** If the customer's labels contain characters outside this set, Smart Label Capture is not the right tool for those fields.
+- **Handwriting is not supported.** Only printed text. There is no partial-support path — if the field value is handwritten, the OCR will not read it.
+- **Capture conditions matter**: glare, motion blur, low contrast, and oblique angles all degrade recognition. There is no documented minimum font size or contrast threshold — recommend the customer test with their actual labels.
+
+If the customer needs handwriting recognition, non-Latin scripts, or characters outside the supported set, surface the limit explicitly before writing code rather than letting them discover it after integration.
+
+## Language Coverage for Pre-Made Text Fields
+
+The pre-made text fields ship with **default anchor regexes (`anchorRegexes`) in English, German, and French**. These cover the contextual keywords used to locate the value on the label (e.g. `EXP`, `Verfallsdatum`, `À consommer avant`):
+
+| Field | Out-of-the-box languages |
+|---|---|
+| `ExpiryDateText` | EN / DE / FR |
+| `PackingDateText` | EN / DE / FR |
+| `UnitPriceText` | EN / DE / FR |
+| `TotalPriceText` | EN / DE / FR |
+| `WeightText` | EN / DE / FR |
+| `DateText` | Generic — no language-specific anchors (used when no specific date type fits). |
+| Barcode fields (`SerialNumberBarcode`, `PartNumberBarcode`, `ImeiOneBarcode`, `ImeiTwoBarcode`) | Not language-bound — they match barcode symbologies and the data they encode. |
+
+**If the customer's labels are in another language** (Italian, Spanish, Polish, Portuguese, etc.), they have two options:
+1. **Override the anchor regex(es)** on the preset field with localized keywords:
+   ```typescript
+   const expiry = new ExpiryDateText('Expiry Date');
+   expiry.anchorRegexes = ['Scadenza', 'Da consumarsi entro', 'Caducidad']; // Italian / Spanish
+   ```
+   This keeps the preset's value-recognition logic (date parsing, price parsing, etc.) and only swaps the localization layer.
+2. **Rebuild from scratch with `CustomText`** — set both `anchorRegexes` and `valueRegexes` manually. Use this when the preset's value pattern itself doesn't match the customer's label format.
+
+Option 1 is preferred when the only mismatch is the keyword language; option 2 when the value format also differs (e.g. dot-separated dates vs. slash-separated, comma decimals vs. dot decimals).
+
 ## Interactive Label Definition
 
 Before writing any code, walk the user through their label. Ask one question at a time.
+
+**Question 0 — Is this one of the pre-made label types?** Before defining individual fields, check whether the SDK already ships a complete `LabelDefinition` for this use case. If yes, use it directly — the schema is baked in native-side.
+
+| Use case | How |
+|---|---|
+| Vehicle identification number (VIN) on a car / dashboard | `LabelDefinition.createVinLabelDefinition('<name>')` |
+| Retail price tag (price + unit price + weight) | `LabelDefinition.createPriceCaptureDefinition('<name>')` — **not** compatible with the Validation Flow; see `references/validation-flow.md` |
+| Seven-segment digital display (scales, meters, glucose monitors) | `LabelDefinition.createSevenSegmentDisplayLabelDefinition('<name>')` |
+| Full receipt (store name, line items, total) | Use `LabelCaptureAdaptiveRecognitionOverlay` — different product path, requires ARE. See `references/adaptive-recognition.md`. |
+
+**Pre-made labels are sealed.** Do NOT call `.addField(...)` or otherwise mutate the returned `LabelDefinition`. The schema is fixed native-side; mixing in custom fields is not supported. If the customer needs a hybrid (e.g. "VIN plus an inventory barcode"), build the whole definition manually with custom fields — do not modify a pre-made one.
+
+If a pre-made label fits, **stop here** — skip Questions A/B/C and just instantiate the pre-made definition. Only proceed with the field-by-field interactive flow below when no pre-made label matches.
 
 **Question A — What's on your label?** Present this checklist of supported field types and ask the user to pick everything that applies.
 
@@ -44,9 +92,11 @@ Before writing any code, walk the user through their label. Ask one question at 
 - `CustomText` — any text, user provides a regex
 
 **Question B — For each selected field:**
-- Is it **required** or **optional**? (required = label is not considered captured until this field matches; optional = captured when/if it matches)
+- Is it **required** or **optional**? (required = label is not considered captured until this field matches; optional = captured when/if it matches.)
+- Does the user need at least N instances of the same field to be matched before the label is considered captured? If so, set `field.numberOfMandatoryInstances = N`. Leave `null` (default) for the normal one-instance behavior.
 - For `CustomBarcode`: which **symbologies**? Mention to the user that enabling only the symbologies they actually need improves scanning performance and accuracy.
-- For `CustomText`: what **regex pattern** should the text match? (set via the `valueRegex` property on the field)
+- For `CustomText` and date/text presets: what **value regex(es)** should the text match? Set via `field.valueRegexes = ['<pattern>']` (or `field.valueRegex = '<pattern>'` for a single pattern — note the property is an array under the hood).
+- Optionally, **anchor regex(es)** — context words near the value that help the SDK locate the field (e.g. `EXP:`, `Best before`, `LOT`). Set via `field.anchorRegexes = ['<pattern>']`. To reset/clear, assign an empty array: `field.anchorRegexes = []`. The presets ship with default anchor regexes — override only if the default doesn't match the customer's labels.
 
 **Question C — Which file should the integration code go in?** Then write the code directly into that file. Do not just show it in chat.
 
@@ -181,30 +231,42 @@ import {
 />
 ```
 
-## Step 7 — Validation Flow (optional)
+## Step 7 — Validation Flow (recommended default)
 
-If the user wants to confirm OCR results, manually correct errors, or capture missing fields without rescanning, use the Validation Flow overlay instead of (or in addition to) the basic overlay.
+`LabelCaptureValidationFlowOverlay` is the recommended default UX. It ships the guided field checklist, manual-entry sheet, and final-result callback — features the customer would otherwise have to build themselves on top of `LabelCaptureBasicOverlay`. Render it **full-screen** (do not embed it inside a card / partial-height container).
+
+`LabelCaptureValidationFlowListener` is a **single interface with three required methods**. There is no base/Extended split on RN. If a listener object omits a method, the runtime dispatcher throws when that event fires — provide empty bodies for callbacks you don't care about.
 
 ```tsx
 import {
   LabelCaptureValidationFlowOverlay,
+  LabelResultUpdateType,
   type LabelCaptureValidationFlowListener,
   type LabelField,
-  // 8.4+ only — import LabelResultUpdateType if you implement didUpdateValidationFlowResult.
-  // LabelResultUpdateType,
 } from 'scandit-react-native-datacapture-label';
+import type { FrameData } from 'scandit-react-native-datacapture-core';
 
 const listener: LabelCaptureValidationFlowListener = {
   didCaptureLabelWithFields(fields: LabelField[]) {
     // Final result for one label, after the user has confirmed any required corrections.
   },
+
   didSubmitManualInputForField(_field, _oldValue, _newValue) {
-    // Fires when the user manually enters or corrects a field value (8.2+).
+    // Fires whenever the user manually enters or corrects a field value.
+    // Leave the body empty if you don't need this signal.
   },
-  // Optional — only available from 8.4+:
-  // didUpdateValidationFlowResult(type, asyncId, fields, getFrameData) {
-  //   // Fires multiple times during capture as fields accumulate.
-  // },
+
+  async didUpdateValidationFlowResult(
+    _type: LabelResultUpdateType,
+    _asyncId: number,
+    _fields: LabelField[],
+    _getFrameData: () => Promise<FrameData | null>,
+  ): Promise<void> {
+    // Fires multiple times during capture as fields accumulate.
+    // Call `await _getFrameData()` here to retrieve the camera frame
+    // that produced this partial result (image upload / auditing).
+    // Leave the body empty if you don't need progress feedback.
+  },
 };
 
 const overlay = new LabelCaptureValidationFlowOverlay(labelCaptureRef.current);
@@ -212,17 +274,27 @@ overlay.listener = listener;
 view.addOverlay(overlay);
 ```
 
+To customize the Validation Flow texts/placeholders (the only customization surface — colors, layout, fonts are **not** customizable), see `references/validation-flow.md`.
+
 > **Listener naming**: On React Native the listener uses iOS-style method names (`didCaptureLabelWithFields`, `didSubmitManualInputForField`, `didUpdateValidationFlowResult`). Do **not** use the web equivalents (`onValidationFlowLabelCaptured`, `onManualInput`) — they do not exist on RN.
 
 ## Step 8 — Result handling without the Validation Flow
 
-If you only use `LabelCaptureBasicOverlay`, attach a `LabelCaptureListener` to the mode and read `session.capturedLabels` in `didUpdateSession`:
+Use this path only when the customer needs a live AR overlay or a custom UI the Validation Flow can't produce (otherwise stick with Step 7).
+
+Attach a `LabelCaptureListener` to the mode and read `session.capturedLabels` in `didUpdateSession`. `getFrameData` is the supported hook for retrieving the camera frame during scanning ("image listener"):
 
 ```typescript
 import type { LabelCaptureListener, LabelCaptureSession, LabelField } from 'scandit-react-native-datacapture-label';
+import type { FrameData } from 'scandit-react-native-datacapture-core';
 
 const listener: LabelCaptureListener = {
-  didUpdateSession(_labelCapture, session: LabelCaptureSession) {
+  async didUpdateSession(
+    _labelCapture,
+    session: LabelCaptureSession,
+    getFrameData: () => Promise<FrameData | null>,
+  ) {
+    if (session.capturedLabels.length === 0) return;
     for (const captured of session.capturedLabels) {
       for (const field of captured.fields as LabelField[]) {
         const value = field.barcode?.data ?? field.text;
@@ -230,11 +302,15 @@ const listener: LabelCaptureListener = {
         // For dates you can also call field.asDate().
       }
     }
+    // Optionally: const frame = await getFrameData(); to grab the image
+    // that produced this update. Only valid for the duration of the callback.
   },
 };
 
 labelCaptureRef.current.addListener(listener);
 ```
+
+For brushes, advanced overlays, and the full image-listener pattern, see `references/customization.md`.
 
 ## Step 9 — Lifecycle (AppState + cleanup)
 
