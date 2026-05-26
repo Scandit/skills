@@ -1,0 +1,42 @@
+{
+  "skill_name": "matrixscan-batch-net-android",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I need to upgrade my .NET for Android MatrixScan app from Scandit SDK v6 to v7. Here is my current Activity: ActivityV6.cs.",
+      "expected_output": "The skill renames every v6 BarcodeTracking* type to its v7 BarcodeBatch* equivalent (class names, settings, listener interface, session, basic overlay), updates the Scandit.DataCapture.Barcode.Tracking.* using directives to Scandit.DataCapture.Barcode.Batch.*, and modernizes the camera setup to use BarcodeBatch.RecommendedCameraSettings (the static property) instead of a hand-rolled CameraSettings. The .NET factory method name (Create) is unchanged. Provides the v6→v7 migration guide URL.",
+      "files": [
+        "fixtures/ActivityV6.cs"
+      ],
+      "assertions": [
+        {"text": "All BarcodeTracking class references are renamed to BarcodeBatch"},
+        {"text": "BarcodeTrackingSettings is renamed to BarcodeBatchSettings"},
+        {"text": "BarcodeTrackingSession is renamed to BarcodeBatchSession"},
+        {"text": "IBarcodeTrackingListener is renamed to IBarcodeBatchListener"},
+        {"text": "BarcodeTrackingBasicOverlay is renamed to BarcodeBatchBasicOverlay"},
+        {"text": "using Scandit.DataCapture.Barcode.Tracking.Capture is renamed to using Scandit.DataCapture.Barcode.Batch.Capture"},
+        {"text": "using Scandit.DataCapture.Barcode.Tracking.Data is renamed to using Scandit.DataCapture.Barcode.Batch.Data"},
+        {"text": "using Scandit.DataCapture.Barcode.Tracking.UI.Overlay is renamed to using Scandit.DataCapture.Barcode.Batch.UI.Overlay"},
+        {"text": "Camera setup is updated to use BarcodeBatch.RecommendedCameraSettings (the v6 hand-rolled new CameraSettings is removed or replaced)"},
+        {"text": "BarcodeBatch.RecommendedCameraSettings is read as a static property, not a method call with parentheses"},
+        {"text": "The factory call shape Create(dataCaptureContext, settings) is preserved (not renamed to ForDataCaptureContext)"},
+        {"text": "The .NET v6→v7 migration guide URL https://docs.scandit.com/sdks/net/android/migrate-6-to-7/ is provided"},
+        {"text": "No BarcodeTracking-named identifier remains in the rewritten file"}
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "I'm upgrading my Scandit .NET Android MatrixScan Batch SDK from v7 to v8. What do I need to change in my code?",
+      "expected_output": "The skill explains that v8 requires explicit SDK initialization in a MainApplication subclass — ScanditCaptureCore.Initialize() and ScanditBarcodeCapture.Initialize() must be called from OnCreate(). The BarcodeBatch factory pattern (BarcodeBatch.Create(context, settings)) and the listener/session APIs are unchanged. Provides the v7→v8 migration guide URL.",
+      "files": [],
+      "assertions": [
+        {"text": "The skill explains that SDK 8.0+ requires explicit initialization via ScanditCaptureCore.Initialize() and ScanditBarcodeCapture.Initialize()"},
+        {"text": "The skill instructs the user to create (or update) a MainApplication subclass decorated with [Application] and override OnCreate()"},
+        {"text": "The initialization calls go into MainApplication.OnCreate() (or equivalent process-startup hook), not into MainActivity.OnCreate()"},
+        {"text": "The skill does NOT instruct the user to replace BarcodeBatch.Create(context, settings) with anything else — the .NET BarcodeBatch factory is unchanged in v7→v8"},
+        {"text": "The skill does NOT instruct the user to rename Create(...) to ForDataCaptureContext(...) (Create is the .NET name across versions)"},
+        {"text": "Migration guide URL https://docs.scandit.com/sdks/net/android/migrate-7-to-8/ is provided"}
+      ]
+    }
+  ]
+}

@@ -1,0 +1,81 @@
+{
+  "skill_name": "matrixscan-batch-net-android",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I want to add MatrixScan Batch to my .NET for Android app. Here's my empty Activity: EmptyActivity.cs. I need to scan EAN-13 and Code 128 barcodes — every visible barcode should be tracked and added to a list as soon as it appears on screen.",
+      "expected_output": "The skill reads integration.md, fetches the latest Scandit NuGet versions, writes complete BarcodeBatch integration code into EmptyActivity.cs (DataCaptureContext.ForLicenseKey, Camera.GetDefaultCamera, BarcodeBatch.RecommendedCameraSettings, BarcodeBatchSettings.Create with Symbology.Ean13Upca + Symbology.Code128, BarcodeBatch.Create, DataCaptureView.Create added to a FrameLayout container, BarcodeBatchBasicOverlay.Create, IBarcodeBatchListener with OnSessionUpdated dispatching to RunOnUiThread, OnResume/OnPause/OnDestroy lifecycle), and shows the setup checklist (NuGet packages, AndroidManifest permission, runtime permission, MainApplication initialize for SDK 8.0+, layout container id, license key).",
+      "files": [
+        "fixtures/EmptyActivity.cs"
+      ],
+      "assertions": [
+        {"text": "Setup checklist is shown and mentions adding the Scandit.DataCapture.Barcode and Scandit.DataCapture.Core NuGet packages"},
+        {"text": "Setup checklist mentions adding android.permission.CAMERA to AndroidManifest.xml"},
+        {"text": "Setup checklist mentions requesting the CAMERA permission at runtime"},
+        {"text": "Setup checklist mentions creating a MainApplication subclass that calls ScanditCaptureCore.Initialize() and ScanditBarcodeCapture.Initialize() (required for SDK 8.0+)"},
+        {"text": "Setup checklist mentions the FrameLayout container in the activity layout (e.g. data_capture_view_container) that hosts the DataCaptureView"},
+        {"text": "A Scandit license key placeholder string is present"},
+        {"text": "DataCaptureContext.ForLicenseKey( is used to create the context"},
+        {"text": "BarcodeBatchSettings.Create() is used (not new BarcodeBatchSettings(), which does not exist in the .NET binding)"},
+        {"text": "BarcodeBatch.Create( is used (not new BarcodeBatch(...) and not BarcodeBatch.ForDataCaptureContext(...))"},
+        {"text": "Symbology.Ean13Upca is enabled"},
+        {"text": "Symbology.Code128 is enabled"},
+        {"text": "No symbologies other than Ean13Upca and Code128 are enabled"},
+        {"text": "Camera.GetDefaultCamera() is used"},
+        {"text": "BarcodeBatch.RecommendedCameraSettings is used as a static property (not BarcodeBatch.RecommendedCameraSettings() with parentheses and not createRecommendedCameraSettings())"},
+        {"text": "camera.ApplySettingsAsync(...) is called with the recommended camera settings"},
+        {"text": "dataCaptureContext.SetFrameSourceAsync(camera) is called"},
+        {"text": "DataCaptureView.Create( is used to create the preview view"},
+        {"text": "The DataCaptureView is added to a FrameLayout container via container.AddView(...)"},
+        {"text": "BarcodeBatchBasicOverlay.Create( is called and given both the BarcodeBatch and the DataCaptureView arguments"},
+        {"text": "The activity implements IBarcodeBatchListener (or subscribes to barcodeBatch.SessionUpdated +=)"},
+        {"text": "OnSessionUpdated is implemented with the signature (BarcodeBatch, BarcodeBatchSession, IFrameData) — not (BarcodeBatch, BarcodeBatchSession, FrameData)"},
+        {"text": "Inside OnSessionUpdated, data from session.AddedTrackedBarcodes is copied out before scheduling UI work"},
+        {"text": "UI work is dispatched via RunOnUiThread(() => ...)"},
+        {"text": "OnResume sets barcodeBatch.Enabled = true and calls camera.SwitchToDesiredStateAsync(FrameSourceState.On)"},
+        {"text": "OnPause sets barcodeBatch.Enabled = false and calls camera.SwitchToDesiredStateAsync(FrameSourceState.Off)"},
+        {"text": "barcodeBatch.RemoveListener(this) is called in OnDestroy"},
+        {"text": "dataCaptureContext.RemoveCurrentMode() is called in OnDestroy"},
+        {"text": "No BarcodeCapture.Create or IBarcodeCaptureListener appears (this is MatrixScan Batch, not single-shot BarcodeCapture)"},
+        {"text": "No Kotlin-style symbology names (e.g. EAN13_UPCA, CODE128) appear"},
+        {"text": "No SparkScan-style new SparkScan(...) constructor appears"}
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "I want to highlight EAN-13 barcodes in green and CODE128 barcodes in blue in my MatrixScan Batch Activity. Here is my Activity: IntegratedActivity.cs.",
+      "expected_output": "The skill implements IBarcodeBatchBasicOverlayListener, overrides BrushForTrackedBarcode to return colored Scandit Brushes per symbology, and assigns the listener to the overlay. The existing integration code (BarcodeBatch.Create, DataCaptureView.Create, BarcodeBatchBasicOverlay.Create, BarcodeBatchListener, camera lifecycle) is preserved.",
+      "files": [
+        "fixtures/IntegratedActivity.cs"
+      ],
+      "assertions": [
+        {"text": "The class declares it implements IBarcodeBatchBasicOverlayListener"},
+        {"text": "BrushForTrackedBarcode(BarcodeBatchBasicOverlay overlay, TrackedBarcode trackedBarcode) is implemented"},
+        {"text": "EAN-13 (Symbology.Ean13Upca) returns a green Scandit Brush"},
+        {"text": "CODE128 (Symbology.Code128) returns a blue Scandit Brush"},
+        {"text": "The overlay's Listener property is assigned to this (or to an instance of the listener)"},
+        {"text": "The Scandit Brush type is used (Scandit.DataCapture.Core.UI.Style.Brush), not Android.Graphics.Paint or a raw Color"},
+        {"text": "Existing BarcodeBatch.Create call is preserved (not rewritten as new BarcodeBatch)"},
+        {"text": "Existing IBarcodeBatchListener implementation (OnSessionUpdated, OnObservationStarted, OnObservationStopped) is preserved"},
+        {"text": "Existing camera lifecycle in OnResume / OnPause is preserved"}
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "In my MatrixScan Batch Activity I want to log all currently tracked barcodes — their tracking ID and data — on every frame. Here is my Activity: IntegratedActivity.cs.",
+      "expected_output": "The skill updates OnSessionUpdated to iterate over session.TrackedBarcodes and log each TrackedBarcode's Identifier and Barcode.Data. Data must be copied out of the session before RunOnUiThread, because the session is only safe to access on the recognition thread.",
+      "files": [
+        "fixtures/IntegratedActivity.cs"
+      ],
+      "assertions": [
+        {"text": "session.TrackedBarcodes (the IDictionary<int, TrackedBarcode>) is accessed inside OnSessionUpdated"},
+        {"text": "Each TrackedBarcode's Identifier is read"},
+        {"text": "Each TrackedBarcode's Barcode.Data is read"},
+        {"text": "The identifier+data pairs are copied into a local collection before RunOnUiThread is called (session.TrackedBarcodes is not accessed inside the UI dispatch lambda)"},
+        {"text": "A logging call (Android.Util.Log, System.Diagnostics.Debug.WriteLine, Console.WriteLine, or similar) is used to emit each tracked barcode"},
+        {"text": "Existing BarcodeBatch.Create / Camera / DataCaptureView / BarcodeBatchBasicOverlay setup is preserved"},
+        {"text": "Existing OnResume / OnPause / OnDestroy lifecycle is preserved"}
+      ]
+    }
+  ]
+}

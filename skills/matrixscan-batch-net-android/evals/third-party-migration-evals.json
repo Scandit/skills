@@ -1,0 +1,37 @@
+{
+  "skill_name": "matrixscan-batch-net-android",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Replace my ZXing.Net.Mobile continuous-scan loop with Scandit MatrixScan Batch. Every visible barcode (EAN-13, Code 128, QR) should be tracked and accumulated into a dedupe-by-tracking-id list. Here is my Activity: ZxingActivity.cs.",
+      "expected_output": "The skill removes ZXing references (the using ZXing.Mobile directive, the MobileBarcodeScanner instance, the StartScanLoopAsync loop, the BarcodeFormat -> string conversion) and replaces them with MatrixScan Batch: DataCaptureContext.ForLicenseKey, manual camera setup via Camera.GetDefaultCamera + BarcodeBatch.RecommendedCameraSettings + SetFrameSourceAsync, BarcodeBatchSettings.Create with Ean13Upca + Code128 + Qr, BarcodeBatch.Create, DataCaptureView.Create added to a FrameLayout container, BarcodeBatchBasicOverlay.Create, IBarcodeBatchListener with OnSessionUpdated reading session.AddedTrackedBarcodes (dispatched to RunOnUiThread). The existing ScannedBarcode record and the dedupe-on-Value (or dedupe-on-tracking-id) logic is preserved. The skill provides the setup checklist (NuGet packages, manifest permission, runtime permission, MainApplication initialize for SDK 8.0+).",
+      "files": [
+        "fixtures/ZxingActivity.cs"
+      ],
+      "assertions": [
+        {"text": "The using ZXing.Mobile directive is removed"},
+        {"text": "The MobileBarcodeScanner instance and its instantiation (new MobileBarcodeScanner()) are removed"},
+        {"text": "The StartScanLoopAsync recursive loop is removed (the new code does not re-trigger a scanner after each result)"},
+        {"text": "No ZXing.BarcodeFormat usage remains"},
+        {"text": "DataCaptureContext.ForLicenseKey( is used to create the context"},
+        {"text": "BarcodeBatchSettings.Create() is used"},
+        {"text": "BarcodeBatch.Create( is used as the factory"},
+        {"text": "Symbology.Ean13Upca is enabled (mapped from ZXing.BarcodeFormat.EAN_13)"},
+        {"text": "Symbology.Code128 is enabled (mapped from ZXing.BarcodeFormat.CODE_128)"},
+        {"text": "Symbology.Qr is enabled (mapped from ZXing.BarcodeFormat.QR_CODE — not Symbology.QrCode)"},
+        {"text": "Camera.GetDefaultCamera() is used"},
+        {"text": "BarcodeBatch.RecommendedCameraSettings is used as a static property"},
+        {"text": "dataCaptureContext.SetFrameSourceAsync(camera) is called"},
+        {"text": "DataCaptureView.Create( is used and added to a FrameLayout container"},
+        {"text": "BarcodeBatchBasicOverlay.Create( is called with both the BarcodeBatch and the DataCaptureView"},
+        {"text": "The activity implements IBarcodeBatchListener (or subscribes to barcodeBatch.SessionUpdated +=)"},
+        {"text": "OnSessionUpdated iterates session.AddedTrackedBarcodes (the new-this-frame collection)"},
+        {"text": "The handler dispatches UI updates via RunOnUiThread (because OnSessionUpdated runs on a background recognition thread)"},
+        {"text": "The existing ScannedBarcode record (or equivalent data model) is preserved"},
+        {"text": "Dedupe logic (using either tracking Identifier or the barcode Value) is preserved in the new flow"},
+        {"text": "Setup checklist is shown and mentions adding the Scandit.DataCapture.Barcode and Scandit.DataCapture.Core NuGet packages"},
+        {"text": "Setup checklist mentions adding android.permission.CAMERA to AndroidManifest.xml"}
+      ]
+    }
+  ]
+}
