@@ -554,6 +554,214 @@ public partial class ViewController : UIViewController, ISparkScanFeedbackDelega
 
 ## Optional configuration
 
+### Build a results list (UITableView pattern)
+
+The minimal Step 6 handler just receives the scan — it doesn't display anything. The official .NET iOS `ListBuildingSample` displays scans in a `UITableView` floating beneath the `SparkScanView` overlay. This subsection is the complete recipe; drop it in if your UI needs to show the scanned barcodes.
+
+No extra NuGet packages are needed — `UITableView`, `UITableViewSource`, and `UITableViewCell` all ship with UIKit.
+
+**Z-order matters.** Add the table view to `this.View` **before** calling `SparkScanView.Create(parentView: this.View, …)`. Subviews added later sit on top, and `SparkScanView` must float on top of the table to remain interactive (the draggable trigger button, toolbar, and mini preview have to overlay your content, not sit underneath it). The official sample's `ViewDidLoad` orders calls as `SetupHeaderView → SetupTableView → SetupClearView → SetupSparkScan` for exactly this reason — `SparkScanView` is created last.
+
+**1. `Models/ListItem.cs`** — the row data:
+
+```csharp
+using Scandit.DataCapture.Barcode.Data;
+
+namespace MyApp.Models;
+
+public class ListItem(int number, Symbology symbology, string? data)
+{
+    public int Number { get; } = number;
+    public string Symbology { get; } = new SymbologyDescription(symbology).ReadableName;
+    public string Data { get; } = data ?? string.Empty;
+}
+```
+
+**2. `Models/ListItemManager.cs`** — thread-safe singleton with a change event:
+
+```csharp
+namespace MyApp.Models;
+
+public class ListItemManager
+{
+    private static readonly Lazy<ListItemManager> instance =
+        new(() => new ListItemManager(), LazyThreadSafetyMode.PublicationOnly);
+
+    public static ListItemManager Instance => instance.Value;
+
+    private readonly List<ListItem> items = new();
+
+    public event EventHandler? ListsChanged;
+
+    public IEnumerable<ListItem> Inventory => this.items;
+    public int TotalItemsCount => this.items.Count;
+
+    public void AddItem(ListItem item)
+    {
+        this.items.Add(item);
+        this.ListsChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    public void Clear()
+    {
+        this.items.Clear();
+        this.ListsChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    private ListItemManager() { }
+}
+```
+
+**3. `Views/ItemTableViewCell.cs`** — a minimal two-label cell:
+
+```csharp
+using Foundation;
+using MyApp.Models;
+using UIKit;
+
+namespace MyApp.Views;
+
+public class ItemTableViewCell : UITableViewCell
+{
+    public static readonly NSString Key = new("ItemTableViewCell");
+
+    private UILabel title = null!;
+    private UILabel subtitle = null!;
+
+    // `RegisterClassForCellReuse` + `DequeueReusableCell` instantiate cells via this
+    // `(IntPtr handle)` ctor with a real native handle. This is the same storyboard-inflation
+    // path described in the "Scene-based vs storyboard instantiation" callout above —
+    // do NOT call this ctor manually with `IntPtr.Zero`; UIKit's cell pool owns construction.
+    public ItemTableViewCell(IntPtr handle) : base(handle) { }
+
+    public void Configure(ListItem item)
+    {
+        if (this.title == null) this.CreateLabels();
+        this.title.Text = $"Item {item.Number}";
+        this.subtitle.Text = $"{item.Symbology}: {item.Data}";
+    }
+
+    private void CreateLabels()
+    {
+        this.title = new UILabel
+        {
+            TranslatesAutoresizingMaskIntoConstraints = false,
+            Font = UIFont.BoldSystemFontOfSize(16),
+        };
+        this.subtitle = new UILabel
+        {
+            TranslatesAutoresizingMaskIntoConstraints = false,
+            Font = UIFont.SystemFontOfSize(14),
+            TextColor = UIColor.Gray,
+        };
+        this.ContentView.AddSubview(this.title);
+        this.ContentView.AddSubview(this.subtitle);
+        NSLayoutConstraint.ActivateConstraints(new[]
+        {
+            this.title.LeadingAnchor.ConstraintEqualTo(this.ContentView.LayoutMarginsGuide.LeadingAnchor),
+            this.title.TrailingAnchor.ConstraintEqualTo(this.ContentView.LayoutMarginsGuide.TrailingAnchor),
+            this.title.TopAnchor.ConstraintEqualTo(this.ContentView.LayoutMarginsGuide.TopAnchor),
+            this.subtitle.LeadingAnchor.ConstraintEqualTo(this.title.LeadingAnchor),
+            this.subtitle.TrailingAnchor.ConstraintEqualTo(this.title.TrailingAnchor),
+            this.subtitle.TopAnchor.ConstraintEqualTo(this.title.BottomAnchor, 4),
+            this.subtitle.BottomAnchor.ConstraintEqualTo(this.ContentView.LayoutMarginsGuide.BottomAnchor),
+        });
+    }
+}
+```
+
+**4. `Views/TableSource.cs`** — bridges `ListItemManager` to the table:
+
+```csharp
+using Foundation;
+using MyApp.Models;
+using UIKit;
+
+namespace MyApp.Views;
+
+public class TableSource(IEnumerable<ListItem> items) : UITableViewSource
+{
+    public override nint RowsInSection(UITableView tableView, nint section) => items.Count();
+
+    public override UITableViewCell GetCell(UITableView tableView, NSIndexPath indexPath)
+    {
+        var cell = tableView.DequeueReusableCell(ItemTableViewCell.Key, indexPath) as ItemTableViewCell
+            ?? throw new InvalidOperationException("Cannot retrieve cell");
+        cell.Configure(items.ElementAt(indexPath.Row));
+        return cell;
+    }
+}
+```
+
+Note: the source holds a reference to `ListItemManager.Instance.Inventory`, which is `IEnumerable<ListItem>` over the manager's live `List<ListItem>`. Every `ReloadData` re-reads the live list — that's why the source itself never needs an `Add`/`Clear` API of its own.
+
+**5. Wire the table into the view controller.** Build it before `SparkScanView.Create(...)` so the SparkScan overlay lands on top:
+
+```csharp
+private UITableView tableView = null!;
+
+private void SetupTableView()
+{
+    this.tableView = new UITableView
+    {
+        TranslatesAutoresizingMaskIntoConstraints = false,
+        Source = new TableSource(ListItemManager.Instance.Inventory),
+        RowHeight = 70,
+    };
+    this.tableView.RegisterClassForCellReuse(typeof(ItemTableViewCell), ItemTableViewCell.Key);
+
+    this.View!.AddSubview(this.tableView);
+    NSLayoutConstraint.ActivateConstraints(new[]
+    {
+        this.tableView.LeadingAnchor.ConstraintEqualTo(this.View.LeadingAnchor),
+        this.tableView.TrailingAnchor.ConstraintEqualTo(this.View.TrailingAnchor),
+        this.tableView.TopAnchor.ConstraintEqualTo(this.View.SafeAreaLayoutGuide.TopAnchor),
+        this.tableView.BottomAnchor.ConstraintEqualTo(this.View.SafeAreaLayoutGuide.BottomAnchor),
+    });
+
+    ListItemManager.Instance.ListsChanged += (_, _) =>
+        DispatchQueue.MainQueue.DispatchAsync(this.tableView.ReloadData);
+}
+```
+
+Call `SetupTableView` from `ViewDidLoad` **before** `SetupSparkScan`:
+
+```csharp
+public override void ViewDidLoad()
+{
+    base.ViewDidLoad();
+    this.SetupTableView();
+    this.SetupSparkScan();
+}
+```
+
+**6. Update the Step 6 scan handler** to append to the manager. `BarcodeScanned` runs on a background thread, but `SetupTableView` already dispatches `ReloadData` to the main queue via the `ListsChanged` subscription, so the handler itself just calls `AddItem`:
+
+```csharp
+private void BarcodeScanned(object? sender, SparkScanEventArgs args)
+{
+    var barcode = args.Session.NewlyRecognizedBarcode;
+    if (barcode == null) return;
+
+    var number = ListItemManager.Instance.TotalItemsCount + 1;
+    ListItemManager.Instance.AddItem(new ListItem(number, barcode.Symbology, barcode.Data));
+}
+```
+
+That's the complete pattern — text-only rows, no thumbnails. **Want a thumbnail of the scanned barcode in each row?** The official `ListBuildingSample` extracts one from the frame buffer using two helpers it defines locally (the SDK does not ship them):
+
+```csharp
+// Inside BarcodeScanned, after retrieving `barcode`:
+using var imageBuffer = args.FrameData?.ImageBuffers.LastOrDefault();
+using var frame = imageBuffer?.ToImage();
+var location = barcode.GetBarcodeLocation(frame); // custom extension method
+var thumbnail = frame?.CropImage(
+    (int)location.X, (int)location.Y, (int)location.Width, (int)location.Height); // custom extension method
+// then pass `thumbnail` to ListItem
+```
+
+`Barcode.GetBarcodeLocation(UIImage?)` and `UIImage.CropImage(int, int, int, int)` are **extension methods defined in the sample**, not SDK APIs — see `Extensions/BarcodeExtensions.cs` and `Extensions/UIImageExtensions.cs` in `ListBuildingSample` and copy them into your project. `IFrameData`, the image buffer, and the produced `UIImage` **must all be disposed** — the `using` declarations above are mandatory. Failing to dispose causes the preview to stutter or freeze (this is the same disposal rule called out in the iOS gotchas in `SKILL.md`). To render the thumbnail, add a `UIImage? Image` property to `ListItem`, add a `UIImageView` to `ItemTableViewCell` and bind it in `Configure`, and pass the cropped image when calling `AddItem(new ListItem(thumbnail, …))`.
+
 ### Target Mode (aim-to-scan)
 
 For precise scanning in crowded environments, change `SparkScanViewSettings.DefaultScanningMode` from the default `SparkScanScanningModeDefault` to `SparkScanScanningModeTarget`:
