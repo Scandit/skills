@@ -353,7 +353,9 @@ private void OnBarcodeScanned(object? sender, SparkScanEventArgs args)
     this.RunOnUiThread(() =>
     {
         var description = new SymbologyDescription(barcode.Symbology).ReadableName;
-        this.resultListAdapter.AddListItem(new ListItem(barcode.Symbology, barcode.Data, description));
+        // Forward to your app: append to a list, send to a backend, etc.
+        // For a full RecyclerView-backed results list (item count + clear button), see
+        // the "Build a results list (RecyclerView pattern)" subsection under Optional configuration.
     });
 }
 ```
@@ -652,6 +654,261 @@ public class MainActivity : CameraPermissionActivity, ISparkScanFeedbackDelegate
 ```
 
 ## Optional configuration
+
+### Build a results list (RecyclerView pattern)
+
+The minimal Step 6 handler just receives the scan — it doesn't display anything. The official .NET Android `ListBuildingSample` displays scans in a `RecyclerView` with a per-item count and a clear button. This subsection is the complete recipe; drop it in if your UI needs to show the scanned barcodes.
+
+**Extra NuGet packages** (in addition to the Prerequisites set):
+
+```xml
+<PackageReference Include="Xamarin.AndroidX.ConstraintLayout" Version="<latest-with-xamarin-suffix>" />
+<PackageReference Include="Xamarin.AndroidX.RecyclerView" Version="<latest-with-xamarin-suffix>" />
+```
+
+Fetch the latest from NuGet the same way as Scandit (Step 0) and AppCompat — keep the Xamarin patch suffix.
+
+**1. Replace the placeholder layout** from Step 5 with the full list-building layout. Keep the `SparkScanCoordinatorLayout` wrapper — only the inner `ConstraintLayout` changes:
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<com.scandit.datacapture.barcode.spark.ui.SparkScanCoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/spark_scan_coordinator"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@android:color/white">
+
+        <TextView
+            android:id="@+id/item_count"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_margin="16dp"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/result_recycler" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/result_recycler"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginBottom="8dp"
+            app:layout_constraintTop_toBottomOf="@id/item_count"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/clear_list" />
+
+        <Button
+            android:id="@+id/clear_list"
+            style="?android:attr/borderlessButtonStyle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="32dp"
+            android:layout_marginEnd="32dp"
+            android:layout_marginBottom="8dp"
+            android:textStyle="bold"
+            android:text="@string/clear_button"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</com.scandit.datacapture.barcode.spark.ui.SparkScanCoordinatorLayout>
+```
+
+**2. Row layout** at `Resources/layout/result_item.xml`:
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingStart="?android:attr/listPreferredItemPaddingStart"
+    android:paddingEnd="?android:attr/listPreferredItemPaddingEnd"
+    android:paddingTop="12dp"
+    android:paddingBottom="12dp">
+
+    <TextView
+        android:id="@+id/item_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@android:color/black"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/item_description"
+        app:layout_constraintVertical_chainStyle="packed" />
+
+    <TextView
+        android:id="@+id/item_description"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:textSize="12sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/item_title"
+        app:layout_constraintBottom_toBottomOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
+```
+
+**3. String resources** — add to `Resources/values/strings.xml`:
+
+```xml
+<string name="clear_button">CLEAR LIST</string>
+<plurals name="results_amount">
+    <item quantity="one">%d item</item>
+    <item quantity="other">%d items</item>
+</plurals>
+```
+
+**4. `Models/ListItem.cs`** — the row data:
+
+```csharp
+using Scandit.DataCapture.Barcode.Data;
+
+namespace MyApp.Models;
+
+public class ListItem(int number, Symbology symbology, string? data)
+{
+    public int Number { get; } = number;
+    public string Symbology { get; } = new SymbologyDescription(symbology).ReadableName;
+    public string Data { get; } = data ?? string.Empty;
+}
+```
+
+**5. `Views/ListItemViewHolder.cs`** — binds the row:
+
+```csharp
+using Android.Views;
+using AndroidX.RecyclerView.Widget;
+using MyApp.Models;
+
+namespace MyApp.Views;
+
+public class ListItemViewHolder(View itemView) : RecyclerView.ViewHolder(itemView)
+{
+    private readonly TextView title = itemView.FindViewById<TextView>(Resource.Id.item_title)!;
+    private readonly TextView description = itemView.FindViewById<TextView>(Resource.Id.item_description)!;
+
+    public void Bind(ListItem item)
+    {
+        this.title.Text = $"Item {item.Number}";
+        this.description.Text = $"{item.Symbology}: {item.Data}";
+    }
+}
+```
+
+**6. `Views/ResultListAdapter.cs`** — the `RecyclerView.Adapter`:
+
+```csharp
+using Android.Views;
+using AndroidX.RecyclerView.Widget;
+using MyApp.Models;
+
+namespace MyApp.Views;
+
+public class ResultListAdapter : RecyclerView.Adapter
+{
+    private readonly List<ListItem> items = new();
+
+    public override int ItemCount => this.items.Count;
+
+    public event EventHandler? ListChanged;
+
+    public override RecyclerView.ViewHolder OnCreateViewHolder(ViewGroup parent, int viewType) =>
+        new ListItemViewHolder(
+            LayoutInflater.From(parent.Context)!.Inflate(Resource.Layout.result_item, parent, false)!);
+
+    public override void OnBindViewHolder(RecyclerView.ViewHolder holder, int position)
+    {
+        if (holder is ListItemViewHolder vh) vh.Bind(this.items[position]);
+    }
+
+    public void AddListItem(ListItem item)
+    {
+        this.items.Add(item);
+        this.NotifyItemInserted(this.ItemCount - 1);
+        this.ListChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    public void ClearResults()
+    {
+        this.items.Clear();
+        this.NotifyDataSetChanged();
+        this.ListChanged?.Invoke(this, EventArgs.Empty);
+    }
+}
+```
+
+**7. Wire it up in `MainActivity.OnCreate`** (after `SetContentView` and `Initialize()`):
+
+```csharp
+private readonly ResultListAdapter resultListAdapter = new();
+private TextView itemCountText = null!;
+
+protected override void OnCreate(Bundle? savedInstanceState)
+{
+    base.OnCreate(savedInstanceState);
+    this.SetContentView(Resource.Layout.activity_main);
+    this.Initialize();
+
+    var recycler = this.FindViewById<RecyclerView>(Resource.Id.result_recycler)!;
+    recycler.SetLayoutManager(new LinearLayoutManager(this));
+    recycler.SetAdapter(this.resultListAdapter);
+
+    this.itemCountText = this.FindViewById<TextView>(Resource.Id.item_count)!;
+    this.UpdateItemCount(0);
+    this.resultListAdapter.ListChanged += (_, _) => this.UpdateItemCount(this.resultListAdapter.ItemCount);
+
+    this.FindViewById<Button>(Resource.Id.clear_list)!.Click +=
+        (_, _) => this.resultListAdapter.ClearResults();
+}
+
+private void UpdateItemCount(int count) => this.RunOnUiThread(() =>
+    this.itemCountText.Text = this.Resources?.GetQuantityString(Resource.Plurals.results_amount, count, count));
+```
+
+**8. Update the Step 6 handler** to append to the adapter:
+
+```csharp
+private void OnBarcodeScanned(object? sender, SparkScanEventArgs args)
+{
+    var barcode = args.Session.NewlyRecognizedBarcode;
+    if (barcode == null) return;
+
+    this.RunOnUiThread(() =>
+    {
+        var number = this.resultListAdapter.ItemCount + 1;
+        this.resultListAdapter.AddListItem(new ListItem(number, barcode.Symbology, barcode.Data));
+    });
+}
+```
+
+That's the complete pattern — text-only rows, no thumbnails. **Want a thumbnail of the scanned barcode in each row?** Add an `ImageView` to `result_item.xml`, store a `Bitmap` on `ListItem`, and produce the bitmap in the scan handler with:
+
+```csharp
+var frame = args.FrameData?.ImageBuffers.First().ToImage();
+// Crop to barcode.Location using barcode.Location.{TopLeft,TopRight,BottomLeft,BottomRight}
+// (each is a Scandit.DataCapture.Core.Common.Geometry.Point in pixel coordinates) and pass
+// the cropped Bitmap to ListItem. Do the crop on a background Task and dispatch the final
+// AddListItem call via RunOnUiThread.
+```
+
+`ImageBuffer.ToImage()` lives in `Scandit.DataCapture.Core.Common.Graphics` and returns an `Android.Graphics.Bitmap` on .NET Android. The official sample's `BarcodeExtensions.GetBarcodeImage` shows a reference cropping implementation.
 
 ### Target Mode (aim-to-scan)
 
