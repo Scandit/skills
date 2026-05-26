@@ -4,6 +4,8 @@ SparkScan is a pre-built scanning UI for high-volume single-scanning workflows. 
 
 Examples below use C# 12 and a `UIViewController`. The same APIs work in storyboards, XIBs, or programmatically-instantiated controllers — adapt ownership of `DataCaptureContext`, `SparkScan`, and `SparkScanView` to the project's existing structure.
 
+> **Scene-based vs storyboard instantiation — match the constructor to the instantiation path.** The `dotnet new ios` template that ships with modern .NET-iOS is **scene-based**: no `Main.storyboard`, no `UIMainStoryboardFile` in `Info.plist`, `AppDelegate` returns a `UISceneConfiguration` from `GetConfiguration`, and a `SceneDelegate.WillConnect` builds the window and sets `Window.RootViewController` programmatically. In that case the `UIViewController` must expose a **parameterless** constructor (`public ViewController() : base() { }`) and `SceneDelegate.WillConnect` calls `new ViewController()`. Do **not** call `new ViewController(IntPtr.Zero)` — the `(IntPtr handle)` constructor is a binding ctor used by storyboard / XIB inflation to wrap an *existing* native object. Calling it with `IntPtr.Zero` produces a managed wrapper with no native `UIViewController` underneath; the view never attaches to the window, `SparkScanView.Create(parentView: this.View, …)` ends up on a detached view, and the camera preview never appears. **Symptom: the app launches but shows a blank screen, no camera, no scans.** If the project *is* storyboard-based (older Scandit samples follow this pattern — `UIMainStoryboardFile` in `Info.plist`, `customClass="ViewController"` in `Main.storyboard`), keep the `public ViewController(IntPtr handle) : base(handle) { }` constructor instead, since storyboard inflation invokes that ctor with a real native handle.
+
 > **MAUI?** Stop. If the project file has `<UseMaui>true</UseMaui>`, switch to the `sparkscan-maui` skill. The MAUI integration uses `<scandit:SparkScanView>` in XAML and the `UseScanditCore` / `UseScanditBarcode(c => c.AddSparkScanView())` builder, which are different.
 
 ## Prerequisites
@@ -453,7 +455,14 @@ public partial class ViewController : UIViewController, ISparkScanFeedbackDelega
     private SparkScanBarcodeSuccessFeedback successFeedback = null!;
     private SparkScanBarcodeErrorFeedback errorFeedback = null!;
 
-    public ViewController(IntPtr handle) : base(handle) { }
+    // Parameterless ctor for scene-based / programmatic instantiation
+    // (the `dotnet new ios` default). If the project is storyboard-based
+    // (Info.plist has `UIMainStoryboardFile`), replace this with
+    // `public ViewController(IntPtr handle) : base(handle) { }` so storyboard
+    // inflation can pass the native handle. Do not call `new ViewController(IntPtr.Zero)`
+    // from SceneDelegate — it produces a managed wrapper with no native object
+    // and the camera preview will never appear.
+    public ViewController() : base() { }
 
     public override void ViewDidLoad()
     {
