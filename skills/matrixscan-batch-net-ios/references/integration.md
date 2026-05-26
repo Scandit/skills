@@ -4,6 +4,8 @@ BarcodeBatch is the multi-barcode tracking mode. It simultaneously tracks every 
 
 Examples below use C# 12 and a `UIViewController`. The same APIs work in storyboards, XIBs, or programmatically-instantiated controllers — adapt ownership of `DataCaptureContext`, `BarcodeBatch`, and the `Camera` to the project's existing structure.
 
+> **Constructor pattern depends on instantiation path.** Storyboard / XIB inflation uses `public MyVC(IntPtr handle) : base(handle) { }`. Programmatic instantiation (no `Main.storyboard`, root view controller set from `SceneDelegate.WillConnect` or `AppDelegate`) needs a parameterless `public MyVC() : base() { }` and `new MyVC()`. **Never construct a VC with `new MyVC(IntPtr.Zero)`** — the native peer is not initialized, `ViewDidLoad` may never fire, and you'll see a black screen with no preview and no scans. If you support both paths, declare both constructors.
+
 > **MAUI?** Stop. If the project file has `<UseMaui>true</UseMaui>`, switch to the `matrixscan-batch-maui` skill. The MAUI integration uses XAML and a `UseScanditBarcode` builder, which is different.
 
 ## Prerequisites
@@ -162,7 +164,9 @@ settings.EnableSymbologies(new HashSet<Symbology>
 
 ## Step 3 — Camera setup
 
-`Camera.GetDefaultCamera()` returns the back camera. The canonical pattern (matching the official .NET iOS `MatrixScanSimpleSample`) is to obtain the camera, apply `BarcodeBatch.RecommendedCameraSettings` via `ApplySettingsAsync`, attach it as the frame source, and drive it from `ViewWillAppear` / `ViewWillDisappear`.
+`Camera.GetDefaultCamera()` returns the back camera. The canonical pattern (matching the official .NET iOS `MatrixScanSimpleSample`) is to obtain the camera, **attach it as the frame source first**, **then** apply `BarcodeBatch.RecommendedCameraSettings` via `ApplySettingsAsync`, and drive it from `ViewWillAppear` / `ViewWillDisappear`.
+
+> **Order matters.** `SetFrameSourceAsync(camera)` must be called **before** `camera.ApplySettingsAsync(cameraSettings)`. This matches the official sample. Reversing the order can leave the preview blank.
 
 ```csharp
 using Scandit.DataCapture.Core.Source;
@@ -175,6 +179,10 @@ private void SetUpCamera()
 
     if (this.camera != null)
     {
+        // 1. Bind the camera to the context FIRST.
+        this.dataCaptureContext.SetFrameSourceAsync(this.camera);
+
+        // 2. Then apply camera settings.
         // BarcodeBatch.RecommendedCameraSettings is a static PROPERTY — not a method.
         // The Swift form `recommendedCameraSettings` is a class var; the .NET binding
         // exposes it as a static property here.
@@ -184,7 +192,6 @@ private void SetUpCamera()
         cameraSettings.PreferredResolution = VideoResolution.FullHd;
 
         this.camera.ApplySettingsAsync(cameraSettings);
-        this.dataCaptureContext.SetFrameSourceAsync(this.camera);
     }
 }
 ```
@@ -529,7 +536,12 @@ public partial class BatchScanViewController : UIViewController, IBarcodeBatchLi
 
     private readonly HashSet<string> scannedData = new();
 
+    // Storyboard-loaded VCs: keep this constructor (the runtime calls it with a real handle).
+    // Programmatically-instantiated VCs (no Main.storyboard): use the parameterless ctor below
+    // and `new BatchScanViewController()`. DO NOT call `new BatchScanViewController(IntPtr.Zero)` —
+    // that leaves the native peer uninitialized and ViewDidLoad may never fire.
     public BatchScanViewController(IntPtr handle) : base(handle) { }
+    public BatchScanViewController() : base() { }
 
     public override void ViewDidLoad()
     {
@@ -558,10 +570,13 @@ public partial class BatchScanViewController : UIViewController, IBarcodeBatchLi
         this.camera = Camera.GetDefaultCamera();
         if (this.camera != null)
         {
+            // Bind the camera to the context BEFORE applying settings — matches the
+            // official MatrixScanSimpleSample order. Reversing these leaves the preview blank.
+            this.dataCaptureContext.SetFrameSourceAsync(this.camera);
+
             CameraSettings cameraSettings = BarcodeBatch.RecommendedCameraSettings;
             cameraSettings.PreferredResolution = VideoResolution.FullHd;
             this.camera.ApplySettingsAsync(cameraSettings);
-            this.dataCaptureContext.SetFrameSourceAsync(this.camera);
         }
 
         BarcodeBatchSettings settings = BarcodeBatchSettings.Create();
@@ -622,13 +637,14 @@ public partial class BatchScanViewController : UIViewController, IBarcodeBatchLi
     {
         if (disposing)
         {
-            this.barcodeBatch.RemoveListener(this);
-            this.dataCaptureContext.RemoveCurrentMode();
+            this.barcodeBatch?.RemoveListener(this);
         }
         base.Dispose(disposing);
     }
 }
 ```
+
+> The official `MatrixScanSimpleSample` does **not** override `Dispose` — it relies on the framework's deterministic teardown. Removing the listener in `Dispose(bool)` is a safe belt-and-suspenders for VCs that may be recreated. **Do not call `dataCaptureContext.RemoveCurrentMode()` here**: it can race with the recognition queue and tear down the mode while a frame is still in flight.
 
 ## Optional: BarcodeBatchAdvancedOverlay (requires MatrixScan AR add-on)
 
@@ -773,7 +789,7 @@ The same applies to the event-based API — call `args.FrameData.Dispose()` in a
 1. **One context per scanning surface** — construct `DataCaptureContext.ForLicenseKey(key)` once and reuse it.
 2. **Factory, not constructor** — `BarcodeBatch.Create(context, settings)` is the factory. Both `new BarcodeBatch(...)` and `BarcodeBatch.ForDataCaptureContext(...)` are compile errors in the .NET binding.
 3. **Settings factory too** — `BarcodeBatchSettings.Create()` is the factory; `new BarcodeBatchSettings()` is a compile error.
-4. **Manual camera** — `Camera.GetDefaultCamera()` → `camera.ApplySettingsAsync(BarcodeBatch.RecommendedCameraSettings)` → `dataCaptureContext.SetFrameSourceAsync(camera)`. `RecommendedCameraSettings` is a static **property**, not a method.
+4. **Manual camera, in this order** — `Camera.GetDefaultCamera()` → `dataCaptureContext.SetFrameSourceAsync(camera)` → `camera.ApplySettingsAsync(BarcodeBatch.RecommendedCameraSettings)`. Bind the camera to the context **before** applying settings (matches the official `MatrixScanSimpleSample`); reversing the order can leave the preview blank. `RecommendedCameraSettings` is a static **property**, not a method.
 5. **DataCaptureView takes a CGRect on iOS** — `DataCaptureView.Create(dataCaptureContext, this.View!.Bounds)`, then `AutoresizingMask`, `AddSubview`, `SendSubviewToBack`.
 6. **Recognition queue** — `OnSessionUpdated` runs on a background queue. Copy the data you need, then dispatch UI work via `DispatchQueue.MainQueue.DispatchAsync(() => …)`.
 7. **Always dispose `IFrameData`** — every `OnSessionUpdated` (and every `SessionUpdated` event handler) must call `frameData.Dispose()` in a `finally` block. Missing this is the #1 cause of frozen / stuttering previews on iOS.
@@ -781,7 +797,7 @@ The same applies to the event-based API — call `args.FrameData.Dispose()` in a
 9. **Overlay auto-adds** — `BarcodeBatchBasicOverlay.Create(mode, view, ...)` and `BarcodeBatchAdvancedOverlay.Create(mode, view)` both add themselves to the `DataCaptureView` automatically when `view` is non-null.
 10. **AR add-on gates** — per-barcode brush customization (`IBarcodeBatchBasicOverlayListener` / `SetBrushForTrackedBarcode`) and `BarcodeBatchAdvancedOverlay` both require the MatrixScan AR add-on license.
 11. **`Enabled` for pause/resume** — toggle `barcodeBatch.Enabled` to pause and resume tracking without removing the mode or releasing the camera.
-12. **Lifecycle cleanup** — turn the camera off in `ViewWillDisappear()`, back on in `ViewWillAppear()`. Call `barcodeBatch.RemoveListener(this)` and `dataCaptureContext.RemoveCurrentMode()` from the controller's `Dispose(bool)` for explicit teardown.
+12. **Lifecycle cleanup** — turn the camera off in `ViewWillDisappear()`, back on in `ViewWillAppear()`. If overriding `Dispose(bool)`, call `barcodeBatch?.RemoveListener(this)` only. Do **not** call `dataCaptureContext.RemoveCurrentMode()` from `Dispose` — it can race with the recognition queue and tear the mode down while a frame is still being processed. The official `MatrixScanSimpleSample` does not override `Dispose` at all.
 13. **Symbologies** — all disabled by default; enable only what is needed. Names are PascalCase (`Ean13Upca`, not `.ean13UPCA`).
 14. **No runtime permission call** — iOS handles the camera prompt automatically once `NSCameraUsageDescription` is in `Info.plist`. There is no Android-style `RequestPermissions`.
 15. **SDK 8.0+ initialization** — `AppDelegate.FinishedLaunching` calling `ScanditCaptureCore.Initialize()` + `ScanditBarcodeCapture.Initialize()` is mandatory on 8.0+.
