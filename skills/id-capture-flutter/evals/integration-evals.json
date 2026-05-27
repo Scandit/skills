@@ -103,6 +103,7 @@
         {"text": "settings.decodeBackOfEuropeanDrivingLicense is enabled"},
         {"text": "drivingLicenseDetails is present"},
         {"text": "drivingLicenseCategories is read (semantic)"},
+        {"text": "each category's data is read via the .code getter, not a non-existent .categoryCode (semantic)"},
         {"text": "a scanner that reads the back of the card is used, e.g. FullDocumentScanner (semantic)"},
         {"text": "the scandit_flutter_datacapture_id_europe_driving_license package is added as a dependency (semantic)"}
       ]
