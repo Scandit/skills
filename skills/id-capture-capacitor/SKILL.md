@@ -69,6 +69,7 @@ Based on the user's request, load the appropriate reference file before respondi
 - **Integrating ID Capture from scratch** (e.g. "add ID scanning to my Capacitor app", "scan a passport / driver's license", "read the MRZ", "extract the holder's name and date of birth") → read `references/integration.md` and follow it.
 - **One of the three add-on capabilities** ("reject voided / cancelled IDs", "detect punched-hole / voided licenses", "decode the back of a European driving license", "read vehicle categories", "verify the AAMVA barcode / detect forged US licenses") → read `references/supplementary-modules.md`.
 - **Migrating or upgrading an existing ID Capture integration** ("upgrade ID Capture to the latest SDK", "migrate v7 to v8", "my `scannerType` code stopped compiling", "`AamvaBarcodeVerifier` is gone", "what changed in ID Capture between versions") → read `references/migration.md`.
+- **Wiring ID Capture into a host UI framework on top of Capacitor** ("how do I do this in Ionic Angular?", "show me the Ionic React lifecycle", "I'm using Vue 3 / Composition API", "where does the camera start/stop go in `ngAfterViewInit` / `useEffect` / `onMounted`?", "page lifecycle on route transition", "`@ViewChild` for the data-capture-view div") → read `references/framework-recipes.md`. The Scandit code itself is unchanged from `references/integration.md`; this file shows only the lifecycle glue per framework.
 
 ## API Usage Policy
 
@@ -83,7 +84,7 @@ URL structures vary across SDK versions and package paths and guessing will lead
 
 ## Framework variant policy
 
-Examples in this skill are in **TypeScript / plain JS** (no framework-specific bindings). The official `IdCaptureSimpleSample` is written in JS that runs after `DOMContentLoaded`. If the target project uses a framework on top of Capacitor (Ionic + Angular / React / Vue, plain Stencil, etc.), wire the listener and camera lifecycle into that framework's lifecycle hooks instead — but keep the same plugin init, settings, listener, and `connectToElement` code. Do not introduce a new framework just for ID Capture.
+Examples in `references/integration.md` are in **TypeScript / plain JS** (no framework-specific bindings). The official `IdCaptureSimpleSample` is written in JS that runs after `DOMContentLoaded`. If the target project uses a framework on top of Capacitor (Ionic Angular, Ionic React, or Vue 3), see `references/framework-recipes.md` for the lifecycle skeleton — the Scandit calls are unchanged; only *where* they hook in differs. Do not introduce a new framework just for ID Capture.
 
 ## References
 
