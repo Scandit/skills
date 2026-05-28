@@ -1,0 +1,84 @@
+{
+  "skill_name": "matrixscan-batch-net-ios",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I want to add MatrixScan Batch to my .NET for iOS app. Here's my empty UIViewController: EmptyViewController.cs. I need to scan EAN-13 and Code 128 barcodes \u2014 every visible barcode should be tracked and added to a list as soon as it appears on screen.",
+      "expected_output": "The skill reads integration.md, fetches the latest Scandit NuGet versions, writes complete BarcodeBatch integration code into EmptyViewController.cs (DataCaptureContext.ForLicenseKey, Camera.GetDefaultCamera, BarcodeBatch.RecommendedCameraSettings, BarcodeBatchSettings.Create with Symbology.Ean13Upca + Symbology.Code128, BarcodeBatch.Create, DataCaptureView.Create(context, this.View!.Bounds) added via AddSubview + SendSubviewToBack with AutoresizingMask, BarcodeBatchBasicOverlay.Create, IBarcodeBatchListener with OnSessionUpdated dispatching to DispatchQueue.MainQueue and wrapping in try/finally with frameData.Dispose(), ViewWillAppear/ViewWillDisappear lifecycle), and shows the setup checklist (NuGet packages, NSCameraUsageDescription in Info.plist, AppDelegate Initialize for SDK 8.0+, SupportedOSPlatformVersion 15.0, license key).",
+      "files": [
+        "fixtures/EmptyViewController.cs"
+      ],
+      "assertions": [
+        {"text": "Setup checklist is shown and mentions adding the Scandit.DataCapture.Barcode and Scandit.DataCapture.Core NuGet packages"},
+        {"text": "Setup checklist mentions adding NSCameraUsageDescription to Info.plist"},
+        {"text": "Setup checklist mentions calling ScanditCaptureCore.Initialize() and ScanditBarcodeCapture.Initialize() in AppDelegate.FinishedLaunching (required for SDK 8.0+)"},
+        {"text": "Setup checklist mentions SupportedOSPlatformVersion of 15.0 or higher in the .csproj"},
+        {"text": "A Scandit license key placeholder string is present"},
+        {"text": "DataCaptureContext.ForLicenseKey( is used to create the context"},
+        {"text": "BarcodeBatchSettings.Create() is used (not new BarcodeBatchSettings(), which does not exist in the .NET binding)"},
+        {"text": "BarcodeBatch.Create( is used (not new BarcodeBatch(...) and not BarcodeBatch.ForDataCaptureContext(...))"},
+        {"text": "Symbology.Ean13Upca is enabled"},
+        {"text": "Symbology.Code128 is enabled"},
+        {"text": "No symbologies other than Ean13Upca and Code128 are enabled"},
+        {"text": "Camera.GetDefaultCamera() is used"},
+        {"text": "BarcodeBatch.RecommendedCameraSettings is used as a static property (not BarcodeBatch.RecommendedCameraSettings() with parentheses and not createRecommendedCameraSettings())"},
+        {"text": "camera.ApplySettingsAsync(...) is called with the recommended camera settings"},
+        {"text": "dataCaptureContext.SetFrameSourceAsync(camera) is called"},
+        {"text": "DataCaptureView.Create(dataCaptureContext, this.View!.Bounds) (or this.View.Bounds) is used \u2014 the second argument is a CGRect / bounds (the iOS overload, not the Android single-arg overload)"},
+        {"text": "AutoresizingMask is set to UIViewAutoresizing.FlexibleHeight | UIViewAutoresizing.FlexibleWidth on the DataCaptureView"},
+        {"text": "The DataCaptureView is added via this.View.AddSubview(dataCaptureView)"},
+        {"text": "this.View.SendSubviewToBack(dataCaptureView) is called so the preview sits behind any UI chrome"},
+        {"text": "BarcodeBatchBasicOverlay.Create( is called and given both the BarcodeBatch and the DataCaptureView arguments"},
+        {"text": "The view controller implements IBarcodeBatchListener (or subscribes to barcodeBatch.SessionUpdated +=)"},
+        {"text": "OnSessionUpdated is implemented with the signature (BarcodeBatch, BarcodeBatchSession, IFrameData) \u2014 not (BarcodeBatch, BarcodeBatchSession, FrameData)"},
+        {"text": "Inside OnSessionUpdated, data from session.AddedTrackedBarcodes is copied out before scheduling UI work"},
+        {"text": "UI work is dispatched via DispatchQueue.MainQueue.DispatchAsync(() => ...)"},
+        {"text": "frameData.Dispose() is called inside OnSessionUpdated, ideally in a finally block so it runs on every code path"},
+        {"text": "ViewWillAppear sets barcodeBatch.Enabled = true and calls camera.SwitchToDesiredStateAsync(FrameSourceState.On)"},
+        {"text": "ViewWillDisappear sets barcodeBatch.Enabled = false and calls camera.SwitchToDesiredStateAsync(FrameSourceState.Off)"},
+        {"text": "No Android lifecycle hooks (OnResume / OnPause / OnDestroy / RunOnUiThread / RequestPermissions / FindViewById / FrameLayout / AppCompatActivity) appear"},
+        {"text": "No BarcodeCapture.Create or IBarcodeCaptureListener appears (this is MatrixScan Batch, not single-shot BarcodeCapture)"},
+        {"text": "No Swift-style symbology names (e.g. .ean13UPCA, .code128) appear"},
+        {"text": "No SparkScan-style new SparkScan(...) constructor appears"}
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "I want to highlight EAN-13 barcodes in green and CODE128 barcodes in blue in my MatrixScan Batch ViewController. Here is my ViewController: IntegratedViewController.cs.",
+      "expected_output": "The skill implements IBarcodeBatchBasicOverlayListener, overrides BrushForTrackedBarcode to return colored Scandit Brushes per symbology (using UIColor + Scandit.DataCapture.Core.UI.Style.Brush), and assigns the listener to the overlay. The existing integration code (BarcodeBatch.Create, DataCaptureView.Create, BarcodeBatchBasicOverlay.Create, BarcodeBatchListener, camera lifecycle, frameData.Dispose()) is preserved.",
+      "files": [
+        "fixtures/IntegratedViewController.cs"
+      ],
+      "assertions": [
+        {"text": "The class declares it implements IBarcodeBatchBasicOverlayListener"},
+        {"text": "BrushForTrackedBarcode(BarcodeBatchBasicOverlay overlay, TrackedBarcode trackedBarcode) is implemented"},
+        {"text": "EAN-13 (Symbology.Ean13Upca) returns a green Scandit Brush"},
+        {"text": "CODE128 (Symbology.Code128) returns a blue Scandit Brush"},
+        {"text": "The overlay's Listener property is assigned to this (or to an instance of the listener)"},
+        {"text": "The Scandit Brush type is used (Scandit.DataCapture.Core.UI.Style.Brush), constructed with UIColor (not Android.Graphics.Color or Android.Graphics.Paint)"},
+        {"text": "Existing BarcodeBatch.Create call is preserved (not rewritten as new BarcodeBatch)"},
+        {"text": "Existing IBarcodeBatchListener implementation (OnSessionUpdated, OnObservationStarted, OnObservationStopped) is preserved"},
+        {"text": "Existing frameData.Dispose() call inside OnSessionUpdated is preserved"},
+        {"text": "Existing camera lifecycle in ViewWillAppear / ViewWillDisappear is preserved"}
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "In my MatrixScan Batch ViewController I want to log all currently tracked barcodes \u2014 their tracking ID and data \u2014 on every frame. Here is my ViewController: IntegratedViewController.cs.",
+      "expected_output": "The skill updates OnSessionUpdated to iterate over session.TrackedBarcodes and log each TrackedBarcode's Identifier and Barcode.Data. Data must be copied out of the session before DispatchQueue.MainQueue.DispatchAsync, because the session is only safe to access on the recognition queue. frameData.Dispose() in a finally block is preserved.",
+      "files": [
+        "fixtures/IntegratedViewController.cs"
+      ],
+      "assertions": [
+        {"text": "session.TrackedBarcodes (the IDictionary<int, TrackedBarcode>) is accessed inside OnSessionUpdated"},
+        {"text": "Each TrackedBarcode's Identifier is read"},
+        {"text": "Each TrackedBarcode's Barcode.Data is read"},
+        {"text": "The identifier+data pairs are copied into a local collection before DispatchQueue.MainQueue.DispatchAsync is called (session.TrackedBarcodes is not accessed inside the main-queue dispatch lambda)"},
+        {"text": "A logging call (Console.WriteLine, System.Diagnostics.Debug.WriteLine, NSLog, or similar) is used to emit each tracked barcode"},
+        {"text": "frameData.Dispose() is still called inside OnSessionUpdated, ideally in a finally block"},
+        {"text": "Existing BarcodeBatch.Create / Camera / DataCaptureView / BarcodeBatchBasicOverlay setup is preserved"},
+        {"text": "Existing ViewWillAppear / ViewWillDisappear lifecycle is preserved"}
+      ]
+    }
+  ]
+}

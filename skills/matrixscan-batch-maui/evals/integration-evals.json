@@ -1,0 +1,122 @@
+{
+  "skill_name": "matrixscan-batch-maui",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I want to add MatrixScan Batch to my .NET MAUI app. Here's my empty page: EmptyMainPage.xaml + EmptyMainPage.xaml.cs, and my MauiProgram: EmptyMauiProgram.cs. I need to track every EAN-13 and Code 128 barcode visible on screen at once and accumulate them into a list.",
+      "expected_output": "The skill reads integration.md, fetches the latest Scandit MAUI NuGet versions, updates MauiProgram.cs with .UseScanditCore(c => c.AddDataCaptureView()).UseScanditBarcode(), adds <scandit:DataCaptureView> with DataCaptureContext=\"{Binding DataCaptureContext}\" to MainPage.xaml with the correct namespace, writes a complete BarcodeBatch integration (DataCaptureContext.ForLicenseKey, Camera.GetCamera(CameraPosition.WorldFacing) or Camera.GetDefaultCamera() with BarcodeBatch.RecommendedCameraSettings, BarcodeBatchSettings.Create with Symbology.Ean13Upca + Symbology.Code128, BarcodeBatch.Create, IBarcodeBatchListener or SessionUpdated event, OnSessionUpdated reading session.AddedTrackedBarcodes dispatched via MainThread.BeginInvokeOnMainThread inside try/finally with frameData.Dispose(), BarcodeBatchBasicOverlay.Create inside HandlerChanged then dataCaptureView.AddOverlay, OnAppearing/OnDisappearing lifecycle calling ResumeAsync/SleepAsync with Permissions.Camera, BarcodeBatch.Enabled disabled BEFORE camera off in SleepAsync). Shows the setup checklist (four NuGet packages, NSCameraUsageDescription on iOS, SupportedOSPlatformVersion 24 on Android, license key). Does NOT add ScanditCaptureCore.Initialize() calls to MainApplication/AppDelegate.",
+      "files": [
+        "fixtures/EmptyMainPage.xaml",
+        "fixtures/EmptyMainPage.xaml.cs",
+        "fixtures/EmptyMauiProgram.cs"
+      ],
+      "assertions": [
+        {"text": "Setup checklist mentions all four NuGet packages: Scandit.DataCapture.Core, Scandit.DataCapture.Core.Maui, Scandit.DataCapture.Barcode, Scandit.DataCapture.Barcode.Maui"},
+        {"text": "MauiProgram.cs is updated to call .UseScanditCore("},
+        {"text": "MauiProgram.cs UseScanditCore call invokes configure.AddDataCaptureView()"},
+        {"text": "MauiProgram.cs is updated to call .UseScanditBarcode()"},
+        {"text": "MauiProgram.cs does NOT call .UseScanditBarcode( with an inner configure argument (e.g. AddBarcodeBatchView)"},
+        {"text": "No ScanditCaptureCore.Initialize() or ScanditBarcodeCapture.Initialize() call is added to MainApplication or AppDelegate (the MAUI builder handles this)"},
+        {"text": "MainPage.xaml adds the xmlns:scandit=\"clr-namespace:Scandit.DataCapture.Core.UI.Maui;assembly=ScanditCaptureCoreMaui\" namespace"},
+        {"text": "MainPage.xaml contains a <scandit:DataCaptureView> element"},
+        {"text": "<scandit:DataCaptureView> sets DataCaptureContext=\"{Binding DataCaptureContext}\" (or equivalent binding to a DataCaptureContext property)"},
+        {"text": "Setup checklist mentions adding NSCameraUsageDescription to Platforms/iOS/Info.plist"},
+        {"text": "Setup checklist mentions SupportedOSPlatformVersion of at least 24 for the Android target"},
+        {"text": "A license key placeholder string is present"},
+        {"text": "DataCaptureContext.ForLicenseKey( is used to create the context"},
+        {"text": "BarcodeBatch.RecommendedCameraSettings is used (as a static property, not a method call with parentheses)"},
+        {"text": "Camera.GetCamera(CameraPosition.WorldFacing) or Camera.GetDefaultCamera() is used to obtain the camera"},
+        {"text": "camera.ApplySettingsAsync(...) is called with BarcodeBatch.RecommendedCameraSettings (or a CameraSettings derived from it)"},
+        {"text": "dataCaptureContext.SetFrameSourceAsync(camera) is called"},
+        {"text": "BarcodeBatchSettings.Create() is used (not new BarcodeBatchSettings(), which does not exist)"},
+        {"text": "Symbology.Ean13Upca is enabled"},
+        {"text": "Symbology.Code128 is enabled"},
+        {"text": "No symbologies other than Ean13Upca and Code128 are enabled"},
+        {"text": "BarcodeBatch.Create(dataCaptureContext, settings) is used to create the mode"},
+        {"text": "The view controller implements IBarcodeBatchListener (or subscribes to barcodeBatch.SessionUpdated +=)"},
+        {"text": "OnSessionUpdated has the signature (BarcodeBatch, BarcodeBatchSession, IFrameData) — not (BarcodeBatch, BarcodeBatchSession, FrameData)"},
+        {"text": "Inside OnSessionUpdated, data from session.AddedTrackedBarcodes is copied out before scheduling UI work"},
+        {"text": "MainThread.BeginInvokeOnMainThread (or MainThread.InvokeOnMainThreadAsync) is used to dispatch UI work (not RunOnUiThread, not DispatchQueue.MainQueue.DispatchAsync)"},
+        {"text": "frameData.Dispose() is called inside OnSessionUpdated, ideally in a finally block so it runs on every code path"},
+        {"text": "dataCaptureView.HandlerChanged is subscribed to in the page code-behind"},
+        {"text": "BarcodeBatchBasicOverlay.Create(barcodeBatch ...) is called inside the HandlerChanged handler (single-argument or barcodeBatch+style overload, not the native iOS/Android view overload)"},
+        {"text": "dataCaptureView.AddOverlay(overlay) is called to attach the overlay"},
+        {"text": "OnAppearing is overridden and triggers a flow that calls Permissions.CheckStatusAsync<Permissions.Camera>() or Permissions.RequestAsync<Permissions.Camera>()"},
+        {"text": "OnAppearing's flow turns the camera on (SwitchToDesiredStateAsync(FrameSourceState.On)) and sets barcodeBatch.Enabled = true"},
+        {"text": "OnDisappearing's flow turns the camera off (SwitchToDesiredStateAsync(FrameSourceState.Off))"},
+        {"text": "OnDisappearing's flow sets barcodeBatch.Enabled = false before stopping the camera (the Enabled = false statement appears before the SwitchToDesiredStateAsync(FrameSourceState.Off) call)"},
+        {"text": "No Android-only lifecycle hooks appear (OnResume / OnPause / OnDestroy / RunOnUiThread / RequestPermissions / FindViewById / FrameLayout / AppCompatActivity)"},
+        {"text": "No iOS-only lifecycle hooks appear (ViewWillAppear / ViewWillDisappear / ViewDidLoad / DispatchQueue.MainQueue.DispatchAsync / UIViewController)"},
+        {"text": "No BarcodeCapture.Create or IBarcodeCaptureListener appears (this is MatrixScan Batch, not single-shot BarcodeCapture)"},
+        {"text": "No Swift-style symbology names (e.g. .ean13UPCA, .code128) appear"},
+        {"text": "No Kotlin-style symbology names (EAN13_UPCA, CODE128) appear"}
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "In my MatrixScan Batch MAUI view model, I want to log every currently tracked barcode (tracking ID and data) on every frame. Here is my view model: IntegratedMainPageViewModel.cs.",
+      "expected_output": "The skill updates OnSessionUpdated to iterate session.TrackedBarcodes (the IDictionary<int, TrackedBarcode>) and log each entry's Identifier and Barcode.Data. The (id, data) pairs are copied into a local collection before the MainThread.BeginInvokeOnMainThread dispatch, because the session is only safe to access on the recognition thread. frameData.Dispose() in a finally block is preserved.",
+      "files": [
+        "fixtures/IntegratedMainPageViewModel.cs"
+      ],
+      "assertions": [
+        {"text": "session.TrackedBarcodes (the IDictionary<int, TrackedBarcode>) is iterated inside OnSessionUpdated"},
+        {"text": "Each TrackedBarcode's Identifier is read"},
+        {"text": "Each TrackedBarcode's Barcode.Data is read"},
+        {"text": "The identifier+data pairs are copied into a local collection (List, array, or similar) before MainThread.BeginInvokeOnMainThread is called (session.TrackedBarcodes is not accessed inside the main-thread dispatch lambda)"},
+        {"text": "A logging call (Console.WriteLine, System.Diagnostics.Debug.WriteLine, or similar) is used to emit each tracked barcode"},
+        {"text": "frameData.Dispose() is still called inside OnSessionUpdated, ideally in a finally block"},
+        {"text": "MainThread.BeginInvokeOnMainThread or MainThread.InvokeOnMainThreadAsync is used (not DispatchQueue.MainQueue.DispatchAsync, not RunOnUiThread)"},
+        {"text": "Existing BarcodeBatch.Create / Camera / BarcodeBatchSettings setup is preserved"},
+        {"text": "Existing ResumeAsync / SleepAsync lifecycle methods are preserved"}
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "I want to highlight EAN-13 barcodes in green and Code 128 barcodes in blue in my MAUI MatrixScan Batch view model. Here is my view model: IntegratedMainPageViewModel.cs. I have the MatrixScan AR add-on.",
+      "expected_output": "The skill makes the view model implement IBarcodeBatchBasicOverlayListener with BrushForTrackedBarcode returning a green Scandit Brush for Symbology.Ean13Upca and a blue Scandit Brush for Symbology.Code128 (constructed with Microsoft.Maui.Graphics.Color, not Android.Graphics.Color or UIKit.UIColor). The overlay's Listener is assigned to the view model when the overlay is created in HandlerChanged. Existing IBarcodeBatchListener implementation, frame disposal, camera lifecycle, and BarcodeBatch.Create are preserved.",
+      "files": [
+        "fixtures/IntegratedMainPageViewModel.cs",
+        "fixtures/IntegratedMainPage.xaml.cs"
+      ],
+      "assertions": [
+        {"text": "The view model declares it implements IBarcodeBatchBasicOverlayListener"},
+        {"text": "BrushForTrackedBarcode(BarcodeBatchBasicOverlay overlay, TrackedBarcode trackedBarcode) is implemented"},
+        {"text": "EAN-13 (Symbology.Ean13Upca) returns a green Scandit Brush"},
+        {"text": "Code 128 (Symbology.Code128) returns a blue Scandit Brush"},
+        {"text": "The Scandit Brush type is used (Scandit.DataCapture.Core.UI.Style.Brush)"},
+        {"text": "Colors are constructed with the cross-platform Microsoft.Maui.Graphics.Color (not Android.Graphics.Color, not UIKit.UIColor — those would break the other target)"},
+        {"text": "The overlay's Listener property is assigned to the view model (or to an instance of the listener) inside the HandlerChanged handler in the code-behind"},
+        {"text": "Existing BarcodeBatch.Create call is preserved (not rewritten as new BarcodeBatch)"},
+        {"text": "Existing IBarcodeBatchListener implementation (OnSessionUpdated, OnObservationStarted, OnObservationStopped) is preserved"},
+        {"text": "Existing frameData.Dispose() call inside OnSessionUpdated is preserved"},
+        {"text": "Existing ResumeAsync / SleepAsync lifecycle methods are preserved"}
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "I want to anchor a small price-tag overlay on top of each tracked barcode in my MAUI MatrixScan Batch app. The overlay should be a MAUI ContentView showing the barcode value as text. Here is my view model: IntegratedMainPageViewModel.cs and my page: IntegratedMainPage.xaml.cs. I have the MatrixScan AR add-on.",
+      "expected_output": "The skill creates a MAUI ContentView (e.g. StockOverlay.xaml + .xaml.cs) showing the barcode data. It splits the view model into three parts using `partial class`: (1) the cross-platform part declares IBarcodeBatchAdvancedOverlayListener and implements AnchorForTrackedBarcode (returning Anchor.TopCenter) and OffsetForTrackedBarcode (returning a PointWithUnit with MeasureUnit.Fraction). (2) Platforms/Android/.../MainPageViewModel.cs implements ViewForTrackedBarcode returning Android.Views.View by calling mauiOverlay.ToPlatform(new MauiContext(MainApplication.Current.Services, MainApplication.Context)). (3) Platforms/iOS/.../MainPageViewModel.cs implements ViewForTrackedBarcode returning UIKit.UIView via ToPlatform(new MauiContext(AppDelegate.Current.Services)). A BarcodeBatchAdvancedOverlay is created with BarcodeBatchAdvancedOverlay.Create(this.viewModel.BarcodeBatch) inside HandlerChanged, its Listener is set to the view model, and it is attached via dataCaptureView.AddOverlay.",
+      "files": [
+        "fixtures/IntegratedMainPageViewModel.cs",
+        "fixtures/IntegratedMainPage.xaml.cs"
+      ],
+      "assertions": [
+        {"text": "A MAUI ContentView is defined to render the per-barcode overlay (e.g. StockOverlay.xaml / .xaml.cs, PriceTag.xaml, or similar)"},
+        {"text": "The view model declares it implements IBarcodeBatchAdvancedOverlayListener"},
+        {"text": "The view model class is declared as `partial`"},
+        {"text": "AnchorForTrackedBarcode returns Anchor.TopCenter (or another Anchor enum value)"},
+        {"text": "OffsetForTrackedBarcode returns a PointWithUnit constructed with FloatWithUnit and MeasureUnit.Fraction (not MeasureUnit.Pixel)"},
+        {"text": "The Android-platform half of the partial class (under Platforms/Android/ or guarded by a #if ANDROID) implements ViewForTrackedBarcode returning Android.Views.View (the return type is Android.Views.View or Android.Views.View?)"},
+        {"text": "The iOS-platform half of the partial class (under Platforms/iOS/ or guarded by a #if IOS) implements ViewForTrackedBarcode returning UIKit.UIView (the return type is UIKit.UIView or UIKit.UIView?)"},
+        {"text": "Both platform halves call .ToPlatform( on the MAUI overlay to convert it to the native view (via Microsoft.Maui.Platform extension)"},
+        {"text": "Both platform halves construct a new MauiContext(...) for the ToPlatform call"},
+        {"text": "BarcodeBatchAdvancedOverlay.Create(barcodeBatch) is called (the MAUI-friendly overload, not the (barcodeBatch, view) overload with a native view)"},
+        {"text": "advancedOverlay.Listener is assigned to the view model (or an instance implementing IBarcodeBatchAdvancedOverlayListener)"},
+        {"text": "The advanced overlay is created inside dataCaptureView.HandlerChanged (not in the constructor or OnAppearing)"},
+        {"text": "dataCaptureView.AddOverlay( is called for the advanced overlay"},
+        {"text": "Existing BarcodeBatch.Create / camera setup / OnSessionUpdated / ResumeAsync / SleepAsync are preserved"}
+      ]
+    }
+  ]
+}

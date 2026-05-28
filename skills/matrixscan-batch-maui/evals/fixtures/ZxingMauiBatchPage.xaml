@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:zxing="clr-namespace:ZXing.Net.Maui.Controls;assembly=ZXing.Net.MAUI.Controls"
+             x:Class="MyApp.Views.MainPage"
+             Title="Scan All">
+    <Grid RowDefinitions="*,Auto">
+        <zxing:CameraBarcodeReaderView x:Name="cameraView"
+                                       Grid.Row="0"
+                                       BarcodesDetected="OnBarcodesDetected" />
+        <Label x:Name="resultLabel"
+               Grid.Row="1"
+               Padding="16"
+               Text="Scanning..." />
+    </Grid>
+</ContentPage>

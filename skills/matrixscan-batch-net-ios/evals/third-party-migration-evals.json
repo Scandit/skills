@@ -1,0 +1,40 @@
+{
+  "skill_name": "matrixscan-batch-net-ios",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Replace my AVFoundation AVCaptureMetadataOutput multi-barcode scanner with Scandit MatrixScan Batch. Every visible barcode (EAN-13, Code 128, QR) should be tracked and accumulated into a dedupe-by-tracking-id list. Here is my ViewController: AVFoundationViewController.cs.",
+      "expected_output": "The skill removes AVFoundation references (the AVCaptureSession / AVCaptureDevice / AVCaptureMetadataOutput / AVCaptureVideoPreviewLayer setup, the IAVCaptureMetadataOutputObjectsDelegate / AVCaptureMetadataOutputObjectsDelegate metadata callback, the AVMetadataObjectType masks) and replaces them with MatrixScan Batch: DataCaptureContext.ForLicenseKey, manual camera setup via Camera.GetDefaultCamera + BarcodeBatch.RecommendedCameraSettings + SetFrameSourceAsync, BarcodeBatchSettings.Create with Ean13Upca + Code128 + Qr, BarcodeBatch.Create, DataCaptureView.Create(context, this.View!.Bounds) added via AddSubview + SendSubviewToBack with AutoresizingMask, BarcodeBatchBasicOverlay.Create, IBarcodeBatchListener with OnSessionUpdated reading session.AddedTrackedBarcodes (dispatched to DispatchQueue.MainQueue), and frameData.Dispose() in a finally block. The existing ScannedBarcode record and the dedupe logic is preserved. The skill provides the setup checklist (NuGet packages, NSCameraUsageDescription, AppDelegate initialize for SDK 8.0+).",
+      "files": [
+        "fixtures/AVFoundationViewController.cs"
+      ],
+      "assertions": [
+        {"text": "The AVCaptureSession / AVCaptureDevice / AVCaptureDeviceInput setup is removed"},
+        {"text": "The AVCaptureMetadataOutput instance and its SetDelegate(...) wiring are removed"},
+        {"text": "The AVCaptureMetadataOutputObjectsDelegate (or IAVCaptureMetadataOutputObjectsDelegate) inner class and its DidOutputMetadataObjects override are removed"},
+        {"text": "The AVCaptureVideoPreviewLayer setup is removed (replaced by DataCaptureView)"},
+        {"text": "No AVMetadataObjectType enum usage remains (EAN13Code, Code128Code, QRCode)"},
+        {"text": "DataCaptureContext.ForLicenseKey( is used to create the context"},
+        {"text": "BarcodeBatchSettings.Create() is used"},
+        {"text": "BarcodeBatch.Create( is used as the factory"},
+        {"text": "Symbology.Ean13Upca is enabled (mapped from AVMetadataObjectType.EAN13Code)"},
+        {"text": "Symbology.Code128 is enabled (mapped from AVMetadataObjectType.Code128Code)"},
+        {"text": "Symbology.Qr is enabled (mapped from AVMetadataObjectType.QRCode \u2014 not Symbology.QrCode)"},
+        {"text": "Camera.GetDefaultCamera() is used"},
+        {"text": "BarcodeBatch.RecommendedCameraSettings is used as a static property"},
+        {"text": "dataCaptureContext.SetFrameSourceAsync(camera) is called"},
+        {"text": "DataCaptureView.Create(dataCaptureContext, this.View!.Bounds) (or this.View.Bounds) is used \u2014 the iOS CGRect overload"},
+        {"text": "The DataCaptureView is added via this.View.AddSubview(...) (replacing the old AVCaptureVideoPreviewLayer.AddSublayer)"},
+        {"text": "BarcodeBatchBasicOverlay.Create( is called with both the BarcodeBatch and the DataCaptureView"},
+        {"text": "The view controller implements IBarcodeBatchListener (or subscribes to barcodeBatch.SessionUpdated +=)"},
+        {"text": "OnSessionUpdated iterates session.AddedTrackedBarcodes (the new-this-frame collection)"},
+        {"text": "The handler dispatches UI updates via DispatchQueue.MainQueue.DispatchAsync (because OnSessionUpdated runs on a background recognition queue)"},
+        {"text": "frameData.Dispose() is called inside OnSessionUpdated, ideally in a finally block"},
+        {"text": "The existing ScannedBarcode record (or equivalent data model) is preserved"},
+        {"text": "Dedupe logic (using either tracking Identifier or the barcode Value) is preserved in the new flow"},
+        {"text": "Setup checklist is shown and mentions adding the Scandit.DataCapture.Barcode and Scandit.DataCapture.Core NuGet packages"},
+        {"text": "Setup checklist mentions adding NSCameraUsageDescription to Info.plist"}
+      ]
+    }
+  ]
+}
