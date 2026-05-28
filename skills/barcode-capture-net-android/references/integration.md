@@ -8,11 +8,19 @@ Examples below use C# 12 and an Activity. The same APIs work identically in a Fr
 
 ## Prerequisites
 
-- Scandit Data Capture SDK for .NET — add via NuGet. Before pinning a version, fetch the latest published version from `https://www.nuget.org/packages/Scandit.DataCapture.Barcode/` and read the latest stable version number from the page. Then add both packages to the `.csproj`:
+### Step 0 — Fetch the latest SDK version from NuGet (mandatory, do this before any edits)
+
+Before editing the `.csproj`, **WebFetch** `https://www.nuget.org/packages/Scandit.DataCapture.Barcode/` and read the latest **stable** version number off the page (skip `-beta.*` / `-preview.*` / `-rc.*` suffixes). Use that exact version for both packages.
+
+Do **not** guess, do **not** reuse a version from training data, and do **not** invent a number like `8.13.0` when only `8.4.0` is the latest stable — `dotnet restore` will fail with `Unable to find package Scandit.DataCapture.Core with version (>= 8.13.0)`. The latest stable version changes regularly; only the live NuGet page is authoritative. If WebFetch fails, fall back to `https://api.nuget.org/v3-flatcontainer/scandit.datacapture.barcode/index.json` (last entry without a pre-release suffix) before proceeding.
+
+### Other prerequisites
+
+- Scandit Data Capture SDK for .NET — add both packages to the `.csproj`, pinned to the version fetched in Step 0:
   ```xml
   <ItemGroup>
-    <PackageReference Include="Scandit.DataCapture.Core" Version="<latest-version>" />
-    <PackageReference Include="Scandit.DataCapture.Barcode" Version="<latest-version>" />
+    <PackageReference Include="Scandit.DataCapture.Core" Version="<step-0-version>" />
+    <PackageReference Include="Scandit.DataCapture.Barcode" Version="<step-0-version>" />
   </ItemGroup>
   ```
   Both packages are published on NuGet.org. Do **not** add `Scandit.DataCapture.Core.Maui` or `Scandit.DataCapture.Barcode.Maui` — those are MAUI-only.
@@ -103,7 +111,7 @@ Once the user responds, ask which Activity (or Fragment) they'd like to integrat
 After providing the code, show this setup checklist:
 
 **Setup checklist:**
-1. Add `<PackageReference Include="Scandit.DataCapture.Barcode" Version="<version>" />` and `<PackageReference Include="Scandit.DataCapture.Core" Version="<version>" />` to the `.csproj` (the version was already fetched and filled in above).
+1. Add `<PackageReference Include="Scandit.DataCapture.Barcode" Version="<step-0-version>" />` and `<PackageReference Include="Scandit.DataCapture.Core" Version="<step-0-version>" />` to the `.csproj` (use the version pinned in **Step 0** above — do not guess).
 2. Add `<uses-permission android:name="android.permission.CAMERA" />` and the `<uses-feature>` element to `AndroidManifest.xml`.
 3. Request the `CAMERA` permission at runtime before scanning starts (the example below shows a `CameraPermissionActivity` helper).
 4. Replace `-- ENTER YOUR SCANDIT LICENSE KEY HERE --` with your key from https://ssl.scandit.com.
