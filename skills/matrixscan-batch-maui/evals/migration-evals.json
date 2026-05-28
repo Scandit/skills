@@ -1,0 +1,44 @@
+{
+  "skill_name": "matrixscan-batch-maui",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I need to upgrade my .NET MAUI MatrixScan app from Scandit SDK v6 to v7. Here is my current view model: MainPageViewModelV6.cs.",
+      "expected_output": "The skill renames every v6 BarcodeTracking* type to its v7 BarcodeBatch* equivalent (class names, settings, listener interface, session, basic overlay), updates the Scandit.DataCapture.Barcode.Tracking.* using directives to Scandit.DataCapture.Barcode.Batch.*, and modernizes the camera setup to use BarcodeBatch.RecommendedCameraSettings (the static property) instead of a hand-rolled CameraSettings with VideoResolution.Auto. The .NET factory method name (Create) is unchanged. Provides the relevant migration guide URLs.",
+      "files": [
+        "fixtures/MainPageViewModelV6.cs"
+      ],
+      "assertions": [
+        {"text": "All BarcodeTracking class references are renamed to BarcodeBatch"},
+        {"text": "BarcodeTrackingSettings is renamed to BarcodeBatchSettings"},
+        {"text": "BarcodeTrackingSession is renamed to BarcodeBatchSession"},
+        {"text": "IBarcodeTrackingListener is renamed to IBarcodeBatchListener"},
+        {"text": "using Scandit.DataCapture.Barcode.Tracking.Capture is renamed to using Scandit.DataCapture.Barcode.Batch.Capture"},
+        {"text": "using Scandit.DataCapture.Barcode.Tracking.Data is renamed to using Scandit.DataCapture.Barcode.Batch.Data"},
+        {"text": "using Scandit.DataCapture.Barcode.Tracking.UI.Overlay is renamed to using Scandit.DataCapture.Barcode.Batch.UI.Overlay"},
+        {"text": "Camera setup is updated to use BarcodeBatch.RecommendedCameraSettings (the v6 hand-rolled new CameraSettings with VideoResolution.Auto is removed or replaced)"},
+        {"text": "BarcodeBatch.RecommendedCameraSettings is read as a static property, not a method call with parentheses"},
+        {"text": "The factory call shape Create(dataCaptureContext, settings) is preserved (not renamed to ForDataCaptureContext)"},
+        {"text": "Existing MAUI lifecycle (ResumeAsync / SleepAsync, Permissions.Camera, MainThread dispatch) is preserved — no Android-only OnResume/OnPause or iOS-only ViewWillAppear/ViewWillDisappear is introduced"},
+        {"text": "Existing frameData.Dispose() inside OnSessionUpdated is preserved through the rename"},
+        {"text": "At least one of the v6→v7 migration guide URLs (https://docs.scandit.com/sdks/net/android/migrate-6-to-7/ or https://docs.scandit.com/sdks/net/ios/migrate-6-to-7/) is provided"},
+        {"text": "No BarcodeTracking-named identifier remains in the rewritten file (parameter names like `barcodeTracking` may be safely renamed to `barcodeBatch`)"}
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "I'm upgrading my Scandit .NET MAUI MatrixScan Batch SDK from v7 to v8. What do I need to change in my code?",
+      "expected_output": "The skill explains that .NET MAUI BarcodeBatch has no breaking factory-method changes in v7→v8. The BarcodeBatch.Create / BarcodeBatchSettings.Create / IBarcodeBatchListener / SessionUpdated event / overlay factories are unchanged. The skill explicitly notes that — unlike the non-MAUI .NET Android / iOS skills which require manual ScanditCaptureCore.Initialize() / ScanditBarcodeCapture.Initialize() calls in MainApplication.OnCreate / AppDelegate.FinishedLaunching for SDK 8.0+ — the MAUI builder extensions (UseScanditCore / UseScanditBarcode) handle SDK initialization automatically, so no manual Initialize call should be added to MainApplication or AppDelegate. Mentions the formal VideoResolution.Auto deprecation, that BarcodeBatchLicenseInfo is available from 8.4, and confirms the HandlerChanged overlay pattern is still required.",
+      "files": [],
+      "assertions": [
+        {"text": "The skill mentions there are no breaking factory-method changes for .NET MAUI BarcodeBatch in v7→v8"},
+        {"text": "The skill explicitly tells the user NOT to add ScanditCaptureCore.Initialize() / ScanditBarcodeCapture.Initialize() to MainApplication or AppDelegate (the MAUI builder extensions handle SDK initialization automatically)"},
+        {"text": "The skill confirms the MauiProgram.cs builder chain (UseScanditCore(c => c.AddDataCaptureView()).UseScanditBarcode()) must be present"},
+        {"text": "VideoResolution.Auto deprecation is mentioned"},
+        {"text": "BarcodeBatchLicenseInfo availability from 8.4+ is mentioned"},
+        {"text": "The skill does NOT instruct the user to replace BarcodeBatch.Create with new BarcodeBatch(settings) plus AddMode (that is a cross-platform SDK change, not .NET MAUI)"},
+        {"text": "At least one of the v7→v8 migration guide URLs (https://docs.scandit.com/sdks/net/android/migrate-7-to-8/ or https://docs.scandit.com/sdks/net/ios/migrate-7-to-8/) is provided"}
+      ]
+    }
+  ]
+}

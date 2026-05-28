@@ -1,0 +1,45 @@
+{
+  "skill_name": "matrixscan-batch-maui",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I have a .NET MAUI app using ZXing.Net.Maui with Multiple = true to scan all visible barcodes on screen. I want to replace it with MatrixScan Batch. Every visible barcode (EAN-13, Code 128, QR) should keep being tracked, deduplicated by value, and accumulated into a list. Here is my page: ZxingMauiBatchPage.xaml + ZxingMauiBatchPage.xaml.cs.",
+      "expected_output": "Removes the ZXing.Net.Maui XAML control, namespace, options, and BarcodesDetected event handler. Replaces with <scandit:DataCaptureView> + BarcodeBatch mode + HandlerChanged BarcodeBatchBasicOverlay creation. Maps the ZXing formats (Ean13, Code128, QrCode) to Scandit symbologies (Ean13Upca, Code128, Qr). Preserves the ScannedBarcode record and deduplication logic, ideally translating manual Value-based dedupe to tracking-ID-based dedupe via session.AddedTrackedBarcodes + a HashSet<int> of Identifiers. OnSessionUpdated dispatches UI updates via MainThread.BeginInvokeOnMainThread inside a try/finally with frameData.Dispose().",
+      "files": [
+        "fixtures/ZxingMauiBatchPage.xaml",
+        "fixtures/ZxingMauiBatchPage.xaml.cs"
+      ],
+      "assertions": [
+        {"text": "ZXing.Net.Maui using directives are NOT present in the new code"},
+        {"text": "<zxing:CameraBarcodeReaderView is NOT present in the updated XAML (may appear in a before/after summary table)"},
+        {"text": "The xmlns:zxing namespace is NOT present in the updated XAML"},
+        {"text": "BarcodeReaderOptions is NOT present in the new code"},
+        {"text": "BarcodesDetected event handler signature is NOT present in the new code"},
+        {"text": "Scandit.DataCapture using directives ARE present"},
+        {"text": "<scandit:DataCaptureView> is present in the updated XAML"},
+        {"text": "The xmlns:scandit=\"clr-namespace:Scandit.DataCapture.Core.UI.Maui;assembly=ScanditCaptureCoreMaui\" namespace is added"},
+        {"text": "<scandit:DataCaptureView> sets DataCaptureContext=\"{Binding DataCaptureContext}\" (or equivalent binding to a DataCaptureContext)"},
+        {"text": "The view model implements IBarcodeBatchListener (or subscribes to barcodeBatch.SessionUpdated +=)"},
+        {"text": "OnSessionUpdated iterates session.AddedTrackedBarcodes (the new-this-frame collection)"},
+        {"text": "Symbology.Ean13Upca is enabled"},
+        {"text": "Symbology.Code128 is enabled"},
+        {"text": "Symbology.Qr is enabled (not Symbology.QrCode, which does not exist)"},
+        {"text": "Symbology.QrCode does NOT appear as a Symbology enum value (BarcodeFormat.QrCode in a summary table is acceptable)"},
+        {"text": "BarcodeBatchBasicOverlay.Create(barcodeBatch ...) is called inside dataCaptureView.HandlerChanged (single-argument or barcodeBatch+style overload, not the native-view overload)"},
+        {"text": "dataCaptureView.AddOverlay(overlay) is called"},
+        {"text": "MainThread.BeginInvokeOnMainThread (or MainThread.InvokeOnMainThreadAsync) is used to dispatch UI work (not RunOnUiThread, not DispatchQueue.MainQueue.DispatchAsync)"},
+        {"text": "frameData.Dispose() is called inside OnSessionUpdated, ideally in a finally block"},
+        {"text": "OnAppearing turns the camera on (SwitchToDesiredStateAsync(FrameSourceState.On)) and sets barcodeBatch.Enabled = true"},
+        {"text": "OnDisappearing turns the camera off (SwitchToDesiredStateAsync(FrameSourceState.Off))"},
+        {"text": "Permissions.RequestAsync<Permissions.Camera>() (or CheckStatusAsync<Permissions.Camera>()) is used"},
+        {"text": "ScannedBarcode record is preserved in output"},
+        {"text": "scannedBarcodes list is preserved in output"},
+        {"text": "Deduplication logic is preserved (either as Value-based dedupe like the original, or upgraded to tracking-Identifier-based dedupe via session.AddedTrackedBarcodes + HashSet<int>)"},
+        {"text": "MauiProgram.cs is updated to call .UseScanditCore(c => c.AddDataCaptureView()).UseScanditBarcode()"},
+        {"text": "A summary of changes is shown with what was removed and what was added"},
+        {"text": "Setup checklist mentions all four NuGet packages (Scandit.DataCapture.Core, Scandit.DataCapture.Core.Maui, Scandit.DataCapture.Barcode, Scandit.DataCapture.Barcode.Maui)"},
+        {"text": "Setup checklist mentions NSCameraUsageDescription (for iOS target) or Permissions.Camera (for both targets)"}
+      ]
+    }
+  ]
+}
