@@ -1,0 +1,21 @@
+name: id_scanner_app
+description: Example app with a v7 ID Capture integration.
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.4.0 <4.0.0'
+  flutter: '>=3.22.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  scandit_flutter_datacapture_core: ^7.0.0
+  scandit_flutter_datacapture_id: ^7.0.0
+  permission_handler: 12.0.1
+
+dev_dependencies:
+  flutter_lints: ^4.0.0
+
+flutter:
+  uses-material-design: true
