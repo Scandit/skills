@@ -1,0 +1,40 @@
+{
+  "skill_name": "matrixscan-ar-net-android",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I need to upgrade my .NET for Android MatrixScan AR app from Scandit SDK v7 to v8. Here is my current Activity: ActivityV7.cs. What do I need to change?",
+      "expected_output": "The skill explains that v8 requires explicit SDK initialization in a MainApplication subclass — ScanditCaptureCore.Initialize() and ScanditBarcodeCapture.Initialize() must be called from OnCreate() before any Scandit type is constructed. The activity itself does not need changes — the BarcodeAr constructor, BarcodeArView.Create factory, listener / SessionUpdated event, BarcodeArSession shape, and provider interfaces are all unchanged in v8. The skill also instructs the user to bump both Scandit.DataCapture.Core and Scandit.DataCapture.Barcode <PackageReference> versions to the latest stable v8 release. Provides the v7→v8 migration guide URL.",
+      "files": [
+        "fixtures/ActivityV7.cs"
+      ],
+      "assertions": [
+        {"text": "The skill explains that SDK 8.0+ requires explicit initialization via ScanditCaptureCore.Initialize() and ScanditBarcodeCapture.Initialize()"},
+        {"text": "The skill instructs the user to create (or update) a MainApplication subclass decorated with [Application] and override OnCreate()"},
+        {"text": "The initialization calls go into MainApplication.OnCreate() (or equivalent process-startup hook), not into MainActivity.OnCreate()"},
+        {"text": "The skill instructs the user to bump both Scandit.DataCapture.Core and Scandit.DataCapture.Barcode PackageReference versions"},
+        {"text": "The skill does NOT instruct the user to replace `new BarcodeAr(dataCaptureContext, settings)` with a factory call — the .NET BarcodeAr constructor is unchanged in v7→v8 and no `BarcodeAr.Create(...)` / `BarcodeAr.ForDataCaptureContext(...)` exists"},
+        {"text": "The skill does NOT instruct the user to change the BarcodeArView.Create(parentView, barcodeAr, dataCaptureContext, viewSettings, cameraSettings) factory signature — it is unchanged in v7→v8"},
+        {"text": "The skill does NOT instruct the user to add OnObservationStarted / OnObservationStopped methods to IBarcodeArListener (the .NET interface only has OnSessionUpdated)"},
+        {"text": "The skill does NOT instruct the user to pass a Context argument to BarcodeArRectangleHighlight / BarcodeArCircleHighlight / BarcodeArInfoAnnotation constructors — they still take only a Barcode"},
+        {"text": "The skill does NOT introduce a SetBarcodeFilter(...) call or an IBarcodeArFilter interface in the migrated code — this API is not available on dotnet.android"},
+        {"text": "Migration guide URL https://docs.scandit.com/sdks/net/android/migrate-7-to-8/ is provided"}
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "I'm bumping the Scandit .NET Android MatrixScan AR SDK from v7 to v8. What source-code changes do I need to make?",
+      "expected_output": "The skill explains that v8 requires explicit SDK initialization via ScanditCaptureCore.Initialize() and ScanditBarcodeCapture.Initialize() called from a MainApplication.OnCreate() override. The BarcodeAr constructor, BarcodeArView factory, IBarcodeArListener single-method interface, SessionUpdated event, provider async interfaces, and highlight / annotation constructors are all unchanged. Provides the v7→v8 migration guide URL.",
+      "files": [],
+      "assertions": [
+        {"text": "The skill explains that SDK 8.0+ requires explicit initialization via ScanditCaptureCore.Initialize() and ScanditBarcodeCapture.Initialize()"},
+        {"text": "The skill instructs the user to create (or update) a MainApplication subclass decorated with [Application] and override OnCreate()"},
+        {"text": "The initialization calls go into MainApplication.OnCreate() (or equivalent process-startup hook), not into MainActivity.OnCreate()"},
+        {"text": "The skill states that the BarcodeAr constructor (new BarcodeAr(context, settings)) is unchanged in v7→v8"},
+        {"text": "The skill states that the BarcodeArView.Create(...) factory is unchanged in v7→v8"},
+        {"text": "The skill does NOT instruct the user to rename `new BarcodeAr(...)` to a `Create(...)` or `ForDataCaptureContext(...)` factory call"},
+        {"text": "Migration guide URL https://docs.scandit.com/sdks/net/android/migrate-7-to-8/ is provided"}
+      ]
+    }
+  ]
+}

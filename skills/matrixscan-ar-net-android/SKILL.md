@@ -46,6 +46,7 @@ Your training data may contain outdated or incorrect Scandit SDK APIs. The `Barc
 Based on the user's request, load the appropriate reference file before responding:
 
 - **Integrating BarcodeAr from scratch, configuring settings, customizing highlights or annotations, handling session updates, customizing feedback, or wiring tap interactions** (e.g. "add MatrixScan AR to my .NET Android app", "set up barcode AR scanning in C#", "show a rectangle highlight on every tracked barcode", "show an info annotation with the barcode data", "make the beep silent", "react to a highlight tap", "switch to circle highlights") → read `references/integration.md` and follow the instructions there.
+- **Migrating or upgrading an existing MatrixScan AR integration** (e.g. "upgrade from v7 to v8", "bump the Scandit .NET SDK to v8", "what changed between SDK versions for BarcodeAr", "do I need to change my BarcodeAr code when moving to 8.x") → read `references/migration.md` and follow the instructions there.
 
 ## API Usage Policy
 
