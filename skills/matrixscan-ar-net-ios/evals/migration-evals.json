@@ -1,0 +1,41 @@
+{
+  "skill_name": "matrixscan-ar-net-ios",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I need to upgrade my .NET for iOS MatrixScan AR app from Scandit SDK v7 to v8. Here is my current view controller: ViewControllerV7.cs. What do I need to change?",
+      "expected_output": "The skill explains that v8 requires explicit SDK initialization in AppDelegate.FinishedLaunching — ScanditCaptureCore.Initialize() and ScanditBarcodeCapture.Initialize() must be called before any Scandit type is constructed. The view controller itself does not need changes — the BarcodeAr constructor, BarcodeArView.Create factory, listener / SessionUpdated event, BarcodeArSession shape, provider interfaces, and the iOS lifecycle (Start in ViewWillAppear, Stop in ViewWillDisappear) are all unchanged in v8. The skill also instructs the user to bump both Scandit.DataCapture.Core and Scandit.DataCapture.Barcode <PackageReference> versions to the latest stable v8 release. Provides the v7→v8 migration guide URL.",
+      "files": [
+        "fixtures/ViewControllerV7.cs"
+      ],
+      "assertions": [
+        {"text": "The skill explains that SDK 8.0+ requires explicit initialization via ScanditCaptureCore.Initialize() and ScanditBarcodeCapture.Initialize()"},
+        {"text": "The skill instructs the user to add the Initialize() calls in AppDelegate.FinishedLaunching (decorated with [Register(\"AppDelegate\")])"},
+        {"text": "The initialization calls go into AppDelegate.FinishedLaunching (or equivalent process-startup hook), not into the view controller's ViewDidLoad"},
+        {"text": "The skill instructs the user to bump both Scandit.DataCapture.Core and Scandit.DataCapture.Barcode PackageReference versions"},
+        {"text": "The skill does NOT instruct the user to replace `new BarcodeAr(dataCaptureContext, settings)` with a factory call — the .NET BarcodeAr constructor is unchanged in v7→v8 and no `BarcodeAr.Create(...)` / `BarcodeAr.ForDataCaptureContext(...)` exists"},
+        {"text": "The skill does NOT instruct the user to change the BarcodeArView.Create(parentView, barcodeAr, dataCaptureContext, viewSettings, cameraSettings) factory signature — it is unchanged in v7→v8"},
+        {"text": "The skill does NOT instruct the user to add OnObservationStarted / OnObservationStopped methods to IBarcodeArListener (the .NET interface only has OnSessionUpdated)"},
+        {"text": "The skill does NOT instruct the user to pass a context argument to BarcodeArRectangleHighlight / BarcodeArCircleHighlight / BarcodeArInfoAnnotation constructors — they still take only a Barcode"},
+        {"text": "The skill does NOT introduce a SetBarcodeFilter(...) call or an IBarcodeArFilter interface in the migrated code — this API is not available on dotnet.ios"},
+        {"text": "The skill does NOT instruct the user to add barcodeArView.OnResume() / barcodeArView.OnPause() calls — those methods are Android-only and do not exist on the iOS BarcodeArView binding"},
+        {"text": "Migration guide URL https://docs.scandit.com/sdks/net/ios/migrate-7-to-8/ is provided"}
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "I'm bumping the Scandit .NET iOS MatrixScan AR SDK from v7 to v8. What source-code changes do I need to make?",
+      "expected_output": "The skill explains that v8 requires explicit SDK initialization via ScanditCaptureCore.Initialize() and ScanditBarcodeCapture.Initialize() called from AppDelegate.FinishedLaunching. The BarcodeAr constructor, BarcodeArView factory, IBarcodeArListener single-method interface, SessionUpdated event, provider async interfaces, and highlight / annotation constructors are all unchanged. Provides the v7→v8 migration guide URL.",
+      "files": [],
+      "assertions": [
+        {"text": "The skill explains that SDK 8.0+ requires explicit initialization via ScanditCaptureCore.Initialize() and ScanditBarcodeCapture.Initialize()"},
+        {"text": "The skill instructs the user to add (or update) the AppDelegate's FinishedLaunching to include the two Initialize() calls"},
+        {"text": "The initialization calls go into AppDelegate.FinishedLaunching, not into a view controller's ViewDidLoad"},
+        {"text": "The skill states that the BarcodeAr constructor (new BarcodeAr(context, settings)) is unchanged in v7→v8"},
+        {"text": "The skill states that the BarcodeArView.Create(...) factory is unchanged in v7→v8"},
+        {"text": "The skill does NOT instruct the user to rename `new BarcodeAr(...)` to a `Create(...)` or `ForDataCaptureContext(...)` factory call"},
+        {"text": "Migration guide URL https://docs.scandit.com/sdks/net/ios/migrate-7-to-8/ is provided"}
+      ]
+    }
+  ]
+}
