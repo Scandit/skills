@@ -1,0 +1,354 @@
+# MatrixScan Pick iOS Integration Guide
+
+MatrixScan Pick is a pre-built picking workflow component built on top of the Scandit SDK. It scans multiple barcodes at once, maps them against a known product list, and renders state-aware augmented-reality highlights (to-pick / picked / not-in-list) plus a finish button for completing the session. The integration has two primary elements: the **`BarcodePick`** data capture mode and the **`BarcodePickView`** pre-built UI.
+
+## Prerequisites
+
+- Scandit Data Capture SDK for iOS — add via Swift Package Manager:
+  - URL: `https://github.com/Scandit/datacapture-spm`
+  - Add `ScanditBarcodeCapture` and `ScanditCaptureCore` package products to your target
+- A valid Scandit license key:
+  - Sign in at https://ssl.scandit.com to generate one
+  - No account yet? Sign up at https://ssl.scandit.com/dashboard/sign-up?p=test
+- `NSCameraUsageDescription` in `Info.plist`
+
+## Minimal Integration (Swift)
+
+Ask the user which barcode symbologies they need to scan, and where their product list comes from (static list, API, etc.). When asking about symbologies, mention that it's important to only enable the ones they actually need — fewer enabled symbologies improves scanning performance and accuracy.
+
+Then ask which file or view controller they'd like to integrate MatrixScan Pick into, and write the integration code directly into that file. Do not just show the code in chat; apply it to the file.
+
+After providing the code, show this setup checklist:
+
+**Setup checklist:**
+1. Add `ScanditBarcodeCapture` and `ScanditCaptureCore` via Swift Package Manager: `https://github.com/Scandit/datacapture-spm`
+2. Make sure you have `NSCameraUsageDescription` added to your `Info.plist`
+3. Replace `-- ENTER YOUR SCANDIT LICENSE KEY HERE --` with your key from https://ssl.scandit.com
+
+The code below is adapted from the official MatrixScan Pick Get Started guide and the `RestockingSample` (UIKit).
+
+```swift
+import ScanditBarcodeCapture
+
+// The shape your product data takes before it is turned into BarcodePickProducts.
+// Replace with the user's real model / data source.
+struct ProductDatabaseEntry {
+    let identifier: String
+    let quantity: Int
+    let items: [String] // the barcode data strings that belong to this product
+}
+
+class PickViewController: UIViewController {
+    private let context = DataCaptureContext(licenseKey: "-- ENTER YOUR SCANDIT LICENSE KEY HERE --")
+    private var barcodePickView: BarcodePickView!
+
+    // The catalog of products to pick, and which barcode payloads map to each.
+    private let productDatabase: [ProductDatabaseEntry] = [
+        .init(identifier: "product_1", quantity: 2, items: ["9783598215438", "9783598215414"]),
+        .init(identifier: "product_2", quantity: 3, items: ["9783598215471", "9783598215481"]),
+    ]
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        setupPicking()
+    }
+
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        barcodePickView.start()
+    }
+
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        barcodePickView.pause()
+        if isMovingFromParent {
+            barcodePickView.stop()
+        }
+    }
+
+    private func setupPicking() {
+        // 1. Settings + symbologies. The settings start with all symbologies disabled —
+        //    enable only the ones the app needs.
+        let settings = BarcodePickSettings()
+        settings.set(symbology: .ean13UPCA, enabled: true)
+        settings.set(symbology: .ean8, enabled: true)
+        settings.set(symbology: .upce, enabled: true)
+        settings.set(symbology: .code128, enabled: true)
+
+        // 2. Build the set of products to pick.
+        var products: Set<BarcodePickProduct> = []
+        productDatabase.forEach { entry in
+            products.insert(BarcodePickProduct(identifier: entry.identifier,
+                                               quantityToPick: entry.quantity))
+        }
+
+        // 3. The product provider maps scanned barcode payloads to product identifiers,
+        //    asynchronously, via the delegate below.
+        let productProvider = BarcodePickAsyncMapperProductProvider(products: products,
+                                                                    providerDelegate: self)
+
+        // 4. Create the BarcodePick mode.
+        let mode = BarcodePick(context: context,
+                               settings: settings,
+                               productProvider: productProvider)
+
+        // 5. Create the view. It renders the camera preview and the picking UI.
+        let viewSettings = BarcodePickViewSettings()
+        barcodePickView = BarcodePickView(frame: view.bounds,
+                                          context: context,
+                                          barcodePick: mode,
+                                          settings: viewSettings)
+        barcodePickView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        view.addSubview(barcodePickView)
+
+        // 6. Observe scanning lifecycle and the finish button.
+        barcodePickView.addListener(self)
+        barcodePickView.uiDelegate = self
+
+        // 7. Confirm picks. This is REQUIRED: without an action listener, a tapped item
+        //    never transitions to "picked" — the SDK waits for completionHandler(true).
+        barcodePickView.addActionListener(self)
+    }
+}
+
+// Maps the raw barcode payloads the SDK sees to your product identifiers.
+extension PickViewController: BarcodePickAsyncMapperProductProviderDelegate {
+    func mapItems(_ items: [String],
+                  completionHandler: @escaping ([BarcodePickProductProviderCallbackItem]) -> Void) {
+        let result: [BarcodePickProductProviderCallbackItem] = items.compactMap { item in
+            guard let entry = productDatabase.first(where: { $0.items.contains(item) }) else {
+                return nil // unknown item — will be highlighted as not-in-list
+            }
+            return BarcodePickProductProviderCallbackItem(itemData: item,
+                                                          productIdentifier: entry.identifier)
+        }
+        completionHandler(result)
+    }
+}
+
+// Scanning lifecycle callbacks (optional — implement only what you need).
+extension PickViewController: BarcodePickViewListener {
+    func barcodePickViewDidStartScanning(_ view: BarcodePickView) {}
+    func barcodePickViewDidFreezeScanning(_ view: BarcodePickView) {}
+    func barcodePickViewDidPauseScanning(_ view: BarcodePickView) {}
+    func barcodePickViewDidStopScanning(_ view: BarcodePickView) {}
+}
+
+// The finish button handler.
+extension PickViewController: BarcodePickViewUIDelegate {
+    func barcodePickViewDidTapFinishButton(_ view: BarcodePickView) {
+        navigationController?.popViewController(animated: true)
+    }
+}
+
+// Confirms (or rejects) pick / unpick actions. The completionHandler MUST be called —
+// pass true to finalize the action, false to reject it. This is what makes a tapped item
+// actually become "picked". A real app might validate against a backend before confirming.
+extension PickViewController: BarcodePickActionListener {
+    func didPickItem(withData data: String, completionHandler: @escaping (Bool) -> Void) {
+        completionHandler(true)
+    }
+
+    func didUnpickItem(withData data: String, completionHandler: @escaping (Bool) -> Void) {
+        completionHandler(true)
+    }
+}
+```
+
+> `BarcodePickView` does **not** add itself to the view hierarchy — construct it with a `frame` and `addSubview` it yourself. Note the constructor takes both the `context` and the `barcodePick` mode.
+
+> **Pick confirmation is required, not optional.** `BarcodePickActionListener` (added via
+> `barcodePickView.addActionListener(self)`) is what finalizes a pick. When the user taps a code,
+> the SDK calls `didPickItem(withData:completionHandler:)` and waits — the item only becomes "picked"
+> once you call `completionHandler(true)` (pass `false` to reject, e.g. after a failed backend check).
+> Omit the action listener and items will appear to do nothing on tap. The official basic Get Started
+> page leaves this out, so it is easy to miss.
+
+## What the code does (and what it does NOT do)
+
+- Creates the `DataCaptureContext` with the license key.
+- Builds `BarcodePickSettings` with the user's symbologies.
+- Builds the product set (`BarcodePickProduct` with `quantityToPick`) and a `BarcodePickAsyncMapperProductProvider` whose delegate maps scanned payloads → product identifiers.
+- Creates the `BarcodePick` mode and the `BarcodePickView`, adds the view to the hierarchy, and drives the `start()` / `pause()` / `stop()` lifecycle.
+- Wires the scanning-lifecycle listener, the finish-button UI delegate, and — critically — the **action listener that confirms picks** (see "Confirming picks" below).
+
+What this code does **not** do:
+- It does not customize the **highlight styles per pick state** (to-pick / picked / not-in-list). See "State-aware highlights" below.
+- It uses the **default tap-to-pick** interaction — it does not add programmatic auto-pick.
+
+## Confirming picks (required)
+
+`BarcodePick` does not auto-finalize a pick when the user taps a code. Instead it asks your
+`BarcodePickActionListener` to confirm: it calls `didPickItem(withData:completionHandler:)`
+(or `didUnpickItem(...)` for un-picking) and waits until you invoke the completion handler.
+
+- `completionHandler(true)` — finalize the action; the item transitions to "picked" (or "to-pick").
+- `completionHandler(false)` — reject it; the item stays as it was.
+
+This indirection exists so the app can validate a pick against a backend (stock check, task
+assignment) before committing — you can call the completion handler asynchronously after a network
+round-trip. If you don't need validation, confirm immediately with `completionHandler(true)`.
+
+**This listener is mandatory for a working picking flow.** Register it with
+`barcodePickView.addActionListener(self)`. Without it, tapping a code does nothing visible — the most
+common "my picks don't complete" problem, and the official basic Get Started page omits it.
+
+## Symbologies
+
+`BarcodePickSettings` starts with all symbologies disabled. Enable each via `settings.set(symbology:enabled:)`. For variable-length symbologies (Code 39, Code 128, Interleaved 2 of 5) restrict accepted lengths through the per-symbology settings:
+
+```swift
+settings.settings(for: .code128).activeSymbolCounts = Set(8...20)
+```
+
+`BarcodePickSettings` provides `settings(for:)` returning a `SymbologySettings`, plus
+`enabledSymbologies` (read-only) and `enableSymbologies(_:)` for enabling a set at once.
+
+## Product list and the provider
+
+The product list is supplied as a `Set<BarcodePickProduct>`, each with an `identifier` and a `quantityToPick`. The `BarcodePickAsyncMapperProductProvider` bridges the raw scanned barcode payloads to those product identifiers via its delegate's `mapItems(_:completionHandler:)`:
+
+- Return a `BarcodePickProductProviderCallbackItem(itemData:productIdentifier:)` for each payload you recognize.
+- Omit (or skip) payloads you don't recognize — those barcodes are surfaced as **not-in-list**.
+- The mapping is asynchronous (call `completionHandler` when done), so it's fine to hit a database or network in the delegate.
+
+## State-aware highlights (CustomView)
+
+The highlight drawn over each barcode is set via `BarcodePickViewSettings.highlightStyle`, which takes
+any `BarcodePickViewHighlightStyle`. The SDK ships several concrete styles:
+
+- `BarcodePickViewHighlightStyleDot` / `BarcodePickViewHighlightStyleDotWithIcons`
+- `BarcodePickViewHighlightStyleRectangular` / `BarcodePickViewHighlightStyleRectangularWithIcons`
+- `BarcodePickViewHighlightStyleCustomView` — supply your own `UIView` per barcode
+
+The built-in styles support per-state theming through `setSelectedBrush(_:for:)` (and, on the
+`*WithIcons` variants, `setSelectedIcon(_:for:)`), keyed by `BarcodePickState`:
+
+```swift
+typealias BarcodePickState // .ignore, .picked, .toPick, .unknown
+```
+
+For fully **custom `UIView` highlights that change per state**, use
+`BarcodePickViewHighlightStyleCustomView` and its delegate. The delegate's
+`customView(for:completionHandler:)` is called per barcode; the request carries `itemData`,
+`productIdentifier`, and the current `state`, and you return a `BarcodePickHighlightCustomViewResponse`
+wrapping your view:
+
+```swift
+let highlightStyle = BarcodePickViewHighlightStyleCustomView()
+highlightStyle.delegate = self
+highlightStyle.fitViewsToBarcode = true   // size the view to the barcode
+viewSettings.highlightStyle = highlightStyle
+
+extension PickViewController: BarcodePickViewHighlightStyleCustomViewDelegate {
+    func customView(
+        for request: BarcodePickHighlightStyleRequest,
+        completionHandler: @escaping (BarcodePickHighlightCustomViewResponse?) -> Void
+    ) {
+        let view: UIView
+        switch request.state {
+        case .toPick:  view = makeToPickView()
+        case .picked:  view = makePickedView()
+        case .unknown: view = makeNotInListView()
+        case .ignore:  completionHandler(nil); return
+        }
+        completionHandler(BarcodePickHighlightCustomViewResponse(view: view, statusIconStyle: nil))
+    }
+}
+```
+
+The delegate callback is async (it hands you a `completionHandler`), so you can build the view from
+product data fetched on demand. `fitViewsToBarcode`, `minimumHighlightHeight`, and
+`minimumHighlightWidth` control sizing.
+
+> The `statusIconStyle:` argument and `BarcodePickViewHighlightStyleCustomView.statusIconSettings`
+> drive optional **status icons** on the highlight. Pass `nil` if you don't need them.
+
+## Finish button + handler
+
+The finish button's visibility is `BarcodePickViewSettings.showFinishButton` (`Bool`). To react to
+taps, set `barcodePickView.UIDelegate` and implement the optional
+`BarcodePickViewUIDelegate.barcodePickViewDidTapFinishButton(_:)` (shown in the minimal example) —
+typically you pop the screen or present a summary of picked items there.
+
+## Feedback (sound / haptic)
+
+Sound and haptic feedback are simple on/off toggles on **`BarcodePickSettings`** (the mode settings,
+not the view settings) — both default to `true`:
+
+```swift
+settings.soundEnabled = false
+settings.hapticsEnabled = false   // note: hapticsEnabled (plural)
+```
+
+Set them on `BarcodePickSettings` before constructing the `BarcodePick` mode.
+
+## Camera
+
+`BarcodePickView` owns the camera — you do **not** create a `Camera` or set a `FrameSource` on the
+context. The view turns the camera on during `start()` and releases it on `stop()`. The Get Started
+guide uses the convenience initializer, which applies sensible camera defaults internally, so most
+integrations never touch camera settings.
+
+If the user does need to tune the camera (resolution, zoom, focus), there is an opt-in path: start
+from `BarcodePick.recommendedCameraSettings` (a class property), modify it, and pass it to the
+designated initializer that takes a `cameraSettings:` argument:
+
+```swift
+let cameraSettings = BarcodePick.recommendedCameraSettings
+cameraSettings.preferredResolution = .uhd4k
+
+barcodePickView = BarcodePickView(frame: view.bounds,
+                                  context: context,
+                                  barcodePick: mode,
+                                  settings: viewSettings,
+                                  cameraSettings: cameraSettings)
+```
+
+Passing `nil` (or using the 4-argument initializer) keeps the internal defaults. Always start from
+`BarcodePick.recommendedCameraSettings` rather than constructing `CameraSettings()` from scratch.
+
+## Control visibility (finish / pause / zoom / torch buttons)
+
+`BarcodePickViewSettings` toggles the built-in buttons (all `Bool`):
+
+- `showFinishButton`
+- `showPauseButton`
+- `showZoomButton` + `zoomButtonPosition` (`Anchor`)
+- `showTorchButton` + `torchButtonPosition` (`Anchor`)
+
+The same settings object also controls UI text and overlays: `showGuidelines` +
+`initialGuidelineText` / `moveCloserGuidelineText` / `tapShutterToPauseGuidelineText`, `showHints` +
+the various `on…HintText` strings, `showLoadingDialog` + `loadingDialogTextForPicking` /
+`loadingDialogTextForUnpicking`, and `logoStyle` / `logoAnchor`.
+
+## Lifecycle: start / freeze / pause / stop / reset
+
+`BarcodePickView` exposes five lifecycle methods:
+
+- **`start()`** — starts the camera and scanning. Call in `viewWillAppear` (and `viewDidAppear`).
+- **`freeze()`** — freezes the current frame / scanning without releasing the camera.
+- **`pause()`** — pauses scanning without tearing down the camera.
+- **`stop()`** — stops scanning and releases the camera.
+- **`reset()`** — clears the current picking state.
+
+The recommended teardown pattern (from the Get Started guide) calls `pause()` in `viewWillDisappear`,
+then `stop()` only `if isMovingFromParent` (i.e. the screen is truly being popped, not just covered by
+another view).
+
+## SwiftUI
+
+MatrixScan Pick has **no native SwiftUI view**. Wrap the UIKit `BarcodePickView` view controller in a
+`UIViewControllerRepresentable` (or `UIViewRepresentable` with a Coordinator) and keep every
+`BarcodePick*` API call inside the wrapped UIKit layer. The SwiftUI `View` struct contains no Scandit
+code. See the [SwiftUI Get Started guide](https://docs.scandit.com/sdks/ios/matrixscan-pick/get-started-with-swift-ui/).
+
+## Threading
+
+`BarcodePickViewListener` and `BarcodePickViewUIDelegate` are declared main-actor (`NS_SWIFT_UI_ACTOR`),
+so their callbacks — including `barcodePickViewDidTapFinishButton(_:)` — arrive on the main queue and
+can touch UIKit directly.
+
+## After wiring up
+
+Build the project. If compile errors remain, fetch the [MatrixScan Pick API reference](https://docs.scandit.com/data-capture-sdk/ios/barcode-capture/api.html) to find the correct API before guessing. Always include the docs link in your answer so the user can explore further.

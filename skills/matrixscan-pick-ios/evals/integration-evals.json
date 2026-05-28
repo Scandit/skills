@@ -1,0 +1,30 @@
+{
+  "skill_name": "matrixscan-pick-ios",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Add MatrixScan Pick to my app. The user will provide the real product list and symbologies later — go with a small placeholder product list and a reasonable default symbology set. File: NonScanditViewController.swift",
+      "expected_output": "The skill adds the MatrixScan Pick pipeline to the existing ScanViewController: imports ScanditBarcodeCapture, creates the DataCaptureContext, builds BarcodePickSettings with a default symbology set, builds a set of BarcodePickProduct, creates a BarcodePickAsyncMapperProductProvider with a provider delegate that maps scanned payloads to product identifiers, constructs the BarcodePick mode, creates a BarcodePickView and adds it to the view hierarchy, wires the BarcodePickViewUIDelegate finish handler, and drives the start()/pause()/stop() lifecycle. The response also shows the setup checklist (SPM, Info.plist, license key).",
+      "files": [
+        "fixtures/NonScanditViewController.swift"
+      ],
+      "assertions": [
+        {"text": "import ScanditBarcodeCapture is present"},
+        {"text": "A DataCaptureContext is created with DataCaptureContext(licenseKey:) using the placeholder '-- ENTER YOUR SCANDIT LICENSE KEY HERE --'"},
+        {"text": "BarcodePickSettings is constructed and at least two symbologies are enabled via settings.set(symbology:enabled:)"},
+        {"text": "A set of BarcodePickProduct is built, each constructed with an identifier and a quantityToPick"},
+        {"text": "A BarcodePickAsyncMapperProductProvider is constructed with the products and a providerDelegate"},
+        {"text": "The view controller conforms to BarcodePickAsyncMapperProductProviderDelegate and implements mapItems(_:completionHandler:) returning BarcodePickProductProviderCallbackItem values built with itemData and productIdentifier"},
+        {"text": "The BarcodePick mode is constructed via BarcodePick(context:settings:productProvider:)"},
+        {"text": "A BarcodePickView is constructed with BarcodePickView(frame:context:barcodePick:settings:) (a BarcodePickViewSettings instance) and added to the hierarchy with addSubview (the view does NOT add itself)"},
+        {"text": "barcodePickView.start() is called in viewWillAppear"},
+        {"text": "barcodePickView.pause() is called in viewWillDisappear, and stop() is called only when isMovingFromParent is true"},
+        {"text": "The view controller conforms to BarcodePickViewUIDelegate and implements barcodePickViewDidTapFinishButton(_:); barcodePickView.uiDelegate is set"},
+        {"text": "The view controller conforms to BarcodePickActionListener (implements didPickItem(withData:completionHandler:) and didUnpickItem(withData:completionHandler:), each calling completionHandler(true)) and registers it via barcodePickView.addActionListener(self) — required for picks to actually complete"},
+        {"text": "The existing ScanViewController class is preserved (not renamed or removed); the titleLabel IBOutlet or viewDidLoad title assignment is preserved or the user is told it was kept"},
+        {"text": "The response includes the setup checklist: SPM URL (https://github.com/Scandit/datacapture-spm), NSCameraUsageDescription in Info.plist, replace the license key placeholder"},
+        {"text": "No custom BarcodePickViewHighlightStyleCustomView / highlightStyle customization is added (default highlights are fine for the basic integration)"}
+      ]
+    }
+  ]
+}
