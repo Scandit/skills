@@ -3,8 +3,8 @@
   "evals": [
     {
       "id": 1,
-      "prompt": "I want to add MatrixScan AR to my .NET for iOS app. Here's my empty UIViewController: EmptyViewController.cs. I need to scan EAN-13 and QR barcodes and show a rectangle highlight on each tracked barcode.",
-      "expected_output": "The skill reads integration.md, fetches the latest Scandit NuGet versions, writes complete BarcodeAr integration code into EmptyViewController.cs (new BarcodeAr(context, settings), BarcodeArView.Create(...) with this.View as the parentView, IBarcodeArHighlightProvider implementation that returns Task<IBarcodeArHighlight?> with a BarcodeArRectangleHighlight(barcode), SessionUpdated event or IBarcodeArListener, barcodeArView.Start() in ViewWillAppear and barcodeArView.Stop() in ViewWillDisappear, Dispose on teardown), and shows the setup checklist (NuGet packages, NSCameraUsageDescription in Info.plist, AppDelegate initialize for SDK 8.0+, SupportedOSPlatformVersion 15.0, license key).",
+      "prompt": "I want to add MatrixScan AR to my .NET for iOS app. Here's my empty UIViewController: EmptyViewController.cs. I need to scan EAN-13 and QR barcodes, show a rectangle highlight on each tracked barcode, and log each newly-tracked barcode's data to the console.",
+      "expected_output": "The skill reads integration.md, fetches the latest Scandit NuGet versions, writes complete BarcodeAr integration code into EmptyViewController.cs (new BarcodeAr(context, settings), BarcodeArView.Create(...) with this.View as the parentView, IBarcodeArHighlightProvider implementation that returns Task<IBarcodeArHighlight?> with a BarcodeArRectangleHighlight(barcode), SessionUpdated event handler that iterates session.NewlyTrackedBarcodes and logs each barcode's Data via DispatchQueue.MainQueue.DispatchAsync, barcodeArView.Start() in ViewWillAppear and barcodeArView.Stop() in ViewWillDisappear, Dispose on teardown), and shows the setup checklist (NuGet packages, NSCameraUsageDescription in Info.plist, AppDelegate initialize for SDK 8.0+, SupportedOSPlatformVersion 15.0, license key).",
       "files": [
         "fixtures/EmptyViewController.cs"
       ],
