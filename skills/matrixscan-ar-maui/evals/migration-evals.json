@@ -1,0 +1,40 @@
+{
+  "skill_name": "matrixscan-ar-maui",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I need to upgrade my .NET MAUI MatrixScan AR app from Scandit SDK v7 to v8. Here are my current files: MainPageViewModelV7.cs and MauiProgramV7.cs. What do I need to change?",
+      "expected_output": "The skill explains that for MAUI specifically, v7 → v8 does NOT require adding manual `ScanditCaptureCore.Initialize()` / `ScanditBarcodeCapture.Initialize()` calls — the MAUI builder extensions (`UseScanditCore` / `UseScanditBarcode`) already perform the initialization. The BarcodeAr constructor, the `<scandit:BarcodeArView>` XAML control, the listener / SessionUpdated event, the BarcodeArSession shape, the provider interfaces, and the highlight / annotation constructors are all unchanged in v8. The skill instructs the user to bump all four Scandit `<PackageReference>` versions (Core, Core.Maui, Barcode, Barcode.Maui) to the latest stable v8 release, confirms that the existing `.UseScanditCore().UseScanditBarcode(c => c.AddBarcodeArView())` chain is what's needed, and provides the v7→v8 migration guide URLs.",
+      "files": [
+        "fixtures/MainPageViewModelV7.cs",
+        "fixtures/MauiProgramV7.cs"
+      ],
+      "assertions": [
+        {"text": "The skill instructs the user to bump all four Scandit PackageReference versions: Scandit.DataCapture.Core, Scandit.DataCapture.Core.Maui, Scandit.DataCapture.Barcode, Scandit.DataCapture.Barcode.Maui"},
+        {"text": "The skill explicitly states (or strongly implies) that no manual ScanditCaptureCore.Initialize() / ScanditBarcodeCapture.Initialize() call should be added to MainApplication.cs or AppDelegate.cs in MAUI (because the builder extensions handle initialization)"},
+        {"text": "The skill confirms the MauiProgram.cs builder chain `.UseScanditCore().UseScanditBarcode(c => c.AddBarcodeArView())` is the correct shape (and does NOT need to be changed for v7 → v8)"},
+        {"text": "The skill does NOT instruct the user to replace `new BarcodeAr(dataCaptureContext, settings)` with a factory call — the .NET BarcodeAr constructor is unchanged in v7→v8 and no `BarcodeAr.Create(...)` / `BarcodeAr.ForDataCaptureContext(...)` exists"},
+        {"text": "The skill does NOT instruct the user to change the `<scandit:BarcodeArView>` XAML control or its bindable properties (DataCaptureContext, BarcodeAr, BarcodeArViewSettings) — they are unchanged in v7→v8"},
+        {"text": "The skill does NOT instruct the user to add OnObservationStarted / OnObservationStopped methods to IBarcodeArListener (the .NET interface only has OnSessionUpdated)"},
+        {"text": "The skill does NOT instruct the user to pass a Context / UIViewController argument to BarcodeArRectangleHighlight / BarcodeArCircleHighlight / BarcodeArInfoAnnotation constructors — they still take only a Barcode"},
+        {"text": "The skill does NOT introduce a SetBarcodeFilter(...) call or an IBarcodeArFilter interface in the migrated code — this API is not available in the .NET MAUI binding"},
+        {"text": "The skill does NOT instruct the user to use ShouldShowMacroModeControl on the MAUI BarcodeArView — that property is not exposed on the cross-platform MAUI control"},
+        {"text": "At least one migration guide URL is provided (Android https://docs.scandit.com/sdks/net/android/migrate-7-to-8/ or iOS https://docs.scandit.com/sdks/net/ios/migrate-7-to-8/)"}
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "I'm bumping the Scandit .NET MAUI MatrixScan AR SDK from v7 to v8. What source-code changes do I need to make?",
+      "expected_output": "The skill explains that in MAUI the v7 → v8 source change is essentially nothing beyond bumping the four NuGet packages: the MAUI builder extensions (`UseScanditCore` / `UseScanditBarcode`) already handle SDK initialization, so unlike the non-MAUI .NET Android / .NET iOS skills, there is NO manual ScanditCaptureCore.Initialize() / ScanditBarcodeCapture.Initialize() call to add. The BarcodeAr constructor, `<scandit:BarcodeArView>` XAML control, IBarcodeArListener single-method interface, SessionUpdated event, provider async interfaces, and highlight / annotation constructors are all unchanged. Provides the v7→v8 migration guide URLs.",
+      "files": [],
+      "assertions": [
+        {"text": "The skill states that the v7 → v8 step on MAUI requires bumping all four Scandit packages (Core, Core.Maui, Barcode, Barcode.Maui) to the same v8 version"},
+        {"text": "The skill explicitly states (or strongly implies) that in MAUI, no manual ScanditCaptureCore.Initialize() / ScanditBarcodeCapture.Initialize() call needs to be added to MainApplication.cs or AppDelegate.cs (because UseScanditCore / UseScanditBarcode call them)"},
+        {"text": "The skill states that the BarcodeAr constructor (new BarcodeAr(context, settings)) is unchanged in v7→v8"},
+        {"text": "The skill states that the `<scandit:BarcodeArView>` XAML control and its bindable properties are unchanged in v7→v8"},
+        {"text": "The skill does NOT instruct the user to rename `new BarcodeAr(...)` to a `Create(...)` or `ForDataCaptureContext(...)` factory call"},
+        {"text": "At least one migration guide URL is provided (Android https://docs.scandit.com/sdks/net/android/migrate-7-to-8/ or iOS https://docs.scandit.com/sdks/net/ios/migrate-7-to-8/)"}
+      ]
+    }
+  ]
+}

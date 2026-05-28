@@ -1,0 +1,92 @@
+{
+  "skill_name": "matrixscan-ar-maui",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I want to add MatrixScan AR to my .NET MAUI app. Here are my empty page files: EmptyMainPage.xaml, EmptyMainPage.xaml.cs, and my MauiProgram.cs. I need to scan EAN-13 and QR barcodes, show a rectangle highlight on each tracked barcode, and log each newly-tracked barcode's data on the main thread.",
+      "expected_output": "The skill reads integration.md, fetches the latest Scandit MAUI NuGet versions, writes the BarcodeAr MAUI integration into the page files: updates MauiProgram.cs to chain `.UseScanditCore().UseScanditBarcode(c => c.AddBarcodeArView())`, adds the four Scandit packages (Core, Core.Maui, Barcode, Barcode.Maui) to the .csproj, adds the `<scandit:BarcodeArView>` XAML control with `DataCaptureContext`, `BarcodeAr`, and `BarcodeArViewSettings` bindings (using `assembly=ScanditBarcodeCaptureMaui`), provides a ViewModel exposing those three properties, wires the `BarcodeAr.SessionUpdated` event with a `MainThread.BeginInvokeOnMainThread` dispatch, implements an IBarcodeArHighlightProvider returning `Task<IBarcodeArHighlight?>` with a `BarcodeArRectangleHighlight(barcode)`, and forwards `OnAppearing` → `OnResume() + Start()` and `OnDisappearing` → `Stop() + OnPause()` in code-behind. The skill shows the setup checklist (4 NuGet packages, Android SupportedOSPlatformVersion 24.0, iOS NSCameraUsageDescription, Permissions.Camera at runtime, no manual `Initialize()` calls in MainApplication/AppDelegate, license key).",
+      "files": [
+        "fixtures/EmptyMainPage.xaml",
+        "fixtures/EmptyMainPage.xaml.cs",
+        "fixtures/EmptyMauiProgram.cs"
+      ],
+      "assertions": [
+        {"text": "Setup checklist mentions adding all four NuGet packages: Scandit.DataCapture.Core, Scandit.DataCapture.Core.Maui, Scandit.DataCapture.Barcode, Scandit.DataCapture.Barcode.Maui"},
+        {"text": "Setup checklist mentions bumping Android SupportedOSPlatformVersion to 24.0 (the MAUI template default of 21 fails the build)"},
+        {"text": "Setup checklist mentions adding NSCameraUsageDescription to Platforms/iOS/Info.plist"},
+        {"text": "Setup checklist mentions requesting Permissions.Camera at runtime"},
+        {"text": "Setup checklist or migration text states that no manual ScanditCaptureCore.Initialize() or ScanditBarcodeCapture.Initialize() call should be added to MainApplication.cs or AppDelegate.cs (the MAUI builder handles initialization)"},
+        {"text": "A license key placeholder string is present"},
+        {"text": "MauiProgram.cs is updated to chain .UseScanditCore().UseScanditBarcode(...)"},
+        {"text": "UseScanditCore is called WITHOUT a configure lambda (i.e. `.UseScanditCore()`, not `.UseScanditCore(c => c.AddDataCaptureView())`) — BarcodeAr has its own dedicated MAUI control and does not need AddDataCaptureView"},
+        {"text": "UseScanditBarcode is called WITH a configure lambda that calls `AddBarcodeArView()` (e.g. `.UseScanditBarcode(c => c.AddBarcodeArView())`)"},
+        {"text": "The XAML file uses the namespace `xmlns:scandit=\"clr-namespace:Scandit.DataCapture.Barcode.Ar.UI.Maui;assembly=ScanditBarcodeCaptureMaui\"` (assembly name has no dots even though the NuGet id has dots)"},
+        {"text": "The XAML file contains a `<scandit:BarcodeArView ...>` element"},
+        {"text": "`DataCaptureContext=\"{Binding DataCaptureContext}\"` is set on the `<scandit:BarcodeArView>` element"},
+        {"text": "`BarcodeAr=\"{Binding BarcodeAr}\"` is set on the `<scandit:BarcodeArView>` element"},
+        {"text": "`BarcodeArViewSettings=\"{Binding ViewSettings}\"` (or another binding name pointing at a BarcodeArViewSettings property) is set on the `<scandit:BarcodeArView>` element"},
+        {"text": "`DataCaptureContext.ForLicenseKey(` is used to create the DataCaptureContext"},
+        {"text": "`new BarcodeArSettings()` is used (not `BarcodeArSettings.Create()`, which does not exist)"},
+        {"text": "`new BarcodeAr(context, settings)` is used as the constructor (not `BarcodeAr.Create(...)` or `BarcodeAr.ForDataCaptureContext(...)`, which do not exist)"},
+        {"text": "`Symbology.Ean13Upca` is enabled"},
+        {"text": "`Symbology.Qr` is enabled"},
+        {"text": "No symbologies other than Ean13Upca and Qr are enabled"},
+        {"text": "Kotlin-style underscore symbology names (Symbology.EAN13_UPCA, Symbology.QR) are NOT used"},
+        {"text": "`BarcodeArView.Create(` is NOT called anywhere (that factory exists only in the non-MAUI per-TFM binding; in MAUI the control is declared in XAML)"},
+        {"text": "`IBarcodeArHighlightProvider` is implemented"},
+        {"text": "`HighlightForBarcodeAsync` is implemented and returns a `Task<IBarcodeArHighlight?>` (the async/Task-based provider, not a callback)"},
+        {"text": "A `new BarcodeArRectangleHighlight(barcode)` is constructed with only the Barcode argument (no Context / UIView argument is passed)"},
+        {"text": "`callback.OnData(...)` / `callback.onData(...)` is NOT used (that is the Kotlin pattern, not the .NET pattern)"},
+        {"text": "`barcodeArView.HighlightProvider` is assigned to the provider instance (or wired via XAML binding)"},
+        {"text": "Either `barcodeAr.SessionUpdated += handler` or `barcodeAr.AddListener(IBarcodeArListener)` is wired"},
+        {"text": "`OnObservationStarted` and `OnObservationStopped` are NOT declared (the .NET IBarcodeArListener has only one method)"},
+        {"text": "Updates to the UI from `OnSessionUpdated` / `SessionUpdated` are dispatched via `MainThread.BeginInvokeOnMainThread` or `MainThread.InvokeOnMainThreadAsync` (not `RunOnUiThread`, which is Android-specific; not `DispatchQueue.MainQueue.DispatchAsync`, which is iOS-specific)"},
+        {"text": "`OnAppearing` forwards both `barcodeArView.OnResume()` AND `barcodeArView.Start()` (both are required — OnResume is an Android-only effect, Start is needed on both platforms)"},
+        {"text": "`OnDisappearing` forwards both `barcodeArView.Stop()` AND `barcodeArView.OnPause()`"},
+        {"text": "No `Permissions.Camera` request blocks the camera entirely on rejection — the user-facing flow gracefully returns instead of throwing"},
+        {"text": "No `ScanditCaptureCore.Initialize()` or `ScanditBarcodeCapture.Initialize()` call is added to MainApplication.cs / AppDelegate.cs (those calls are NOT needed in MAUI; the builder handles them)"},
+        {"text": "No `<scandit:DataCaptureView>` element appears — BarcodeAr uses its own `<scandit:BarcodeArView>`, not the generic DataCaptureView"},
+        {"text": "No `BarcodeBatchBasicOverlay` or `BarcodeBatchAdvancedOverlay` is created (BarcodeArView is its own overlay)"},
+        {"text": "No `Camera.GetDefaultCamera()` or `dataCaptureContext.SetFrameSourceAsync(...)` call is present (BarcodeArView manages its own camera internally)"},
+        {"text": "No `CameraPermissionActivity` helper is referenced (that's a non-MAUI .NET Android pattern; MAUI uses Permissions.Camera)"},
+        {"text": "`ShouldShowMacroModeControl` is NOT used (that property is iOS-only on the native binding and not surfaced on the MAUI control)"}
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Add an info annotation to each tracked barcode in my MatrixScan AR MAUI app. The annotation should show the barcode's data as a single body row. Here are my page files: IntegratedMainPage.xaml, IntegratedMainPage.xaml.cs, IntegratedMainPageViewModel.cs",
+      "expected_output": "The skill adds an `IBarcodeArAnnotationProvider` implementation that returns `Task<IBarcodeArAnnotation?>`, constructs a `BarcodeArInfoAnnotation(barcode)` with a `BarcodeArInfoAnnotationBodyComponent` whose `Text` is `barcode.Data`, and assigns the provider to `barcodeArView.AnnotationProvider` (in code-behind or via a view-model property + XAML binding) while preserving the existing rectangle-highlight provider and session-update wiring.",
+      "files": [
+        "fixtures/IntegratedMainPage.xaml",
+        "fixtures/IntegratedMainPage.xaml.cs",
+        "fixtures/IntegratedMainPageViewModel.cs"
+      ],
+      "assertions": [
+        {"text": "`IBarcodeArAnnotationProvider` is implemented"},
+        {"text": "`AnnotationForBarcodeAsync` is implemented and returns `Task<IBarcodeArAnnotation?>`"},
+        {"text": "A `new BarcodeArInfoAnnotation(barcode)` is constructed with only the Barcode argument (no Context / UIViewController)"},
+        {"text": "`BarcodeArInfoAnnotationBodyComponent` is used and its `Text` is set to `barcode.Data`"},
+        {"text": "The `BarcodeArInfoAnnotationBodyComponent` is imported from the `Scandit.DataCapture.Barcode.Ar.UI.Annotations.Info` sub-namespace"},
+        {"text": "`barcodeArView.AnnotationProvider` is assigned to the new provider instance (in code-behind or via a XAML binding)"},
+        {"text": "`callback.OnData(...)` is NOT used (the .NET annotation provider is async/Task-based, not callback-based)"},
+        {"text": "Existing integration code is preserved (existing `<scandit:BarcodeArView>` XAML element with `DataCaptureContext` / `BarcodeAr` / `BarcodeArViewSettings` bindings; existing rectangle-highlight provider in code-behind; existing `SessionUpdated` event handler in the view model; existing `OnAppearing` / `OnDisappearing` lifecycle calls)"}
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "I want to suppress the default beep and vibration in my MatrixScan AR MAUI app — silent scanning. Update the BarcodeAr feedback in IntegratedMainPageViewModel.cs.",
+      "expected_output": "The skill sets `BarcodeAr.Feedback` to `new BarcodeArFeedback()` (the empty constructor, which produces a silent feedback), preserving the rest of the integration.",
+      "files": [
+        "fixtures/IntegratedMainPage.xaml",
+        "fixtures/IntegratedMainPage.xaml.cs",
+        "fixtures/IntegratedMainPageViewModel.cs"
+      ],
+      "assertions": [
+        {"text": "`BarcodeAr.Feedback` is reassigned to `new BarcodeArFeedback()` (empty constructor)"},
+        {"text": "`BarcodeArFeedback` is imported from `Scandit.DataCapture.Barcode.Ar.Feedback`"},
+        {"text": "`BarcodeArFeedback.DefaultFeedback` is NOT called as a method (BarcodeArFeedback.DefaultFeedback() with parentheses) — it is a static property in .NET"},
+        {"text": "Existing integration code (BarcodeAr, BarcodeArView XAML, SessionUpdated handler, RectangleProvider, OnAppearing/OnDisappearing lifecycle) is preserved"}
+      ]
+    }
+  ]
+}
