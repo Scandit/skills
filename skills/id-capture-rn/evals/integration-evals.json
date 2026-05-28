@@ -1,0 +1,143 @@
+{
+  "skill_name": "id-capture-rn",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Add ID Capture to my React Native app so I can scan passports, driver's licenses and national ID cards and read the holder's name and date of birth. Here's my screen file: EmptyScreen.tsx.",
+      "expected_output": "The skill writes a complete ID Capture integration: DataCaptureContext.initialize() + sharedInstance, IdCaptureSettings with acceptedDocuments and a FullDocumentScanner wrapped in IdCaptureScanner, new IdCapture(settings) + object-literal listener (didCaptureId/didRejectId), <DataCaptureView> + new IdCaptureOverlay attached via ref, IdCapture.createRecommendedCameraSettings(), and an AppState-based camera lifecycle.",
+      "files": ["fixtures/EmptyScreen.tsx"],
+      "assertions": [
+        {"text": "DataCaptureContext.initialize( is present"},
+        {"text": "DataCaptureContext.sharedInstance is present"},
+        {"text": "'-- ENTER YOUR SCANDIT LICENSE KEY HERE --' is present"},
+        {"text": "new IdCaptureSettings( is present"},
+        {"text": "settings.acceptedDocuments is configured with document objects like Passport, DriverLicense, IdCard (semantic)"},
+        {"text": "new IdCaptureScanner( is present"},
+        {"text": "new FullDocumentScanner( is present"},
+        {"text": "new IdCapture( is present"},
+        {"text": "the listener is a plain object literal with didCaptureId and didRejectId methods, not a class implementing an interface (semantic)"},
+        {"text": "didCaptureId is present"},
+        {"text": "didRejectId is present"},
+        {"text": "addListener is called on the IdCapture instance, awaited (semantic)"},
+        {"text": "the IdCapture mode is attached to the context via context.setMode or context.addMode, with the call awaited (semantic)"},
+        {"text": "DataCaptureView is present"},
+        {"text": "new IdCaptureOverlay( is present"},
+        {"text": "IdCapture.createRecommendedCameraSettings( is called"},
+        {"text": "AppState.addEventListener( is present"},
+        {"text": "capturedId.fullName is read (semantic)"},
+        {"text": "capturedId.dateOfBirth is read (semantic)"},
+        {"text": "Setup checklist mentions NSCameraUsageDescription for iOS (semantic)"},
+        {"text": "Setup checklist mentions PermissionsAndroid or the Android CAMERA runtime permission (semantic)"},
+        {"text": "settings.scannerType is NOT used in the final code (semantic)"},
+        {"text": "IdCaptureRegion.Any or another PascalCase IdCaptureRegion member is used, not the lowercase Flutter-style form (semantic)"}
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "I only need to read the PDF417 barcode on the back of US driver's licenses — nothing else. Set up ID Capture for that in EmptyScreen.tsx.",
+      "expected_output": "The skill accepts only DriverLicense for IdCaptureRegion.Us and uses a SingleSideScanner with only the barcode flag enabled, wrapped in IdCaptureScanner.",
+      "files": ["fixtures/EmptyScreen.tsx"],
+      "assertions": [
+        {"text": "new DriverLicense(IdCaptureRegion.Us) is present"},
+        {"text": "new SingleSideScanner( is present"},
+        {"text": "the SingleSideScanner enables only the barcode flag, i.e. SingleSideScanner(true, false, false) (semantic)"},
+        {"text": "new IdCaptureScanner( is present"},
+        {"text": "didCaptureId is present"},
+        {"text": "data from the barcode is read, either via capturedId.barcode or via the harmonized top-level fields (documentNumber, fullName, dateOfBirth, etc.) that the barcode populates (semantic)"}
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Set up ID Capture to scan passports and extract the MRZ data (full name, document number, date of expiry). Use EmptyScreen.tsx.",
+      "expected_output": "The skill accepts Passport, uses a scanner that reads the MRZ, and reads fields from the captured id / mrz result. The MRZ result is accessed via capturedId.mrzResult (not capturedId.mrz, which is the Flutter name).",
+      "files": ["fixtures/EmptyScreen.tsx"],
+      "assertions": [
+        {"text": "new Passport( is present"},
+        {"text": "the scanner reads the MRZ, via FullDocumentScanner or a SingleSideScanner with machineReadableZone enabled (semantic)"},
+        {"text": "capturedId.mrzResult is referenced (semantic)"},
+        {"text": "capturedId.mrz is NOT used (the Flutter name) (semantic)"},
+        {"text": "capturedId.documentNumber is read (semantic)"},
+        {"text": "capturedId.dateOfExpiry is read (semantic)"},
+        {"text": "didCaptureId is present"}
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "Add ID Capture but anonymize sensitive data — I don't want document images or sensitive fields in the result. Use EmptyScreen.tsx.",
+      "expected_output": "The skill sets IdCaptureSettings.anonymizationMode to an IdAnonymizationMode value that covers fields and images.",
+      "files": ["fixtures/EmptyScreen.tsx"],
+      "assertions": [
+        {"text": "anonymizationMode is present"},
+        {"text": "IdAnonymizationMode is present"},
+        {"text": "an anonymization mode covering fields and images is chosen, e.g. IdAnonymizationMode.FieldsAndImages (semantic)"},
+        {"text": "new IdCapture( is present"}
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "I need the cropped document image and the face image back from each scanned ID, and I want to render them in a React Native <Image>. Set that up in EmptyScreen.tsx.",
+      "expected_output": "The skill enables image extraction via setShouldPassImageTypeToResult for IdImageType.Face and IdImageType.CroppedDocument, reads capturedId.images, and renders the base64 strings via the data: URI form (since IdImages returns base64 strings on RN, not URIs or Image components).",
+      "files": ["fixtures/EmptyScreen.tsx"],
+      "assertions": [
+        {"text": "setShouldPassImageTypeToResult( is called"},
+        {"text": "IdImageType.Face is present"},
+        {"text": "IdImageType.CroppedDocument is present"},
+        {"text": "capturedId.images is read (semantic)"},
+        {"text": "the cropped document image is read via images.getCroppedDocument(IdSide.Front) — not a non-existent .croppedDocument getter (semantic)"},
+        {"text": "the base64 image is rendered using the data:image/png;base64, URI form on a React Native Image, not via .buffer / .bytes (semantic)"}
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "We want to reject voided / cancelled US driver's licenses during ID Capture. How do I enable that? My screen is EmptyScreen.tsx.",
+      "expected_output": "The skill adds the scandit-react-native-datacapture-id-voided-detection package, sets settings.rejectVoidedIds = true, and handles RejectionReason.DocumentVoided in didRejectId.",
+      "files": ["fixtures/EmptyScreen.tsx"],
+      "assertions": [
+        {"text": "settings.rejectVoidedIds is enabled"},
+        {"text": "RejectionReason.DocumentVoided is present"},
+        {"text": "didRejectId is present"},
+        {"text": "the scandit-react-native-datacapture-id-voided-detection package is added as a dependency (semantic)"}
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "We scan European driving licenses and need the vehicle categories from the back of the card. Set up ID Capture for that in EmptyScreen.tsx.",
+      "expected_output": "The skill adds the scandit-react-native-datacapture-id-europe-driving-license package, sets settings.decodeBackOfEuropeanDrivingLicense = true with a scanner that reads the back, and reads capturedId.vizResult.drivingLicenseDetails.drivingLicenseCategories, using category.code (the documented getter), not the non-existent categoryCode.",
+      "files": ["fixtures/EmptyScreen.tsx"],
+      "assertions": [
+        {"text": "settings.decodeBackOfEuropeanDrivingLicense is enabled"},
+        {"text": "drivingLicenseDetails is present"},
+        {"text": "drivingLicenseCategories is read (semantic)"},
+        {"text": "each category's data is read via the .code getter, not a non-existent .categoryCode (semantic)"},
+        {"text": "a scanner that reads the back of the card is used, e.g. FullDocumentScanner (semantic)"},
+        {"text": "the scandit-react-native-datacapture-id-europe-driving-license package is added as a dependency (semantic)"}
+      ]
+    },
+    {
+      "id": 8,
+      "prompt": "Add forged-barcode detection for US driver's licenses (AAMVA) to my ID Capture setup so we can flag likely-forged IDs. Use EmptyScreen.tsx.",
+      "expected_output": "The skill adds the scandit-react-native-datacapture-id-aamva-barcode-verification package, sets settings.rejectForgedAamvaBarcodes = true, and/or reads capturedId.verificationResult.aamvaBarcodeVerification with AamvaBarcodeVerificationStatus. It does NOT use a standalone AamvaBarcodeVerifier class (removed on RN at v8).",
+      "files": ["fixtures/EmptyScreen.tsx"],
+      "assertions": [
+        {"text": "settings.rejectForgedAamvaBarcodes is enabled"},
+        {"text": "verificationResult.aamvaBarcodeVerification is referenced, or RejectionReason.ForgedAamvaBarcode is handled (semantic)"},
+        {"text": "AamvaBarcodeVerificationStatus is referenced when inspecting the result (semantic)"},
+        {"text": "the scandit-react-native-datacapture-id-aamva-barcode-verification package is added as a dependency (semantic)"},
+        {"text": "a standalone AamvaBarcodeVerifier class is NOT used in the code (semantic)"}
+      ]
+    },
+    {
+      "id": 9,
+      "prompt": "How should I handle the case where a document is detected but can't be captured? I want to show the user a clear message. My screen is EmptyScreen.tsx and I accept passports and driver's licenses.",
+      "expected_output": "The skill implements didRejectId and maps RejectionReason values (Timeout, NotAcceptedDocumentType, etc.) to user-facing messages, disabling capture while the message is shown.",
+      "files": ["fixtures/EmptyScreen.tsx"],
+      "assertions": [
+        {"text": "didRejectId is present"},
+        {"text": "RejectionReason is present"},
+        {"text": "rejection reasons are mapped to user-facing messages, e.g. via a switch on RejectionReason (semantic)"},
+        {"text": "idCapture.isEnabled is set to false while the rejection message is shown (semantic)"},
+        {"text": "RejectionReason.Timeout is present"}
+      ]
+    }
+  ]
+}
