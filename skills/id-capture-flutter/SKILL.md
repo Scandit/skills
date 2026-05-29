@@ -58,6 +58,7 @@ Based on the user's request, load the appropriate reference file before respondi
 - **Integrating ID Capture from scratch** (e.g. "add ID scanning to my app", "scan a passport / driver's license", "read the MRZ", "extract the holder's name and date of birth") → read `references/integration.md` and follow it.
 - **One of the three add-on capabilities** ("reject voided / cancelled IDs", "detect punched-hole / voided licenses", "decode the back of a European driving license", "read vehicle categories", "verify the AAMVA barcode / detect forged US licenses") → read `references/supplementary-modules.md`.
 - **Migrating or upgrading an existing ID Capture integration** ("upgrade ID Capture to the latest SDK", "migrate v7 to v8", "my `supportedDocuments` code stopped compiling", "`AamvaBarcodeVerifier` is gone", "what changed in ID Capture between versions") → read `references/migration.md`.
+- **State management or route lifecycle** ("how do I do this with BLoC?", "Riverpod / AsyncNotifier setup", "camera doesn't pause when I push another screen", "`RouteAware` / `RouteObserver`", "GoRouter and ID Capture", "should I keep IdCapture in a Provider / ChangeNotifier?") → read `references/framework-recipes.md`. The Scandit code itself is unchanged from `references/integration.md`; this file covers the BLoC / Riverpod / route-observer glue.
 
 ## API Usage Policy
 
@@ -72,7 +73,7 @@ URL structures vary across SDK versions and package paths and guessing will lead
 
 ## Framework variant policy
 
-Examples in this skill use **StatefulWidget + WidgetsBindingObserver** because the official `IdCaptureSimpleSample` uses it. If the target project uses a state-management library (BLoC, Riverpod, Provider), wire the listener and camera lifecycle into that pattern instead (the official `IdCaptureExtendedSample` uses BLoC) — but keep the same plugin initialization, settings, and listener code. Do not introduce a new state-management library just for ID Capture.
+Examples in `references/integration.md` use **StatefulWidget + WidgetsBindingObserver** because the official `IdCaptureSimpleSample` uses it. If the project uses BLoC (matching the `IdCaptureExtendedSample`), Riverpod, or a route observer / GoRouter, see `references/framework-recipes.md` — the Scandit calls are unchanged; only the state-management harness and the route-aware lifecycle differ. Do not introduce a new state-management library just for ID Capture.
 
 Examples are in **Dart** (sound null-safety). Flutter `>=3.22.0` and Dart `>=3.4.0` are required by the ID plugin.
 
