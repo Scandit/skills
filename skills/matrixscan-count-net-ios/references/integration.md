@@ -229,8 +229,10 @@ if (this.camera is null)
 }
 
 this.camera.ApplySettingsAsync(BarcodeCount.RecommendedCameraSettings);
-await this.dataCaptureContext.SetFrameSourceAsync(this.camera);
+this.dataCaptureContext.SetFrameSourceAsync(this.camera);
 ```
+
+> **Do not `await` these inside `ViewDidLoad`** — and **do not** make `ViewDidLoad` `async void`. An `async void` lifecycle method returns to UIKit at the first `await`, so `ViewWillAppear` fires before `barcodeCount` / `barcodeCountView` are constructed; the null-guard in Step 7 then skips `Enabled = true` and the camera switch-on, leaving you with a black screen and no scans. Fire-and-forget the two async calls above and keep `ViewDidLoad` synchronous. If you genuinely need to await camera setup, do it before pushing the view controller (e.g. in the parent) rather than inside `ViewDidLoad`.
 
 The camera is off by default. You turn it on in `ViewWillAppear` and put it to standby/off in `ViewWillDisappear` (Step 7). Do **not** look for `barcodeCountView.OnResume()`/`Start()` — those don't exist; the camera is the lifecycle handle.
 
@@ -451,18 +453,23 @@ public class ViewController : UIViewController
 
     private readonly List<Barcode> scannedBarcodes = new();
 
-    public override async void ViewDidLoad()
+    public override void ViewDidLoad()
     {
         base.ViewDidLoad();
 
         this.dataCaptureContext = DataCaptureContext.ForLicenseKey(SCANDIT_LICENSE_KEY);
 
         // Camera (you manage it — the view does not).
+        // Keep ViewDidLoad SYNCHRONOUS — fire-and-forget the async camera setup.
+        // An `async void ViewDidLoad` returns at the first await, so UIKit fires
+        // `ViewWillAppear` before `barcodeCount` / `barcodeCountView` exist; the
+        // null-guard there then skips `Enabled = true` and the camera switch-on,
+        // giving you a black screen with no scans.
         this.camera = Camera.GetDefaultCamera();
         if (this.camera is not null)
         {
             this.camera.ApplySettingsAsync(BarcodeCount.RecommendedCameraSettings);
-            await this.dataCaptureContext.SetFrameSourceAsync(this.camera);
+            this.dataCaptureContext.SetFrameSourceAsync(this.camera);
         }
 
         // Configure and create BarcodeCount.
