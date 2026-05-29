@@ -1,0 +1,16 @@
+{
+  "name": "id_scanner_app",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "@capacitor/core": "^6.0.0",
+    "@capacitor/app": "^6.0.0",
+    "@capacitor/camera": "^6.0.0",
+    "scandit-capacitor-datacapture-core": "^7.0.0",
+    "scandit-capacitor-datacapture-id": "^7.0.0"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^6.0.0",
+    "typescript": "^5.3.0"
+  }
+}
