@@ -1,0 +1,36 @@
+{
+  "skill_name": "matrixscan-count-net-ios",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I need to upgrade my .NET for iOS MatrixScan Count app from Scandit SDK v7 to v8. Here is my current view controller: ViewControllerV7.cs. What do I need to change?",
+      "expected_output": "The skill explains that v8 requires explicit SDK initialization in AppDelegate.FinishedLaunching — ScanditCaptureCore.Initialize() and ScanditBarcodeCapture.Initialize() must be called before any Scandit type is constructed. The view controller itself does not need changes — the BarcodeCount.Create factory, BarcodeCountView.Create(CGRect frame, ...) factory, listener / Scanned event, BarcodeCountSession shape, camera handling, and capture-list APIs are all unchanged in v8. The skill also instructs the user to bump both Scandit.DataCapture.Core and Scandit.DataCapture.Barcode <PackageReference> versions to the latest stable v8 release. Provides the v7→v8 migration guide URL.",
+      "files": [
+        "fixtures/ViewControllerV7.cs"
+      ],
+      "assertions": [
+        {"text": "The skill explains that SDK 8.0+ requires explicit initialization via ScanditCaptureCore.Initialize() and ScanditBarcodeCapture.Initialize()"},
+        {"text": "The initialization calls go into AppDelegate.FinishedLaunching (application:didFinishLaunchingWithOptions:), not into the view controller's ViewDidLoad"},
+        {"text": "The skill instructs the user to bump both Scandit.DataCapture.Core and Scandit.DataCapture.Barcode PackageReference versions"},
+        {"text": "The skill does NOT instruct the user to replace BarcodeCount.Create(...) with a different call — the factory is unchanged in v7→v8 and there is no public new BarcodeCount(...) constructor"},
+        {"text": "The skill does NOT instruct the user to change the BarcodeCountView.Create(frame, dataCaptureContext, barcodeCount[, style]) factory signature — it is unchanged in v7→v8 and the first argument is a CGRect frame"},
+        {"text": "The skill does NOT instruct the user to remove the explicit Camera management (Camera.GetDefaultCamera / ApplySettingsAsync / SetFrameSourceAsync / SwitchToDesiredStateAsync) — camera handling is unchanged"},
+        {"text": "The skill does NOT introduce APIs that do not exist on dotnet.ios (e.g. BarcodeCountMappingFlowSettings, BarcodeCountSessionSnapshot, or Android-only EnableHardwareTrigger)"},
+        {"text": "Migration guide URL https://docs.scandit.com/sdks/net/ios/migrate-7-to-8/ is provided"}
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "I'm bumping the Scandit .NET iOS MatrixScan Count SDK from v7 to v8. What source-code changes do I need to make?",
+      "expected_output": "The skill explains that v8 requires explicit SDK initialization via ScanditCaptureCore.Initialize() and ScanditBarcodeCapture.Initialize() called from AppDelegate.FinishedLaunching. The BarcodeCount.Create factory, BarcodeCountView.Create factory, IBarcodeCountListener three-method interface, Scanned event, session shape, camera handling, and capture-list APIs are all unchanged. Provides the v7→v8 migration guide URL.",
+      "files": [],
+      "assertions": [
+        {"text": "The skill explains that SDK 8.0+ requires explicit initialization via ScanditCaptureCore.Initialize() and ScanditBarcodeCapture.Initialize()"},
+        {"text": "The initialization calls go into AppDelegate.FinishedLaunching (application:didFinishLaunchingWithOptions:), not into a view controller"},
+        {"text": "The skill states that the BarcodeCount.Create(...) factory is unchanged in v7→v8"},
+        {"text": "The skill states that the BarcodeCountView.Create(...) factory is unchanged in v7→v8"},
+        {"text": "Migration guide URL https://docs.scandit.com/sdks/net/ios/migrate-7-to-8/ is provided"}
+      ]
+    }
+  ]
+}
