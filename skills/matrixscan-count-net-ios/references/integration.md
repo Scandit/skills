@@ -446,7 +446,7 @@ this.barcodeCountView.SingleScanButtonTapped += (sender, args) =>
 };
 ```
 
-> **Do not stop at `Console.WriteLine`** in these handlers in a real integration — the buttons are useless to the end user unless they navigate somewhere. A minimal `ScannedItemsViewController` can be a plain `UITableViewController` that takes the list in its constructor and renders one row per barcode (`barcode.Data`, `barcode.Symbology`).
+> **Do not stop at `Console.WriteLine`** in these handlers in a real integration — the buttons are useless to the end user unless they navigate somewhere. A minimal `ScannedItemsViewController` can be a plain `UITableViewController` that takes the list in its constructor and renders one row per barcode (`barcode.Data`, `barcode.Symbology`). If you want both labels in each row, instantiate cells with `new UITableViewCell(UITableViewCellStyle.Subtitle, reuseId)` — `RegisterClassForCellReuse(typeof(UITableViewCell), …)` always creates `Default`-style cells where `DetailTextLabel` is `null` and dereferencing it throws `NullReferenceException`.
 
 Each event argument (`ListButtonTappedEventArgs`, `ExitButtonTappedEventArgs`, `SingleScanButtonTappedEventArgs`) exposes a `.View` property if you need it.
 
