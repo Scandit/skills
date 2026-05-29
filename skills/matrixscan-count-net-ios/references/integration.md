@@ -421,6 +421,18 @@ public override void ViewWillAppear(bool animated)
 }
 ```
 
+> **`SetNavigationBarHidden` is shared state on the `UINavigationController`.** Hiding the bar in `ScanViewController` leaves it hidden on any view controller you push afterwards — so the pushed list screen has no back button and the user is stranded. Un-hide it in the pushed VC's `ViewWillAppear`:
+>
+> ```csharp
+> public override void ViewWillAppear(bool animated)
+> {
+>     base.ViewWillAppear(animated);
+>     this.NavigationController?.SetNavigationBarHidden(false, animated: animated);
+> }
+> ```
+>
+> The system back button then appears automatically (driven by the pushed VC's `Title`), and the scanner's own `ViewWillAppear` re-hides the bar on the way back. The working Scandit sample takes a heavier route — keeping the nav bar hidden and building a custom top bar with its own back button — which is also fine if you want full control.
+
 Then wire the events to push a results screen:
 
 ```csharp
