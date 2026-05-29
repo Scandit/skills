@@ -64,6 +64,7 @@ Based on the user's request, load the appropriate reference file before respondi
 - **Integrating ID Capture from scratch** (e.g. "add ID scanning to my RN app", "scan a passport / driver's license", "read the MRZ", "extract the holder's name and date of birth") → read `references/integration.md` and follow it.
 - **One of the three add-on capabilities** ("reject voided / cancelled IDs", "detect punched-hole / voided licenses", "decode the back of a European driving license", "read vehicle categories", "verify the AAMVA barcode / detect forged US licenses") → read `references/supplementary-modules.md`.
 - **Migrating or upgrading an existing ID Capture integration** ("upgrade ID Capture to the latest SDK", "migrate v7 to v8", "my `scannerType` code stopped compiling", "`AamvaBarcodeVerifier` is gone", "what changed in ID Capture between versions") → read `references/migration.md`.
+- **React Navigation route lifecycle, Expo / dev-client setup, or where to keep the SDK handles** ("camera doesn't stop when I navigate away", "pause the camera on focus/blur", "`useFocusEffect`", "I'm using Expo / Expo Go / Expo Router", "do I need a custom dev client?", "permission with `expo-camera`", "should I put `IdCapture` in Redux / Zustand?") → read `references/framework-recipes.md`. The Scandit code itself is unchanged from `references/integration.md`; this file covers the React Navigation / Expo / state-management glue.
 
 ## API Usage Policy
 
@@ -78,7 +79,7 @@ URL structures vary across SDK versions and package paths and guessing will lead
 
 ## Framework variant policy
 
-Examples in this skill use **functional components + React hooks** (`useEffect`, `useRef`, `AppState`) because the official `IdCaptureSimpleSample` is written that way. If the target project uses class components or a state-management library (Redux, MobX, Zustand), wire the listener and camera lifecycle into that pattern instead — but keep the same context initialization, settings, and listener code. Do not introduce a new state-management library just for ID Capture.
+Examples in `references/integration.md` use **functional components + React hooks** (`useEffect`, `useRef`, `AppState`) because the official `IdCaptureSimpleSample` is written that way. If the project also uses React Navigation, Expo, or wants to share the context across screens, see `references/framework-recipes.md` — the Scandit calls are unchanged; only the navigation lifecycle, Expo build flow, and ref-vs-store guidance differ. Do not introduce a new state-management library just for ID Capture.
 
 Examples are in **TypeScript** (the official sample is `.tsx`). React Native `>=0.74` is recommended.
 
