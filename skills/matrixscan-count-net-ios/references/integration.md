@@ -401,17 +401,43 @@ Release native resources when the controller is torn down (e.g. in `Dispose`): `
 
 ## Step 8 — List / Exit / Single-Scan button taps
 
-The built-in toolbar buttons are surfaced as C# events on `BarcodeCountView`. Subscribe to react when the user taps them:
+The built-in toolbar buttons are surfaced as C# events on `BarcodeCountView`. Subscribe to react when the user taps them.
+
+The standard pattern is to push a results view controller onto the navigation stack, so **the scanning view controller must be hosted inside a `UINavigationController`**. In `SceneDelegate.WillConnect` (or wherever you build the root):
+
+```csharp
+var scanVC = new ScanViewController();
+this.Window!.RootViewController = new UINavigationController(scanVC);
+```
+
+`BarcodeCountView` has its own toolbar, so hide the navigation bar while the scanner is visible:
+
+```csharp
+public override void ViewWillAppear(bool animated)
+{
+    base.ViewWillAppear(animated);
+    this.NavigationController?.SetNavigationBarHidden(true, animated: false);
+    // ...rest of ViewWillAppear (Step 7)...
+}
+```
+
+Then wire the events to push a results screen:
 
 ```csharp
 this.barcodeCountView.ListButtonTapped += (sender, args) =>
 {
-    // Show the current scan results (order not yet complete).
+    // Order not yet complete — show progress so far.
+    var snapshot = new List<Barcode>(this.scannedBarcodes);
+    var listVC = new ScannedItemsViewController(snapshot, isOrderCompleted: false);
+    this.NavigationController?.PushViewController(listVC, animated: true);
 };
 
 this.barcodeCountView.ExitButtonTapped += (sender, args) =>
 {
     // The user finished — show the final results.
+    var snapshot = new List<Barcode>(this.scannedBarcodes);
+    var listVC = new ScannedItemsViewController(snapshot, isOrderCompleted: true);
+    this.NavigationController?.PushViewController(listVC, animated: true);
 };
 
 this.barcodeCountView.SingleScanButtonTapped += (sender, args) =>
@@ -420,7 +446,9 @@ this.barcodeCountView.SingleScanButtonTapped += (sender, args) =>
 };
 ```
 
-Each event argument (`ListButtonTappedEventArgs`, `ExitButtonTappedEventArgs`, `SingleScanButtonTappedEventArgs`) exposes a `.View` property.
+> **Do not stop at `Console.WriteLine`** in these handlers in a real integration — the buttons are useless to the end user unless they navigate somewhere. A minimal `ScannedItemsViewController` can be a plain `UITableViewController` that takes the list in its constructor and renders one row per barcode (`barcode.Data`, `barcode.Symbology`).
+
+Each event argument (`ListButtonTappedEventArgs`, `ExitButtonTappedEventArgs`, `SingleScanButtonTappedEventArgs`) exposes a `.View` property if you need it.
 
 ## Complete minimal example
 
