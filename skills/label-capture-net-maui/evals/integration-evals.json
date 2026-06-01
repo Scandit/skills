@@ -1,0 +1,66 @@
+{
+  "skill_name": "label-capture-net-maui",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I want to add Smart Label Capture to my .NET MAUI app. Here's my empty page (MainPage.xaml + MainPage.xaml.cs) and MauiProgram.cs. My labels are retail price tags — each has a product barcode (EAN-13 and Code 128) and an expiry date, plus an optional total price. I want to read all three fields in one scan and show them.",
+      "expected_output": "The skill reads integration.md, fetches the latest Scandit NuGet versions, and writes a complete MAUI Label Capture integration: four packages (Core, Core.Maui, Barcode, Label) with NO Label.Maui; MauiProgram.cs calls ScanditLabelCapture.Initialize() and chains .UseScanditCore(c => c.AddDataCaptureView()) (NO UseScanditBarcode, NO manual init in MainApplication/AppDelegate), and registers the context+camera (AddDataCaptureContext / AddCamera or a manual DataCaptureContext.ForLicenseKey + Camera.GetDefaultCamera(LabelCapture.RecommendedCameraSettings)); a label built field-by-field with CustomBarcode.Builder().SetSymbologies(new List<Symbology>{Ean13Upca, Code128}).Build(name), ExpiryDateText.Builder()...Build(name), TotalPriceText.Builder().IsOptional(true).Build(name); LabelDefinition.Create(name, fields); LabelCaptureSettings.Create(new List<LabelDefinition>{def}); LabelCapture.Create(context, settings); a <scandit:DataCaptureView> with DataCaptureContext=\"{Binding DataCaptureContext}\" and the xmlns:scandit namespace; LabelCaptureBasicOverlay.Create(labelCapture) created in dataCaptureView.HandlerChanged + AddOverlay; a SessionUpdated/ILabelCaptureListener handler reading session.CapturedLabels, matching fields by name, reading Barcode?.Data / Text, setting Enabled=false, dispatching via MainThread.BeginInvokeOnMainThread; camera On/Off + Enabled across OnAppearing/OnDisappearing with Permissions.Camera. Shows the setup checklist (four packages, Android SupportedOSPlatformVersion 24 / iOS 15, NSCameraUsageDescription, license key).",
+      "files": [
+        "fixtures/EmptyMainPage.xaml",
+        "fixtures/EmptyMainPage.xaml.cs",
+        "fixtures/EmptyMauiProgram.cs"
+      ],
+      "assertions": [
+        {"text": "Setup checklist lists exactly the four packages Scandit.DataCapture.Core, Scandit.DataCapture.Core.Maui, Scandit.DataCapture.Barcode, Scandit.DataCapture.Label"},
+        {"text": "It does NOT add a Scandit.DataCapture.Label.Maui package (no such package exists)"},
+        {"text": "It does NOT add a separate label-text-models / text-models package"},
+        {"text": "MauiProgram.cs calls ScanditLabelCapture.Initialize()"},
+        {"text": "MauiProgram.cs chains .UseScanditCore(configure => configure.AddDataCaptureView())"},
+        {"text": "It does NOT call UseScanditBarcode() or a non-existent UseScanditLabel()"},
+        {"text": "It does NOT add ScanditCaptureCore.Initialize()/ScanditBarcodeCapture.Initialize() to MainApplication.OnCreate or AppDelegate.FinishedLaunching"},
+        {"text": "Setup checklist mentions setting Android SupportedOSPlatformVersion to at least 24 (and iOS to 15)"},
+        {"text": "Setup checklist mentions NSCameraUsageDescription in Platforms/iOS/Info.plist and Android camera permission (Permissions.Camera or AndroidManifest)"},
+        {"text": "A license key placeholder string is present"},
+        {"text": "Each field is built with its own static Builder() factory ending in .Build(\"name\") (CustomBarcode.Builder()..., ExpiryDateText.Builder()..., TotalPriceText.Builder()...)"},
+        {"text": "The native fluent LabelCaptureSettings.builder()/addLabel()/buildFluent(...) chain is NOT used"},
+        {"text": "CustomBarcode.Builder().SetSymbologies(...) is given an IList<Symbology> (e.g. new List<Symbology>{...}), not a vararg"},
+        {"text": "Symbology.Ean13Upca and Symbology.Code128 are enabled for the barcode field (PascalCase, not Swift/Kotlin style)"},
+        {"text": "The total price field is created via TotalPriceText.Builder() and marked optional with .IsOptional(true)"},
+        {"text": "LabelDefinition.Create(name, fields) is used to assemble the fields into a definition"},
+        {"text": "LabelCaptureSettings.Create( is called with a list/IList<LabelDefinition> (NOT a settings builder)"},
+        {"text": "LabelCapture.Create(context, settings) is used as the factory (NOT new LabelCapture(...) and NOT forDataCaptureContext)"},
+        {"text": "The XAML uses <scandit:DataCaptureView> with the xmlns:scandit=\"clr-namespace:Scandit.DataCapture.Core.UI.Maui;assembly=ScanditCaptureCoreMaui\" namespace"},
+        {"text": "The DataCaptureView has DataCaptureContext=\"{Binding DataCaptureContext}\" set (mandatory binding) and the BindingContext exposes a DataCaptureContext property"},
+        {"text": "LabelCaptureBasicOverlay.Create(labelCapture) is created inside dataCaptureView.HandlerChanged and attached via dataCaptureView.AddOverlay(...)"},
+        {"text": "It uses the single-arg overlay Create in MAUI (NOT DataCaptureView.Create(context, CGRect)+AddSubview from the iOS skill and NOT container.AddView from Android)"},
+        {"text": "Either labelCapture.SessionUpdated += handler or labelCapture.AddListener(ILabelCaptureListener) is wired, and any ILabelCaptureListener implementation is a plain C# class (NOT NSObject / Java.Lang.Object)"},
+        {"text": "The handler reads session.CapturedLabels, returns early when empty, matches fields by declared Name, and reads values via Barcode?.Data and Text"},
+        {"text": "labelCapture.Enabled is set to false after a label is captured to avoid re-capturing"},
+        {"text": "UI work is dispatched via MainThread.BeginInvokeOnMainThread (NOT RunOnUiThread and NOT DispatchQueue.MainQueue)"},
+        {"text": "Camera lifecycle uses OnAppearing/OnDisappearing (or ResumeAsync/SleepAsync) with camera.SwitchToDesiredStateAsync(FrameSourceState.On/.Off) and requests Permissions.Camera"}
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "I already have Smart Label Capture working in my .NET MAUI app (see IntegratedMainPage.xaml, IntegratedMainPage.xaml.cs, IntegratedMainPageViewModel.cs, IntegratedLabelCaptureService.cs). I need to add one more field to the same label: a lot number printed as plain text that always matches the pattern LOT-[0-9]{6} (e.g. LOT-004821). It's required. Then read it alongside the barcode and expiry date.",
+      "expected_output": "The skill adds a CustomText field built with CustomText.Builder().SetValueRegex(\"LOT-[0-9]{6}\").Build(\"Lot Number\"), inserts it into the existing fields list in the label capture service, and reads it via field.Text in the SessionUpdated handler, preserving the rest of the MAUI integration. It uses SetValueRegex (NOT the old native setPattern/setDataTypePattern) and does not mark it optional.",
+      "files": [
+        "fixtures/IntegratedMainPage.xaml",
+        "fixtures/IntegratedMainPage.xaml.cs",
+        "fixtures/IntegratedMainPageViewModel.cs",
+        "fixtures/IntegratedLabelCaptureService.cs",
+        "fixtures/ILabelCaptureService.cs",
+        "fixtures/ICameraService.cs"
+      ],
+      "assertions": [
+        {"text": "A CustomText field is created via CustomText.Builder()...Build(\"<name>\")"},
+        {"text": "The value pattern is set with SetValueRegex(\"LOT-[0-9]{6}\") (or SetValueRegexes with that pattern)"},
+        {"text": "The old native names setPattern / setDataTypePattern / setPatterns are NOT used"},
+        {"text": "The new field is added to the existing List<LabelFieldDefinition> in the label capture settings (it is NOT marked optional, since it is required)"},
+        {"text": "The lot number value is read from the captured label via field.Text matching its declared name"},
+        {"text": "Existing MAUI integration (DataCaptureView binding, HandlerChanged overlay, SessionUpdated handler, existing barcode and expiry fields, ResumeAsync/SleepAsync lifecycle) is preserved"},
+        {"text": "No iOS-only or Android-only APIs (DispatchQueue.MainQueue, UIApplication.InvokeOnMainThread, RunOnUiThread, NSObject listener base, container.AddView, DataCaptureView.Create(context, CGRect)) are introduced"}
+      ]
+    }
+  ]
+}
