@@ -1,0 +1,84 @@
+{
+  "skill_name": "matrixscan-count-maui",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I want to add MatrixScan Count to my .NET MAUI app. Here's my empty page: EmptyBarcodeCountPage.xaml + EmptyBarcodeCountPage.xaml.cs, and my MauiProgram: EmptyMauiProgram.cs. I need to count EAN-13 and Code 128 barcodes, show the built-in counting UI, and when the user taps the List button store the scanned barcodes so I can show them on a results screen.",
+      "expected_output": "The skill reads integration.md, fetches the latest Scandit MAUI NuGet versions, updates MauiProgram.cs with .UseScanditCore().UseScanditBarcode(c => c.AddBarcodeCountView()), adds <scandit:BarcodeCountView> with DataCaptureContext and BarcodeCount bindings (and ViewStyle) to the page using the Count.UI.Maui XAML namespace, writes a complete BarcodeCount integration (DataCaptureContext.ForLicenseKey, a manually-managed Camera via Camera.GetDefaultCamera(BarcodeCount.RecommendedCameraSettings) + SetFrameSourceAsync, new BarcodeCountSettings() enabling only Ean13Upca and Code128, BarcodeCount.Create(context, settings), the Scanned event copying session.RecognizedBarcodes out via MainThread.BeginInvokeOnMainThread, ListButtonTapped subscribed in HandlerChanged storing the barcodes, camera SwitchToDesiredStateAsync on/off + barcodeCount.Enabled across OnAppearing/OnDisappearing). Shows the setup checklist (four NuGet packages, NSCameraUsageDescription on iOS, SupportedOSPlatformVersion 24 on Android, license key). Does NOT add ScanditCaptureCore.Initialize() calls.",
+      "files": [
+        "fixtures/EmptyBarcodeCountPage.xaml",
+        "fixtures/EmptyBarcodeCountPage.xaml.cs",
+        "fixtures/EmptyMauiProgram.cs"
+      ],
+      "assertions": [
+        {"text": "Setup checklist mentions all four NuGet packages: Scandit.DataCapture.Core, Scandit.DataCapture.Core.Maui, Scandit.DataCapture.Barcode, Scandit.DataCapture.Barcode.Maui"},
+        {"text": "MauiProgram.cs is updated to call .UseScanditCore() with NO inner configure lambda"},
+        {"text": "MauiProgram.cs calls .UseScanditBarcode( with an inner configure lambda that invokes AddBarcodeCountView()"},
+        {"text": "MauiProgram.cs does NOT call .UseScanditCore(c => c.AddDataCaptureView()) (that is the BarcodeBatch/BarcodeCapture chain, wrong for BarcodeCount)"},
+        {"text": "No ScanditCaptureCore.Initialize() or ScanditBarcodeCapture.Initialize() call is added to MainApplication or AppDelegate (the MAUI builder handles this)"},
+        {"text": "The page XAML adds the xmlns:scandit=\"clr-namespace:Scandit.DataCapture.Barcode.Count.UI.Maui;assembly=ScanditBarcodeCaptureMaui\" namespace"},
+        {"text": "The page XAML contains a <scandit:BarcodeCountView> element"},
+        {"text": "<scandit:BarcodeCountView> sets DataCaptureContext=\"{Binding DataCaptureContext}\" (binding to a DataCaptureContext property)"},
+        {"text": "<scandit:BarcodeCountView> sets BarcodeCount=\"{Binding BarcodeCount}\" (binding to a BarcodeCount property)"},
+        {"text": "The view style is set via the ViewStyle property (e.g. ViewStyle=\"Icon\" or ViewStyle=\"Dot\"), NOT via a Style attribute"},
+        {"text": "Setup checklist mentions adding NSCameraUsageDescription to Platforms/iOS/Info.plist"},
+        {"text": "Setup checklist mentions SupportedOSPlatformVersion of at least 24 for the Android target"},
+        {"text": "A license key placeholder string is present"},
+        {"text": "DataCaptureContext.ForLicenseKey( is used to create the context"},
+        {"text": "new BarcodeCountSettings() is used (the settings use a plain constructor)"},
+        {"text": "BarcodeCount.Create( is used as the factory (NOT new BarcodeCount(...), which has no public constructor)"},
+        {"text": "Symbology.Ean13Upca is enabled"},
+        {"text": "Symbology.Code128 is enabled"},
+        {"text": "No symbologies other than Ean13Upca and Code128 are enabled"},
+        {"text": "Kotlin-style underscore symbology names (Symbology.EAN13_UPCA, Symbology.CODE_128) are NOT used, and Swift-style camelCase (.ean13UPCA) is NOT used"},
+        {"text": "A Camera is obtained via Camera.GetDefaultCamera(...) using BarcodeCount.RecommendedCameraSettings"},
+        {"text": "dataCaptureContext.SetFrameSourceAsync( is called with the camera (the camera is managed explicitly, not by the view)"},
+        {"text": "camera.SwitchToDesiredStateAsync(FrameSourceState.On) and FrameSourceState.Off are used to drive the camera across the lifecycle"},
+        {"text": "barcodeCount.Enabled is set to true so frames are processed"},
+        {"text": "No barcodeCountView.OnAppearing()/OnDisappearing()/StartScanning() calls are made (those are SparkScanView methods; the MAUI BarcodeCountView does not have them)"},
+        {"text": "Either barcodeCount.Scanned += handler or barcodeCount.AddListener(IBarcodeCountListener) is wired"},
+        {"text": "The scan handler reads args.Session.RecognizedBarcodes (the BarcodeCountSession exposes RecognizedBarcodes, not AddedTrackedBarcodes)"},
+        {"text": "The recognized barcodes are copied out of the session (e.g. .ToList()) inside the callback, and UI work is dispatched via MainThread.BeginInvokeOnMainThread (not RunOnUiThread, not DispatchQueue.MainQueue)"},
+        {"text": "The ListButtonTapped (and/or ExitButtonTapped) event is subscribed inside the barcodeCountView.HandlerChanged handler, not in the constructor before the handler exists"},
+        {"text": "The ListButtonTapped handler stores/shows the scanned barcodes"},
+        {"text": "OnAppearing is overridden and triggers a flow that calls Permissions.CheckStatusAsync<Permissions.Camera>() or Permissions.RequestAsync<Permissions.Camera>()"},
+        {"text": "No Android-only APIs appear (RunOnUiThread, FindViewById, FrameLayout, AppCompatActivity, container.AddView, [Activity])"},
+        {"text": "No BarcodeArView, IBarcodeArHighlightProvider, or BarcodeAr API is used (MatrixScan Count is not MatrixScan AR)"},
+        {"text": "No generic <scandit:DataCaptureView> or BarcodeCaptureOverlay is created (BarcodeCount uses its own <scandit:BarcodeCountView>)"}
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "I'm building a receiving app with MatrixScan Count on .NET MAUI. I already have it counting (see IntegratedBarcodeCountPageViewModel.cs). Now I want to check scanned barcodes against an expected list: 3x of 0123456789012 and 1x of 9876543210987, and react when everything on the list has been scanned.",
+      "expected_output": "The skill adds a capture list: builds TargetBarcode.Create(data, quantity) entries, creates a BarcodeCountCaptureList.Create(listener, targets), implements IBarcodeCountCaptureListListener (OnObservationStarted/OnObservationStopped/OnCaptureListSessionUpdated/OnCaptureListCompleted), and applies it via barcodeCount.SetBarcodeCountCaptureList(list), preserving existing integration.",
+      "files": [
+        "fixtures/IntegratedBarcodeCountPageViewModel.cs"
+      ],
+      "assertions": [
+        {"text": "TargetBarcode.Create(data, quantity) is used to build the expected barcodes (factory, not new TargetBarcode(...))"},
+        {"text": "A TargetBarcode for 0123456789012 with quantity 3 and one for 9876543210987 with quantity 1 are created"},
+        {"text": "BarcodeCountCaptureList.Create(listener, targets) is used (factory, not new BarcodeCountCaptureList(...))"},
+        {"text": "IBarcodeCountCaptureListListener is implemented with OnObservationStarted, OnObservationStopped, OnCaptureListSessionUpdated, and OnCaptureListCompleted"},
+        {"text": "barcodeCount.SetBarcodeCountCaptureList(list) is called to apply the list"},
+        {"text": "OnCaptureListCompleted is where the all-scanned reaction is handled"},
+        {"text": "Existing integration code (camera, BarcodeCount.Create, Scanned handler, ResumeAsync/SleepAsync) is preserved"},
+        {"text": "No Android- or iOS-only APIs are introduced (RunOnUiThread, DispatchQueue.MainQueue, FindViewById)"}
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "I want to suppress the default beep and vibration in my MatrixScan Count .NET MAUI app — silent counting. Update the feedback in IntegratedBarcodeCountPageViewModel.cs.",
+      "expected_output": "The skill sets barcodeCount.Feedback to a new BarcodeCountFeedback() (empty constructor = silent), imported from Scandit.DataCapture.Barcode.Count.Feedback, preserving the rest of the integration. It does NOT call DefaultFeedback as a method.",
+      "files": [
+        "fixtures/IntegratedBarcodeCountPageViewModel.cs"
+      ],
+      "assertions": [
+        {"text": "barcodeCount.Feedback is reassigned to a new BarcodeCountFeedback() (empty constructor)"},
+        {"text": "BarcodeCountFeedback is imported from Scandit.DataCapture.Barcode.Count.Feedback"},
+        {"text": "BarcodeCountFeedback.DefaultFeedback is NOT called as a method (with parentheses) — it is a static property"},
+        {"text": "The feedback slots are referred to as Success / Failure if mentioned (NOT Scanned / Tapped, which are MatrixScan AR's)"},
+        {"text": "Existing integration code (camera, BarcodeCount.Create, Scanned handler, ResumeAsync/SleepAsync) is preserved"}
+      ]
+    }
+  ]
+}

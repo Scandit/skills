@@ -1,0 +1,37 @@
+{
+  "skill_name": "matrixscan-count-maui",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I need to upgrade my .NET MAUI MatrixScan Count app from Scandit SDK v7 to v8. Here is my current view model: BarcodeCountPageViewModelV7.cs and my MauiProgram: MauiProgramV7.cs. What do I need to change?",
+      "expected_output": "The skill explains that for a MAUI app the v7→v8 BarcodeCount migration is essentially just bumping the four package versions — and critically that NO manual ScanditCaptureCore.Initialize()/ScanditBarcodeCapture.Initialize() is needed because the UseScanditCore()/UseScanditBarcode(c => c.AddBarcodeCountView()) builder chain performs initialization. The BarcodeCount.Create factory, the <scandit:BarcodeCountView> control + bindable properties, the listener / Scanned event, the session shape, the camera handling, and capture-list APIs are all unchanged. The skill instructs bumping all four Scandit MAUI package versions and provides migration guide URLs.",
+      "files": [
+        "fixtures/BarcodeCountPageViewModelV7.cs",
+        "fixtures/MauiProgramV7.cs"
+      ],
+      "assertions": [
+        {"text": "The skill instructs the user to bump all four Scandit MAUI PackageReference versions (Core, Core.Maui, Barcode, Barcode.Maui) to the latest stable v8"},
+        {"text": "The skill explicitly states that NO manual ScanditCaptureCore.Initialize()/ScanditBarcodeCapture.Initialize() is required in MAUI because the UseScanditCore()/UseScanditBarcode(...) builder chain performs initialization"},
+        {"text": "The skill does NOT instruct the user to add Initialize() calls to MainApplication.cs or AppDelegate.cs (that is the non-MAUI pattern and is wrong for MAUI)"},
+        {"text": "The skill does NOT instruct the user to replace BarcodeCount.Create(...) with a different call — the factory is unchanged in v7→v8"},
+        {"text": "The skill does NOT instruct the user to change the <scandit:BarcodeCountView> control, its XAML namespace, or its bindable properties — they are unchanged in v7→v8"},
+        {"text": "The skill does NOT instruct the user to remove the explicit Camera management (Camera.GetDefaultCamera / SetFrameSourceAsync / SwitchToDesiredStateAsync) — camera handling is unchanged"},
+        {"text": "The skill does NOT introduce APIs that do not exist in the .NET binding (e.g. BarcodeCountMappingFlowSettings, BarcodeCountSessionSnapshot)"},
+        {"text": "At least one official migration guide URL (Android or iOS migrate-7-to-8) is provided"}
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "I'm bumping the Scandit .NET MAUI MatrixScan Count SDK from v7 to v8. What source-code changes do I need to make?",
+      "expected_output": "The skill explains that for MAUI the v7→v8 BarcodeCount migration requires no source changes beyond bumping the four package versions: the builder chain already performs SDK initialization (no manual Initialize() needed, unlike the non-MAUI skills), and the BarcodeCount.Create factory, <scandit:BarcodeCountView>, listener / Scanned event, session shape, camera handling, and capture-list APIs are all unchanged. Provides migration guide URLs.",
+      "files": [],
+      "assertions": [
+        {"text": "The skill explains that bumping the four Scandit MAUI package versions is the main action"},
+        {"text": "The skill explicitly states that no manual ScanditCaptureCore.Initialize()/ScanditBarcodeCapture.Initialize() is needed in MAUI (the builder chain handles it)"},
+        {"text": "The skill does NOT tell the user to add Initialize() calls to MainApplication/AppDelegate"},
+        {"text": "The skill states that the BarcodeCount.Create(...) factory and the <scandit:BarcodeCountView> control are unchanged in v7→v8"},
+        {"text": "At least one official migration guide URL (Android or iOS migrate-7-to-8) is provided"}
+      ]
+    }
+  ]
+}

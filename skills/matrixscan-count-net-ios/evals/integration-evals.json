@@ -1,0 +1,77 @@
+{
+  "skill_name": "matrixscan-count-net-ios",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I want to add MatrixScan Count to my .NET for iOS app. Here's my empty view controller: EmptyViewController.cs. I need to count EAN-13 and Code 128 barcodes, show the built-in counting UI, and when the user taps the List button store the scanned barcodes so I can show them on a results screen.",
+      "expected_output": "The skill reads integration.md, fetches the latest Scandit NuGet versions, writes complete BarcodeCount integration code into EmptyViewController.cs: DataCaptureContext.ForLicenseKey, a manually-managed Camera (Camera.GetDefaultCamera() + camera.ApplySettingsAsync(BarcodeCount.RecommendedCameraSettings) + dataCaptureContext.SetFrameSourceAsync), new BarcodeCountSettings() enabling only Ean13Upca and Code128, BarcodeCount.Create(context, settings), BarcodeCountView.Create(View.Bounds, context, barcodeCount[, style]) added via View.AddSubview, barcodeCount.Scanned event (or AddListener) that copies session.RecognizedBarcodes out via InvokeOnMainThread, ListButtonTapped handler storing the barcodes, camera SwitchToDesiredStateAsync On/Standby + barcodeCount.Enabled across ViewWillAppear/ViewWillDisappear. Shows the setup checklist (NuGet packages, Info.plist NSCameraUsageDescription, AppDelegate initialize for SDK 8.0+, SupportedOSPlatformVersion 15.0, license key).",
+      "files": [
+        "fixtures/EmptyViewController.cs"
+      ],
+      "assertions": [
+        {"text": "Setup checklist is shown and mentions adding the Scandit.DataCapture.Barcode and Scandit.DataCapture.Core NuGet packages"},
+        {"text": "Setup checklist mentions adding NSCameraUsageDescription to Info.plist"},
+        {"text": "Setup checklist mentions calling ScanditCaptureCore.Initialize() and ScanditBarcodeCapture.Initialize() in AppDelegate.FinishedLaunching (required for SDK 8.0+)"},
+        {"text": "Setup checklist mentions setting SupportedOSPlatformVersion to at least 15.0"},
+        {"text": "A license key placeholder string is present"},
+        {"text": "DataCaptureContext.ForLicenseKey( is used to create the context"},
+        {"text": "new BarcodeCountSettings() is used (the settings use a plain constructor)"},
+        {"text": "BarcodeCount.Create( is used as the factory (NOT new BarcodeCount(...), which has no public constructor)"},
+        {"text": "Symbology.Ean13Upca is enabled"},
+        {"text": "Symbology.Code128 is enabled"},
+        {"text": "No symbologies other than Ean13Upca and Code128 are enabled"},
+        {"text": "Native-style symbology names (e.g. Symbology.ean13UPCA, .code128) are NOT used"},
+        {"text": "A Camera is obtained via Camera.GetDefaultCamera() (or Camera.DefaultCamera) and BarcodeCount.RecommendedCameraSettings is applied via camera.ApplySettingsAsync(...)"},
+        {"text": "dataCaptureContext.SetFrameSourceAsync( is called with the camera (the camera is managed explicitly, not by the view)"},
+        {"text": "camera.SwitchToDesiredStateAsync(FrameSourceState.On) and FrameSourceState.Standby (or .Off) are used to drive the camera across the lifecycle"},
+        {"text": "barcodeCount.Enabled is set to true so frames are processed"},
+        {"text": "BarcodeCountView.Create( is called (not new BarcodeCountView(...), which is not a public constructor)"},
+        {"text": "BarcodeCountView.Create( receives a CGRect frame (e.g. this.View.Bounds) as its first argument (NOT an Android Context)"},
+        {"text": "The BarcodeCountView is added to the view hierarchy via this.View.AddSubview(...) (the view IS a UIView)"},
+        {"text": "Camera lifecycle is driven from ViewWillAppear / ViewWillDisappear (iOS view controller lifecycle), not Android OnResume/OnPause"},
+        {"text": "No barcodeCountView.OnResume() / OnPause() / Start() / Stop() calls are made (those do not exist on BarcodeCountView)"},
+        {"text": "Either barcodeCount.Scanned += handler or barcodeCount.AddListener(IBarcodeCountListener) is wired"},
+        {"text": "The scan handler reads args.Session.RecognizedBarcodes (the BarcodeCountSession exposes RecognizedBarcodes, not AddedTrackedBarcodes)"},
+        {"text": "The recognized barcodes are copied out of the session (e.g. .ToList()) inside the callback, and UI work is dispatched onto the main thread via UIApplication.SharedApplication.InvokeOnMainThread (or DispatchQueue.MainQueue), NOT Android's RunOnUiThread"},
+        {"text": "A barcodeCountView.ListButtonTapped handler is wired to store/show the scanned barcodes"},
+        {"text": "No Android-only APIs are used (no Android Context, no AddView, no RunOnUiThread, no AppCompatActivity, no AndroidManifest)"},
+        {"text": "If the listener interface is used, OnObservationStarted and OnObservationStopped are implemented (IBarcodeCountListener has three methods)"},
+        {"text": "No BarcodeArView, IBarcodeArHighlightProvider, or BarcodeAr API is used (MatrixScan Count is not MatrixScan AR)"},
+        {"text": "No DataCaptureView or BarcodeCaptureOverlay is created (BarcodeCountView is the counting UI surface)"},
+        {"text": "No MAUI XAML or Scandit.DataCapture.Barcode.Maui package is introduced (this is a non-MAUI iOS app)"}
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "I'm building a receiving app with MatrixScan Count on .NET iOS. I already have it counting (see IntegratedViewController.cs). Now I want to check scanned barcodes against an expected list: 3x of 0123456789012 and 1x of 9876543210987, and react when everything on the list has been scanned.",
+      "expected_output": "The skill adds a capture list: builds TargetBarcode.Create(data, quantity) entries, creates a BarcodeCountCaptureList.Create(listener, targets), implements IBarcodeCountCaptureListListener (OnObservationStarted/OnObservationStopped/OnCaptureListSessionUpdated/OnCaptureListCompleted), and applies it via barcodeCount.SetBarcodeCountCaptureList(list), preserving existing integration.",
+      "files": [
+        "fixtures/IntegratedViewController.cs"
+      ],
+      "assertions": [
+        {"text": "TargetBarcode.Create(data, quantity) is used to build the expected barcodes (factory, not new TargetBarcode(...))"},
+        {"text": "A TargetBarcode for 0123456789012 with quantity 3 and one for 9876543210987 with quantity 1 are created"},
+        {"text": "BarcodeCountCaptureList.Create(listener, targets) is used (factory, not new BarcodeCountCaptureList(...))"},
+        {"text": "IBarcodeCountCaptureListListener is implemented with OnObservationStarted, OnObservationStopped, OnCaptureListSessionUpdated, and OnCaptureListCompleted"},
+        {"text": "barcodeCount.SetBarcodeCountCaptureList(list) is called to apply the list"},
+        {"text": "OnCaptureListCompleted is where the all-scanned reaction is handled"},
+        {"text": "Existing integration code (camera, BarcodeCount.Create, BarcodeCountView, Scanned handler, ViewWillAppear/ViewWillDisappear) is preserved"}
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "I want to suppress the default beep and vibration in my MatrixScan Count .NET iOS app — silent counting. Update the feedback in IntegratedViewController.cs.",
+      "expected_output": "The skill sets barcodeCount.Feedback to a new BarcodeCountFeedback() (empty constructor = silent), imported from Scandit.DataCapture.Barcode.Count.Feedback, preserving the rest of the integration. It does NOT call DefaultFeedback as a method.",
+      "files": [
+        "fixtures/IntegratedViewController.cs"
+      ],
+      "assertions": [
+        {"text": "barcodeCount.Feedback is reassigned to a new BarcodeCountFeedback() (empty constructor)"},
+        {"text": "BarcodeCountFeedback is imported from Scandit.DataCapture.Barcode.Count.Feedback"},
+        {"text": "BarcodeCountFeedback.DefaultFeedback is NOT called as a method (with parentheses) — it is a static property"},
+        {"text": "The feedback slots are referred to as Success / Failure if mentioned (NOT Scanned / Tapped, which are MatrixScan AR's)"},
+        {"text": "Existing integration code (camera, BarcodeCount.Create, BarcodeCountView, Scanned handler) is preserved"}
+      ]
+    }
+  ]
+}

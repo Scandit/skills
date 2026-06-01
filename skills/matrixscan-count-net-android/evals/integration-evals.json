@@ -1,0 +1,76 @@
+{
+  "skill_name": "matrixscan-count-net-android",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I want to add MatrixScan Count to my .NET for Android app. Here's my empty Activity: EmptyActivity.cs. I need to count EAN-13 and Code 128 barcodes, show the built-in counting UI, and when the user taps the List button store the scanned barcodes so I can show them on a results screen.",
+      "expected_output": "The skill reads integration.md, fetches the latest Scandit NuGet versions, writes complete BarcodeCount integration code into EmptyActivity.cs: DataCaptureContext.ForLicenseKey, a manually-managed Camera (Camera.GetDefaultCamera(BarcodeCount.RecommendedCameraSettings) + dataCaptureContext.SetFrameSourceAsync), new BarcodeCountSettings() enabling only Ean13Upca and Code128, BarcodeCount.Create(context, settings), BarcodeCountView.Create(this, context, barcodeCount[, style]) added to a container via AddView, barcodeCount.Scanned event (or AddListener) that copies session.RecognizedBarcodes out via RunOnUiThread, ListButtonTapped handler storing the barcodes, camera SwitchToDesiredStateAsync on/off + barcodeCount.Enabled across the lifecycle, Dispose on teardown. Shows the setup checklist (NuGet packages, manifest permission, runtime permission, MainApplication initialize for SDK 8.0+, AppCompat theme, license key).",
+      "files": [
+        "fixtures/EmptyActivity.cs"
+      ],
+      "assertions": [
+        {"text": "Setup checklist is shown and mentions adding the Scandit.DataCapture.Barcode and Scandit.DataCapture.Core NuGet packages"},
+        {"text": "Setup checklist mentions adding android.permission.CAMERA to AndroidManifest.xml"},
+        {"text": "Setup checklist mentions requesting the CAMERA permission at runtime"},
+        {"text": "Setup checklist mentions creating a MainApplication subclass that calls ScanditCaptureCore.Initialize() and ScanditBarcodeCapture.Initialize() (required for SDK 8.0+)"},
+        {"text": "Setup checklist mentions using a Theme.AppCompat descendant for the activity (manifest application theme or the [Activity] Theme= attribute)"},
+        {"text": "A license key placeholder string is present"},
+        {"text": "DataCaptureContext.ForLicenseKey( is used to create the context"},
+        {"text": "new BarcodeCountSettings() is used (the settings use a plain constructor)"},
+        {"text": "BarcodeCount.Create( is used as the factory (NOT new BarcodeCount(...), which has no public constructor)"},
+        {"text": "Symbology.Ean13Upca is enabled"},
+        {"text": "Symbology.Code128 is enabled"},
+        {"text": "No symbologies other than Ean13Upca and Code128 are enabled"},
+        {"text": "Kotlin-style underscore symbology names (Symbology.EAN13_UPCA, Symbology.CODE_128) are NOT used"},
+        {"text": "A Camera is obtained via Camera.GetDefaultCamera(...) (or Camera.DefaultCamera) using BarcodeCount.RecommendedCameraSettings"},
+        {"text": "dataCaptureContext.SetFrameSourceAsync( is called with the camera (the camera is managed explicitly, not by the view)"},
+        {"text": "camera.SwitchToDesiredStateAsync(FrameSourceState.On) and FrameSourceState.Off are used to drive the camera across the lifecycle"},
+        {"text": "barcodeCount.Enabled is set to true so frames are processed"},
+        {"text": "BarcodeCountView.Create( is called (not new BarcodeCountView(...), which is not a public constructor)"},
+        {"text": "BarcodeCountView.Create( receives the Android Context (the activity / this) as its first argument (NOT a ViewGroup/parentView)"},
+        {"text": "The BarcodeCountView is added to the view hierarchy via container.AddView(...) (the view IS an Android View)"},
+        {"text": "No barcodeCountView.OnResume() / OnPause() / Start() / Stop() calls are made (those are MatrixScan AR methods and do not exist on BarcodeCountView)"},
+        {"text": "Either barcodeCount.Scanned += handler or barcodeCount.AddListener(IBarcodeCountListener) is wired"},
+        {"text": "The scan handler reads args.Session.RecognizedBarcodes (the BarcodeCountSession exposes RecognizedBarcodes, not AddedTrackedBarcodes)"},
+        {"text": "The recognized barcodes are copied out of the session (e.g. .ToList()) inside the callback, and UI work is dispatched via RunOnUiThread"},
+        {"text": "A barcodeCountView.ListButtonTapped handler is wired to store/show the scanned barcodes"},
+        {"text": "barcodeCountView.Dispose() (and barcodeCount.Dispose()) are called on teardown"},
+        {"text": "If the listener interface is used, OnObservationStarted and OnObservationStopped are implemented (IBarcodeCountListener has three methods)"},
+        {"text": "No BarcodeArView, IBarcodeArHighlightProvider, or BarcodeAr API is used (MatrixScan Count is not MatrixScan AR)"},
+        {"text": "No DataCaptureView or BarcodeCaptureOverlay is created (BarcodeCountView is the counting UI surface)"}
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "I'm building a receiving app with MatrixScan Count on .NET Android. I already have it counting (see IntegratedActivity.cs). Now I want to check scanned barcodes against an expected list: 3x of 0123456789012 and 1x of 9876543210987, and react when everything on the list has been scanned.",
+      "expected_output": "The skill adds a capture list: builds TargetBarcode.Create(data, quantity) entries, creates a BarcodeCountCaptureList.Create(listener, targets), implements IBarcodeCountCaptureListListener (OnObservationStarted/OnObservationStopped/OnCaptureListSessionUpdated/OnCaptureListCompleted), and applies it via barcodeCount.SetBarcodeCountCaptureList(list), preserving existing integration.",
+      "files": [
+        "fixtures/IntegratedActivity.cs"
+      ],
+      "assertions": [
+        {"text": "TargetBarcode.Create(data, quantity) is used to build the expected barcodes (factory, not new TargetBarcode(...))"},
+        {"text": "A TargetBarcode for 0123456789012 with quantity 3 and one for 9876543210987 with quantity 1 are created"},
+        {"text": "BarcodeCountCaptureList.Create(listener, targets) is used (factory, not new BarcodeCountCaptureList(...))"},
+        {"text": "IBarcodeCountCaptureListListener is implemented with OnObservationStarted, OnObservationStopped, OnCaptureListSessionUpdated, and OnCaptureListCompleted"},
+        {"text": "barcodeCount.SetBarcodeCountCaptureList(list) is called to apply the list"},
+        {"text": "OnCaptureListCompleted is where the all-scanned reaction is handled"},
+        {"text": "Existing integration code (camera, BarcodeCount.Create, BarcodeCountView, Scanned handler) is preserved"}
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "I want to suppress the default beep and vibration in my MatrixScan Count .NET Android app — silent counting. Update the feedback in IntegratedActivity.cs.",
+      "expected_output": "The skill sets barcodeCount.Feedback to a new BarcodeCountFeedback() (empty constructor = silent), imported from Scandit.DataCapture.Barcode.Count.Feedback, preserving the rest of the integration. It does NOT call DefaultFeedback as a method.",
+      "files": [
+        "fixtures/IntegratedActivity.cs"
+      ],
+      "assertions": [
+        {"text": "barcodeCount.Feedback is reassigned to a new BarcodeCountFeedback() (empty constructor)"},
+        {"text": "BarcodeCountFeedback is imported from Scandit.DataCapture.Barcode.Count.Feedback"},
+        {"text": "BarcodeCountFeedback.DefaultFeedback is NOT called as a method (with parentheses) — it is a static property"},
+        {"text": "The feedback slots are referred to as Success / Failure if mentioned (NOT Scanned / Tapped, which are MatrixScan AR's)"},
+        {"text": "Existing integration code (camera, BarcodeCount.Create, BarcodeCountView, Scanned handler) is preserved"}
+      ]
+    }
+  ]
+}
