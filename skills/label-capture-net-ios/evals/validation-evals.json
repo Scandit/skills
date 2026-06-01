@@ -1,0 +1,26 @@
+{
+  "skill_name": "label-capture-net-ios",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I have Smart Label Capture working in my .NET iOS app (see IntegratedViewController.cs), but cashiers complain that the expiry date doesn't always scan. I want the guided validation flow so they can see which fields were captured, type in any field that didn't scan, and confirm before the result is saved.",
+      "expected_output": "The skill switches to the validation flow: creates LabelCaptureValidationFlowOverlay.Create(labelCapture, dataCaptureView) and attaches it, sets a Listener implementing ILabelCaptureValidationFlowListener (deriving from NSObject, handling OnValidationFlowLabelCaptured and marshaling to the main thread via DispatchQueue.MainQueue/InvokeOnMainThread, plus empty OnManualInputSubmitted / OnValidationFlowResultUpdate), optionally applies LabelCaptureValidationFlowSettings.Create() (e.g. a placeholder for the expiry field). Reads values from the captured fields (Barcode?.Data falling back to Text for manual entries). Does NOT call overlay.OnResume()/OnPause() or set ShouldHandleKeyboardInsetsInternally (Android-only no-ops on iOS). Preserves the label definition / camera setup.",
+      "files": [
+        "fixtures/IntegratedViewController.cs"
+      ],
+      "assertions": [
+        {"text": "LabelCaptureValidationFlowOverlay.Create(labelCapture, ...) is used to create the validation flow overlay"},
+        {"text": "The overlay is attached to the DataCaptureView (via AddOverlay or by passing the view to Create)"},
+        {"text": "A class implementing ILabelCaptureValidationFlowListener is provided (deriving from NSObject) and set as the overlay's Listener"},
+        {"text": "OnValidationFlowLabelCaptured(IList<LabelField>) is implemented to receive the final confirmed fields"},
+        {"text": "The optional listener methods OnManualInputSubmitted and OnValidationFlowResultUpdate are implemented (at least with empty bodies) for interface compliance"},
+        {"text": "The result handling marshals UI work to the main thread via DispatchQueue.MainQueue.DispatchAsync or UIApplication.SharedApplication.InvokeOnMainThread"},
+        {"text": "overlay.OnResume()/OnPause() are NOT called and ShouldHandleKeyboardInsetsInternally is NOT set (these are Android-only no-ops on iOS)"},
+        {"text": "Field values are read with Barcode?.Data and/or Text (acknowledging manual entries surface as Text)"},
+        {"text": "The existing label definition and camera/context setup are preserved"},
+        {"text": "Deprecated validation-flow settings (MissingFieldsHintText, RequiredFieldErrorText, ManualInputButtonText) are NOT introduced"},
+        {"text": "No Android APIs (RunOnUiThread, Java.Lang.Object listener base, single-arg DataCaptureView.Create, container.AddView) are introduced"}
+      ]
+    }
+  ]
+}

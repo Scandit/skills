@@ -1,0 +1,45 @@
+{
+  "skill_name": "label-capture-net-maui",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I have Smart Label Capture working in my .NET MAUI app (see IntegratedMainPage.xaml, IntegratedMainPage.xaml.cs, IntegratedMainPageViewModel.cs, IntegratedLabelCaptureService.cs), but cashiers complain that the expiry date doesn't always scan. I want the guided validation flow so they can see which fields were captured, type in any field that didn't scan, and confirm before the result is saved.",
+      "expected_output": "The skill switches to the validation flow in the MAUI app: creates LabelCaptureValidationFlowOverlay.Create(labelCapture, view: null), attaches it in dataCaptureView.HandlerChanged via AddOverlay (optionally alongside a LabelCaptureBasicOverlay with LabelBrush = Brush.TransparentBrush), sets a Listener implementing ILabelCaptureValidationFlowListener as a PLAIN C# class (handling OnValidationFlowLabelCaptured and marshaling to the main thread via MainThread.BeginInvokeOnMainThread, plus empty OnManualInputSubmitted / OnValidationFlowResultUpdate), optionally applies LabelCaptureValidationFlowSettings.Create(). Calls overlay.OnResume()/OnPause() from ResumeAsync/SleepAsync. Adds the iOS KeyboardAutoManagerScroll.Disconnect() workaround (guarded by #if IOS) in MauiProgram.cs. Reads values via Barcode?.Data falling back to Text for manual entries. Preserves the label definition / camera setup.",
+      "files": [
+        "fixtures/IntegratedMainPage.xaml",
+        "fixtures/IntegratedMainPage.xaml.cs",
+        "fixtures/IntegratedMainPageViewModel.cs",
+        "fixtures/IntegratedLabelCaptureService.cs",
+        "fixtures/ILabelCaptureService.cs",
+        "fixtures/ICameraService.cs"
+      ],
+      "assertions": [
+        {"text": "LabelCaptureValidationFlowOverlay.Create(labelCapture, ...) is used to create the validation flow overlay"},
+        {"text": "The overlay is attached to the DataCaptureView via dataCaptureView.AddOverlay inside HandlerChanged (using the view: null overload, not a native view)"},
+        {"text": "A class implementing ILabelCaptureValidationFlowListener is provided as a PLAIN C# class (NOT deriving from NSObject or Java.Lang.Object) and set as the overlay's Listener"},
+        {"text": "OnValidationFlowLabelCaptured(IList<LabelField>) is implemented to receive the final confirmed fields"},
+        {"text": "The optional listener methods OnManualInputSubmitted and OnValidationFlowResultUpdate are implemented (at least with empty bodies) for interface compliance"},
+        {"text": "Result handling marshals UI work to the main thread via MainThread.BeginInvokeOnMainThread (NOT DispatchQueue.MainQueue and NOT RunOnUiThread)"},
+        {"text": "overlay.OnResume() and overlay.OnPause() ARE called from the page/view-model lifecycle (ResumeAsync/SleepAsync) — this is correct for MAUI"},
+        {"text": "The iOS KeyboardAutoManagerScroll.Disconnect() workaround (guarded by #if IOS) is added in MauiProgram.cs so the manual-entry field works on iOS"},
+        {"text": "Field values are read with Barcode?.Data and/or Text (acknowledging manual entries surface as Text)"},
+        {"text": "The existing label definition and camera/context setup are preserved"},
+        {"text": "Deprecated validation-flow settings (MissingFieldsHintText, RequiredFieldErrorText, ManualInputButtonText) are NOT introduced"}
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "I want to add Smart Label Capture to my .NET for iOS app. Here's my view controller (EmptyViewController.cs). It's a plain net9.0-ios project (no MAUI). I need to scan a barcode and an expiry date.",
+      "expected_output": "The skill recognizes that this is a plain non-MAUI .NET for iOS project (UIViewController-based, no <UseMaui>), which is out of scope for this MAUI skill. It stops and tells the user this MAUI skill does not apply, and points them to the label-capture-net-ios skill / the non-MAUI iOS integration path, rather than writing MAUI XAML / MauiProgram / <scandit:DataCaptureView> code into a non-MAUI app.",
+      "files": [
+        "fixtures/EmptyViewController.cs"
+      ],
+      "assertions": [
+        {"text": "The response identifies the project as a plain non-MAUI .NET for iOS app (UIViewController-based, no UseMaui)"},
+        {"text": "The response explicitly states this MAUI skill does not apply to a non-MAUI project"},
+        {"text": "It does NOT write MAUI integration code (MauiProgram.cs, <scandit:DataCaptureView>, HandlerChanged, UseScanditCore) into the non-MAUI project"},
+        {"text": "It points the user toward the non-MAUI iOS path (e.g. the label-capture-net-ios skill / hosting via UIViewController + DataCaptureView.Create)"}
+      ]
+    }
+  ]
+}
