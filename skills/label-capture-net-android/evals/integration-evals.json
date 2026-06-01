@@ -1,0 +1,74 @@
+{
+  "skill_name": "label-capture-net-android",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I want to add Smart Label Capture to my .NET for Android app. Here's my empty Activity: EmptyActivity.cs. My labels are retail price tags — each has a product barcode (EAN-13 and Code 128) and an expiry date, plus an optional total price. I want to read all three fields in one scan and show them.",
+      "expected_output": "The skill reads integration.md, fetches the latest Scandit NuGet versions, and writes complete Label Capture integration into EmptyActivity.cs: DataCaptureContext.ForLicenseKey; a manually-managed Camera via Camera.GetDefaultCamera(LabelCapture.RecommendedCameraSettings) + dataCaptureContext.SetFrameSourceAsync; a label built field-by-field with CustomBarcode.Builder().SetSymbologies(new List<Symbology>{...}).Build(name), ExpiryDateText.Builder()...Build(name), TotalPriceText.Builder().IsOptional(true).Build(name); LabelDefinition.Create(name, fields); LabelCaptureSettings.Create(new List<LabelDefinition>{def}); LabelCapture.Create(context, settings); DataCaptureView.Create(context) added to a container + LabelCaptureBasicOverlay.Create(labelCapture) + dataCaptureView.AddOverlay(overlay); a SessionUpdated event (or ILabelCaptureListener) reading session.CapturedLabels, matching fields by name, reading Barcode?.Data / Text, setting labelCapture.Enabled=false, dispatching via RunOnUiThread; camera on/off + Enabled across the lifecycle. Shows the setup checklist (three NuGet packages incl. Scandit.DataCapture.Label, manifest CAMERA permission, runtime permission, MainApplication with the three Initialize() calls, AppCompat theme, license key).",
+      "files": [
+        "fixtures/EmptyActivity.cs"
+      ],
+      "assertions": [
+        {"text": "Setup checklist is shown and mentions adding Scandit.DataCapture.Core, Scandit.DataCapture.Barcode, and Scandit.DataCapture.Label NuGet packages"},
+        {"text": "It does NOT add a separate label-text-models / *.text-models package (text recognizers are bundled in Scandit.DataCapture.Label)"},
+        {"text": "Setup checklist mentions adding android.permission.CAMERA to AndroidManifest.xml"},
+        {"text": "Setup checklist mentions requesting the CAMERA permission at runtime"},
+        {"text": "Setup checklist mentions creating a MainApplication subclass that calls ScanditCaptureCore.Initialize(), ScanditBarcodeCapture.Initialize(), AND ScanditLabelCapture.Initialize() (all three, required for SDK 8.0+)"},
+        {"text": "Setup checklist mentions using a Theme.AppCompat descendant for the activity"},
+        {"text": "A license key placeholder string is present"},
+        {"text": "DataCaptureContext.ForLicenseKey( is used to create the context"},
+        {"text": "Each field is built with its own static Builder() factory ending in .Build(\"name\") (e.g. CustomBarcode.Builder()...Build(...), ExpiryDateText.Builder()...Build(...))"},
+        {"text": "The Kotlin-style fluent LabelCaptureSettings.builder()/addLabel()/buildFluent(...) chain is NOT used"},
+        {"text": "CustomBarcode.Builder().SetSymbologies(...) is given an IList<Symbology> (e.g. new List<Symbology>{...}), not a vararg"},
+        {"text": "Symbology.Ean13Upca and Symbology.Code128 are enabled for the barcode field"},
+        {"text": "Kotlin-style underscore symbology names (Symbology.EAN13_UPCA, Symbology.CODE_128) are NOT used"},
+        {"text": "An ExpiryDateText field is created via ExpiryDateText.Builder()"},
+        {"text": "The total price field is created via TotalPriceText.Builder() and marked optional with .IsOptional(true)"},
+        {"text": "LabelDefinition.Create(name, fields) is used to assemble the fields into a definition"},
+        {"text": "LabelCaptureSettings.Create( is called with a list/IList<LabelDefinition> (NOT a settings builder)"},
+        {"text": "LabelCapture.Create(context, settings) is used as the factory (NOT new LabelCapture(...) and NOT LabelCapture.forDataCaptureContext)"},
+        {"text": "A Camera is obtained via Camera.GetDefaultCamera(...) using LabelCapture.RecommendedCameraSettings"},
+        {"text": "dataCaptureContext.SetFrameSourceAsync( is called with the camera (the camera is managed explicitly)"},
+        {"text": "camera.SwitchToDesiredStateAsync(FrameSourceState.On) and FrameSourceState.Off drive the camera across the lifecycle"},
+        {"text": "labelCapture.Enabled is set to true so frames are processed"},
+        {"text": "DataCaptureView.Create( is used to create the preview view (a generic DataCaptureView, not a dedicated label view)"},
+        {"text": "LabelCaptureBasicOverlay.Create(labelCapture) is created and added via dataCaptureView.AddOverlay(...)"},
+        {"text": "Either labelCapture.SessionUpdated += handler or labelCapture.AddListener(ILabelCaptureListener) is wired"},
+        {"text": "The handler reads session.CapturedLabels and returns early when it is empty"},
+        {"text": "Fields are matched by their declared Name and values read via Barcode?.Data and Text"},
+        {"text": "labelCapture.Enabled is set to false after a label is captured to avoid re-capturing, and UI work is dispatched via RunOnUiThread"},
+        {"text": "No MAUI APIs or *.Maui packages are introduced (this is a non-MAUI .NET Android project)"}
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "I already have Smart Label Capture working in my .NET Android app (see IntegratedActivity.cs). I need to add one more field to the same label: a lot number printed as plain text that always matches the pattern LOT-[0-9]{6} (e.g. LOT-004821). It's required. Then read it alongside the others.",
+      "expected_output": "The skill adds a CustomText field built with CustomText.Builder().SetValueRegex(\"LOT-[0-9]{6}\").Build(\"Lot Number\"), inserts it into the existing fields list, and reads it via field Text in OnSessionUpdated, preserving the rest of the integration. It uses SetValueRegex (NOT the old native setPattern/setDataTypePattern).",
+      "files": [
+        "fixtures/IntegratedActivity.cs"
+      ],
+      "assertions": [
+        {"text": "A CustomText field is created via CustomText.Builder()...Build(\"<name>\")"},
+        {"text": "The value pattern is set with SetValueRegex(\"LOT-[0-9]{6}\") (or SetValueRegexes with that pattern)"},
+        {"text": "The old native names setPattern / setDataTypePattern / setPatterns are NOT used"},
+        {"text": "The new field is added to the existing List<LabelFieldDefinition> (it is NOT marked optional, since it is required)"},
+        {"text": "The lot number value is read from the captured label via field.Text matching its declared name"},
+        {"text": "Existing integration code (camera, LabelCapture.Create, DataCaptureView, overlay, SessionUpdated handler, existing barcode and expiry fields) is preserved"}
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "I want to add Smart Label Capture to my app. Here's my MauiProgram.cs. I need to scan a barcode and an expiry date.",
+      "expected_output": "The skill recognizes that MauiProgram.cs indicates a .NET MAUI project (UseMauiApp / MauiApp.CreateBuilder), which is out of scope for this non-MAUI .NET Android skill. It stops and tells the user this skill does not apply to MAUI and points them to the MAUI integration path, rather than writing non-MAUI Activity-based integration code into a MAUI app.",
+      "files": [
+        "fixtures/EmptyMauiProgram.cs"
+      ],
+      "assertions": [
+        {"text": "The response identifies the project as a .NET MAUI app (e.g. references MauiApp.CreateBuilder / UseMauiApp / MauiProgram)"},
+        {"text": "The response explicitly states this skill / the non-MAUI .NET Android integration does not apply to MAUI"},
+        {"text": "It does NOT write Activity-based non-MAUI integration code (no [Activity], DataCaptureView.Create + AddView, AppCompatActivity) into the MAUI project"},
+        {"text": "It points the user toward the MAUI integration path (e.g. a MAUI-specific skill / hosting the view as a XAML element)"}
+      ]
+    }
+  ]
+}
