@@ -236,10 +236,12 @@ if (this.camera is null)
     throw new InvalidOperationException("Smart Label Capture requires a camera.");
 }
 
-await this.dataCaptureContext.SetFrameSourceAsync(this.camera);
+_ = this.dataCaptureContext.SetFrameSourceAsync(this.camera);
 ```
 
 The camera is off by default. You turn it on in `OnResume` (after permission is granted) and off in `OnPause` (Step 7).
+
+> **Do not make `OnCreate` `async` and do not `await` `SetFrameSourceAsync` inside it.** With `async void OnCreate`, the activity returns control to Android at the first `await`, and Android proceeds to call `OnStart` / `OnResume` before the rest of `OnCreate` has run. `OnResume` then touches `labelCapture` (or the camera) before it has been assigned, throwing `NullReferenceException` — surfaced as `Android.Runtime.JavaProxyThrowable` at startup. Keep `OnCreate` synchronous and discard the Task with `_ =`; the SDK handles the frame source being attached asynchronously.
 
 ## Step 5 — Visualize with DataCaptureView + LabelCaptureBasicOverlay
 
@@ -475,7 +477,7 @@ public class MainActivity : CameraPermissionActivity
     private DataCaptureView dataCaptureView = null!;
     private LabelCaptureBasicOverlay overlay = null!;
 
-    protected override async void OnCreate(Bundle? savedInstanceState)
+    protected override void OnCreate(Bundle? savedInstanceState)
     {
         base.OnCreate(savedInstanceState);
 
@@ -485,7 +487,7 @@ public class MainActivity : CameraPermissionActivity
         this.camera = Camera.GetDefaultCamera(LabelCapture.RecommendedCameraSettings);
         if (this.camera is not null)
         {
-            await this.dataCaptureContext.SetFrameSourceAsync(this.camera);
+            _ = this.dataCaptureContext.SetFrameSourceAsync(this.camera);
         }
 
         // Build the label definition.

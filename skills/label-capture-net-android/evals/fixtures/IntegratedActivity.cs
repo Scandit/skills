@@ -27,7 +27,7 @@ public class MainActivity : CameraPermissionActivity
     private DataCaptureView dataCaptureView = null!;
     private LabelCaptureBasicOverlay overlay = null!;
 
-    protected override async void OnCreate(Bundle? savedInstanceState)
+    protected override void OnCreate(Bundle? savedInstanceState)
     {
         base.OnCreate(savedInstanceState);
 
@@ -36,7 +36,7 @@ public class MainActivity : CameraPermissionActivity
         this.camera = Camera.GetDefaultCamera(LabelCapture.RecommendedCameraSettings);
         if (this.camera is not null)
         {
-            await this.dataCaptureContext.SetFrameSourceAsync(this.camera);
+            _ = this.dataCaptureContext.SetFrameSourceAsync(this.camera);
         }
 
         var fields = new List<LabelFieldDefinition>
