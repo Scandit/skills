@@ -1,0 +1,23 @@
+{
+  "skill_name": "id-capture-net-android",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I have ID Capture working in my .NET Android app (see IntegratedActivity.cs). I'm scanning US driver's licenses and I need to detect forged AAMVA barcodes and reject them, and also flag licenses where the front and back data don't match. When a license is captured, I want to read the verification result so I can show whether the barcode looked authentic. How do I do this in C#?",
+      "expected_output": "The skill enables RejectForgedAamvaBarcodes = true and RejectInconsistentData = true on the IdCaptureSettings (NO standalone AamvaBarcodeVerifier / DataConsistencyVerifier class, which don't exist on .NET), and reads capturedId.VerificationResult in OnIdCaptured: AamvaBarcodeVerification.Status (AamvaBarcodeVerificationStatus.Authentic/LikelyForged/Forged) and DataConsistency.AllChecksPassed. It also notes that a confirmed forgery surfaces via OnIdRejected with RejectionReason.ForgedAamvaBarcode (and InconsistentData). The rest of the integration is preserved.",
+      "files": [
+        "fixtures/IntegratedActivity.cs"
+      ],
+      "assertions": [
+        {"text": "RejectForgedAamvaBarcodes = true is set on the IdCaptureSettings"},
+        {"text": "RejectInconsistentData = true is set on the IdCaptureSettings"},
+        {"text": "No standalone AamvaBarcodeVerifier or DataConsistencyVerifier class is instantiated or referenced (these do not exist on .NET; verification is settings-driven)"},
+        {"text": "capturedId.VerificationResult is read in OnIdCaptured"},
+        {"text": "The AAMVA outcome is read via VerificationResult.AamvaBarcodeVerification and its Status (AamvaBarcodeVerificationStatus.Authentic / LikelyForged / Forged)"},
+        {"text": "The data-consistency outcome is read via VerificationResult.DataConsistency (e.g. AllChecksPassed)"},
+        {"text": "It explains that hard failures surface via OnIdRejected with RejectionReason.ForgedAamvaBarcode (and/or InconsistentData)"},
+        {"text": "The existing integration (camera, IdCapture.Create, DataCaptureView, overlay, accepted documents, scanner, OnIdCaptured/OnIdRejected) is preserved"}
+      ]
+    }
+  ]
+}

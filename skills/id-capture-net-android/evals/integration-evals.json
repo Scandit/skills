@@ -1,0 +1,71 @@
+{
+  "skill_name": "id-capture-net-android",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I want to add ID document scanning to my .NET for Android app. Here's my empty Activity: EmptyActivity.cs. I need to scan passports, driver's licenses and national ID cards from any region, read the front and back automatically, and show the holder's full name, date of birth, expiry date and document number. Handle the case where an unsupported document is presented too.",
+      "expected_output": "The skill reads integration.md, fetches the latest Scandit NuGet versions, and writes complete ID Capture integration into EmptyActivity.cs: DataCaptureContext.ForLicenseKey; a manually-managed Camera via Camera.GetDefaultCamera() + camera.ApplySettingsAsync(IdCapture.RecommendedCameraSettings) + dataCaptureContext.SetFrameSourceAsync; a new IdCaptureSettings configured with AcceptedDocuments = [ new Passport(IdCaptureRegion.Any), new DriverLicense(IdCaptureRegion.Any), new IdCard(IdCaptureRegion.Any) ] and Scanner = new IdCaptureScanner(physicalDocument: new FullDocumentScanner(), mobileDocument: null); IdCapture.Create(context, settings); DataCaptureView.Create(context) added to a container + IdCaptureOverlay.Create(idCapture, dataCaptureView); IIdCaptureListener with OnIdCaptured reading capturedId.FullName / DateOfBirth / DateOfExpiry / DocumentNumber and OnIdRejected handling RejectionReason, both setting idCapture.Enabled=false and dispatching via RunOnUiThread; AddListener/RemoveListener + camera on/off across the lifecycle. Shows the setup checklist (two NuGet packages incl. Scandit.DataCapture.IdCapture, manifest CAMERA permission, runtime permission, MainApplication with ScanditCaptureCore.Initialize() and ScanditIdCapture.Initialize(), AppCompat theme, license key).",
+      "files": [
+        "fixtures/EmptyActivity.cs"
+      ],
+      "assertions": [
+        {"text": "Setup checklist is shown and mentions adding the Scandit.DataCapture.Core and Scandit.DataCapture.IdCapture NuGet packages"},
+        {"text": "It does NOT add a separate Scandit.DataCapture.Barcode package (the barcode reader is bundled in Scandit.DataCapture.IdCapture)"},
+        {"text": "Setup checklist mentions adding android.permission.CAMERA to AndroidManifest.xml"},
+        {"text": "Setup checklist mentions requesting the CAMERA permission at runtime"},
+        {"text": "Setup checklist mentions creating a MainApplication subclass that calls ScanditCaptureCore.Initialize() AND ScanditIdCapture.Initialize() (both, required for SDK 8.0+)"},
+        {"text": "Setup checklist mentions using a Theme.AppCompat descendant for the activity"},
+        {"text": "A license key placeholder string is present"},
+        {"text": "DataCaptureContext.ForLicenseKey( is used to create the context"},
+        {"text": "IdCaptureSettings is configured by setting properties (object-initializer style), NOT a builder and NOT a supportedDocuments / IdDocumentType bitmask"},
+        {"text": "AcceptedDocuments is set to a list of document objects constructed with new (e.g. new Passport(IdCaptureRegion.Any), new DriverLicense(...), new IdCard(...))"},
+        {"text": "IdCaptureRegion values are PascalCase (e.g. IdCaptureRegion.Any), not Kotlin-style underscores"},
+        {"text": "settings.Scanner is set to new IdCaptureScanner(...) wrapping a FullDocumentScanner (physicalDocument), since front+back is required"},
+        {"text": "IdCapture.Create(context, settings) is used as the factory (NOT new IdCapture(...) and NOT ForDataCaptureContext)"},
+        {"text": "A Camera is obtained via Camera.GetDefaultCamera() and IdCapture.RecommendedCameraSettings is applied to it (camera.ApplySettingsAsync(...))"},
+        {"text": "dataCaptureContext.SetFrameSourceAsync( is called with the camera (the camera is managed explicitly)"},
+        {"text": "camera.SwitchToDesiredStateAsync(FrameSourceState.On) and FrameSourceState.Off drive the camera across the lifecycle"},
+        {"text": "idCapture.Enabled is used (true to process frames, false after a result is shown)"},
+        {"text": "DataCaptureView.Create( is used to create the preview view"},
+        {"text": "IdCaptureOverlay.Create(idCapture, dataCaptureView) is created (two-arg factory that attaches to the view)"},
+        {"text": "An IIdCaptureListener is implemented (or the IdCaptured/IdRejected events are subscribed) and registered with AddListener"},
+        {"text": "OnIdCaptured reads holder fields from CapturedId (FullName, DateOfBirth, DateOfExpiry, DocumentNumber)"},
+        {"text": "Date fields are treated as DateResult (e.g. accessing .UtcDate or .Year/.Month/.Day), not as plain strings"},
+        {"text": "OnIdRejected(IdCapture, CapturedId?, RejectionReason) is implemented and surfaces a message based on the RejectionReason (handles the unsupported-document case)"},
+        {"text": "After a capture/rejection, idCapture.Enabled is set to false and UI work is dispatched via RunOnUiThread"},
+        {"text": "No standalone AamvaBarcodeVerifier / DataConsistencyVerifier class is used, and no NFC types (NfcScanner / NfcResult / capturedId.Nfc) are referenced"},
+        {"text": "No MAUI APIs or *.Maui packages are introduced (this is a non-MAUI .NET Android project)"}
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "I already have ID Capture working in my .NET Android app (see IntegratedActivity.cs). For compliance we now need to (1) reject expired IDs, (2) reject IDs that expire within the next 3 months, and (3) reject holders under 18. When any of these happens, show the user a clear message explaining why. Keep everything else working.",
+      "expected_output": "The skill adds RejectExpiredIds = true, RejectIdsExpiringIn = new Duration(0, 3, 0), and RejectHolderBelowAge = 18 to the existing IdCaptureSettings, and expands the existing OnIdRejected to surface distinct messages for RejectionReason.DocumentExpired, DocumentExpiresSoon, and HolderUnderage. The rest of the integration (camera, IdCapture.Create, DataCaptureView, overlay, OnIdCaptured, accepted documents, scanner) is preserved.",
+      "files": [
+        "fixtures/IntegratedActivity.cs"
+      ],
+      "assertions": [
+        {"text": "RejectExpiredIds = true is added to the IdCaptureSettings"},
+        {"text": "RejectIdsExpiringIn is set to a Duration constructed as new Duration(...) representing 3 months"},
+        {"text": "RejectHolderBelowAge is set to 18"},
+        {"text": "The existing OnIdRejected handler is expanded to surface distinct messages for RejectionReason.DocumentExpired, RejectionReason.DocumentExpiresSoon, and RejectionReason.HolderUnderage"},
+        {"text": "No verifier classes are invented; rejection is configured purely via IdCaptureSettings flags"},
+        {"text": "The existing integration (camera setup, IdCapture.Create, DataCaptureView, IdCaptureOverlay, OnIdCaptured, AcceptedDocuments, FullDocumentScanner) is preserved"}
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "I want to add ID document scanning to my app. Here's my MauiProgram.cs. I need to scan passports and read the holder's name.",
+      "expected_output": "The skill recognizes that MauiProgram.cs indicates a .NET MAUI project (UseMauiApp / MauiApp.CreateBuilder), which is out of scope for this non-MAUI .NET Android skill. It stops and tells the user this skill does not apply to MAUI and points them to the MAUI integration path, rather than writing Activity-based integration code into a MAUI app.",
+      "files": [
+        "fixtures/EmptyMauiProgram.cs"
+      ],
+      "assertions": [
+        {"text": "The response identifies the project as a .NET MAUI app (e.g. references MauiApp.CreateBuilder / UseMauiApp / MauiProgram)"},
+        {"text": "The response explicitly states this skill / the non-MAUI .NET Android integration does not apply to MAUI"},
+        {"text": "It does NOT write Activity-based non-MAUI integration code (no [Activity], DataCaptureView.Create + AddView, AppCompatActivity) into the MAUI project"},
+        {"text": "It points the user toward the MAUI integration path (e.g. a MAUI-specific skill / hosting the view as a XAML element)"}
+      ]
+    }
+  ]
+}
