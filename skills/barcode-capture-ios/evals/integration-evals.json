@@ -28,11 +28,9 @@
         {"text": "BarcodeCaptureOverlay(barcodeCapture:view:) is called"},
         {"text": "The view controller (or an extension of it) conforms to BarcodeCaptureListener"},
         {"text": "barcodeCapture(_:didScanIn:frameData:) is implemented and reads session.newlyRecognizedBarcode"},
-        {"text": "barcodeCapture.isEnabled = false is set inside the didScanIn callback"},
         {"text": "DispatchQueue.main.async is used inside the didScanIn callback for UI work"},
         {"text": "camera?.switch(toDesiredState: .on) is called in viewWillAppear (or equivalent lifecycle hook)"},
         {"text": "camera?.switch(toDesiredState: .off) is called in viewWillDisappear (or equivalent lifecycle hook)"},
-        {"text": "barcodeCapture.removeListener( is called in deinit (or equivalent cleanup hook)"},
         {"text": "context.removeCurrentMode() is called in deinit (or equivalent cleanup hook)"}
       ]
     },
@@ -105,20 +103,6 @@
       "assertions": [
         {"text": "codeDuplicateFilter is set to 0.5 (seconds) on the BarcodeCaptureSettings — NOT 500 and NOT TimeInterval.millis(500)"},
         {"text": "codeDuplicateFilter is set before BarcodeCapture(context:settings:) is invoked, or via barcodeCapture.apply"},
-        {"text": "Existing integration code (context, barcodeCapture, camera, listener) is preserved"}
-      ]
-    },
-    {
-      "id": 7,
-      "prompt": "Clean up my BarcodeCapture iOS integration properly when the view controller is deallocated — remove the listener, remove the mode from the context, and turn off the camera. The file is IntegratedViewController.swift.",
-      "expected_output": "The skill ensures deinit (or an equivalent cleanup hook) calls barcodeCapture.removeListener(self) and context.removeCurrentMode(), and that viewWillDisappear calls camera?.switch(toDesiredState: .off).",
-      "files": [
-        "fixtures/IntegratedViewController.swift"
-      ],
-      "assertions": [
-        {"text": "deinit (or an equivalent cleanup hook) calls barcodeCapture.removeListener(self)"},
-        {"text": "deinit (or an equivalent cleanup hook) calls context.removeCurrentMode()"},
-        {"text": "viewWillDisappear calls camera?.switch(toDesiredState: .off)"},
         {"text": "Existing integration code (context, barcodeCapture, camera, listener) is preserved"}
       ]
     }

@@ -93,10 +93,6 @@ Default support for Composite Codes was removed when smart scan is enabled. If t
 
 If the project does not use composite codes, no action is needed.
 
-### `BarcodeTracking` → `BarcodeBatch` rename
-
-If the project uses `BarcodeTracking` (MatrixScan) alongside BarcodeCapture, rename all occurrences to `BarcodeBatch`. The API is otherwise unchanged.
-
 ---
 
 ## Migration: 7 → 8

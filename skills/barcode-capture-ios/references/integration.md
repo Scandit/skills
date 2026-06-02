@@ -53,10 +53,9 @@ class ViewController: UIViewController {
         context.setFrameSource(camera)
 
         let settings = BarcodeCaptureSettings()
-        Set<Symbology>([.ean8, .ean13UPCA, .upce, .code39, .code128, .interleavedTwoOfFive]).forEach {
+        Set<Symbology>([.ean13UPCA, .code128]).forEach {
             settings.set(symbology: $0, enabled: true)
         }
-        settings.settings(for: .code39).activeSymbolCounts = Set(7...20)
 
         barcodeCapture = BarcodeCapture(context: context, settings: settings)
         barcodeCapture.addListener(self)
@@ -79,11 +78,6 @@ class ViewController: UIViewController {
         barcodeCapture.isEnabled = false
         camera?.switch(toDesiredState: .off)
     }
-
-    deinit {
-        barcodeCapture.removeListener(self)
-        context.removeCurrentMode()
-    }
 }
 
 extension ViewController: BarcodeCaptureListener {
@@ -91,9 +85,6 @@ extension ViewController: BarcodeCaptureListener {
                         didScanIn session: BarcodeCaptureSession,
                         frameData: FrameData) {
         guard let barcode = session.newlyRecognizedBarcode else { return }
-        // didScanIn runs on a background thread — disable scanning first to prevent
-        // duplicate fires, then dispatch UI work to the main thread.
-        barcodeCapture.isEnabled = false
         DispatchQueue.main.async {
             print("Scanned: \(barcode.data ?? "")")
             // Handle the barcode here.
