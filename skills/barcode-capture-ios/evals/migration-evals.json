@@ -1,0 +1,53 @@
+{
+  "skill_name": "barcode-capture-ios",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I need to upgrade my iOS BarcodeCapture app from SDK v6 to v7. Here is my current view controller: ViewControllerV6.swift.",
+      "expected_output": "The skill replaces DataCaptureContext(licenseKey:) with DataCaptureContext.initialize(licenseKey:) + DataCaptureContext.shared, replaces the manual CameraSettings + .auto pattern with BarcodeCapture.recommendedCameraSettings, informs the user about the SMART scan intention default change in v7, and provides the migration guide URL. Preserves the BarcodeCaptureListener implementation.",
+      "files": [
+        "fixtures/ViewControllerV6.swift"
+      ],
+      "assertions": [
+        {"text": "DataCaptureContext.initialize(licenseKey: is present in the output"},
+        {"text": "DataCaptureContext(licenseKey: is NOT present in the output (deprecated v6 form removed)"},
+        {"text": "DataCaptureContext.shared is read after initialize"},
+        {"text": "BarcodeCapture.recommendedCameraSettings is used"},
+        {"text": "CameraSettings() with preferredResolution = .auto is NOT present in the output"},
+        {"text": "The user is informed about the new default SMART scan intention in v7"},
+        {"text": "The migration guide URL (https://docs.scandit.com/sdks/ios/migrate-6-to-7/) is provided"},
+        {"text": "BarcodeCapture(context:settings:) is preserved (not changed)"},
+        {"text": "The BarcodeCaptureListener implementation (barcodeCapture(_:didScanIn:frameData:)) is preserved"}
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "I'm upgrading my Scandit iOS barcode scanning SDK from v7 to v8. What do I need to change in my code?",
+      "expected_output": "The skill explains that native iOS BarcodeCapture has no breaking API changes in v7→v8. The only change to watch for is VideoResolution.auto deprecation. It does NOT tell the user to replace BarcodeCapture(context:settings:) with a different constructor pattern (that change is for cross-platform SDKs only).",
+      "files": [],
+      "assertions": [
+        {"text": "The skill mentions that there are no breaking API changes for native iOS BarcodeCapture in v7→v8"},
+        {"text": "VideoResolution.auto (or .auto resolution) deprecation is mentioned"},
+        {"text": "The skill does NOT instruct the user to replace BarcodeCapture(context:settings:) with a different constructor + addMode pattern (that is a cross-platform SDK change)"},
+        {"text": "Migration guide URL (https://docs.scandit.com/sdks/ios/migrate-7-to-8/) is provided"}
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "I want to upgrade my BarcodeCapture iOS integration to the latest Scandit SDK version. Here's my code and Package.resolved.",
+      "expected_output": "The skill reads Package.resolved to detect v6.28.1, determines the target is v8, applies both migrations (6→7 then 7→8) without asking the user for their version.",
+      "files": [
+        "fixtures/ViewControllerV6.swift",
+        "fixtures/Package_v6.resolved"
+      ],
+      "assertions": [
+        {"text": "Summary mentions the detected version (6.28.1 or v6)"},
+        {"text": "Did not ask the user for their version — proceeded autonomously"},
+        {"text": "DataCaptureContext.initialize(licenseKey: is present (v6→v7 context update applied)"},
+        {"text": "DataCaptureContext(licenseKey: is NOT present"},
+        {"text": "BarcodeCapture.recommendedCameraSettings is used (camera setup updated)"},
+        {"text": "CameraSettings() with preferredResolution = .auto is NOT present"}
+      ]
+    }
+  ]
+}
