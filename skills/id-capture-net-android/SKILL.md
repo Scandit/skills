@@ -66,6 +66,7 @@ Based on the user's request, load the appropriate reference file before respondi
 
 - **Integrating ID Capture from scratch, configuring accepted documents and the scanner, creating the mode, hosting the `DataCaptureView` + `IdCaptureOverlay`, wiring the camera lifecycle, handling captured/rejected IDs, and reading the common `CapturedId` fields** (e.g. "add passport / driver's license scanning to my .NET Android app", "read the holder's name and date of birth in C#", "scan an ID card and show the document number") → read `references/integration.md` and follow it.
 - **Tuning the scanner (single-side / mobile docs), rejection rules (expired / voided / underage / expiring / forged-AAMVA / inconsistent), data-consistency & AAMVA verification, anonymization, reading the rich sub-results (MRZ / VIZ / PDF417 barcode / mobile document / images / driving-license details), or customizing the overlay** (e.g. "reject expired IDs", "only read the back barcode of a US license", "verify the AAMVA barcode and detect forgeries", "anonymize the document images", "read the full MRZ", "change the viewfinder style") → read `references/advanced.md` and follow it.
+- **Upgrading the Scandit .NET SDK version on an existing ID Capture integration** (e.g. "migrate ID Capture from 6.x to 7", "update Scandit to the latest version", "we're on 7.x and the build breaks after bumping the packages", "move off the old `SupportedDocuments` API", code that still uses `SupportedDocuments` / `IdDocumentType` / `SupportedSides`, or an app that crashes at launch after an 8.x update) → read `references/migration.md` and follow it. ID Capture launched on `dotnet.android` at 6.16; the 6→7 step is a compile-breaking document/scanner redesign and the 7→8 step requires adding explicit SDK initialization.
 
 ## API Usage Policy
 
@@ -85,6 +86,7 @@ Direct users to the right resource based on their question:
 |---|---|
 | Get Started | [Get Started (.NET for Android)](https://docs.scandit.com/sdks/net/android/id-capture/get-started/) |
 | Advanced topics (scanners, rejection, verification, anonymization, overlay) | [Advanced Configurations](https://docs.scandit.com/sdks/net/android/id-capture/advanced/) |
+| Migrating / upgrading the SDK version (6→7, 7→8) | `references/migration.md` · [Migrate 6→7](https://docs.scandit.com/sdks/net/android/migrate-6-to-7/) · [Migrate 7→8](https://docs.scandit.com/sdks/net/android/migrate-7-to-8/) |
 | Full API reference | [ID Capture API (.NET Android)](https://docs.scandit.com/data-capture-sdk/dotnet.android/id-capture/api.html) |
 
 ## API surface this skill covers
