@@ -111,6 +111,7 @@ Always include both the docs.scandit.com link and the platform-specific sample-a
 | SparkScan | .NET for Android | `sparkscan-net-android` | "Ask me to integrate SparkScan into your .NET Android app" |
 | SparkScan | .NET for iOS | `sparkscan-net-ios` | "Ask me to integrate SparkScan into your .NET iOS app" |
 | SparkScan | .NET MAUI | `sparkscan-maui` | "Ask me to integrate SparkScan into your .NET MAUI app" |
+| Barcode Capture | iOS | `barcode-capture-ios` | "Ask me to integrate Barcode Capture into your iOS app" |
 | Barcode Capture | Android | `barcode-capture-android` | "Ask me to integrate Barcode Capture into your Android app" |
 | Barcode Capture | .NET for Android | `barcode-capture-net-android` | "Ask me to integrate Barcode Capture into your .NET Android app" |
 | Barcode Capture | .NET for iOS | `barcode-capture-net-ios` | "Ask me to integrate Barcode Capture into your .NET iOS app" |
