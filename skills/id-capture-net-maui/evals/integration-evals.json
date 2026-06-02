@@ -1,0 +1,61 @@
+{
+  "skill_name": "id-capture-net-maui",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I want to add ID document scanning to my .NET MAUI app. Here's my empty page (MainPage.xaml + MainPage.xaml.cs) and MauiProgram.cs. I need to scan passports, driver's licenses and national ID cards from any region, read the front and back automatically, and show the holder's full name, date of birth, expiry date and document number. Handle the case where an unsupported document is presented too.",
+      "expected_output": "The skill reads integration.md, fetches the latest Scandit NuGet versions, and writes a complete MAUI ID Capture integration: three packages (Scandit.DataCapture.Core, Scandit.DataCapture.Core.Maui, Scandit.DataCapture.IdCapture) with NO IdCapture.Maui and NO separate Barcode package; ScanditIdCapture.Initialize() added to Platforms/Android/MainApplication.OnCreate() and Platforms/iOS/AppDelegate.FinishedLaunching (NOT MauiProgram.cs); MauiProgram.cs chains .UseScanditCore(c => c.AddDataCaptureView()); a DataCaptureContext.ForLicenseKey + Camera (Camera.GetCamera/GetDefaultCamera + camera.ApplySettingsAsync(IdCapture.RecommendedCameraSettings) + SetFrameSourceAsync); a new IdCaptureSettings with AcceptedDocuments = [ new Passport(IdCaptureRegion.Any), new DriverLicense(IdCaptureRegion.Any), new IdCard(IdCaptureRegion.Any) ] and Scanner = new IdCaptureScanner(physicalDocument: new FullDocumentScanner(), mobileDocument: null); IdCapture.Create(context, settings); a <scandit:DataCaptureView> with DataCaptureContext=\"{Binding DataCaptureContext}\" and the xmlns:scandit namespace; IdCaptureOverlay.Create(idCapture) created in dataCaptureView.HandlerChanged + AddOverlay; a plain-C# IIdCaptureListener (or IdCaptured/IdRejected events) with OnIdCaptured reading FullName/DateOfBirth/DateOfExpiry/DocumentNumber and OnIdRejected surfacing a RejectionReason message, both setting Enabled=false and dispatching via MainThread.BeginInvokeOnMainThread; camera On/Off across OnAppearing/OnDisappearing with Permissions.Camera. Shows the setup checklist (three packages, Android SupportedOSPlatformVersion 24 / iOS 15, NSCameraUsageDescription, platform-entry-point init, license key).",
+      "files": [
+        "fixtures/EmptyMainPage.xaml",
+        "fixtures/EmptyMainPage.xaml.cs",
+        "fixtures/EmptyMauiProgram.cs"
+      ],
+      "assertions": [
+        {"text": "Setup checklist lists exactly the three packages Scandit.DataCapture.Core, Scandit.DataCapture.Core.Maui, and Scandit.DataCapture.IdCapture"},
+        {"text": "It does NOT add a Scandit.DataCapture.IdCapture.Maui package (no such package exists)"},
+        {"text": "It does NOT add a separate Scandit.DataCapture.Barcode package (the PDF417/AAMVA reader is bundled in IdCapture)"},
+        {"text": "ScanditIdCapture.Initialize() is added to Platforms/Android/MainApplication.OnCreate() (before base.OnCreate())"},
+        {"text": "ScanditIdCapture.Initialize() is added to Platforms/iOS/AppDelegate.FinishedLaunching (before base.FinishedLaunching)"},
+        {"text": "ScanditIdCapture.Initialize() is NOT called in MauiProgram.cs, and no non-existent UseScanditIdCapture() extension is used"},
+        {"text": "MauiProgram.cs chains .UseScanditCore(configure => configure.AddDataCaptureView())"},
+        {"text": "Setup checklist mentions setting Android SupportedOSPlatformVersion to at least 24 (and iOS to 15)"},
+        {"text": "Setup checklist mentions NSCameraUsageDescription in Platforms/iOS/Info.plist and Android camera permission (Permissions.Camera or AndroidManifest)"},
+        {"text": "A license key placeholder string is present"},
+        {"text": "DataCaptureContext.ForLicenseKey( is used to create the context"},
+        {"text": "IdCaptureSettings is configured by setting properties (object-initializer style), NOT a builder and NOT a supportedDocuments / IdDocumentType bitmask"},
+        {"text": "AcceptedDocuments is set to a list of document objects constructed with new (e.g. new Passport(IdCaptureRegion.Any), new DriverLicense(...), new IdCard(...))"},
+        {"text": "IdCaptureRegion values are PascalCase (e.g. IdCaptureRegion.Any), not Swift/Kotlin style"},
+        {"text": "settings.Scanner is set to new IdCaptureScanner(...) wrapping a FullDocumentScanner (physicalDocument), since front+back is required"},
+        {"text": "IdCapture.Create(context, settings) is used as the factory (NOT new IdCapture(...) and NOT ForDataCaptureContext)"},
+        {"text": "A Camera is obtained (Camera.GetCamera or Camera.GetDefaultCamera) and IdCapture.RecommendedCameraSettings is applied to it via camera.ApplySettingsAsync(...)"},
+        {"text": "dataCaptureContext.SetFrameSourceAsync( is called with the camera and camera.SwitchToDesiredStateAsync(FrameSourceState.On/.Off) drives it across the lifecycle"},
+        {"text": "The XAML uses <scandit:DataCaptureView> with the xmlns:scandit=\"clr-namespace:Scandit.DataCapture.Core.UI.Maui;assembly=ScanditCaptureCoreMaui\" namespace"},
+        {"text": "The DataCaptureView has DataCaptureContext=\"{Binding DataCaptureContext}\" set (mandatory binding) and the BindingContext exposes a DataCaptureContext property"},
+        {"text": "IdCaptureOverlay.Create(idCapture) (single-arg) is created inside dataCaptureView.HandlerChanged and attached via dataCaptureView.AddOverlay(...)"},
+        {"text": "It does NOT use the two-arg IdCaptureOverlay.Create(idCapture, dataCaptureView), DataCaptureView.Create(context, CGRect)+AddSubview (iOS), or container.AddView (Android)"},
+        {"text": "An IIdCaptureListener is implemented as a plain C# class (NOT NSObject / Java.Lang.Object) or the IdCaptured/IdRejected events are used, and it is registered with AddListener"},
+        {"text": "OnIdCaptured reads holder fields from CapturedId (FullName, DateOfBirth, DateOfExpiry, DocumentNumber)"},
+        {"text": "Date fields are treated as DateResult (e.g. accessing .LocalDate/.UtcDate or .Year/.Month/.Day), not as plain strings"},
+        {"text": "OnIdRejected(IdCapture, CapturedId?, RejectionReason) is implemented and surfaces a message based on the RejectionReason (handles the unsupported-document case)"},
+        {"text": "After a capture/rejection, idCapture.Enabled is set to false and UI work is dispatched via MainThread.BeginInvokeOnMainThread (or Application.Current.Dispatcher.DispatchAsync), NOT RunOnUiThread and NOT DispatchQueue.MainQueue"},
+        {"text": "Camera lifecycle uses OnAppearing/OnDisappearing (or ResumeAsync/SleepAsync) and requests Permissions.Camera before turning the camera on"},
+        {"text": "No standalone AamvaBarcodeVerifier / DataConsistencyVerifier class is used, and no NFC types (NfcScanner / NfcResult / capturedId.Nfc) are referenced"}
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "I want to add ID document scanning to my app. Here's my project file (NonMauiAndroid.csproj) and my MainActivity (EmptyActivity.cs). I need to scan passports and read the holder's name.",
+      "expected_output": "The skill recognizes that this is a NON-MAUI .NET for Android project (net10.0-android target framework, no <UseMaui>true</UseMaui>, a plain Activity), which is out of scope for this MAUI skill. It stops and tells the user this MAUI skill does not apply and points them to the id-capture-net-android skill / the non-MAUI Activity-based integration path, rather than writing MAUI XAML / DataCaptureView / MauiProgram code into a non-MAUI Android app.",
+      "files": [
+        "fixtures/NonMauiAndroid.csproj",
+        "fixtures/EmptyActivity.cs"
+      ],
+      "assertions": [
+        {"text": "The response identifies the project as a non-MAUI .NET for Android app (e.g. references the net*-android target framework, the absence of <UseMaui>true</UseMaui>, and/or the plain Activity)"},
+        {"text": "The response explicitly states this MAUI skill / the MAUI integration does not apply to a non-MAUI .NET Android project"},
+        {"text": "It does NOT write MAUI integration code (no <scandit:DataCaptureView> XAML, no MauiProgram changes, no HandlerChanged overlay, no Permissions.Camera) into the non-MAUI project"},
+        {"text": "It points the user toward the non-MAUI path (e.g. the id-capture-net-android skill or hosting the DataCaptureView in an Activity)"}
+      ]
+    }
+  ]
+}
