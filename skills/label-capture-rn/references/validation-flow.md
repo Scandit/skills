@@ -12,6 +12,8 @@ Validation Flow is designed to be **rendered full-screen**. Do not embed it insi
 
 > **PriceCapture pre-made label is not VF-compatible.** `LabelDefinition.createPriceCaptureDefinition(name)` is **explicitly documented as incompatible with the Validation Flow** — using it inside VF "may result in incorrect data being captured." For price labels, either (a) build a custom definition out of `CustomBarcode` + `TotalPriceText`/`UnitPriceText`/`WeightText` to use with VF, or (b) keep the PriceCapture pre-made label but use the basic overlay path.
 
+> **VIN pre-made label is not VF-compatible.** `LabelDefinition.createVinLabelDefinition(name)` is **explicitly documented as incompatible with the Validation Flow** — using it inside VF "may result in incorrect data being captured." VIN scanning should be implemented with the standard Label Capture using the basic overlay path.
+
 > **Standby behavior.** If no scan succeeds within 10 seconds the Validation Flow pauses ("Scanning paused to conserve battery") to save the device's battery — the user has to tap to resume. This is not configurable.
 
 ## Listener interface — all three methods are required (RN)
