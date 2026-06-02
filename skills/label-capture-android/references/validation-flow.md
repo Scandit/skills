@@ -2,6 +2,8 @@
 
 The Validation Flow provides a guided scanning experience with an always-present checklist of captured and missing fields. Users can scan from multiple angles, and can type in values manually when a field cannot be scanned.
 
+> **PriceCapture and VIN pre-made labels are not VF-compatible.** `LabelDefinition.createPriceCaptureDefinition(name)` and `LabelDefinition.createVinLabelDefinition(name)` are **explicitly documented as incompatible with the Validation Flow** — using them inside VF "may result in incorrect data being captured." For price labels or VIN scanning, either build a custom definition out of custom barcode and text fields to use with VF, or keep the pre-made label but use the basic overlay path instead.
+
 ## Key classes
 
 | Class | Purpose |

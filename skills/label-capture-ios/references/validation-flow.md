@@ -4,6 +4,8 @@ The Validation Flow gives users a guided scanning experience: a persistent check
 
 This guide assumes you already have the minimal Label Capture integration in place (DataCaptureContext, camera, settings, `LabelCapture` mode, `DataCaptureView`). If not, start from `integration.md` first — the Validation Flow is a *swap-in* for the Basic Overlay, not a from-scratch flow.
 
+> **PriceCapture and VIN pre-made labels are not VF-compatible.** `LabelDefinition.priceCapture(withName:)` and `LabelDefinition.vinLabelDefinition(withName:)` are **explicitly documented as incompatible with the Validation Flow** — using them inside VF "may result in incorrect data being captured." For price labels or VIN scanning, either build a custom definition out of custom barcode and text fields to use with VF, or keep the pre-made label but use the basic overlay path instead.
+
 ## Key classes
 
 | Class | Purpose |
