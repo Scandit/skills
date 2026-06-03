@@ -164,6 +164,12 @@ Its size is controlled by `BarcodePickStatusIconSettings` (`ratioToHighlightSize
 `maxSize`), set on the `*WithIcons` and custom-view styles via `statusIconSettings`. The status icon
 itself is supplied through one of the async delegates below (or the custom-view response).
 
+> **Don't use a white icon color for a status-icon `ScanditIcon`.** The status-icon badge is drawn on
+> a white background, so a white glyph (the `ScanditIcon` default — always set `withIconColor`) is
+> invisible. Use a dark or saturated color, e.g. `withIconColor(.systemRed)`. (For the
+> `iconColor:iconBackgroundColor:text:` variant, set a colored `iconBackgroundColor` so a white
+> `iconColor` still shows.)
+
 ## Async per-barcode styling
 
 The `*WithIcons` styles can defer styling to a delegate that is asked, per barcode, what to show. The

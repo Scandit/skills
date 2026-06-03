@@ -1,0 +1,53 @@
+{
+  "skill_name": "matrixscan-pick-ios",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "In my MatrixScan Pick app, change the highlight to a rectangle that's orange while an item still needs picking and green once it's picked. File: IntegratedBarcodePickViewController.swift",
+      "expected_output": "The skill sets a BarcodePickViewHighlightStyleRectangular on the existing BarcodePickViewSettings (before the BarcodePickView is constructed), with a per-state brush — an orange-ish brush for .toPick and a green-ish brush for .picked — via setBrush(_:for:). The existing integration (context, settings, product provider, mode, view, listeners) is preserved.",
+      "files": [
+        "fixtures/IntegratedBarcodePickViewController.swift"
+      ],
+      "assertions": [
+        {"text": "A BarcodePickViewHighlightStyleRectangular is constructed"},
+        {"text": "setBrush(_:for:) is called with .toPick and a Brush whose color is orange (or a clearly orange-ish UIColor)"},
+        {"text": "setBrush(_:for:) is called with .picked and a Brush whose color is green"},
+        {"text": "The style is assigned to the existing viewSettings.highlightStyle BEFORE the BarcodePickView(frame:context:barcodePick:settings:) constructor is called"},
+        {"text": "No custom-view or delegate-based styling is introduced (a plain Rectangular style with brushes is sufficient for this request)"},
+        {"text": "Existing integration is preserved: DataCaptureContext, BarcodePickSettings + symbologies, BarcodePickAsyncMapperProductProvider, BarcodePick mode, BarcodePickView construction, the scanning listener, action listener, and UI delegate are all left intact (no duplicate mode/view/context)"}
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Show an icon on each MatrixScan Pick highlight — a to-pick icon while the item still needs picking, and a checkmark once it's picked. File: IntegratedBarcodePickViewController.swift",
+      "expected_output": "The skill switches the highlight to one of the icon-capable styles (BarcodePickViewHighlightStyleDotWithIcons or BarcodePickViewHighlightStyleRectangularWithIcons) and sets per-state icons using the ScanditIcon API: setScanditIcon(...) with the .toPick icon for .toPick, and setSelectedScanditIcon(...) with the .checkmark icon for .picked. Icons are built with ScanditIconBuilder and given an explicit withIconColor (since the default glyph color is white). The existing integration is preserved.",
+      "files": [
+        "fixtures/IntegratedBarcodePickViewController.swift"
+      ],
+      "assertions": [
+        {"text": "An icon-capable style is used: BarcodePickViewHighlightStyleDotWithIcons or BarcodePickViewHighlightStyleRectangularWithIcons"},
+        {"text": "setScanditIcon(_:for:) is called for .toPick with a ScanditIcon built via ScanditIconBuilder().withIcon(.toPick) (the built-in ScanditIcon API is preferred over a UIImage)"},
+        {"text": "setSelectedScanditIcon(_:for:) is called for .picked with a ScanditIcon built via ScanditIconBuilder().withIcon(.checkmark)"},
+        {"text": "Each ScanditIcon sets an explicit withIconColor (not left at the default, which renders white/invisible)"},
+        {"text": "The style is assigned to the existing viewSettings.highlightStyle before the BarcodePickView is constructed"},
+        {"text": "Existing integration is preserved (context, settings, provider, mode, view, listeners) — no duplicate mode/view/context"}
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Draw a custom view over each barcode in my MatrixScan Pick app showing the product identifier. File: IntegratedBarcodePickViewController.swift",
+      "expected_output": "The skill uses BarcodePickViewHighlightStyleCustomView with a delegate. The view controller conforms to BarcodePickViewHighlightStyleCustomViewDelegate and implements customView(for:completionHandler:), building a UIView (e.g. a UILabel) from request.productIdentifier and returning it via BarcodePickHighlightCustomViewResponse(view:statusIconStyle:). The style's delegate is set and assigned to viewSettings.highlightStyle. The existing integration is preserved.",
+      "files": [
+        "fixtures/IntegratedBarcodePickViewController.swift"
+      ],
+      "assertions": [
+        {"text": "A BarcodePickViewHighlightStyleCustomView is constructed and its delegate is set"},
+        {"text": "The view controller conforms to BarcodePickViewHighlightStyleCustomViewDelegate and implements customView(for:completionHandler:) — note the Swift selector is customView(for:), not customViewForRequest:"},
+        {"text": "The delegate builds a UIView from request.productIdentifier (e.g. a UILabel whose text is the product identifier)"},
+        {"text": "The delegate returns the view via BarcodePickHighlightCustomViewResponse(view:statusIconStyle:) (statusIconStyle may be nil)"},
+        {"text": "The style is assigned to the existing viewSettings.highlightStyle before the BarcodePickView is constructed"},
+        {"text": "Existing integration is preserved (context, settings, provider, mode, view, listeners) — no duplicate mode/view/context"}
+      ]
+    }
+  ]
+}
