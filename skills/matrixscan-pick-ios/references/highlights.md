@@ -199,12 +199,19 @@ has initializers for `brush:scanditIcon:` and `brush:icon:`, plus their selected
 (`brush:selectedBrush:scanditIcon:selectedScanditIcon:` and `brush:selectedBrush:icon:selectedIcon:`),
 each ending in a `statusIconStyle:` argument (pass `nil` for no badge).
 
+> A `nil` `brush` makes the highlight shape **transparent** (nothing drawn for it); a `nil` icon just
+> means no icon is shown (it does not affect the shape). So if you return a `nil` brush but supply a
+> `statusIconStyle`, you'll see only the status badge floating over the barcode with no highlight
+> behind it. Provide a visible brush if you want the highlight shape to show alongside the badge.
+
 ## Custom views
 
 `BarcodePickViewHighlightStyleCustomView` asks its delegate for a `UIView` per barcode. The request
 carries the same `itemData` / `productIdentifier` / `state`, and you return a
-`BarcodePickHighlightCustomViewResponse` wrapping your view, plus an optional status-icon style (sized
-by the style's `statusIconSettings`). Return `nil` to draw nothing for a barcode.
+`BarcodePickHighlightCustomViewResponse` wrapping your view. Its initializer is
+`init(view:statusIconStyle:)` — **`statusIconStyle:` is a required argument; pass `nil` if you don't
+want a badge** (you can't omit it). Pass a `BarcodePickStatusIconStyle` to add one (sized by the
+style's `statusIconSettings`). Return `nil` from the callback to draw nothing for a barcode.
 
 ```swift
 extension ViewController: BarcodePickViewHighlightStyleCustomViewDelegate {
@@ -214,13 +221,19 @@ extension ViewController: BarcodePickViewHighlightStyleCustomViewDelegate {
         label.text = request.productIdentifier ?? request.itemData
         label.sizeToFit()
 
-        let statusIcon = BarcodePickStatusIconStyle(
-            scanditIcon: ScanditIconBuilder().withIcon(.lowStock).withIconColor(.systemRed).build(),
-            text: request.productIdentifier ?? "")
-
-        completionHandler(BarcodePickHighlightCustomViewResponse(view: label, statusIconStyle: statusIcon))
+        // No status badge — but statusIconStyle is still a required argument, so pass nil.
+        completionHandler(BarcodePickHighlightCustomViewResponse(view: label, statusIconStyle: nil))
     }
 }
+```
+
+To add a status badge, pass a `BarcodePickStatusIconStyle` instead of `nil`:
+
+```swift
+let statusIcon = BarcodePickStatusIconStyle(
+    scanditIcon: ScanditIconBuilder().withIcon(.lowStock).withIconColor(.systemRed).build(),
+    text: request.productIdentifier ?? "")
+completionHandler(BarcodePickHighlightCustomViewResponse(view: label, statusIconStyle: statusIcon))
 ```
 
 > **If the status icon looks cut off**, check whether your custom view clips its subviews. The status

@@ -44,15 +44,15 @@
         {"text": "A BarcodePickViewHighlightStyleCustomView is constructed and its delegate is set"},
         {"text": "The view controller conforms to BarcodePickViewHighlightStyleCustomViewDelegate and implements customView(for:completionHandler:) — note the Swift selector is customView(for:), not customViewForRequest:"},
         {"text": "The delegate builds a UIView from request.productIdentifier (e.g. a UILabel whose text is the product identifier)"},
-        {"text": "The delegate returns the view via BarcodePickHighlightCustomViewResponse(view:statusIconStyle:) (statusIconStyle may be nil)"},
+        {"text": "The delegate returns the view via BarcodePickHighlightCustomViewResponse(view:statusIconStyle:) — the statusIconStyle: argument must be passed explicitly (nil is fine), not omitted, since it is a required parameter"},
         {"text": "The style is assigned to the existing viewSettings.highlightStyle before the BarcodePickView is constructed"},
         {"text": "Existing integration is preserved (context, settings, provider, mode, view, listeners) — no duplicate mode/view/context"}
       ]
     },
     {
       "id": 4,
-      "prompt": "On each MatrixScan Pick highlight, show a status badge with the product identifier as its text. File: IntegratedBarcodePickViewController.swift",
-      "expected_output": "The skill uses an icon-capable style (BarcodePickViewHighlightStyleDotWithIcons or RectangularWithIcons), sizes the badge via statusIconSettings (BarcodePickStatusIconSettings on the style), sets the style's delegate, and implements BarcodePickViewHighlightStyleDelegate.style(for:completionHandler:) returning a BarcodePickViewHighlightStyleResponse whose statusIconStyle is a BarcodePickStatusIconStyle carrying request.productIdentifier as text. The badge must be visible (not white-on-white). Existing integration preserved.",
+      "prompt": "Show a status badge on each MatrixScan Pick highlight with the product identifier as its text. File: IntegratedBarcodePickViewController.swift",
+      "expected_output": "The skill uses an icon-capable style (BarcodePickViewHighlightStyleDotWithIcons or RectangularWithIcons), sets the style's delegate, and implements BarcodePickViewHighlightStyleDelegate.style(for:completionHandler:) returning a BarcodePickViewHighlightStyleResponse whose statusIconStyle is a BarcodePickStatusIconStyle carrying request.productIdentifier as text. The badge must be visible (not white-on-white). Existing integration preserved.",
       "files": [
         "fixtures/IntegratedBarcodePickViewController.swift"
       ],
@@ -78,6 +78,23 @@
         {"text": "The ScanditIcon uses ScanditIconBuilder().withIcon(.lowStock)"},
         {"text": "The ScanditIcon sets an explicit non-white withIconColor — a white glyph on the white status-badge background would be invisible (this is the key correctness point)"},
         {"text": "The style is assigned to viewSettings.highlightStyle before the BarcodePickView is constructed"},
+        {"text": "Existing integration is preserved (context, settings, provider, mode, view, listeners) — no duplicate mode/view/context"}
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "In my MatrixScan Pick app, customize the highlights per barcode through a delegate: if the scanned barcode's data is an even number, show a checkmark icon on the highlight; if it's odd, show the highlight with no icon. File: IntegratedBarcodePickViewController.swift",
+      "expected_output": "The skill uses an icon-capable style (BarcodePickViewHighlightStyleDotWithIcons or RectangularWithIcons) with its delegate set, and implements BarcodePickViewHighlightStyleDelegate.style(for:completionHandler:). Inside, it parses request.itemData (the barcode payload) to decide even vs odd, and returns a BarcodePickViewHighlightStyleResponse that includes an icon (a ScanditIcon with a non-white withIconColor) when even and no icon (nil icon) when odd. Both branches still provide a visible brush so the highlight shape is drawn in either case. Existing integration preserved.",
+      "files": [
+        "fixtures/IntegratedBarcodePickViewController.swift"
+      ],
+      "assertions": [
+        {"text": "An icon-capable style (BarcodePickViewHighlightStyleDotWithIcons or RectangularWithIcons) is used, its delegate is set, and it is assigned to viewSettings.highlightStyle before the view is constructed"},
+        {"text": "The view controller conforms to BarcodePickViewHighlightStyleDelegate and implements style(for:completionHandler:) (Swift selector style(for:), not styleForRequest:)"},
+        {"text": "The delegate parses request.itemData as a number to branch on even vs odd (e.g. Int(request.itemData).map { $0 % 2 == 0 })"},
+        {"text": "In the even branch the response includes an icon (a ScanditIcon built via ScanditIconBuilder, e.g. .checkmark) with an explicit non-white withIconColor"},
+        {"text": "In the odd branch the response includes no icon (nil scanditIcon/icon) — and still passes a visible (non-nil) brush so the highlight shape is drawn rather than transparent"},
+        {"text": "The returned type is BarcodePickViewHighlightStyleResponse via one of its real initializers (brush:scanditIcon:statusIconStyle: or brush:icon:statusIconStyle:), not a guessed type or initializer"},
         {"text": "Existing integration is preserved (context, settings, provider, mode, view, listeners) — no duplicate mode/view/context"}
       ]
     }
