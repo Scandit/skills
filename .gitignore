@@ -3,3 +3,6 @@ product-advisor-workspace
 data-capture-sdk-workspace/
 .claude/
 eval-runs/
+internal/skill-auditor/sources.local.yaml
+__pycache__/
+internal/skill-auditor-PLAN.md

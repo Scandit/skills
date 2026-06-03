@@ -1,0 +1,45 @@
+# Copy to sources.local.yaml (gitignored) and fill in your machine-specific paths.
+# Entries here override sources.yaml. The auditor treats every path as READ-ONLY:
+# it never fetches, checks out, or mutates your working copies. When mining from a
+# local checkout it records HEAD SHA + branch into the taxonomy provenance and warns
+# if the tree is dirty or not on the default branch.
+#
+# All four source classes accept a `path:`. For the private ones (sdk_source,
+# internal_docs) a path here is the ONLY way to enable the modes that need them.
+# For the public ones (public_docs, samples) a path is optional — without it the
+# auditor falls back to a cached shallow clone of the repos in sources.yaml.
+
+sdk_source:
+  path: ~/Development/<sdk-checkout>
+  # The SDK repo carries its own navigation aids (CLAUDE.md, AGENTS.md, commands.md,
+  # .claude/skills/*) — auditor agents enter through those, not by raw searching.
+  # docs/api_availability/<platform>/ is the primary input for platform-exclusion checks.
+
+internal_docs:
+  path: ~/Development/<sdk-checkout>/docs
+  rst_glob: "source/**/*.rst" # excludes docs/test/** fixtures; adjust if layout differs
+
+public_docs:
+  path: ~/Development/data-capture-documentation
+
+# Point samples at checkouts of the PUBLIC Scandit/datacapture-*-samples repos —
+# they reflect released behavior, which is what evals and skill docs target.
+# The copies inside the SDK monorepo track `develop` and may be ahead of any
+# release; use those only for what's-coming / API-surface questions, via sdk_source.
+samples:
+  ios:
+    path: ~/Development/datacapture-ios-samples
+  android:
+    path: ~/Development/datacapture-android-samples
+  web:
+    path: ~/Development/datacapture-web-samples
+  flutter:
+    path: ~/Development/datacapture-flutter-samples
+  cordova:
+    path: ~/Development/datacapture-cordova-samples
+  capacitor:
+    path: ~/Development/datacapture-capacitor-samples
+  react-native:
+    path: ~/Development/datacapture-react-native-samples
+  dotnet:
+    path: ~/Development/datacapture-dotnet-samples
