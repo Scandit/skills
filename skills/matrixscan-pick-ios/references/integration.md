@@ -137,7 +137,8 @@ extension PickViewController: BarcodePickViewListener {
 // The finish button handler.
 extension PickViewController: BarcodePickViewUIDelegate {
     func barcodePickViewDidTapFinishButton(_ view: BarcodePickView) {
-        navigationController?.popViewController(animated: true)
+        // Handle the finish action — e.g. pop, dismiss, present a summary.
+        // The right call depends on how this screen was presented.
     }
 }
 
@@ -268,8 +269,11 @@ product data fetched on demand. `fitViewsToBarcode`, `minimumHighlightHeight`, a
 
 The finish button's visibility is `BarcodePickViewSettings.showFinishButton` (`Bool`). To react to
 taps, set `barcodePickView.UIDelegate` and implement the optional
-`BarcodePickViewUIDelegate.barcodePickViewDidTapFinishButton(_:)` (shown in the minimal example) —
-typically you pop the screen or present a summary of picked items there.
+`BarcodePickViewUIDelegate.barcodePickViewDidTapFinishButton(_:)`.
+
+What "finish" actually does — pop, dismiss, show a summary, signal back to a SwiftUI host — depends
+on how the screen is presented in the host app, so the minimal example leaves the body as a comment.
+Fill it in with whatever fits.
 
 ## Feedback (sound / haptic)
 
@@ -338,10 +342,75 @@ another view).
 
 ## SwiftUI
 
-MatrixScan Pick has **no native SwiftUI view**. Wrap the UIKit `BarcodePickView` view controller in a
-`UIViewControllerRepresentable` (or `UIViewRepresentable` with a Coordinator) and keep every
+MatrixScan Pick has **no native SwiftUI view** — `BarcodePickView` is a `UIView`. Bridge it into SwiftUI
+by wrapping the UIKit view controller in a `UIViewControllerRepresentable`, and keep every
 `BarcodePick*` API call inside the wrapped UIKit layer. The SwiftUI `View` struct contains no Scandit
-code. See the [SwiftUI Get Started guide](https://docs.scandit.com/sdks/ios/matrixscan-pick/get-started-with-swift-ui/).
+code.
+
+> The [SwiftUI Get Started guide](https://docs.scandit.com/sdks/ios/matrixscan-pick/get-started-with-swift-ui/)
+> also documents a `UIViewRepresentable` + `Coordinator` alternative where the coordinator owns the SDK
+> objects directly. **Prefer the `UIViewControllerRepresentable` pattern below** — it keeps the UIKit
+> lifecycle (`viewWillAppear` / `viewWillDisappear` / `deinit`) intact, which matters for Pick because
+> the `start()` / `pause()` / `stop()` + `isMovingFromParent` flow lives on the view controller, and the
+> action listener and finish-button UI delegate fit naturally there too. The same view controller also
+> stays reusable from UIKit. Only fall back to the coordinator pattern if the project already has a
+> strong reason to.
+
+Canonical shape:
+
+```swift
+import SwiftUI
+import ScanditBarcodeCapture
+
+struct ScanView: View {
+    var body: some View {
+        PickViewControllerRepresentable()
+            .ignoresSafeArea()
+    }
+}
+
+struct PickViewControllerRepresentable: UIViewControllerRepresentable {
+    func makeUIViewController(context: Context) -> PickViewController {
+        PickViewController()
+    }
+
+    func updateUIViewController(_ uiViewController: PickViewController, context: Context) {}
+}
+```
+
+`PickViewController` is the exact UIKit class from the minimal example above — no changes. The SwiftUI
+`View` struct contains no Scandit code. The finish-button handler in `PickViewController` stays a
+comment placeholder; in SwiftUI, the host typically owns dismissal (e.g. an `@Environment(\.dismiss)`
+action) and signals back into the UIKit class however the app prefers.
+
+### SwiftUI cleanup
+
+The view controller's `viewWillAppear` / `viewWillDisappear` / `deinit` still fire when SwiftUI presents
+and dismisses the representable, so the UIKit lifecycle code (`start()`, `pause()` / `stop()` when
+`isMovingFromParent`, `addActionListener` registration) carries over unchanged — no extra SwiftUI-side
+teardown is required. When SwiftUI removes the representable from the view tree, it releases its
+strong reference to `PickViewController`, which triggers `deinit`.
+
+If you need to react to SwiftUI-side teardown explicitly (e.g. to stop a related service), implement
+the static `dismantleUIViewController` on the representable:
+
+```swift
+struct PickViewControllerRepresentable: UIViewControllerRepresentable {
+    func makeUIViewController(context: Context) -> PickViewController {
+        PickViewController()
+    }
+
+    func updateUIViewController(_ uiViewController: PickViewController, context: Context) {}
+
+    static func dismantleUIViewController(_ uiViewController: PickViewController, coordinator: ()) {
+        // Optional: extra teardown beyond what the view controller's deinit handles.
+    }
+}
+```
+
+Do not move the action-listener removal or `stop()` call out of the view controller into
+`dismantleUIViewController` — keep the `BarcodePick` lifecycle inside the UIKit class so the same view
+controller works when used directly from UIKit.
 
 ## Threading
 

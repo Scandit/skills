@@ -25,6 +25,26 @@
         {"text": "The response includes the setup checklist: SPM URL (https://github.com/Scandit/datacapture-spm), NSCameraUsageDescription in Info.plist, replace the license key placeholder"},
         {"text": "No custom BarcodePickViewHighlightStyleCustomView / highlightStyle customization is added (default highlights are fine for the basic integration)"}
       ]
+    },
+    {
+      "id": 2,
+      "prompt": "Add MatrixScan Pick to my SwiftUI app. File: NonScanditSwiftUIView.swift",
+      "expected_output": "The skill adds a UIKit view controller with the full MatrixScan Pick pipeline (context, BarcodePickSettings + symbologies, product provider, BarcodePick mode, BarcodePickView added with addSubview, lifecycle, finish-button UI delegate, and BarcodePickActionListener), wraps it in a UIViewControllerRepresentable, and changes the existing SwiftUI ScanView body to use that representable. No Scandit API calls live on the SwiftUI side.",
+      "files": [
+        "fixtures/NonScanditSwiftUIView.swift"
+      ],
+      "assertions": [
+        {"text": "import ScanditBarcodeCapture is present"},
+        {"text": "A UIViewController subclass is added with the full MatrixScan Pick setup: DataCaptureContext, BarcodePickSettings with at least two symbologies enabled via set(symbology:enabled:), a set of BarcodePickProduct (identifier + quantityToPick), BarcodePickAsyncMapperProductProvider with a providerDelegate, BarcodePick(context:settings:productProvider:), BarcodePickView(frame:context:barcodePick:settings:) added with addSubview, and start()/pause()/stop() in viewWillAppear/viewWillDisappear (pause then stop only when isMovingFromParent)"},
+        {"text": "The view controller conforms to BarcodePickAsyncMapperProductProviderDelegate and implements mapItems(_:completionHandler:) returning BarcodePickProductProviderCallbackItem values"},
+        {"text": "The view controller conforms to BarcodePickViewUIDelegate and implements barcodePickViewDidTapFinishButton(_:); barcodePickView.uiDelegate is set"},
+        {"text": "The view controller conforms to BarcodePickActionListener (didPickItem(withData:completionHandler:) and didUnpickItem(withData:completionHandler:), each calling completionHandler(true)) and registers it via barcodePickView.addActionListener(self) — required for picks to complete"},
+        {"text": "A UIViewControllerRepresentable-conforming struct is added that makes/updates the UIKit scan view controller"},
+        {"text": "The existing SwiftUI ScanView body uses the new representable (no longer the plain Text placeholder)"},
+        {"text": "No Scandit API call (DataCaptureContext, BarcodePick, BarcodePickView, etc.) appears inside the SwiftUI View struct body"},
+        {"text": "No Scandit API call appears inside makeUIViewController or updateUIViewController beyond constructing the UIKit view controller"},
+        {"text": "The response includes the setup checklist: SPM URL (https://github.com/Scandit/datacapture-spm), NSCameraUsageDescription in Info.plist, replace the license key placeholder"}
+      ]
     }
   ]
 }
