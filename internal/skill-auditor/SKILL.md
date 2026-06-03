@@ -59,6 +59,12 @@ exist. These are always real defects — the router silently falls back to "no s
 exists" for unrouted skills. Offer to fix the table directly (follow the existing row
 format, grouped by product).
 
+The script only checks the backticked table. Afterwards, read the router's prose for
+product+platform claims the script can't see — especially the Step 3 fallback examples
+("no skill exists for X on Y"): each cited combo must still be absent from `skills/`.
+Prose examples go stale exactly when a new skill lands (happened with
+barcode-capture-ios in PR #48).
+
 ### `audit structure [product-prefix]`
 
 Run `scripts/lint_structure.py [--prefix <prefix>]`. Frontmatter and routing findings are
