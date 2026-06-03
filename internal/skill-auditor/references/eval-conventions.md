@@ -31,6 +31,21 @@ check, add it:
   model-graded gate and doubles as a doc-fidelity check (if the docs can't produce
   compiling code, the docs are the bug).
 
+## Snippet compile gate (skill reference content)
+
+Never commit a code snippet into a skill's SKILL.md or references/ that has not been
+compile-checked. String-verified-against-source is not enough — compile against the
+**published** package (released behavior):
+
+- Dart: temp project with the pub.dev package + `dart analyze` on the snippet.
+- TS (rn/capacitor/web): temp dir, `npm install` the published package, `tsc --strict
+  --noEmit` on the snippet.
+- Plain JS (cordova): `node --check` for syntax, then verify every `Scandit.*` name is
+  exported by the plugin (the cordova plugin re-exports the shared frameworks-barcode
+  package, so tsc-checking the rn/capacitor snippet usually covers the signatures).
+
+Order matters: compile the snippet BEFORE committing the skill change, not after.
+
 ## Honesty rules
 
 - Never dismiss a low pass rate as "judge bugs" without proof — rebuild/re-run the
