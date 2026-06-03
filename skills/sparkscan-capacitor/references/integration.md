@@ -156,6 +156,28 @@ const sparkScanView = SparkScanView.forContext(context, sparkScan);
 
 > The third parameter `SparkScanViewSettings | null` is optional. Pass `null` or omit it for defaults.
 
+### Scanning behavior (single vs continuous) and preview behavior
+
+By default SparkScan scans one barcode per trigger press. For high-volume workflows,
+configure continuous scanning and a persistent camera preview via
+`SparkScanViewSettings.defaultScanningMode`, then pass the settings as the third
+argument when creating the view:
+
+```ts
+const viewSettings = new SparkScanViewSettings();
+viewSettings.defaultScanningMode = new SparkScanScanningModeDefault(
+  SparkScanScanningBehavior.Continuous,  // or .Single (default)
+  SparkScanPreviewBehavior.Persistent,   // or .Default
+);
+```
+
+Always pass BOTH arguments — the one-argument `SparkScanScanningModeDefault(behavior)`
+form is deprecated. `Persistent` keeps the camera preview visible after a scan; the
+default hides it and moves the camera to standby for efficiency. Use
+`SparkScanScanningModeTarget` to force an aimer for precision selection among many
+close barcodes.
+
+
 ## Step 5 — SparkScanView Lifecycle
 
 | Method | Description |

@@ -215,6 +215,29 @@ Widget build(BuildContext context) {
 
 > The `SparkScanViewSettings` argument is optional — pass `null` or a default `SparkScanViewSettings()` for defaults.
 
+### Scanning behavior (single vs continuous) and preview behavior
+
+By default SparkScan scans one barcode per trigger press. For high-volume workflows,
+configure continuous scanning and a persistent camera preview via
+`SparkScanViewSettings.defaultScanningMode`:
+
+```dart
+final viewSettings = SparkScanViewSettings();
+viewSettings.defaultScanningMode = SparkScanScanningModeDefault.fromPreviewBehavior(
+  SparkScanScanningBehavior.continuous,   // or .single (default)
+  SparkScanPreviewBehavior.persistent,    // or .defaultBehaviour
+);
+```
+
+- `SparkScanScanningBehavior.continuous` keeps scanning after each read — no need to
+  press the trigger between items.
+- `SparkScanPreviewBehavior.persistent` keeps the camera preview visible after a scan
+  (default behavior hides it and moves the camera to standby for efficiency).
+- Use `SparkScanScanningModeTarget.fromPreviewBehavior(...)` instead of
+  `SparkScanScanningModeDefault` to force an aimer for precision selection among many
+  close barcodes.
+
+
 ## Step 6 — SparkScanView Lifecycle
 
 | Method | Description |
