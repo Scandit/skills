@@ -174,7 +174,7 @@ extension PickViewController: BarcodePickActionListener {
 - Wires the scanning-lifecycle listener, the finish-button UI delegate, and — critically — the **action listener that confirms picks** (see "Confirming picks" below).
 
 What this code does **not** do:
-- It does not customize the **highlight styles per pick state** (to-pick / picked / not-in-list). See "State-aware highlights" below.
+- It does not customize the **highlight appearance per pick state** (brushes, icons, custom views). The default highlight is used. See "Highlight configuration" below for the available styles; per-state customization is the scope of the highlights sibling skill.
 
 ## Confirming picks (required)
 
@@ -206,63 +206,51 @@ settings.settings(for: .code128).activeSymbolCounts = Set(8...20)
 
 ## Product list and the provider
 
-The product list is supplied as a `Set<BarcodePickProduct>`, each with an `identifier` and a `quantityToPick`. The `BarcodePickAsyncMapperProductProvider` bridges the raw scanned barcode payloads to those product identifiers via its delegate's `mapItems(_:completionHandler:)`:
+MatrixScan Pick is designed to work at the **product level** rather than the individual-barcode
+level. You declare what the user needs to pick as a set of products (each with a `quantityToPick`),
+and a product provider resolves each scanned barcode payload to a product identifier. The SDK
+**supports mapping multiple barcode payloads to the same product** — so if one product can be
+identified by more than one barcode, you can wire all of those payloads through to the same
+`productIdentifier`.
 
-- Return a `BarcodePickProductProviderCallbackItem(itemData:productIdentifier:)` for each payload you recognize.
-- Omit (or skip) payloads you don't recognize — those barcodes are surfaced as **not-in-list**.
-- The mapping is asynchronous (call `completionHandler` when done), so it's fine to hit a database or network in the delegate.
-
-## State-aware highlights (CustomView)
-
-The highlight drawn over each barcode is set via `BarcodePickViewSettings.highlightStyle`, which takes
-any `BarcodePickViewHighlightStyle`. The SDK ships several concrete styles:
-
-- `BarcodePickViewHighlightStyleDot` / `BarcodePickViewHighlightStyleDotWithIcons`
-- `BarcodePickViewHighlightStyleRectangular` / `BarcodePickViewHighlightStyleRectangularWithIcons`
-- `BarcodePickViewHighlightStyleCustomView` — supply your own `UIView` per barcode
-
-The built-in styles support per-state theming through `setSelectedBrush(_:for:)` (and, on the
-`*WithIcons` variants, `setSelectedIcon(_:for:)`), keyed by `BarcodePickState`:
+The list itself is a `Set<BarcodePickProduct>`, each with an `identifier` and a `quantityToPick`.
+A `BarcodePickAsyncMapperProductProvider` resolves payloads via its delegate method:
 
 ```swift
-typealias BarcodePickState // .ignore, .picked, .toPick, .unknown
+func mapItems(
+    _ items: [String],
+    completionHandler: @escaping ([BarcodePickProductProviderCallbackItem]) -> Void
+)
 ```
 
-For fully **custom `UIView` highlights that change per state**, use
-`BarcodePickViewHighlightStyleCustomView` and its delegate. The delegate's
-`customView(for:completionHandler:)` is called per barcode; the request carries `itemData`,
-`productIdentifier`, and the current `state`, and you return a `BarcodePickHighlightCustomViewResponse`
-wrapping your view:
+- `items` is the batch of raw barcode payloads the SDK has seen and needs resolved.
+- For each payload you recognize, return a
+  `BarcodePickProductProviderCallbackItem(itemData:productIdentifier:)`. Multiple payloads can share
+  the same `productIdentifier`.
+- Omit payloads you don't recognize from the returned array — those barcodes are surfaced as
+  **not-in-list**.
+- The mapping is **asynchronous** (call `completionHandler` when ready), so a database lookup or
+  network call inside the delegate is fine.
 
-```swift
-let highlightStyle = BarcodePickViewHighlightStyleCustomView()
-highlightStyle.delegate = self
-highlightStyle.fitViewsToBarcode = true   // size the view to the barcode
-viewSettings.highlightStyle = highlightStyle
+## Highlight configuration
 
-extension PickViewController: BarcodePickViewHighlightStyleCustomViewDelegate {
-    func customView(
-        for request: BarcodePickHighlightStyleRequest,
-        completionHandler: @escaping (BarcodePickHighlightCustomViewResponse?) -> Void
-    ) {
-        let view: UIView
-        switch request.state {
-        case .toPick:  view = makeToPickView()
-        case .picked:  view = makePickedView()
-        case .unknown: view = makeNotInListView()
-        case .ignore:  completionHandler(nil); return
-        }
-        completionHandler(BarcodePickHighlightCustomViewResponse(view: view, statusIconStyle: nil))
-    }
-}
-```
+The highlight drawn over each detected barcode is controlled through
+`BarcodePickViewSettings.highlightStyle`, which takes any `BarcodePickViewHighlightStyle`. The SDK
+ships built-in styles plus a custom-view option:
 
-The delegate callback is async (it hands you a `completionHandler`), so you can build the view from
-product data fetched on demand. `fitViewsToBarcode`, `minimumHighlightHeight`, and
-`minimumHighlightWidth` control sizing.
+- **`BarcodePickViewHighlightStyleDot`** — a circular highlight (the default).
+- **`BarcodePickViewHighlightStyleDotWithIcons`** — dot with optional icons per pick state.
+- **`BarcodePickViewHighlightStyleRectangular`** — a rectangular highlight sized to the barcode.
+- **`BarcodePickViewHighlightStyleRectangularWithIcons`** — rectangle with optional icons per state.
+- **`BarcodePickViewHighlightStyleCustomView`** — supply your own `UIView` per barcode for fully bespoke
+  highlights.
 
-> The `statusIconStyle:` argument and `BarcodePickViewHighlightStyleCustomView.statusIconSettings`
-> drive optional **status icons** on the highlight. Pass `nil` if you don't need them.
+All styles are state-aware via the `BarcodePickState` enum (`.toPick` / `.picked` / `.unknown` / `.ignore`).
+Pick the style that fits, assign it to `viewSettings.highlightStyle`, and the view handles the
+per-barcode rendering and state transitions automatically.
+
+Per-state appearance (brushes, icons, custom views, status icons) and the full delegate-based
+custom-view flow are covered by a separate skill — keep this guide focused on the picking pipeline.
 
 ## Finish button + handler
 

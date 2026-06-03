@@ -134,6 +134,31 @@
         {"text": "The response includes a link to the Scandit iOS documentation (scandit.com/sdks/ios/matrixscan-pick or scandit.com/data-capture-sdk/ios)"},
         {"text": "No files are written or edited"}
       ]
+    },
+    {
+      "id": 9,
+      "prompt": "I have a pick order with three product lines:\n- product 'SKU-A' (quantity 5), with two barcodes: 5012345678900 and 5012345678917\n- product 'SKU-B' (quantity 2), with one barcode: 5023456789011\n- product 'SKU-C' (quantity 1), with one barcode: 5034567890122\n\nWalk me through setting this up in MatrixScan Pick: what goes into the BarcodePickProduct set, what the mapItems delegate needs to do (with the exact identifiers and barcode payloads above), and what the user sees while scanning.",
+      "expected_output": "The skill walks through the three pieces concretely with the given identifiers and payloads: builds a Set<BarcodePickProduct> with the three products (identifier 'SKU-A' qty 5, 'SKU-B' qty 2, 'SKU-C' qty 1), shows a BarcodePickAsyncMapperProductProvider with a providerDelegate, and writes a mapItems implementation that maps each of the four payloads to its product identifier — with BOTH '5012345678900' and '5012345678917' mapped to 'SKU-A' (demonstrating the many-to-one capability). Explains that unknown payloads are omitted from the returned array and surfaced as not-in-list. Describes what the user sees: highlights drawn over each detected barcode, tapping confirms the pick (which goes through the BarcodePickActionListener), per-product quantities count up toward the goal, and the user can finish via the finish button. Includes a link to the official docs.",
+      "files": [],
+      "assertions": [
+        {"text": "Creates BarcodePickProduct(identifier: \"SKU-A\", quantityToPick: 5)"},
+        {"text": "Creates BarcodePickProduct(identifier: \"SKU-B\", quantityToPick: 2)"},
+        {"text": "Creates BarcodePickProduct(identifier: \"SKU-C\", quantityToPick: 1)"},
+        {"text": "Collects the three BarcodePickProducts into a Set<BarcodePickProduct>"},
+        {"text": "Uses BarcodePickAsyncMapperProductProvider(products:providerDelegate:) with the correct parameter label providerDelegate: (not providerCallback:)"},
+        {"text": "The mapItems implementation maps barcode payload '5012345678900' to productIdentifier 'SKU-A'"},
+        {"text": "The mapItems implementation ALSO maps barcode payload '5012345678917' to productIdentifier 'SKU-A' (many-to-one: both SKU-A barcodes resolve to the same product identifier)"},
+        {"text": "The mapItems implementation maps barcode payload '5023456789011' to productIdentifier 'SKU-B'"},
+        {"text": "The mapItems implementation maps barcode payload '5034567890122' to productIdentifier 'SKU-C'"},
+        {"text": "The mapItems signature matches the real delegate method: func mapItems(_ items: [String], completionHandler: @escaping ([BarcodePickProductProviderCallbackItem]) -> Void)"},
+        {"text": "Returned items are BarcodePickProductProviderCallbackItem(itemData: ..., productIdentifier: ...) values"},
+        {"text": "Unknown barcode payloads are omitted from the returned array (the explanation says they surface as 'not-in-list')"},
+        {"text": "The user-facing description mentions highlights drawn over each detected barcode and that tapping a highlight picks it (going through the BarcodePickActionListener / completionHandler(true) confirmation)"},
+        {"text": "The user-facing description mentions that the per-product quantities are tracked by the SDK (e.g. user picks 5 of SKU-A, 2 of SKU-B, 1 of SKU-C) and that a finish button is available"},
+        {"text": "Does not invent APIs that are not documented in the skill (no providerCallback:, no resume()/unpause(), no pick(withItemData:), no BarcodePickAsyncMapperProductProviderCallback)"},
+        {"text": "Includes a link to the Scandit iOS documentation (scandit.com/sdks/ios/matrixscan-pick or scandit.com/data-capture-sdk/ios)"},
+        {"text": "No files are written or edited"}
+      ]
     }
   ]
 }
