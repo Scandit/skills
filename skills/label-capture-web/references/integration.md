@@ -79,6 +79,8 @@ Before writing any code, walk the user through their label. Ask one question at 
 
 Default to recommending Validation Flow unless the user explicitly says they do not want a confirmation step or need a fully custom AR experience.
 
+> **VIN and price label use cases with Validation Flow:** For VIN scanning or price label capture, use custom field builders (e.g. `CustomBarcodeBuilder` + `CustomTextBuilder`) rather than pre-made definitions. This ensures full compatibility with the Validation Flow overlay. The web SDK builder API provides all the flexibility needed to define these labels precisely.
+
 **Question D — Which file should the integration code go in?** Then write the code directly into that file. Do not just show it in chat.
 
 ## Minimal Integration (Web)
