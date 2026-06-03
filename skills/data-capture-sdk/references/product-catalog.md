@@ -78,7 +78,6 @@ When recommending a product, always include the relevant **docs link** and **sam
   - Flutter: `01_Single_Scanning_Samples/01_Barcode_Scanning_with_Pre_Built_UI/ListBuildingSample`
   - .NET (MAUI): `01_Single_Scanning_Samples/01_Barcode_Scanning_with_Pre_Built_UI/ListBuildingSample`
   - Capacitor: `01_Single_Scanning_Samples/01_Barcode_Scanning_with_Pre_Built_UI/ListBuildingSample`
-- **Available skills**: `sparkscan-ios`
 
 ---
 
