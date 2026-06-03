@@ -175,7 +175,6 @@ extension PickViewController: BarcodePickActionListener {
 
 What this code does **not** do:
 - It does not customize the **highlight styles per pick state** (to-pick / picked / not-in-list). See "State-aware highlights" below.
-- It uses the **default tap-to-pick** interaction — it does not add programmatic auto-pick.
 
 ## Confirming picks (required)
 
@@ -281,11 +280,13 @@ Sound and haptic feedback are simple on/off toggles on **`BarcodePickSettings`**
 not the view settings) — both default to `true`:
 
 ```swift
-settings.soundEnabled = false
-settings.hapticsEnabled = false   // note: hapticsEnabled (plural)
+settings.isSoundEnabled = false
+settings.isHapticsEnabled = false   // note: 'is' prefix and plural 'haptics'
 ```
 
-Set them on `BarcodePickSettings` before constructing the `BarcodePick` mode.
+Set them on `BarcodePickSettings` before constructing the `BarcodePick` mode. The Swift names use the
+`is` prefix (`isSoundEnabled` / `isHapticsEnabled`) — the underlying ObjC properties are
+`soundEnabled` / `hapticsEnabled` but the importer renames them based on the getter convention.
 
 ## Camera
 

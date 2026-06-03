@@ -45,6 +45,95 @@
         {"text": "No Scandit API call appears inside makeUIViewController or updateUIViewController beyond constructing the UIKit view controller"},
         {"text": "The response includes the setup checklist: SPM URL (https://github.com/Scandit/datacapture-spm), NSCameraUsageDescription in Info.plist, replace the license key placeholder"}
       ]
+    },
+    {
+      "id": 3,
+      "prompt": "Also enable QR codes in my MatrixScan Pick app. File: IntegratedBarcodePickViewController.swift",
+      "expected_output": "The skill adds settings.set(symbology: .qr, enabled: true) inside setupPicking(), preserves the existing enabled symbologies, and does not touch the context / product provider / mode / view / lifecycle / listeners.",
+      "files": [
+        "fixtures/IntegratedBarcodePickViewController.swift"
+      ],
+      "assertions": [
+        {"text": "settings.set(symbology: .qr, enabled: true) is present"},
+        {"text": "The existing enabled symbologies (.ean13UPCA, .ean8, .upce, .code128, .code39) are all still enabled"},
+        {"text": "No existing symbology line was removed or replaced"},
+        {"text": "Existing context, productDatabase, BarcodePickAsyncMapperProductProvider, BarcodePick construction, BarcodePickView construction, lifecycle, and all four extensions (delegate, view listener, UI delegate, action listener) are preserved"},
+        {"text": "No duplicate BarcodePick, BarcodePickView, or DataCaptureContext instantiation is introduced"}
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "In my MatrixScan Pick app, Code 39 barcodes are always between 10 and 14 characters. Configure that. File: IntegratedBarcodePickViewController.swift",
+      "expected_output": "The skill accesses the Code 39 SymbologySettings via settings.settings(for: .code39) and sets activeSymbolCounts to the range 10...14, inside setupPicking(), before constructing BarcodePick.",
+      "files": [
+        "fixtures/IntegratedBarcodePickViewController.swift"
+      ],
+      "assertions": [
+        {"text": "settings.settings(for: .code39) is called to get the SymbologySettings"},
+        {"text": "activeSymbolCounts is assigned a Set<Int> covering 10 through 14 (e.g. Set(10...14)). NSNumber wrapping must NOT be used — the property's Swift type is Set<Int>, so passing Set<NSNumber> will not compile."},
+        {"text": "The assignment happens inside setupPicking(), before 'BarcodePick(context:' is constructed"},
+        {"text": ".code39 is still enabled (the new configuration layers on top of the existing settings.set(symbology: .code39, enabled: true))"},
+        {"text": "Existing context, productDatabase, provider, BarcodePick construction, BarcodePickView construction, lifecycle, and extensions are preserved"}
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "Use 4K resolution for the camera in my MatrixScan Pick app. File: IntegratedBarcodePickViewController.swift",
+      "expected_output": "The skill starts from BarcodePick.recommendedCameraSettings, sets preferredResolution to .uhd4k, and switches the BarcodePickView constructor to the designated initializer that accepts cameraSettings:. Existing pieces are preserved.",
+      "files": [
+        "fixtures/IntegratedBarcodePickViewController.swift"
+      ],
+      "assertions": [
+        {"text": "BarcodePick.recommendedCameraSettings is used as the starting point (not a fresh CameraSettings())"},
+        {"text": "preferredResolution = .uhd4k is set on those camera settings (or equivalent VideoResolution case for 4K)"},
+        {"text": "BarcodePickView is constructed via the designated initializer BarcodePickView(frame:context:barcodePick:settings:cameraSettings:) passing the configured camera settings"},
+        {"text": "The assignments happen before the BarcodePickView constructor call"},
+        {"text": "Existing symbology configuration, productDatabase, BarcodePick construction, lifecycle, and extensions are preserved"}
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "Show a torch button in my MatrixScan Pick view. File: IntegratedBarcodePickViewController.swift",
+      "expected_output": "The skill sets viewSettings.showTorchButton = true on the BarcodePickViewSettings before the BarcodePickView is constructed.",
+      "files": [
+        "fixtures/IntegratedBarcodePickViewController.swift"
+      ],
+      "assertions": [
+        {"text": "viewSettings.showTorchButton = true is set"},
+        {"text": "The assignment is on the BarcodePickViewSettings instance (not on BarcodePickView, and not on BarcodePickSettings)"},
+        {"text": "The assignment happens BEFORE the BarcodePickView(frame:context:barcodePick:settings:) constructor call"},
+        {"text": "Existing BarcodePickView construction, symbology configuration, BarcodePick construction, lifecycle, and extensions are preserved"}
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "Mute both the beep and the vibration in my MatrixScan Pick app. File: IntegratedBarcodePickViewController.swift",
+      "expected_output": "The skill sets settings.isSoundEnabled = false and settings.isHapticsEnabled = false on BarcodePickSettings (the mode settings, not the view settings) before BarcodePick is constructed. The Swift names use the 'is' prefix because the ObjC getters are isSoundEnabled / isHapticsEnabled.",
+      "files": [
+        "fixtures/IntegratedBarcodePickViewController.swift"
+      ],
+      "assertions": [
+        {"text": "settings.isSoundEnabled = false is set (Swift name has 'is' prefix; using 'soundEnabled' will fail to compile)"},
+        {"text": "settings.isHapticsEnabled = false is set (Swift name has 'is' prefix and plural 'haptics'; using 'hapticsEnabled' will fail to compile)"},
+        {"text": "Both assignments are on the BarcodePickSettings (mode settings) instance — NOT on BarcodePickViewSettings"},
+        {"text": "Both assignments happen BEFORE the BarcodePick(context:settings:productProvider:) constructor call"},
+        {"text": "Existing symbology configuration, BarcodePick construction, BarcodePickView construction, lifecycle, and extensions are preserved"}
+      ]
+    },
+    {
+      "id": 8,
+      "prompt": "What's the difference between barcodePickView.pause() and barcodePickView.stop() in MatrixScan Pick?",
+      "expected_output": "The skill explains that stop() stops scanning and releases the camera (use when the screen is going away, e.g. when isMovingFromParent in viewWillDisappear), while pause() halts scanning without tearing down the camera (use when scanning should pause but the screen remains). Mentions the recommended pattern of calling pause() in viewWillDisappear and stop() only when isMovingFromParent. Includes a link to the official docs.",
+      "files": [],
+      "assertions": [
+        {"text": "The response explains that stop() stops scanning and releases the camera"},
+        {"text": "The response explains that pause() halts scanning WITHOUT tearing down the camera"},
+        {"text": "The response gives a usage example or rule of thumb (e.g. pause when scanning halts but the screen remains; stop when the screen is going away or isMovingFromParent is true)"},
+        {"text": "The response mentions start() as the way to resume scanning after pause"},
+        {"text": "The response does NOT invent methods that are not documented (e.g. resume(), unpause(), continueScanning())"},
+        {"text": "The response includes a link to the Scandit iOS documentation (scandit.com/sdks/ios/matrixscan-pick or scandit.com/data-capture-sdk/ios)"},
+        {"text": "No files are written or edited"}
+      ]
     }
   ]
 }
