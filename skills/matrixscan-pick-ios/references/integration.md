@@ -92,7 +92,11 @@ class PickViewController: UIViewController {
                                settings: settings,
                                productProvider: productProvider)
 
-        // 5. Create the view. It renders the camera preview and the picking UI.
+        // 5. Observe pick state. Register a scanning listener on the MODE (not the view)
+        //    to read picked / scanned items off the session as the user progresses.
+        mode.addScanningListener(self)
+
+        // 6. Create the view. It renders the camera preview and the picking UI.
         let viewSettings = BarcodePickViewSettings()
         barcodePickView = BarcodePickView(frame: view.bounds,
                                           context: context,
@@ -101,11 +105,11 @@ class PickViewController: UIViewController {
         barcodePickView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         view.addSubview(barcodePickView)
 
-        // 6. Observe scanning lifecycle and the finish button.
+        // 7. Observe view-lifecycle events and the finish button.
         barcodePickView.addListener(self)
         barcodePickView.uiDelegate = self
 
-        // 7. Confirm picks. This is REQUIRED: without an action listener, a tapped item
+        // 8. Confirm picks. This is REQUIRED: without an action listener, a tapped item
         //    never transitions to "picked" — the SDK waits for completionHandler(true).
         barcodePickView.addActionListener(self)
     }
@@ -154,6 +158,22 @@ extension PickViewController: BarcodePickActionListener {
         completionHandler(true)
     }
 }
+
+// Observes pick state. session.pickedItems / scannedItems are Set<String> of itemData.
+// Callbacks fire OFF the main queue — dispatch to main before touching UIKit.
+extension PickViewController: BarcodePickScanningListener {
+    func barcodePick(_ barcodePick: BarcodePick,
+                     didUpdate scanningSession: BarcodePickScanningSession) {
+        // Called on every pick / unpick — the session state has changed.
+        // Update your app's view of progress here.
+    }
+
+    func barcodePick(_ barcodePick: BarcodePick,
+                     didComplete scanningSession: BarcodePickScanningSession) {
+        // Called when the picking session ends — e.g. on view teardown or when the mode is stopped.
+        // Use this for end-of-session bookkeeping.
+    }
+}
 ```
 
 > `BarcodePickView` does **not** add itself to the view hierarchy — construct it with a `frame` and `addSubview` it yourself. Note the constructor takes both the `context` and the `barcodePick` mode.
@@ -171,7 +191,7 @@ extension PickViewController: BarcodePickActionListener {
 - Builds `BarcodePickSettings` with the user's symbologies.
 - Builds the product set (`BarcodePickProduct` with `quantityToPick`) and a `BarcodePickAsyncMapperProductProvider` whose delegate maps scanned payloads → product identifiers.
 - Creates the `BarcodePick` mode and the `BarcodePickView`, adds the view to the hierarchy, and drives the `start()` / `pause()` / `stop()` lifecycle.
-- Wires the scanning-lifecycle listener, the finish-button UI delegate, and — critically — the **action listener that confirms picks** (see "Confirming picks" below).
+- Wires the view-lifecycle listener, the finish-button UI delegate, the **action listener that confirms picks** (see "Confirming picks" below — required for taps to finalize), and a **scanning listener** that observes pick state on the mode (see "Tracking picks" below — without it, the app has no way to read what was picked).
 
 What this code does **not** do:
 - It does not customize the **highlight appearance per pick state** (brushes, icons, custom views). The default highlight is used. See "Highlight configuration" below for the available styles; per-state customization is the scope of the highlights sibling skill.
@@ -231,6 +251,53 @@ func mapItems(
   **not-in-list**.
 - The mapping is **asynchronous** (call `completionHandler` when ready), so a database lookup or
   network call inside the delegate is fine.
+
+## Tracking picks (and unpicks)
+
+The picking flow runs entirely inside `BarcodePick` and `BarcodePickView`, but the app usually
+wants to know what's been picked — to update its own state, post the result to a backend, or decide
+when the order is complete. There are two ways to observe pick state from outside the SDK.
+
+### `BarcodePickScanningListener` (recommended)
+
+`BarcodePick` exposes a session-level listener that fires whenever the picking state changes. The
+minimal integration above already registers it on the mode (`barcodePick.addScanningListener(self)`)
+and stubs out the conformance — fill in the two callbacks with whatever your app needs:
+
+```swift
+extension PickViewController: BarcodePickScanningListener {
+    func barcodePick(_ barcodePick: BarcodePick,
+                     didUpdate scanningSession: BarcodePickScanningSession) {
+        // Called on every pick / unpick — the session state has changed.
+        // session.pickedItems and session.scannedItems are Set<String> of barcode payloads
+        // (itemData). Update your app's view of progress here.
+    }
+
+    func barcodePick(_ barcodePick: BarcodePick,
+                     didComplete scanningSession: BarcodePickScanningSession) {
+        // Called when the picking session ends — e.g. on view teardown or when the mode is stopped.
+        // Use this for end-of-session bookkeeping.
+    }
+}
+```
+
+Two things to keep in mind:
+
+- `pickedItems` / `scannedItems` are sets of **barcode payloads** (`itemData` strings), not product
+  identifiers. To get product-level state, map them back through the same mapping you provide in
+  `mapItems`.
+- These callbacks are **not** main-actor annotated — dispatch to the main queue before touching
+  UIKit.
+
+Use this for app-level tracking: the SDK is the source of truth and you just read it.
+
+### Bookkeeping via `BarcodePickActionListener` (alternative)
+
+The action listener you already wired up for pick confirmation can also drive your own counters —
+increment in `didPickItem`, decrement in `didUnpickItem`. This works, but it means the app holds a
+view of state separate from the SDK's session, which you then have to keep in sync. Prefer the
+scanning listener above unless you already have action-listener-driven bookkeeping for another
+reason.
 
 ## Highlight configuration
 
@@ -406,6 +473,11 @@ controller works when used directly from UIKit.
 `BarcodePickViewListener` and `BarcodePickViewUIDelegate` are declared main-actor (`NS_SWIFT_UI_ACTOR`),
 so their callbacks — including `barcodePickViewDidTapFinishButton(_:)` — arrive on the main queue and
 can touch UIKit directly.
+
+`BarcodePickScanningListener` and `BarcodePickActionListener` are **not** main-actor annotated.
+Dispatch to the main queue before touching UIKit from `barcodePick(_:didUpdate:)`,
+`barcodePick(_:didComplete:)`, `didPickItem(withData:completionHandler:)`, or
+`didUnpickItem(withData:completionHandler:)`.
 
 ## After wiring up
 

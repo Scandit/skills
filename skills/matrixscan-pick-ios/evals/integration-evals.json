@@ -21,6 +21,7 @@
         {"text": "barcodePickView.pause() is called in viewWillDisappear, and stop() is called only when isMovingFromParent is true"},
         {"text": "The view controller conforms to BarcodePickViewUIDelegate and implements barcodePickViewDidTapFinishButton(_:); barcodePickView.uiDelegate is set"},
         {"text": "The view controller conforms to BarcodePickActionListener (implements didPickItem(withData:completionHandler:) and didUnpickItem(withData:completionHandler:), each calling completionHandler(true)) and registers it via barcodePickView.addActionListener(self) — required for picks to actually complete"},
+        {"text": "The view controller conforms to BarcodePickScanningListener (implements at least barcodePick(_:didUpdate:) with parameter type BarcodePickScanningSession, and ideally barcodePick(_:didComplete:) as well) and registers it on the MODE via barcodePick.addScanningListener(self) — note the Swift selector is didUpdate, NOT didUpdateScanningSession (the ObjC importer strips the trailing type-name from the label)"},
         {"text": "The existing ScanViewController class is preserved (not renamed or removed); the titleLabel IBOutlet or viewDidLoad title assignment is preserved or the user is told it was kept"},
         {"text": "The response includes the setup checklist: SPM URL (https://github.com/Scandit/datacapture-spm), NSCameraUsageDescription in Info.plist, replace the license key placeholder"},
         {"text": "No custom BarcodePickViewHighlightStyleCustomView / highlightStyle customization is added (default highlights are fine for the basic integration)"}
@@ -39,6 +40,7 @@
         {"text": "The view controller conforms to BarcodePickAsyncMapperProductProviderDelegate and implements mapItems(_:completionHandler:) returning BarcodePickProductProviderCallbackItem values"},
         {"text": "The view controller conforms to BarcodePickViewUIDelegate and implements barcodePickViewDidTapFinishButton(_:); barcodePickView.uiDelegate is set"},
         {"text": "The view controller conforms to BarcodePickActionListener (didPickItem(withData:completionHandler:) and didUnpickItem(withData:completionHandler:), each calling completionHandler(true)) and registers it via barcodePickView.addActionListener(self) — required for picks to complete"},
+        {"text": "The view controller conforms to BarcodePickScanningListener (implements at least barcodePick(_:didUpdate:) with parameter type BarcodePickScanningSession, ideally also barcodePick(_:didComplete:)) and registers it on the MODE via barcodePick.addScanningListener(self) — Swift selector is didUpdate (NOT didUpdateScanningSession)"},
         {"text": "A UIViewControllerRepresentable-conforming struct is added that makes/updates the UIKit scan view controller"},
         {"text": "The existing SwiftUI ScanView body uses the new representable (no longer the plain Text placeholder)"},
         {"text": "No Scandit API call (DataCaptureContext, BarcodePick, BarcodePickView, etc.) appears inside the SwiftUI View struct body"},

@@ -75,11 +75,15 @@ class ScanViewController: UIViewController {
         barcodePickView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         view.addSubview(barcodePickView)
 
-        // 6. Observe scanning lifecycle and the finish button.
+        // 6. Observe pick state. Register a scanning listener on the MODE (not the view)
+        //    to read picked / scanned items off the session as the user progresses.
+        mode.addScanningListener(self)
+
+        // 7. Observe view-lifecycle events and the finish button.
         barcodePickView.addListener(self)
         barcodePickView.uiDelegate = self
 
-        // 7. Confirm picks. This is REQUIRED: without an action listener, a tapped item
+        // 8. Confirm picks. This is REQUIRED: without an action listener, a tapped item
         //    never transitions to "picked" — the SDK waits for completionHandler(true).
         barcodePickView.addActionListener(self)
     }
@@ -125,5 +129,21 @@ extension ScanViewController: BarcodePickActionListener {
 
     func didUnpickItem(withData data: String, completionHandler: @escaping (Bool) -> Void) {
         completionHandler(true)
+    }
+}
+
+// Observes pick state. session.pickedItems / scannedItems are Set<String> of itemData.
+// Callbacks fire OFF the main queue — dispatch to main before touching UIKit.
+extension ScanViewController: BarcodePickScanningListener {
+    func barcodePick(_ barcodePick: BarcodePick,
+                     didUpdate scanningSession: BarcodePickScanningSession) {
+        // Called on every pick / unpick — the session state has changed.
+        // Update your app's view of progress here.
+    }
+
+    func barcodePick(_ barcodePick: BarcodePick,
+                     didComplete scanningSession: BarcodePickScanningSession) {
+        // Called when the picking session ends — e.g. on view teardown or when the mode is stopped.
+        // Use this for end-of-session bookkeeping.
     }
 }
