@@ -215,14 +215,26 @@ common "my picks don't complete" problem, and the official basic Get Started pag
 
 ## Symbologies
 
-`BarcodePickSettings` starts with all symbologies disabled. Enable each via `settings.set(symbology:enabled:)`. For variable-length symbologies (Code 39, Code 128, Interleaved 2 of 5) restrict accepted lengths through the per-symbology settings:
+`BarcodePickSettings` starts with all symbologies disabled. Enable each via
+`settings.set(symbology:enabled:)`. For convenience, `enableSymbologies(_:)` enables a whole set at
+once, and `enabledSymbologies` (read-only) returns what's currently on.
+
+For variable-length symbologies (Code 39, Code 128, Interleaved 2 of 5, etc.) the user often wants
+to restrict the accepted lengths. For other symbologies they may need color-inverted decoding or
+specific checksums. Access the per-symbology settings via `BarcodePickSettings.settings(for:)`:
 
 ```swift
 settings.settings(for: .code128).activeSymbolCounts = Set(8...20)
+settings.settings(for: .code128).isColorInvertedEnabled = true
 ```
 
-`BarcodePickSettings` provides `settings(for:)` returning a `SymbologySettings`, plus
-`enabledSymbologies` (read-only) and `enableSymbologies(_:)` for enabling a set at once.
+The properties available on `SymbologySettings` are: `activeSymbolCounts: Set<Int>` (the public
+ObjC type is `NSSet<NSNumber*>` but it's `NS_REFINED_FOR_SWIFT` → `Set<Int>` in Swift),
+`isColorInvertedEnabled: Bool`, `checksums: Checksum` (an `OptionSet`, not an array — assign with
+array-literal syntax e.g. `[.mod10, .mod11]`), and `enabledExtensions: Set<String>` (read-only;
+mutate via `set(extension:enabled:)`). Apply them on the `BarcodePickSettings` **before** constructing
+`BarcodePick`; the mode does not expose a live `apply(_:)` for runtime reconfiguration, so symbology
+changes after construction require building a new mode.
 
 ## Product list and the provider
 
@@ -262,30 +274,14 @@ when the order is complete. There are two ways to observe pick state from outsid
 
 `BarcodePick` exposes a session-level listener that fires whenever the picking state changes. The
 minimal integration above already registers it on the mode (`barcodePick.addScanningListener(self)`)
-and stubs out the conformance — fill in the two callbacks with whatever your app needs:
+and stubs out the conformance — fill in `barcodePick(_:didUpdate:)` and
+`barcodePick(_:didComplete:)` with whatever your app needs.
 
-```swift
-extension PickViewController: BarcodePickScanningListener {
-    func barcodePick(_ barcodePick: BarcodePick,
-                     didUpdate scanningSession: BarcodePickScanningSession) {
-        // Called on every pick / unpick — the session state has changed.
-        // session.pickedItems and session.scannedItems are Set<String> of barcode payloads
-        // (itemData). Update your app's view of progress here.
-    }
+Two things to keep in mind when implementing them:
 
-    func barcodePick(_ barcodePick: BarcodePick,
-                     didComplete scanningSession: BarcodePickScanningSession) {
-        // Called when the picking session ends — e.g. on view teardown or when the mode is stopped.
-        // Use this for end-of-session bookkeeping.
-    }
-}
-```
-
-Two things to keep in mind:
-
-- `pickedItems` / `scannedItems` are sets of **barcode payloads** (`itemData` strings), not product
-  identifiers. To get product-level state, map them back through the same mapping you provide in
-  `mapItems`.
+- `pickedItems` / `scannedItems` on the session are sets of **barcode payloads** (`itemData`
+  strings), not product identifiers. To get product-level state, map them back through the same
+  mapping you provide in `mapItems`.
 - These callbacks are **not** main-actor annotated — dispatch to the main queue before touching
   UIKit.
 
