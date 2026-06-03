@@ -52,6 +52,7 @@ When recommending a product, always include the relevant **docs link** and **sam
   - .NET (MAUI): `01_Single_Scanning_Samples/02_Barcode_Scanning_with_Low_Level_API/BarcodeCaptureSimpleSample`
   - Capacitor: `01_Single_Scanning_Samples/02_Barcode_Scanning_with_Low_Level_API/BarcodeCaptureSimpleSample`
   - Cordova: `01_Single_Scanning_Samples/02_Barcode_Scanning_with_Low_Level_API/BarcodeCaptureSimpleSample`
+- **Available skills**: `barcode-capture-ios`
 
 ### SparkScan
 

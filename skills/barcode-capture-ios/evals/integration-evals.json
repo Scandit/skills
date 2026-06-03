@@ -1,0 +1,110 @@
+{
+  "skill_name": "barcode-capture-ios",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I want to add BarcodeCapture to my iOS app. Here's my empty view controller: EmptyViewController.swift. I need to scan EAN-13 and Code 128 barcodes for a retail app.",
+      "expected_output": "The skill reads integration.md, writes complete BarcodeCapture integration code into EmptyViewController.swift (DataCaptureContext.initialize + .shared, BarcodeCaptureSettings, BarcodeCapture(context:settings:), BarcodeCaptureListener, Camera.default + BarcodeCapture.recommendedCameraSettings, DataCaptureView, BarcodeCaptureOverlay, viewWillAppear/viewWillDisappear lifecycle), and shows the setup checklist (SPM package, NSCameraUsageDescription, license key).",
+      "files": [
+        "fixtures/EmptyViewController.swift"
+      ],
+      "assertions": [
+        {"text": "Setup checklist is shown and mentions adding ScanditBarcodeCapture and ScanditCaptureCore via Swift Package Manager (datacapture-spm)"},
+        {"text": "Setup checklist mentions adding NSCameraUsageDescription to Info.plist"},
+        {"text": "A license key placeholder string is present"},
+        {"text": "DataCaptureContext.initialize(licenseKey: is used (v7 API, not the deprecated constructor)"},
+        {"text": "DataCaptureContext(licenseKey: is NOT present in the new code"},
+        {"text": "DataCaptureContext.shared is read after initialize"},
+        {"text": "BarcodeCapture.recommendedCameraSettings is used (no parentheses — it is a property)"},
+        {"text": "Camera.default is used to obtain the camera"},
+        {"text": "context.setFrameSource( is called with the camera"},
+        {"text": "BarcodeCaptureSettings is constructed and configured"},
+        {"text": "Symbology .ean13UPCA is enabled"},
+        {"text": "Symbology .code128 is enabled"},
+        {"text": "No symbologies other than ean13UPCA and code128 are enabled"},
+        {"text": "BarcodeCapture(context:settings:) is used to create the mode"},
+        {"text": "barcodeCapture.addListener( is called"},
+        {"text": "DataCaptureView(context:frame:) is used to create the preview"},
+        {"text": "BarcodeCaptureOverlay(barcodeCapture:view:) is called"},
+        {"text": "The view controller (or an extension of it) conforms to BarcodeCaptureListener"},
+        {"text": "barcodeCapture(_:didScanIn:frameData:) is implemented and reads session.newlyRecognizedBarcode"},
+        {"text": "DispatchQueue.main.async is used inside the didScanIn callback for UI work"},
+        {"text": "camera?.switch(toDesiredState: .on) is called in viewWillAppear (or equivalent lifecycle hook)"},
+        {"text": "camera?.switch(toDesiredState: .off) is called in viewWillDisappear (or equivalent lifecycle hook)"},
+        {"text": "context.removeCurrentMode() is called in deinit (or equivalent cleanup hook)"}
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Add barcode scanning to my existing iOS view controller. Here it is: EmptyViewController.swift. I want to scan QR codes and Data Matrix. When a barcode is scanned, print the barcode data to the console.",
+      "expected_output": "The skill integrates BarcodeCapture into EmptyViewController.swift with QR and Data Matrix symbologies enabled. didScanIn prints the barcode data using print(). Shows the setup checklist.",
+      "files": [
+        "fixtures/EmptyViewController.swift"
+      ],
+      "assertions": [
+        {"text": "Symbology .qr is enabled"},
+        {"text": "Symbology .dataMatrix is enabled"},
+        {"text": "No symbologies other than qr and dataMatrix are enabled"},
+        {"text": "BarcodeCapture(context:settings:) is used"},
+        {"text": "barcodeCapture(_:didScanIn:frameData:) is implemented and accesses barcode.data"},
+        {"text": "The scan result is logged (print or os_log)"},
+        {"text": "viewWillAppear turns the camera on"},
+        {"text": "viewWillDisappear turns the camera off"},
+        {"text": "Setup checklist mentions Swift Package Manager / datacapture-spm"}
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "When a barcode is scanned in my iOS BarcodeCapture app, I want to disable scanning, look up the barcode in a remote API (an async function call), and re-enable scanning when the lookup completes. Wire this up safely in IntegratedViewController.swift.",
+      "expected_output": "The skill sets barcodeCapture.isEnabled = false at the start of the didScanIn callback, launches a Task for the async lookup, and re-enables scanning when the Task completes (e.g. in a defer block).",
+      "files": [
+        "fixtures/IntegratedViewController.swift"
+      ],
+      "assertions": [
+        {"text": "barcodeCapture.isEnabled = false is set inside didScanIn before the async work"},
+        {"text": "A Task { } or async completion handler is used to perform the async lookup"},
+        {"text": "barcodeCapture.isEnabled = true is set after the lookup completes (defer or final step)"},
+        {"text": "Existing integration code (context, barcodeCapture, camera, listener) is preserved"}
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "I want to suppress the default beep and vibration when a barcode is scanned in my iOS app — silent scanning. Update the BarcodeCapture feedback in IntegratedViewController.swift.",
+      "expected_output": "The skill assigns barcodeCapture.feedback.success to a Feedback constructed with vibration: nil and sound: nil.",
+      "files": [
+        "fixtures/IntegratedViewController.swift"
+      ],
+      "assertions": [
+        {"text": "barcodeCapture.feedback.success is reassigned to a Feedback with no sound and no vibration (vibration: nil, sound: nil)"},
+        {"text": "BarcodeCaptureFeedback() empty constructor is NOT used (that is the Android API)"},
+        {"text": "Existing integration code (context, barcodeCapture, camera, listener) is preserved"}
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "Add a square viewfinder to my iOS BarcodeCapture preview so users can see where to aim. Update IntegratedViewController.swift.",
+      "expected_output": "The skill creates a RectangularViewfinder with .square style and assigns it to overlay.viewfinder.",
+      "files": [
+        "fixtures/IntegratedViewController.swift"
+      ],
+      "assertions": [
+        {"text": "A RectangularViewfinder is constructed with style: .square"},
+        {"text": "The viewfinder is assigned to a BarcodeCaptureOverlay's viewfinder property (overlay.viewfinder = ...)"},
+        {"text": "Existing integration code (context, barcodeCapture, camera, listener) is preserved"}
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "I need to filter scans so duplicates of the same code within 500 milliseconds are ignored. Update my BarcodeCapture settings in IntegratedViewController.swift.",
+      "expected_output": "The skill sets codeDuplicateFilter = 0.5 (TimeInterval, seconds) on the BarcodeCaptureSettings instance before creating the BarcodeCapture mode (or applies new settings via barcodeCapture.apply).",
+      "files": [
+        "fixtures/IntegratedViewController.swift"
+      ],
+      "assertions": [
+        {"text": "codeDuplicateFilter is set to 0.5 (seconds) on the BarcodeCaptureSettings — NOT 500 and NOT TimeInterval.millis(500)"},
+        {"text": "codeDuplicateFilter is set before BarcodeCapture(context:settings:) is invoked, or via barcodeCapture.apply"},
+        {"text": "Existing integration code (context, barcodeCapture, camera, listener) is preserved"}
+      ]
+    }
+  ]
+}
