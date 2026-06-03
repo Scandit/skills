@@ -48,6 +48,38 @@
         {"text": "The style is assigned to the existing viewSettings.highlightStyle before the BarcodePickView is constructed"},
         {"text": "Existing integration is preserved (context, settings, provider, mode, view, listeners) — no duplicate mode/view/context"}
       ]
+    },
+    {
+      "id": 4,
+      "prompt": "On each MatrixScan Pick highlight, show a status badge with the product identifier as its text. File: IntegratedBarcodePickViewController.swift",
+      "expected_output": "The skill uses an icon-capable style (BarcodePickViewHighlightStyleDotWithIcons or RectangularWithIcons), sizes the badge via statusIconSettings (BarcodePickStatusIconSettings on the style), sets the style's delegate, and implements BarcodePickViewHighlightStyleDelegate.style(for:completionHandler:) returning a BarcodePickViewHighlightStyleResponse whose statusIconStyle is a BarcodePickStatusIconStyle carrying request.productIdentifier as text. The badge must be visible (not white-on-white). Existing integration preserved.",
+      "files": [
+        "fixtures/IntegratedBarcodePickViewController.swift"
+      ],
+      "assertions": [
+        {"text": "An icon-capable style is used (BarcodePickViewHighlightStyleDotWithIcons or BarcodePickViewHighlightStyleRectangularWithIcons) and assigned to viewSettings.highlightStyle before the view is constructed"},
+        {"text": "The style's delegate is set (e.g. style.delegate = self) so the per-barcode status icon is actually supplied"},
+        {"text": "The view controller conforms to BarcodePickViewHighlightStyleDelegate and implements style(for:completionHandler:) — Swift selector style(for:), not styleForRequest:"},
+        {"text": "The returned BarcodePickViewHighlightStyleResponse includes a statusIconStyle (a BarcodePickStatusIconStyle) whose text is request.productIdentifier"},
+        {"text": "The status icon is constructed so it is visible — either BarcodePickStatusIconStyle(iconColor:iconBackgroundColor:text:) with a non-white iconBackgroundColor, or a ScanditIcon whose withIconColor is non-white (a white icon on the white badge background would be invisible)"},
+        {"text": "Existing integration is preserved (context, settings, provider, mode, view, listeners) — no duplicate mode/view/context"}
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "Add a low-stock warning status badge (using the built-in Scandit low-stock icon) to each MatrixScan Pick highlight. File: IntegratedBarcodePickViewController.swift",
+      "expected_output": "The skill uses an icon-capable style with statusIconSettings, sets the style delegate, and returns a BarcodePickViewHighlightStyleResponse with a statusIconStyle built from BarcodePickStatusIconStyle(scanditIcon:text:), where the ScanditIcon is ScanditIconBuilder().withIcon(.lowStock) with an explicit non-white withIconColor (the status badge background is white, so a white glyph would be invisible). Existing integration preserved.",
+      "files": [
+        "fixtures/IntegratedBarcodePickViewController.swift"
+      ],
+      "assertions": [
+        {"text": "An icon-capable style (DotWithIcons or RectangularWithIcons) is used with a BarcodePickStatusIconSettings assigned to statusIconSettings"},
+        {"text": "The style delegate returns a statusIconStyle built with BarcodePickStatusIconStyle(scanditIcon:text:)"},
+        {"text": "The ScanditIcon uses ScanditIconBuilder().withIcon(.lowStock)"},
+        {"text": "The ScanditIcon sets an explicit non-white withIconColor — a white glyph on the white status-badge background would be invisible (this is the key correctness point)"},
+        {"text": "The style is assigned to viewSettings.highlightStyle before the BarcodePickView is constructed"},
+        {"text": "Existing integration is preserved (context, settings, provider, mode, view, listeners) — no duplicate mode/view/context"}
+      ]
     }
   ]
 }
