@@ -9,7 +9,29 @@ metadata:
 
 # Skill Auditor
 
-Audits the skill catalog in this repo along three layers, per `<product>-<platform>` skill:
+**In one line:** it finds where our skills are missing evals or guidance that the
+platform actually supports, and proposes the fix — it never changes anything on its own.
+
+**How it works, plainly:** scripts list every skill and its evals, compare them against a
+per-product checklist (`taxonomies/<product>.yaml`) and the SDK's own API-availability
+data, and print what's missing. A human decides what to fix.
+
+**What you touch when (the maintenance answer):**
+
+| You do this | You update |
+|---|---|
+| Add a new platform to an existing product (e.g. `sparkscan-vue`) | Nothing — platforms are auto-discovered by directory name |
+| Add an eval for a feature already covered | Nothing — tagged evals are picked up automatically |
+| Add an eval for a brand-new capability | One line in that product's `taxonomies/*.yaml` (or let `audit taxonomy` regenerate it) |
+| Add a whole new product family | One `taxonomies/<product>.yaml` + one line in `manifest.json` |
+
+You do **not** re-edit the taxonomy every time you touch evals. The taxonomy is the
+"what should exist" checklist; evals are "what does exist." They only meet when you
+introduce a genuinely new capability.
+
+---
+
+It audits along three layers, per `<product>-<platform>` skill:
 
 1. **Platform truth** — what the platform actually supports. The expected surface is the
    native API minus the documented exclusions in the SDK repo's `docs/api_availability/`
