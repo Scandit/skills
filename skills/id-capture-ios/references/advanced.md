@@ -14,7 +14,7 @@ settings.scanner = IdCaptureScanner(physicalDocument: ..., mobileDocument: <Mobi
 
 ### FullDocumentScanner (default choice)
 
-Reads both sides of a physical document automatically — VIZ (printed text), MRZ, and PDF417 barcode. Use it for most ID / driver's license / passport flows where you need complete data from both sides.
+Reads both sides of a physical document automatically — VIZ (printed text), MRZ, and PDF417 barcode. Multiple zones can be captured in a single scan; the results are aggregated and exposed through `CapturedId` via `mrzResult` (`MrzResult?`), `vizResult` (`VizResult?`), and `barcode` (`BarcodeResult?`). Use it for most ID / driver's license / passport flows where you need complete data from both sides.
 
 ```swift
 settings.scanner = IdCaptureScanner(physicalDocument: FullDocumentScanner())
@@ -53,11 +53,44 @@ settings.scanner = IdCaptureScanner(
 )
 ```
 
-### MobileDocumentScanner (IDs displayed on a screen)
+**Passport-specific: combined VIZ + MRZ capture**
 
-`MobileDocumentScanner(enablingIso180135:ocr:)` scans mobile driver's licenses (mDL) shown on another device's screen. Use specifically for mobile-presented IDs, not for physical documents held in hand.
+When `acceptedDocuments` includes `Passport` and `SingleSideScanner` has both `machineReadableZone` and `visualInspectionZone` enabled, the SDK performs a combined VIZ + MRZ capture pass for passports specifically — reading the printed data zone and the machine-readable zone together in a single scan. This does **not** apply to other documents that have an MRZ (such as ID cards or residence permits); for those, only the enabled zones are read independently.
 
 ```swift
+// Capture both VIZ and MRZ together from a passport:
+settings.acceptedDocuments = [Passport(region: .any)]
+settings.scanner = IdCaptureScanner(
+    physicalDocument: SingleSideScanner(
+        enablingBarcode: false,
+        machineReadableZone: true,
+        visualInspectionZone: true
+    )
+)
+// Result: capturedId.mrzResult and capturedId.vizResult are both populated
+```
+
+### MobileDocumentScanner (IDs displayed on a screen)
+
+`MobileDocumentScanner(enablingIso180135:ocr:)` is for mobile-presented identity documents. Use it specifically when the document holder is presenting an ID on their phone's screen — not for physical documents.
+
+The two modes are distinct and can be enabled independently or together:
+
+- **`enablingIso180135`** — ISO 18013-5 protocol. Scans a QR code displayed on the holder's phone, then performs a Bluetooth handover to securely pull the document holder's data from the mobile document app on their device.
+- **`ocr`** — Uses OCR to read data directly from the screen of the holder's phone when a mobile document (e.g. a digital driver's license) is displayed.
+
+```swift
+// ISO 18013-5 only (QR + Bluetooth handover):
+settings.scanner = IdCaptureScanner(
+    mobileDocument: MobileDocumentScanner(enablingIso180135: true, ocr: false)
+)
+
+// OCR only (read from screen):
+settings.scanner = IdCaptureScanner(
+    mobileDocument: MobileDocumentScanner(enablingIso180135: false, ocr: true)
+)
+
+// Both modes combined with physical document scanning:
 settings.scanner = IdCaptureScanner(
     physicalDocument: FullDocumentScanner(),
     mobileDocument: MobileDocumentScanner(enablingIso180135: true, ocr: true)
@@ -70,14 +103,19 @@ settings.scanner = IdCaptureScanner(
 - `rejectedDocuments` — explicitly reject these even if they would otherwise be accepted.
 
 ```swift
-settings.acceptedDocuments = [DriverLicense(region: .us), IdCard(region: .us)]
-settings.rejectedDocuments = [IdCard(region: .any)]  // example: reject all non-US ID cards
+// Accept all EU/Schengen ID cards, but explicitly reject French ones:
+settings.acceptedDocuments = [IdCard(region: .euAndSchengen)]
+settings.rejectedDocuments = [IdCard(region: .france)]
 ```
+
+> **Rejected always wins.** If a document matches anything in `rejectedDocuments`, it is rejected regardless of what is in `acceptedDocuments`. Do not put a broader region in `rejectedDocuments` and a narrower one in `acceptedDocuments` expecting the narrower accepted entry to win — it won't.
 
 Document constructors (all conforming to `IdCaptureDocument`, exposing `region` + `documentType`):
 `IdCard(region:)`, `DriverLicense(region:)`, `Passport(region:)`, `VisaIcao(region:)`, `ResidencePermit(region:)`, `HealthInsuranceCard(region:)`, and `RegionSpecific(subtype: RegionSpecificSubtype)`.
 
 `IdCaptureRegion` values: `.any`, `.euAndSchengen`, `.us`, `.uk`, `.uae`, `.germany`, … (~250 values).
+
+> **US Visa foil number:** When `VisaIcao(region: .us)` is in `acceptedDocuments` and MRZ is enabled on the scanner, the SDK will also capture the foil number printed outside the MRZ on US visas. The foil number is returned in `capturedId.vizResult`.
 
 ## Rejection rules
 
@@ -125,7 +163,12 @@ The full `RejectionReason` enum: `.notAcceptedDocumentType`, `.invalidFormat`, `
 
 ## US driver's license verification
 
-For US DL verification (detect forged AAMVA barcodes and data inconsistency between front and back), enable the relevant flags and read `capturedId.verificationResult` on both the captured and rejected paths:
+For US driver's license verification, two independent flags are available — use either or both depending on what you need to check:
+
+- `rejectForgedAamvaBarcodes` — detects forged AAMVA barcodes on the back of the license.
+- `rejectInconsistentData` — cross-checks data between zones captured from the same document. What is compared depends on which zones are enabled: VIZ is compared against MRZ when both are present, or against the PDF417 barcode when barcode is captured instead. For US driver's licenses (which have no MRZ), this compares the VIZ on the front against the PDF417 barcode on the back.
+
+Enable whichever flags apply and read `capturedId.verificationResult` on both the captured and rejected paths:
 
 ```swift
 settings.acceptedDocuments = [DriverLicense(region: .us)]
@@ -170,21 +213,33 @@ func idCapture(_ idCapture: IdCapture, didCapture capturedId: CapturedId) {
   - `.allChecksPassed` — `Bool`
   - `.frontReviewImage` — `UIImage?` (annotated image highlighting inconsistencies)
 - `capturedId.verificationResult.aamvaBarcodeVerification` — `AamvaBarcodeVerificationResult?`
-  - `.allChecksPassed` — `Bool`
   - `.status` — `AamvaBarcodeVerificationStatus` (`.authentic` / `.likelyForged` / `.forged`)
 
 > There is **no `AamvaBarcodeVerifier` or `DataConsistencyVerifier` class** on native iOS. Verification is entirely settings-driven.
 
 ## Anonymization
 
-Control which fields and images are included in the result:
+Anonymization is controlled by two independent dimensions:
+
+**Which fields are anonymized** — determined by the combination of:
+- The SDK's built-in default anonymization list (applied per document type, e.g. to meet regional legal requirements). Active by default; disable with `settings.anonymizeDefaultFields = false`.
+- Any fields explicitly added with `settings.addAnonymizedField(_:forDocument:)` or removed with `settings.removeAnonymizedField(_:forDocument:)`.
+
+**How fields are anonymized** — controlled by `anonymizationMode`:
+- `.none` — no anonymization applied
+- `.fieldsOnly` — anonymized field values are redacted in `CapturedId` (returned as `nil`)
+- `.imagesOnly` — anonymized fields are obscured in document images only; field values are still returned
+- `.fieldsAndImages` — field values are redacted AND the field is obscured in document images
 
 ```swift
-// Coarse: anonymize all images and fields together
-settings.anonymizationMode = .fieldsAndImages  // .none | .fieldsOnly | .fieldsAndImages
+// Redact field values and images for anonymized fields:
+settings.anonymizationMode = .fieldsAndImages
 
-// Fine-grained: anonymize specific fields for a specific document type
+// Add a field to anonymize for a specific document type:
 settings.addAnonymizedField(.dateOfBirth, forDocument: IdCard(region: .euAndSchengen))
+
+// Disable the SDK's default anonymization list entirely:
+settings.anonymizeDefaultFields = false
 ```
 
 Anonymized fields return `nil` in `CapturedId`. Check `capturedId.anonymizedFields` for the list of fields that were anonymized on a given result.
@@ -245,11 +300,11 @@ context.removeCurrentMode()
 let barcodeCapture = BarcodeCapture(context: context, settings: barcodeCaptureSettings)
 ```
 
-**Exception — simultaneous scanning:** In apps where both modes should run at the same time (e.g. an airport kiosk scanning a boarding-pass barcode and an ID simultaneously), keep both modes active without removing them. This is an advanced use case with restrictions — consult the documentation.
+**Exception — simultaneous scanning:** In apps where both modes should run at the same time (e.g. scanning a boarding-pass barcode and an ID simultaneously), keep both modes active without removing them. This is an advanced use case with restrictions — consult the documentation.
 
 > `context.removeAllModes()` removes every active mode at once; `context.removeCurrentMode()` removes only the one mode currently attached. Use whichever is appropriate for your architecture.
 
-> If you see `IdCapture` not recognizing expected documents after adding `BarcodeCapture`, call `context.removeCurrentMode()` before re-adding `IdCapture`.
+> If `BarcodeCapture` and `IdCapture` are both active and incompatible settings are detected, the SDK will surface a visible error on the `DataCaptureView`. Call `context.removeCurrentMode()` before re-adding `IdCapture` to resolve it.
 
 ## Overlay customization
 
@@ -280,13 +335,12 @@ Use this when you want to provide your own UX cues (animations, toasts) instead 
 
 ## NFC chip reading
 
-iOS supports NFC enrichment via `NfcScanner` after an initial MRZ scan. This is out of scope for this skill — a dedicated skill covers NFC integration end-to-end. Mention its availability to the user if they ask about reading the chip embedded in passports or ID cards.
+iOS supports NFC chip reading via `NfcScanner` after an initial MRZ scan. This is out of scope for this skill — refer the user to the [official iOS ID Capture documentation](https://docs.scandit.com/sdks/ios/id-capture/get-started/) for guidance on NFC integration.
 
 ## Key rules
 
-1. **Use `FullDocumentScanner()` by default** — switch to `SingleSideScanner` only when you know you need exactly one zone.
-2. **`MobileDocumentScanner` is for IDs on a screen** — do not use it for physical documents.
-3. **Verification is settings-driven** — no verifier class; set flags on `IdCaptureSettings` and read `capturedId.verificationResult`.
+1. **Choose the scanner based on what data you need.** Use `FullDocumentScanner` when you need data from both sides of a document. Use `SingleSideScanner` when you only need a specific zone (e.g. MRZ only, or back barcode only). Don't default to `FullDocumentScanner` if single-zone scanning meets the requirement.
+2. **Verification is settings-driven** — no verifier class; set flags on `IdCaptureSettings` and read `capturedId.verificationResult`.
 4. **Always handle every `RejectionReason` you enable** — a rule you add without a corresponding UI message will confuse users.
 5. **Request only the images you need** — face, croppedDocument, and frame each add processing overhead.
 6. **Call `context.removeCurrentMode()` when switching between IdCapture and BarcodeCapture** — unless simultaneous scanning is intentional.

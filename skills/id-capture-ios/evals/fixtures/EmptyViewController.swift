@@ -1,8 +1,8 @@
 import UIKit
 
-class ScanViewController: UIViewController {
+class ViewController: UIViewController {
+
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .systemBackground
     }
 }

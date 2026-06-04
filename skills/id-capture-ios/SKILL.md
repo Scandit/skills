@@ -87,14 +87,14 @@ All classes available on the native iOS SDK. The modern document/scanner API (`a
 - **`IdImages`** — `face` (`UIImage?`), `frame` (`UIImage?`), `croppedDocument(side:)` (`UIImage?`).
 - **`VerificationResult`** — `dataConsistency` (`DataConsistencyResult?`), `aamvaBarcodeVerification` (`AamvaBarcodeVerificationResult?`).
 - **`DataConsistencyResult`** — `allChecksPassed`, `frontReviewImage` (`UIImage?`).
-- **`AamvaBarcodeVerificationResult`** — `allChecksPassed`, `status` (`AamvaBarcodeVerificationStatus`: `.authentic` / `.likelyForged` / `.forged`).
+- **`AamvaBarcodeVerificationResult`** — `status` (`AamvaBarcodeVerificationStatus`: `.authentic` / `.likelyForged` / `.forged`).
 - **`IdCaptureOverlay`** — `IdCaptureOverlay(idCapture:view:)`; `idLayoutStyle` (`IdLayoutStyle`: `.rounded` / `.square`), `idLayoutLineStyle` (`IdLayoutLineStyle`: `.bold` / `.light`), `showTextHints`, `textHintPosition`, `setFrontSideTextHint(_:)` / `setBackSideTextHint(_:)`, `capturedBrush` / `localizedBrush` / `rejectedBrush`.
 - **`IdCaptureFeedback`** — `IdCaptureFeedback()`; `idCaptured` / `idRejected` (`Feedback`); static `default`.
 - **`DataCaptureContext`** — `DataCaptureContext.initialize(licenseKey:)` then `DataCaptureContext.shared`; `setFrameSource(_:completionHandler:)`; `removeCurrentMode()` / `removeAllModes()`.
 - **`Camera`** — `Camera.default`; `switch(toDesiredState:)` (`.on` / `.off`); `apply(_:)`.
 - **`DataCaptureView`** — `DataCaptureView(context:frame:)`; `autoresizingMask`.
 - **`RejectionReason`** enum — `.notAcceptedDocumentType`, `.invalidFormat`, `.documentVoided`, `.timeout`, `.documentExpired`, `.documentExpiresSoon`, `.notRealIdCompliant`, `.holderUnderage`, `.forgedAamvaBarcode`, `.inconsistentData`.
-- **`IdAnonymizationMode`** enum — `.none`, `.fieldsOnly`, `.fieldsAndImages`.
+- **`IdAnonymizationMode`** enum — `.none`, `.fieldsOnly`, `.imagesOnly`, `.fieldsAndImages`.
 - **`IdImageType`** enum — `.face`, `.croppedDocument`, `.frame`.
 - **`IdLayoutStyle`** / **`IdLayoutLineStyle`** / **`TextHintPosition`** — overlay appearance enums.
 

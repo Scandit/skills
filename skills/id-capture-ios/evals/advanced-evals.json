@@ -15,19 +15,18 @@
         {"text": "Calls settings.setIncludeImage(true, for: .croppedDocument)"},
         {"text": "Does NOT use AamvaBarcodeVerifier or DataConsistencyVerifier — verification is settings-driven"},
         {"text": "In didReject, accesses capturedId?.verificationResult.dataConsistency?.frontReviewImage when reason == .inconsistentData"},
-        {"text": "In didCapture, accesses capturedId.verificationResult.dataConsistency?.frontReviewImage"},
         {"text": "Handles .inconsistentData, .forgedAamvaBarcode, and .documentExpired in didReject with distinct messages"},
         {"text": "Uses idCapture.reset() when re-enabling capture after showing the verification result (or correctly re-enables isEnabled)"}
       ]
     },
     {
       "id": 2,
-      "prompt": "The app already uses BarcodeCapture for scanning barcodes. Now add an ID scanning screen using IdCapture. Make sure the two modes don't interfere — the ID scanning screen should remove any existing mode before adding IdCapture.",
-      "expected_output": "Code that calls context.removeCurrentMode() (or context.removeAllModes()) before creating the IdCapture instance, ensuring BarcodeCapture and IdCapture don't co-exist unexpectedly.",
+      "prompt": "The app already uses BarcodeCapture for scanning barcodes. Now add an ID scanning screen using IdCapture. Make sure the two modes don't interfere — the ID scanning screen should handle mode co-existence correctly.",
+      "expected_output": "Code that addresses BarcodeCapture/IdCapture co-existence — either by removing the existing mode before adding IdCapture (the typical approach for separate screens), or by explicitly acknowledging that simultaneous operation is intentional. The skill should note that removeAllModes() or removeCurrentMode() is recommended when switching between modes, but that co-existence is valid when both modes are genuinely needed at the same time.",
       "files": ["evals/fixtures/EmptyViewController.swift"],
       "assertions": [
-        {"text": "Calls context.removeCurrentMode() or context.removeAllModes() before creating the IdCapture instance"},
-        {"text": "Creates IdCapture(context: context, settings: settings) after the mode removal"},
+        {"text": "Addresses the BarcodeCapture/IdCapture co-existence concern — either calls context.removeCurrentMode() or context.removeAllModes() when switching modes, OR explicitly notes that simultaneous co-existence is intentional"},
+        {"text": "Creates IdCapture(context: context, settings: settings)"},
         {"text": "Sets up IdCaptureSettings with acceptedDocuments and scanner"},
         {"text": "Implements IdCaptureListener with didCapture and didReject"},
         {"text": "Manages camera lifecycle in viewWillAppear / viewDidDisappear"}

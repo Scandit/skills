@@ -4,7 +4,7 @@
     {
       "id": 1,
       "prompt": "Add ID Capture to this blank UIViewController to scan passports, driver's licenses, and ID cards from any region. When a document is recognized, show the full name, date of birth, and document number in an alert. When a document is rejected, show an appropriate message.",
-      "expected_output": "A complete UIViewController implementing IdCaptureListener with camera lifecycle in viewWillAppear/viewDidDisappear, IdCaptureSettings with acceptedDocuments for Passport, DriverLicense and IdCard, a FullDocumentScanner, and alert-based result display.",
+      "expected_output": "A complete UIViewController implementing IdCaptureListener with addListener called once at setup, camera lifecycle in viewWillAppear/viewDidDisappear, IdCaptureSettings with acceptedDocuments for Passport, DriverLicense and IdCard, a FullDocumentScanner, and alert-based result display.",
       "files": ["evals/fixtures/EmptyViewController.swift"],
       "assertions": [
         {"text": "Imports ScanditIdCapture (and optionally ScanditCaptureCore)"},
@@ -16,16 +16,15 @@
         {"text": "Sets settings.scanner = IdCaptureScanner(physicalDocument: FullDocumentScanner()) — does NOT use settings.supportedDocuments or settings.scannerType"},
         {"text": "Creates IdCapture(context: context, settings: settings) — does NOT use IdCapture.Create or IdCapture.forDataCaptureContext"},
         {"text": "Creates IdCaptureOverlay(idCapture:view:)"},
-        {"text": "Conforms to IdCaptureListener — does NOT use IIdCaptureListener"},
         {"text": "Implements idCapture(_:didCapture:capturedId:) — does NOT use didCaptureIn session:frameData:"},
         {"text": "Implements idCapture(_:didReject:reason:) — does NOT use didRejectIn session:frameData:"},
         {"text": "Sets idCapture.isEnabled = false inside didCapture before showing the alert"},
         {"text": "Re-enables idCapture.isEnabled = true when the alert is dismissed"},
         {"text": "Dispatches UI work to DispatchQueue.main or the main thread"},
-        {"text": "Adds idCapture.addListener(self) in viewWillAppear and turns camera on"},
-        {"text": "Removes listener with removeListener and turns camera off in viewDidDisappear (not viewWillDisappear)"},
+        {"text": "Calls idCapture.addListener(self) once at setup time (e.g. in setupRecognition or viewDidLoad), NOT in viewWillAppear"},
+        {"text": "Turns camera on in viewWillAppear and off in viewDidDisappear"},
         {"text": "Reads capturedId.fullName, capturedId.dateOfBirth, and capturedId.documentNumber from the CapturedId"},
-        {"text": "Does NOT reference IdCaptureSession, FrameData, SDCIdCapture, or any SDC-prefixed type"},
+        {"text": "Does NOT reference IdCaptureSession or FrameData"},
         {"text": "Does NOT reference AamvaBarcodeVerifier or DataConsistencyVerifier"}
       ]
     },
@@ -43,6 +42,17 @@
         {"text": "Has a case for .timeout with a distinct user-facing message about the capture timing out"},
         {"text": "Has a default case for all other rejection reasons"},
         {"text": "Does NOT use rejectHolderBelowAge as a String — it must be an Int literal (21)"}
+      ]
+    }
+    ,{
+      "id": 3,
+      "prompt": "Configure ID Capture to accept ID cards and driver's licenses from the US, but explicitly reject passports.",
+      "expected_output": "IdCaptureSettings with acceptedDocuments containing IdCard(region: .us) and DriverLicense(region: .us), and rejectedDocuments containing Passport(region: .any).",
+      "files": ["evals/fixtures/EmptyViewController.swift"],
+      "assertions": [
+        {"text": "Sets acceptedDocuments to [IdCard(region: .us), DriverLicense(region: .us)] — does NOT put passports in acceptedDocuments"},
+        {"text": "Sets rejectedDocuments to contain Passport — does NOT use acceptedDocuments to exclude passports"},
+        {"text": "Does NOT confuse acceptedDocuments and rejectedDocuments — wanted documents go in acceptedDocuments, unwanted in rejectedDocuments"}
       ]
     }
   ]

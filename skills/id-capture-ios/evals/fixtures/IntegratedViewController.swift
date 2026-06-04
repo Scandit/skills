@@ -30,14 +30,12 @@ class IdCaptureViewController: UIViewController {
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        idCapture.addListener(self)
         idCapture.isEnabled = true
         camera?.switch(toDesiredState: .on)
     }
 
     override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
-        idCapture.removeListener(self)
         idCapture.isEnabled = false
         camera?.switch(toDesiredState: .off)
     }
@@ -60,6 +58,7 @@ class IdCaptureViewController: UIViewController {
         settings.scanner = IdCaptureScanner(physicalDocument: FullDocumentScanner())
 
         idCapture = IdCapture(context: context, settings: settings)
+        idCapture.addListener(self)
 
         overlay = IdCaptureOverlay(idCapture: idCapture, view: captureView)
     }
