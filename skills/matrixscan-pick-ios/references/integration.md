@@ -219,6 +219,11 @@ common "my picks don't complete" problem, and the official basic Get Started pag
 `settings.set(symbology:enabled:)`. For convenience, `enableSymbologies(_:)` enables a whole set at
 once, and `enabledSymbologies` (read-only) returns what's currently on.
 
+For the exact `Symbology` case to pass (e.g. QR is `.qr`, not `.qrCode`), consult the
+[Symbology API reference](https://docs.scandit.com/data-capture-sdk/ios/barcode-capture/api/symbology.html) —
+don't guess the case name. (The minimal example above enables a handful; the full list of symbologies
+and their Swift names lives on that page.)
+
 For variable-length symbologies (Code 39, Code 128, Interleaved 2 of 5, etc.) the user often wants
 to restrict the accepted lengths. For other symbologies they may need color-inverted decoding or
 specific checksums. Access the per-symbology settings via `BarcodePickSettings.settings(for:)`:
@@ -263,6 +268,21 @@ func mapItems(
   **not-in-list**.
 - The mapping is **asynchronous** (call `completionHandler` when ready), so a database lookup or
   network call inside the delegate is fine.
+
+## Pick states
+
+Each detected barcode is in one of four `BarcodePickState` values. The state drives both the picking
+logic and how the highlight is drawn (see "Highlight configuration"):
+
+- `.toPick` — the item should be picked (mapped to a product in the list and not yet picked).
+- `.picked` — the item has been picked.
+- `.unknown` — the item has not been mapped to a product (the provider returned no `productIdentifier`
+  for its payload) — i.e. not-in-list.
+- `.ignore` — the item should be ignored in this session.
+
+A barcode whose payload your `mapItems` resolves to a product starts as `.toPick` and moves to
+`.picked` once a pick is confirmed through the action listener; a payload you don't resolve is
+`.unknown`.
 
 ## Tracking picks (and unpicks)
 

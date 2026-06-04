@@ -13,10 +13,10 @@ for it.
 Every highlight is rendered for one of four `BarcodePickState` values, and most customization is
 keyed by state:
 
-- `.toPick` — the item is in the list and still needs to be picked.
+- `.toPick` — the item should be picked (it's in the list and not yet picked).
 - `.picked` — the item has been picked.
-- `.unknown` — the scanned code isn't in the product list (not-in-list).
-- `.ignore` — the item is excluded from the current pick.
+- `.unknown` — the item has not been mapped to a product (i.e. not-in-list).
+- `.ignore` — the item should be ignored in this session.
 
 ## Setting a highlight style
 
@@ -196,8 +196,9 @@ extension ViewController: BarcodePickViewHighlightStyleDelegate {
 The callback is async (it hands you a `completionHandler`), so a backend lookup is fine. It is **not**
 main-actor annotated — dispatch to the main queue before touching UIKit. `BarcodePickViewHighlightStyleResponse`
 has initializers for `brush:scanditIcon:` and `brush:icon:`, plus their selected-state variants
-(`brush:selectedBrush:scanditIcon:selectedScanditIcon:` and `brush:selectedBrush:icon:selectedIcon:`),
-each ending in a `statusIconStyle:` argument (pass `nil` for no badge).
+(`brush:selectedBrush:scanditIcon:selectedScanditIcon:` and `brush:selectedBrush:icon:selectedIcon:`).
+**Every one of these ends in a required `statusIconStyle:` argument — pass `nil` for no badge, but you
+must pass it; it can't be omitted.**
 
 > A `nil` `brush` makes the highlight shape **transparent** (nothing drawn for it); a `nil` icon just
 > means no icon is shown (it does not affect the shape). So if you return a `nil` brush but supply a
