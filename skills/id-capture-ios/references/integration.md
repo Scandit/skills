@@ -198,19 +198,17 @@ Always guard for `nil` — a field that wasn't present on the scanned document i
 
 ## Step 7 — Camera lifecycle
 
-Toggle the camera and listener across the `UIViewController` lifecycle.
+Toggle the camera across the `UIViewController` lifecycle. The listener is registered once at setup time (Step 6) and stays registered for the lifetime of the view controller.
 
 ```swift
 override func viewWillAppear(_ animated: Bool) {
     super.viewWillAppear(animated)
-    idCapture.addListener(self)
     idCapture.isEnabled = true
     camera?.switch(toDesiredState: .on)
 }
 
 override func viewDidDisappear(_ animated: Bool) {
     super.viewDidDisappear(animated)
-    idCapture.removeListener(self)
     idCapture.isEnabled = false
     camera?.switch(toDesiredState: .off)
 }
@@ -254,14 +252,12 @@ class IdCaptureViewController: UIViewController {
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        idCapture.addListener(self)
         idCapture.isEnabled = true
         camera?.switch(toDesiredState: .on)
     }
 
     override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
-        idCapture.removeListener(self)
         idCapture.isEnabled = false
         camera?.switch(toDesiredState: .off)
     }
@@ -284,6 +280,7 @@ class IdCaptureViewController: UIViewController {
         settings.scanner = IdCaptureScanner(physicalDocument: FullDocumentScanner())
 
         idCapture = IdCapture(context: context, settings: settings)
+        idCapture.addListener(self)
 
         overlay = IdCaptureOverlay(idCapture: idCapture, view: captureView)
     }
@@ -334,7 +331,8 @@ extension IdCaptureViewController: IdCaptureListener {
 6. **Apply `IdCapture.recommendedCameraSettings`** to the camera before starting.
 7. **Handle both `didCapture` and `didReject`** — both run on a background thread; dispatch UI work to the main thread.
 8. **Set `isEnabled = false` before showing results** and re-enable when the user dismisses.
-9. **Camera lifecycle in `viewWillAppear` / `viewDidDisappear`** — turn the camera `.on` when appearing and `.off` when disappearing.
+9. **`addListener` once at setup** — call `idCapture.addListener(self)` once in `setupRecognition` or `viewDidLoad`, not in `viewWillAppear`.
+10. **Camera lifecycle in `viewWillAppear` / `viewDidDisappear`** — turn the camera `.on` when appearing and `.off` when disappearing.
 10. **`NSCameraUsageDescription` in `Info.plist`** — required; iOS prompts automatically, no runtime-permission code needed.
 11. **`didCapture` fires once per complete document** (not per side or zone — that was the v6 behaviour).
 12. **Never read `session.newlyCapturedId`** — `IdCaptureSession` was removed in v7; results are delivered directly via `didCapture(_:capturedId:)`.
