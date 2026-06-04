@@ -1,0 +1,37 @@
+{
+  "skill_name": "id-capture-ios",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Configure ID Capture to scan US driver's licenses only and verify them for forged AAMVA barcodes and data inconsistency between the front and back of the document. Also reject expired IDs. On rejection for inconsistent data, extract and display the front review image from the verification result. On a successful scan, also check for and display the review image if available.",
+      "expected_output": "IdCaptureSettings targeting DriverLicense(region: .us) with rejectForgedAamvaBarcodes, rejectInconsistentData, and rejectExpiredIds flags, setIncludeImage for face and croppedDocument, and correct VerificationResult access in both callbacks.",
+      "files": ["evals/fixtures/IntegratedViewController.swift"],
+      "assertions": [
+        {"text": "Sets acceptedDocuments to [DriverLicense(region: .us)] only"},
+        {"text": "Sets settings.rejectForgedAamvaBarcodes = true"},
+        {"text": "Sets settings.rejectInconsistentData = true"},
+        {"text": "Sets settings.rejectExpiredIds = true"},
+        {"text": "Calls settings.setIncludeImage(true, for: .face)"},
+        {"text": "Calls settings.setIncludeImage(true, for: .croppedDocument)"},
+        {"text": "Does NOT use AamvaBarcodeVerifier or DataConsistencyVerifier — verification is settings-driven"},
+        {"text": "In didReject, accesses capturedId?.verificationResult.dataConsistency?.frontReviewImage when reason == .inconsistentData"},
+        {"text": "In didCapture, accesses capturedId.verificationResult.dataConsistency?.frontReviewImage"},
+        {"text": "Handles .inconsistentData, .forgedAamvaBarcode, and .documentExpired in didReject with distinct messages"},
+        {"text": "Uses idCapture.reset() when re-enabling capture after showing the verification result (or correctly re-enables isEnabled)"}
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "The app already uses BarcodeCapture for scanning barcodes. Now add an ID scanning screen using IdCapture. Make sure the two modes don't interfere — the ID scanning screen should remove any existing mode before adding IdCapture.",
+      "expected_output": "Code that calls context.removeCurrentMode() (or context.removeAllModes()) before creating the IdCapture instance, ensuring BarcodeCapture and IdCapture don't co-exist unexpectedly.",
+      "files": ["evals/fixtures/EmptyViewController.swift"],
+      "assertions": [
+        {"text": "Calls context.removeCurrentMode() or context.removeAllModes() before creating the IdCapture instance"},
+        {"text": "Creates IdCapture(context: context, settings: settings) after the mode removal"},
+        {"text": "Sets up IdCaptureSettings with acceptedDocuments and scanner"},
+        {"text": "Implements IdCaptureListener with didCapture and didReject"},
+        {"text": "Manages camera lifecycle in viewWillAppear / viewDidDisappear"}
+      ]
+    }
+  ]
+}
