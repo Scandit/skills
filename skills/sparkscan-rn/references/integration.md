@@ -205,34 +205,6 @@ return (
 
 > Props `context`, `sparkScan`, and `style` are required. `sparkScanViewSettings` is optional — pass a default `new SparkScanViewSettings()` if you don't need to tweak view-level config.
 
-### Scanning behavior (single vs continuous) and preview behavior
-
-By default SparkScan scans one barcode per trigger press. For high-volume workflows,
-configure continuous scanning and a persistent camera preview via
-`SparkScanViewSettings.defaultScanningMode`:
-
-```tsx
-import {
-  SparkScanViewSettings,
-  SparkScanScanningModeDefault,
-  SparkScanScanningBehavior,
-  SparkScanPreviewBehavior,
-} from 'scandit-react-native-datacapture-barcode';
-
-const viewSettings = new SparkScanViewSettings();
-viewSettings.defaultScanningMode = new SparkScanScanningModeDefault(
-  SparkScanScanningBehavior.Continuous,  // or .Single (default)
-  SparkScanPreviewBehavior.Persistent,   // or .Default
-);
-```
-
-Always pass BOTH arguments — the one-argument `SparkScanScanningModeDefault(behavior)`
-form is deprecated. Pass the configured settings via the `sparkScanViewSettings` prop.
-`Persistent` keeps the camera preview visible after a scan; the default hides it and
-moves the camera to standby for efficiency. Use `SparkScanScanningModeTarget` to force
-an aimer for precision selection among many close barcodes.
-
-
 ## Step 5 — SparkScanView Lifecycle and Cleanup
 
 The native view is created when the component mounts and torn down when it unmounts. Camera startup is automatic — you do **not** need to call a separate `prepareScanning()` / `startScanning()` in typical flows.
