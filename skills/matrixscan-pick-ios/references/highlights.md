@@ -13,10 +13,16 @@ for it.
 Every highlight is rendered for one of four `BarcodePickState` values, and most customization is
 keyed by state:
 
-- `.toPick` — the item should be picked (it's in the list and not yet picked).
+- `.toPick` — mapped to a product that's in the pick list and still needs units; pickable and counts.
 - `.picked` — the item has been picked.
-- `.unknown` — the item has not been mapped to a product (i.e. not-in-list).
-- `.ignore` — the item should be ignored in this session.
+- `.ignore` — mapped to a real product that is **not part of the current request** (never in the list,
+  or its quantity is already fulfilled). Still tappable **and pickable** — the pick is recorded; the SDK
+  just shows an informational "item not in list" notice. The "not-in-list" case.
+- `.unknown` — **not mapped to any product** (your `mapItems` omitted the payload). Inert — the user
+  can't interact with it.
+
+See the "Pick states" section in `integration.md` for how a barcode moves between these (e.g. extra
+to-pick barcodes flip to `.ignore` once a product's quantity is fulfilled).
 
 ## Setting a highlight style
 
@@ -197,8 +203,13 @@ The callback is async (it hands you a `completionHandler`), so a backend lookup 
 main-actor annotated — dispatch to the main queue before touching UIKit. `BarcodePickViewHighlightStyleResponse`
 has initializers for `brush:scanditIcon:` and `brush:icon:`, plus their selected-state variants
 (`brush:selectedBrush:scanditIcon:selectedScanditIcon:` and `brush:selectedBrush:icon:selectedIcon:`).
-**Every one of these ends in a required `statusIconStyle:` argument — pass `nil` for no badge, but you
-must pass it; it can't be omitted.**
+**Every one of these *starts* with a required `brush:` argument and *ends* with a required
+`statusIconStyle:` argument — neither can be omitted.** There is no `scanditIcon:`-only or `icon:`-only
+initializer: if you only want to vary the icon, you must *still* construct the full response with both
+`brush:` and `statusIconStyle:`. For the badge, pass `statusIconStyle: nil` when you don't want one. For
+the brush, **pass a visible `Brush` if you want the highlight shape drawn** — passing `brush: nil` does
+**not** inherit the style's per-state brush; it makes the shape transparent (see the note below). So to
+"show the highlight but just toggle the icon," supply the brush you want in every branch.
 
 > A `nil` `brush` makes the highlight shape **transparent** (nothing drawn for it); a `nil` icon just
 > means no icon is shown (it does not affect the shape). So if you return a `nil` brush but supply a

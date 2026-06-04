@@ -1,6 +1,11 @@
 import SwiftUI
 import ScanditBarcodeCapture
 
+// MARK: - SwiftUI entry point
+//
+// MatrixScan Pick has no native SwiftUI view — BarcodePickView is a UIView. We bridge the UIKit
+// view controller into SwiftUI via UIViewControllerRepresentable and keep every BarcodePick* API
+// call inside the wrapped UIKit layer. This SwiftUI View struct contains no Scandit code.
 struct ScanView: View {
     var body: some View {
         PickViewControllerRepresentable()
@@ -16,23 +21,35 @@ struct PickViewControllerRepresentable: UIViewControllerRepresentable {
     func updateUIViewController(_ uiViewController: PickViewController, context: Context) {}
 }
 
-// The shape your product data takes before it is turned into BarcodePickProducts.
-// Replace with your real model / data source.
+// MARK: - Product database
+//
+// One entry per product the scanner can RECOGNIZE: its identifier and the barcode payloads that
+// map to it. Replace with your real model / data source.
 struct ProductDatabaseEntry {
     let identifier: String
-    let quantity: Int
     let items: [String] // the barcode data strings that belong to this product
 }
 
+// MARK: - UIKit view controller (owns all the BarcodePick* objects)
 class PickViewController: UIViewController {
     private let context = DataCaptureContext(licenseKey: "-- ENTER YOUR SCANDIT LICENSE KEY HERE --")
     private var barcodePickView: BarcodePickView!
 
-    // The catalog of products to pick, and which barcode payloads map to each.
-    // Replace with your real catalog / data source.
+    // The product database: everything the scanner can recognize (barcode payload → product id).
+    // It can list more than the user is asked to pick.
     private let productDatabase: [ProductDatabaseEntry] = [
-        .init(identifier: "product_1", quantity: 2, items: ["9783598215438", "9783598215414"]),
-        .init(identifier: "product_2", quantity: 3, items: ["9783598215471", "9783598215481"]),
+        .init(identifier: "product_1", items: ["9783598215438", "9783598215414"]),
+        .init(identifier: "product_2", items: ["9783598215471", "9783598215481"]),
+        // In the database but not in `productsToPick` → resolves to .ignore (still tappable, just not
+        // highlighted or counted). Drop this line if you don't want users to interact with it.
+        .init(identifier: "product_3", items: ["9783598215498"]),
+    ]
+
+    // The subset the user must actually pick, each with a target quantity → highlighted (.toPick)
+    // and counted. Every identifier here must exist in productDatabase above.
+    private let productsToPick: [BarcodePickProduct] = [
+        BarcodePickProduct(identifier: "product_1", quantityToPick: 2),
+        BarcodePickProduct(identifier: "product_2", quantityToPick: 3),
     ]
 
     override func viewDidLoad() {
@@ -61,16 +78,14 @@ class PickViewController: UIViewController {
         settings.set(symbology: .ean8, enabled: true)
         settings.set(symbology: .upce, enabled: true)
         settings.set(symbology: .code128, enabled: true)
+        settings.set(symbology: .code39, enabled: true)
 
-        // 2. Build the set of products to pick.
-        var products: Set<BarcodePickProduct> = []
-        productDatabase.forEach { entry in
-            products.insert(BarcodePickProduct(identifier: entry.identifier,
-                                               quantityToPick: entry.quantity))
-        }
+        // 2. The pick list is the products-to-pick subset (a Set of BarcodePickProduct).
+        let products = Set(productsToPick)
 
         // 3. The product provider maps scanned barcode payloads to product identifiers,
-        //    asynchronously, via the delegate below.
+        //    asynchronously, via the delegate below. It resolves against the full database,
+        //    so a recognized product that isn't in `products` shows up as .ignore.
         let productProvider = BarcodePickAsyncMapperProductProvider(products: products,
                                                                     providerDelegate: self)
 
@@ -79,7 +94,11 @@ class PickViewController: UIViewController {
                                settings: settings,
                                productProvider: productProvider)
 
-        // 5. Create the view. It renders the camera preview and the picking UI.
+        // 5. Observe pick state. Register a scanning listener on the MODE (not the view)
+        //    to read picked / scanned items off the session as the user progresses.
+        mode.addScanningListener(self)
+
+        // 6. Create the view. It renders the camera preview and the picking UI.
         let viewSettings = BarcodePickViewSettings()
         barcodePickView = BarcodePickView(frame: view.bounds,
                                           context: context,
@@ -87,10 +106,6 @@ class PickViewController: UIViewController {
                                           settings: viewSettings)
         barcodePickView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         view.addSubview(barcodePickView)
-
-        // 6. Observe pick state. Register a scanning listener on the MODE (not the view)
-        //    to read picked / scanned items off the session as the user progresses.
-        mode.addScanningListener(self)
 
         // 7. Observe view-lifecycle events and the finish button.
         barcodePickView.addListener(self)
@@ -108,7 +123,7 @@ extension PickViewController: BarcodePickAsyncMapperProductProviderDelegate {
                   completionHandler: @escaping ([BarcodePickProductProviderCallbackItem]) -> Void) {
         let result: [BarcodePickProductProviderCallbackItem] = items.compactMap { item in
             guard let entry = productDatabase.first(where: { $0.items.contains(item) }) else {
-                return nil // unknown item — will be highlighted as not-in-list
+                return nil // not in the database → .unknown (inert; the user can't interact with it)
             }
             return BarcodePickProductProviderCallbackItem(itemData: item,
                                                           productIdentifier: entry.identifier)
@@ -129,7 +144,8 @@ extension PickViewController: BarcodePickViewListener {
 extension PickViewController: BarcodePickViewUIDelegate {
     func barcodePickViewDidTapFinishButton(_ view: BarcodePickView) {
         // Handle the finish action — e.g. pop, dismiss, present a summary.
-        // In SwiftUI, the host typically owns dismissal (e.g. via @Environment(\.dismiss)).
+        // In SwiftUI the host typically owns dismissal (e.g. an @Environment(\.dismiss) action);
+        // signal back into this controller however the app prefers.
     }
 }
 

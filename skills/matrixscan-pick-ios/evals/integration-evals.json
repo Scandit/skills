@@ -161,6 +161,21 @@
         {"text": "Includes a link to the Scandit iOS documentation (scandit.com/sdks/ios/matrixscan-pick or scandit.com/data-capture-sdk/ios)"},
         {"text": "No files are written or edited"}
       ]
+    },
+    {
+      "id": 10,
+      "prompt": "Restructure my MatrixScan Pick products so that: product_1 stays a required pick (highlighted and counted), product_2 becomes an optional extra (the user may still pick it but it must NOT be highlighted as required), and product_3 is excluded entirely (the user can't interact with it at all). File: IntegratedBarcodePickViewController.swift",
+      "expected_output": "The skill restructures the existing data without adding new products. product_1 is left in BOTH the productDatabase and productsToPick → .toPick. product_2 is removed from productsToPick but KEPT in the productDatabase → .ignore (recognized, optionally tappable, not highlighted or counted). product_3 is removed from the productDatabase entirely (so it is no longer mapped) → .unknown (inert; the user can't interact with it). The skill explains this mapping of intent → state and does not confuse .ignore with .unknown. The rest of the integration (context, settings, provider, mode, view, listeners) is preserved.",
+      "files": ["fixtures/IntegratedBarcodePickViewController.swift"],
+      "assertions": [
+        {"text": "product_1 remains in BOTH productDatabase and productsToPick (stays .toPick / required)"},
+        {"text": "product_2 is removed from productsToPick but KEPT in productDatabase — mapped-but-not-in-the-pick-list is what makes it .ignore (optional, recognized, still pickable)"},
+        {"text": "product_3 is removed from the productDatabase entirely (no longer mapped by mapItems), which is what makes it .unknown (excluded / non-interactive)"},
+        {"text": "The response explains the resulting states correctly: product_1 → .toPick, product_2 → .ignore (optional extra), product_3 → .unknown (excluded) — and does NOT confuse .ignore with .unknown (e.g. it does NOT leave product_3 in the database, nor remove product_2 from the database)"},
+        {"text": "No new products or barcodes are invented/added — only the existing product_1/2/3 are reorganized or removed"},
+        {"text": "No duplicate DataCaptureContext, BarcodePick, or BarcodePickView is introduced; the existing provider/mode/view/listeners are left intact"},
+        {"text": "Uses only real APIs (BarcodePickProduct(identifier:quantityToPick:), the existing ProductDatabaseEntry shape) — no invented allow-list/optional-flag API"}
+      ]
     }
   ]
 }

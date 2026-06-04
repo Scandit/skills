@@ -1,6 +1,6 @@
 # MatrixScan Pick iOS Integration Guide
 
-MatrixScan Pick is a pre-built picking workflow component built on top of the Scandit SDK. It scans multiple barcodes at once, maps them against a known product list, and renders state-aware augmented-reality highlights (to-pick / picked / not-in-list) plus a finish button for completing the session. The integration has two primary elements: the **`BarcodePick`** data capture mode and the **`BarcodePickView`** pre-built UI.
+MatrixScan Pick is a pre-built picking workflow component built on top of the Scandit SDK. It scans multiple barcodes at once, maps them against a known product list, and renders state-aware augmented-reality highlights (to-pick / picked / ignore / unknown — see "Pick states") plus a finish button for completing the session. The integration has two primary elements: the **`BarcodePick`** data capture mode and the **`BarcodePickView`** pre-built UI.
 
 ## Prerequisites
 
@@ -30,11 +30,10 @@ The code below is adapted from the official MatrixScan Pick Get Started guide an
 ```swift
 import ScanditBarcodeCapture
 
-// The shape your product data takes before it is turned into BarcodePickProducts.
-// Replace with the user's real model / data source.
+// One entry per product the scanner can RECOGNIZE: its identifier and the barcode payloads that
+// map to it. Replace with the user's real model / data source.
 struct ProductDatabaseEntry {
     let identifier: String
-    let quantity: Int
     let items: [String] // the barcode data strings that belong to this product
 }
 
@@ -42,10 +41,21 @@ class PickViewController: UIViewController {
     private let context = DataCaptureContext(licenseKey: "-- ENTER YOUR SCANDIT LICENSE KEY HERE --")
     private var barcodePickView: BarcodePickView!
 
-    // The catalog of products to pick, and which barcode payloads map to each.
+    // The product database: everything the scanner can recognize (barcode payload → product id).
+    // It can list more than the user is asked to pick.
     private let productDatabase: [ProductDatabaseEntry] = [
-        .init(identifier: "product_1", quantity: 2, items: ["9783598215438", "9783598215414"]),
-        .init(identifier: "product_2", quantity: 3, items: ["9783598215471", "9783598215481"]),
+        .init(identifier: "product_1", items: ["9783598215438", "9783598215414"]),
+        .init(identifier: "product_2", items: ["9783598215471", "9783598215481"]),
+        // In the database but not in `productsToPick` → resolves to .ignore (still tappable, just not
+        // highlighted or counted). Drop this line if you don't want users to interact with it.
+        .init(identifier: "product_3", items: ["9783598215498"]),
+    ]
+
+    // The subset the user must actually pick, each with a target quantity → highlighted (.toPick)
+    // and counted. Every identifier here must exist in productDatabase above.
+    private let productsToPick: [BarcodePickProduct] = [
+        BarcodePickProduct(identifier: "product_1", quantityToPick: 2),
+        BarcodePickProduct(identifier: "product_2", quantityToPick: 3),
     ]
 
     override func viewDidLoad() {
@@ -75,15 +85,12 @@ class PickViewController: UIViewController {
         settings.set(symbology: .upce, enabled: true)
         settings.set(symbology: .code128, enabled: true)
 
-        // 2. Build the set of products to pick.
-        var products: Set<BarcodePickProduct> = []
-        productDatabase.forEach { entry in
-            products.insert(BarcodePickProduct(identifier: entry.identifier,
-                                               quantityToPick: entry.quantity))
-        }
+        // 2. The pick list is the products-to-pick subset (a Set of BarcodePickProduct).
+        let products = Set(productsToPick)
 
         // 3. The product provider maps scanned barcode payloads to product identifiers,
-        //    asynchronously, via the delegate below.
+        //    asynchronously, via the delegate below. It resolves against the full database,
+        //    so a recognized product that isn't in `products` shows up as .ignore.
         let productProvider = BarcodePickAsyncMapperProductProvider(products: products,
                                                                     providerDelegate: self)
 
@@ -121,7 +128,7 @@ extension PickViewController: BarcodePickAsyncMapperProductProviderDelegate {
                   completionHandler: @escaping ([BarcodePickProductProviderCallbackItem]) -> Void) {
         let result: [BarcodePickProductProviderCallbackItem] = items.compactMap { item in
             guard let entry = productDatabase.first(where: { $0.items.contains(item) }) else {
-                return nil // unknown item — will be highlighted as not-in-list
+                return nil // not in the database → .unknown (inert; the user can't interact with it)
             }
             return BarcodePickProductProviderCallbackItem(itemData: item,
                                                           productIdentifier: entry.identifier)
@@ -196,23 +203,6 @@ extension PickViewController: BarcodePickScanningListener {
 What this code does **not** do:
 - It does not customize the **highlight appearance per pick state** (brushes, icons, custom views). The default highlight is used. See "Highlight configuration" below for the available styles; per-state customization is the scope of the highlights sibling skill.
 
-## Confirming picks (required)
-
-`BarcodePick` does not auto-finalize a pick when the user taps a code. Instead it asks your
-`BarcodePickActionListener` to confirm: it calls `didPickItem(withData:completionHandler:)`
-(or `didUnpickItem(...)` for un-picking) and waits until you invoke the completion handler.
-
-- `completionHandler(true)` — finalize the action; the item transitions to "picked" (or "to-pick").
-- `completionHandler(false)` — reject it; the item stays as it was.
-
-This indirection exists so the app can validate a pick against a backend (stock check, task
-assignment) before committing — you can call the completion handler asynchronously after a network
-round-trip. If you don't need validation, confirm immediately with `completionHandler(true)`.
-
-**This listener is mandatory for a working picking flow.** Register it with
-`barcodePickView.addActionListener(self)`. Without it, tapping a code does nothing visible — the most
-common "my picks don't complete" problem, and the official basic Get Started page omits it.
-
 ## Symbologies
 
 `BarcodePickSettings` starts with all symbologies disabled. Enable each via
@@ -241,6 +231,52 @@ mutate via `set(extension:enabled:)`). Apply them on the `BarcodePickSettings` *
 `BarcodePick`; the mode does not expose a live `apply(_:)` for runtime reconfiguration, so symbology
 changes after construction require building a new mode.
 
+## Pick states
+
+Each detected barcode is in one of four `BarcodePickState` values. Understanding how a barcode lands
+in each state — and how it moves between them — is the key to MatrixScan Pick: the state drives both
+the picking logic (can the user pick it? does it count?) and how the highlight is drawn (see
+"Highlight configuration").
+
+A barcode's state is decided by **two independent things**:
+
+1. **Whether `mapItems` mapped its payload to a `productIdentifier`** (any product, in the list or not).
+2. **Whether that product is in the initial pick list** (the `Set<BarcodePickProduct>` you passed to
+   the provider) and still **needs** units — i.e. its picked count is below its `quantityToPick`.
+
+The four states:
+
+- `.toPick` — the payload was mapped to a product **that is in the pick list and still needs units**
+  (picked count `< quantityToPick`). This is the only pickable-and-counts state: tapping it picks the
+  item, it gives the normal pick confirmation, and it moves to `.picked`.
+- `.picked` — the item has been picked (a pick was confirmed through the action listener).
+- `.ignore` — the payload **was mapped to a real product, but that product is not part of the current
+  request** — either it was never in the pick list, **or** its `quantityToPick` has already been
+  fulfilled. The barcode is **still tappable and can be picked**: tapping it records the pick (the
+  action listener fires, the barcode is added to the session's `pickedItems`, and it moves to
+  `.picked`), and the SDK shows an **informational** "item not in list" notice so the user knows it
+  wasn't part of the requested order. The notice does **not** reject the pick. This is the
+  "not-in-list" case.
+- `.unknown` — the payload was **not mapped to any product at all** (your `mapItems` omitted it). The
+  user **cannot interact with it** — it is outside the system's knowledge, not just outside the request.
+
+### How a barcode moves between states
+
+- **Mapped, in the list, under quantity → `.toPick`.** Multiple payloads can map to the same product;
+  all of them are `.toPick` until the product's quantity is met.
+- **Pick until `quantityToPick` is reached → the remaining matching barcodes flip `.toPick` → `.ignore`.**
+  Once the request for a product is fulfilled, its other still-visible barcodes are removed from the
+  to-pick set, so they render as `.ignore`. **Unpicking** back below the quantity moves them back to
+  `.toPick` (the transition is reversible).
+- **Mapped, but the product is not in the list → `.ignore`** from the start.
+- **Not mapped (omitted from the `mapItems` result) → `.unknown`.**
+
+> The distinction between `.ignore` and `.unknown` matters: `.ignore` is a *recognized* product the app
+> chose not to request (or already completed) — the user can still tap it and the pick is recorded (the
+> "item not in list" notice is just informational). `.unknown` is a barcode the app could not identify
+> at all — it is inert and cannot be tapped. Use `.ignore` styling for "we know this, but not now" and
+> `.unknown` styling for "we don't recognize this."
+
 ## Product list and the provider
 
 MatrixScan Pick is designed to work at the **product level** rather than the individual-barcode
@@ -250,7 +286,28 @@ and a product provider resolves each scanned barcode payload to a product identi
 identified by more than one barcode, you can wire all of those payloads through to the same
 `productIdentifier`.
 
-The list itself is a `Set<BarcodePickProduct>`, each with an `identifier` and a `quantityToPick`.
+### Two separate concerns: the database vs. the pick list
+
+It helps to keep two things distinct (the minimal example above splits them deliberately):
+
+- **The product database** — *everything the scanner can recognize*: which barcode payloads map to
+  which product identifier. This is what `mapItems` resolves against. It has no quantities.
+- **The products to pick** — the `Set<BarcodePickProduct>` (each with an `identifier` and a
+  `quantityToPick`) that you actually hand to the provider. This is the *subset* the user is asked to
+  pick; it's what gets highlighted and counted.
+
+The database can be a **superset** of the pick list, and that gap is exactly what produces the
+non-`.toPick` states (see "Pick states"):
+
+- A payload that maps to a product **in the pick list** → `.toPick`.
+- A payload that maps to a product **recognized but not in the pick list** → `.ignore` (still
+  tappable, but flagged "not in list" and not counted).
+- A payload **not in the database at all** (omitted from `mapItems`) → `.unknown` (inert).
+
+So to let the user optionally pick "extra" recognized items, keep them in the database but leave them
+out of `productsToPick`. To make a barcode completely non-interactive, leave it out of the database
+entirely.
+
 A `BarcodePickAsyncMapperProductProvider` resolves payloads via its delegate method:
 
 ```swift
@@ -264,25 +321,30 @@ func mapItems(
 - For each payload you recognize, return a
   `BarcodePickProductProviderCallbackItem(itemData:productIdentifier:)`. Multiple payloads can share
   the same `productIdentifier`.
-- Omit payloads you don't recognize from the returned array — those barcodes are surfaced as
-  **not-in-list**.
+- Omit payloads you don't recognize from the returned array — those barcodes stay in the `.unknown`
+  state: they were not mapped to a product, so they are never added to the to-pick set and **cannot be
+  picked**.
 - The mapping is **asynchronous** (call `completionHandler` when ready), so a database lookup or
   network call inside the delegate is fine.
 
-## Pick states
+## Confirming picks (required)
 
-Each detected barcode is in one of four `BarcodePickState` values. The state drives both the picking
-logic and how the highlight is drawn (see "Highlight configuration"):
+`BarcodePick` does not auto-finalize a pick when the user taps a code. Instead it asks your
+`BarcodePickActionListener` to confirm: it calls `didPickItem(withData:completionHandler:)`
+(or `didUnpickItem(...)` for un-picking) and waits until you invoke the completion handler.
 
-- `.toPick` — the item should be picked (mapped to a product in the list and not yet picked).
-- `.picked` — the item has been picked.
-- `.unknown` — the item has not been mapped to a product (the provider returned no `productIdentifier`
-  for its payload) — i.e. not-in-list.
-- `.ignore` — the item should be ignored in this session.
+- `completionHandler(true)` — finalize the action. On a pick (`didPickItem`) the item transitions to
+  `.picked`; on an unpick (`didUnpickItem`) it transitions back to whatever state it was in before it
+  was picked — `.toPick` for a required item, or `.ignore` for an optional/not-in-list one.
+- `completionHandler(false)` — reject it; the item stays as it was.
 
-A barcode whose payload your `mapItems` resolves to a product starts as `.toPick` and moves to
-`.picked` once a pick is confirmed through the action listener; a payload you don't resolve is
-`.unknown`.
+This indirection exists so the app can validate a pick against a backend (stock check, task
+assignment) before committing — you can call the completion handler asynchronously after a network
+round-trip. If you don't need validation, confirm immediately with `completionHandler(true)`.
+
+**This listener is mandatory for a working picking flow.** Register it with
+`barcodePickView.addActionListener(self)`. Without it, tapping a code does nothing visible — the most
+common "my picks don't complete" problem, and the official basic Get Started page omits it.
 
 ## Tracking picks (and unpicks)
 
@@ -384,6 +446,18 @@ barcodePickView = BarcodePickView(frame: view.bounds,
 Passing `nil` (or using the 4-argument initializer) keeps the internal defaults. Always start from
 `BarcodePick.recommendedCameraSettings` rather than constructing `CameraSettings()` from scratch.
 
+> **Common mistake — do NOT use the generic Scandit Core camera APIs here.** To change the resolution
+> (or any camera setting) in MatrixScan Pick you go through the `cameraSettings:` initializer above —
+> you do **not**:
+> - create a `Camera` (`Camera.default`), nor
+> - call `context.setFrameSource(...)` / assign `context.frameSource` (it is get-only on this path), nor
+> - build a bare `CameraSettings()`.
+>
+> Those are the generic DataCaptureContext camera pattern used by *other* Scandit modes; `BarcodePickView`
+> manages its own camera, so they don't apply. For 4K, the only change is
+> `cameraSettings.preferredResolution = .uhd4k` on `BarcodePick.recommendedCameraSettings` (the case is
+> `.uhd4k` — not `.uHD` or `.uhd`), passed to the view's `cameraSettings:` initializer.
+
 ## Control visibility (finish / pause / zoom / torch buttons)
 
 `BarcodePickViewSettings` toggles the built-in buttons (all `Bool`):
@@ -392,6 +466,13 @@ Passing `nil` (or using the 4-argument initializer) keeps the internal defaults.
 - `showPauseButton`
 - `showZoomButton` + `zoomButtonPosition` (`Anchor`)
 - `showTorchButton` + `torchButtonPosition` (`Anchor`)
+
+> **Common mistake — use these built-in toggles; do NOT roll your own.** To show a torch (flashlight)
+> control, set `viewSettings.showTorchButton = true` and let `BarcodePickView` render and wire it. Do
+> **not** add your own `UIButton` and toggle the camera torch directly (e.g. `context.frameSource as?
+> Camera` then setting `desiredTorchState`) — the view owns the camera, so a hand-rolled torch button is
+> both unnecessary and fights the view's camera management. The same applies to the finish / pause / zoom
+> buttons: flip the corresponding `show…Button` flag rather than building a custom control.
 
 The same settings object also controls UI text and overlays: `showGuidelines` +
 `initialGuidelineText` / `moveCloserGuidelineText` / `tapShutterToPauseGuidelineText`, `showHints` +
