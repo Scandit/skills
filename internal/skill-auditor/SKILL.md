@@ -27,6 +27,32 @@ Sibling-parity differences are **hints feeding layer 3 as questions, never failu
 Never recommend "make platform X match platform Y" without first checking platform X's
 actual API surface.
 
+## Maintenance model
+
+**The taxonomy is regenerated, not hand-edited.** `taxonomies/<product>.yaml` is the list
+of capabilities checked across a product's platforms — but treat it like a lockfile, not a
+hand-kept document. `audit taxonomy <product>` *derives* it from the sources of truth
+(`products.json` / `features.json`, doc sections, samples, `api_availability` exclusions)
+and proposes a delta; a human blesses the delta. Steady state when the SDK or docs change:
+re-run `audit taxonomy`, review the proposed diff, commit. The human owns *blessing the
+delta*, not keeping the list current by hand. (The seed taxonomies in this repo are
+hand-written pilots until the mining step is built — see the caveat in `audit taxonomy`.)
+
+**Discrepancies are detected, truth-verified, then confirmed — never auto-applied.** The
+flow is always propose-and-confirm:
+
+1. Cheap signal: sibling diff / coverage matrix surfaces "platform X has Y, platform Z
+   doesn't."
+2. Verify against platform truth (layer 1) BEFORE asking: does Z actually support Y? If
+   yes → real gap, worth aligning. If no → legitimate divergence, record it as an
+   `excluded_platforms` entry so it stops surfacing. **Parity is never the goal in
+   itself** — coverage of each platform's real capability is.
+3. Ask the human which verified gaps to fill; draft the fix for review; never commit
+   silently.
+
+So "put platforms on par" is the *outcome of a confirmed, truth-checked decision*, not an
+automatic rule.
+
 ## Sources
 
 All external locations come from `sources.yaml` (committed registry) overlaid with
