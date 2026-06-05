@@ -119,7 +119,7 @@ Document constructors (all conforming to `IdCaptureDocument`, exposing `region` 
 
 ## Rejection rules
 
-Set these flags on `IdCaptureSettings`. When a scan trips a rule, the SDK calls `idCapture(_:didReject:reason:)` with the matching `RejectionReason` instead of `idCapture(_:didCapture:)`.
+Verification and rejection are entirely settings-driven — there is no verifier class. Set flags on `IdCaptureSettings`; the SDK evaluates them and calls `idCapture(_:didReject:reason:)` with the matching `RejectionReason` instead of `idCapture(_:didCapture:)` when a rule is tripped.
 
 | Setting | Type | Rejection reason raised |
 |---|---|---|
@@ -215,7 +215,7 @@ func idCapture(_ idCapture: IdCapture, didCapture capturedId: CapturedId) {
 - `capturedId.verificationResult.aamvaBarcodeVerification` — `AamvaBarcodeVerificationResult?`
   - `.status` — `AamvaBarcodeVerificationStatus` (`.authentic` / `.likelyForged` / `.forged`)
 
-> There is **no `AamvaBarcodeVerifier` or `DataConsistencyVerifier` class** on native iOS. Verification is entirely settings-driven.
+> As with all verification: no verifier class — flags only.
 
 ## Anonymization
 
