@@ -249,7 +249,7 @@ Anonymized fields return `nil` in `CapturedId`. Check `capturedId.anonymizedFiel
 Opt in to document images before creating the `IdCapture` mode:
 
 ```swift
-settings.setIncludeImage(true, for: .face)            // portrait photo
+settings.setIncludeImage(true, for: .face)            // portrait photo — commonly used to display the holder's photo in the app UI
 settings.setIncludeImage(true, for: .croppedDocument) // cropped document (by side)
 settings.setIncludeImage(true, for: .frame)            // full camera frame
 ```

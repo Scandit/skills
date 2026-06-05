@@ -1,6 +1,6 @@
 ---
 name: id-capture-ios
-description: Use when ID Capture (Scandit identity-document scanning — passports, driver's licenses, ID cards, residence permits, health-insurance cards, visas, region-specific subtypes, reading MRZ / VIZ / PDF417 barcode / mobile-document data) is involved in a native iOS Swift/UIKit project — whether the user mentions ID Capture directly, says "scan a passport / driver's license / ID card / identity document in Swift on iOS", or the codebase already uses `IdCapture` and something needs to be added, changed, fixed, or customized. This includes adding ID Capture to a new iOS UIKit app, configuring `IdCaptureSettings` with `acceptedDocuments` (`IdCard(region: .any)`, `DriverLicense(region: .us)`, `Passport(region: .any)`, …) and a `scanner` (`IdCaptureScanner(physicalDocument:)` wrapping `FullDocumentScanner` / `SingleSideScanner` / `MobileDocumentScanner`), creating the mode with `IdCapture(context:settings:)`, handling results through `IdCaptureListener.idCapture(_:didCapture:)` / `idCapture(_:didReject:reason:)`, reading `CapturedId` (`fullName`, `dateOfBirth`, `dateOfExpiry`, `documentNumber`, `mrzResult`, `vizResult`, `barcode`, `mobileDocumentResult`, `images`, `verificationResult`), hosting the preview with `DataCaptureView` + `IdCaptureOverlay` inside a `UIViewController`, managing the camera lifecycle across `viewWillAppear` / `viewDidDisappear`, rejection rules (expired / voided / underage / forged-AAMVA / inconsistent-data), data-consistency / AAMVA verification, anonymization, or upgrading the Scandit iOS SDK version. If the project is Swift/UIKit and ID Capture is in play, use this skill.
+description: Use when ID Capture (Scandit identity-document scanning — passports, driver's licenses, ID cards, residence permits, health-insurance cards, visas, region-specific subtypes, reading MRZ / VIZ / PDF417 barcode on identity documents / mobile-document data) is involved in a native iOS Swift project (UIKit or SwiftUI) — whether the user mentions ID Capture directly, says "scan a passport / driver's license / ID card / identity document in Swift on iOS", or the codebase already uses `IdCapture` and something needs to be added, changed, fixed, or customized. This includes adding ID Capture to a new iOS UIKit app, configuring `IdCaptureSettings` with `acceptedDocuments` (`IdCard(region: .any)`, `DriverLicense(region: .us)`, `Passport(region: .any)`, …) and a `scanner` (`IdCaptureScanner(physicalDocument:)` wrapping `FullDocumentScanner` / `SingleSideScanner` / `MobileDocumentScanner`), creating the mode with `IdCapture(context:settings:)`, handling results through `IdCaptureListener.idCapture(_:didCapture:)` / `idCapture(_:didReject:reason:)`, reading `CapturedId` (`fullName`, `dateOfBirth`, `dateOfExpiry`, `documentNumber`, `mrzResult`, `vizResult`, `barcode`, `mobileDocumentResult`, `images`, `verificationResult`), hosting the preview with `DataCaptureView` + `IdCaptureOverlay` inside a `UIViewController`, managing the camera lifecycle across `viewWillAppear` / `viewDidDisappear`, rejection rules (expired / voided / underage / forged-AAMVA / inconsistent-data), data-consistency / AAMVA verification, anonymization, or upgrading the Scandit iOS SDK version. If the project is native iOS Swift (UIKit or SwiftUI) and ID Capture is in play, use this skill. Note: code examples in this skill use UIKit — SwiftUI hosting patterns may need adaptation.
 license: MIT
 metadata:
   author: scandit
@@ -20,7 +20,7 @@ Your training data may contain outdated or incorrect Scandit ID Capture APIs. Th
 - **ObjC prefixes** — the Objective-C SDK uses an `SDC` prefix on all types (`SDCIdCapture`, `SDCCapturedId`, etc.). These prefixes do **not** appear in Swift. Never emit `SDCIdCapture`, `SDCIdCaptureSettings`, etc. in Swift code.
 - **Cross-platform drift** — Android uses `IdCapture.forDataCaptureContext(...)`, .NET uses `IdCapture.Create(...)`, Flutter uses a different builder. The Swift API is `IdCapture(context:settings:)`.
 - **Standalone verifier classes** — `AamvaBarcodeVerifier` and `DataConsistencyVerifier` do not exist in the native iOS SDK. Verification is settings-driven: set `rejectForgedAamvaBarcodes = true` / `rejectInconsistentData = true` and read `capturedId.verificationResult`.
-- **NFC** — `NfcScanner` exists on native iOS but is **not covered by this skill** (separate ticket/skill). Do not implement NFC without being explicitly asked. Mention its existence if relevant.
+- **NFC** — `NfcScanner` exists on native iOS but is **not covered by this skill**. If the user asks about NFC, refer them to the official documentation.
 
 ### Forbidden APIs (commonly hallucinated — do NOT emit these)
 
@@ -35,16 +35,15 @@ Your training data may contain outdated or incorrect Scandit ID Capture APIs. Th
 | `capturedId.barcodeResult` | `capturedId.barcode` |
 | `capturedId.Images` / `capturedId.VerificationResult` (PascalCase, .NET style) | `capturedId.images` / `capturedId.verificationResult` (camelCase) |
 | `SDCIdCapture` / `SDCCapturedId` / any `SDC`-prefixed type in Swift | `IdCapture` / `CapturedId` (no prefix in Swift) |
-| `idCapture.addListener(self)` called with ObjC-style passing | `idCapture.addListener(self)` is correct in Swift — but the protocol is `IdCaptureListener`, not `IIdCaptureListener` |
 | `DataCaptureContext.ForLicenseKey(...)` (.NET) or `DataCaptureContext.forLicenseKey(...)` (Android) | `DataCaptureContext.initialize(licenseKey: "...")` then `DataCaptureContext.shared` |
 
 ## Product Guidance
 
-- **Accept only the documents you actually need.** A narrow `acceptedDocuments` list (e.g. just `DriverLicense(region: .us)`) is faster and more accurate than every type with `.any`. Ask the user which documents and regions they expect before defaulting to "everything".
-- **Pick the scanner that matches the data you need.** `FullDocumentScanner()` reads front and back automatically (best for most ID/DL use cases). `SingleSideScanner(enablingBarcode:machineReadableZone:visualInspectionZone:)` reads a single side from only the zones you enable. `MobileDocumentScanner(enablingIso180135:ocr:)` is for mobile driver's licenses (mDL) displayed on another device's screen.
+- **Accept only the documents you actually need.** Ask the user which document types and regions they expect. Documents not in `acceptedDocuments` will be rejected with `RejectionReason.notAcceptedDocumentType`.
+- **Pick the scanner that matches the data you need.** `FullDocumentScanner()` reads both sides and all zones automatically. `SingleSideScanner(enablingBarcode:machineReadableZone:visualInspectionZone:)` is typically used for single-side scanning with only the specific zones you need enabled. `MobileDocumentScanner(enablingIso180135:ocr:)` is for mobile-presented IDs — either via ISO 18013-5 Bluetooth handover or OCR of a document displayed on another device's screen.
 - **Handle `didReject` not just `didCapture`.** Rejections (`RejectionReason.timeout`, `.notAcceptedDocumentType`, `.documentExpired`, `.holderUnderage`, `.forgedAamvaBarcode`, `.inconsistentData`, …) are how the user learns why a scan didn't succeed.
-- **Mode co-existence with BarcodeCapture.** `IdCapture` and `BarcodeCapture` can technically coexist on the same `DataCaptureContext`, but most apps that switch between them must call `context.removeCurrentMode()` (or `context.removeAllModes()`) before adding the new mode, to avoid interference. Exception: apps that intentionally scan both simultaneously (e.g. an airport kiosk scanning a boarding-pass barcode and an ID at the same time) keep both modes active.
-- **Anonymize by default if you don't need every field.** `anonymizationMode` and per-field anonymization keep regulated data out of the result unless you opt in.
+- **Mode co-existence with BarcodeCapture.** `IdCapture` and `BarcodeCapture` can technically coexist on the same `DataCaptureContext`, but most apps that switch between them must call `context.removeCurrentMode()` (or `context.removeAllModes()`) before adding the new mode, to avoid interference. Exception: apps that intentionally scan both simultaneously (e.g. scanning a boarding-pass barcode and an ID at the same time) keep both modes active.
+- **Be aware of the default anonymization list.** The SDK anonymizes certain fields by default to meet regional legal requirements — for example, the document number on German ID cards or the personal ID number on Dutch driver's licenses. If a field is unexpectedly `nil`, check `capturedId.anonymizedFields` to see if it has been anonymized. The default list can be disabled with `settings.anonymizeDefaultFields = false`, and `anonymizationMode` controls whether anonymized fields are also obscured in document images.
 - **Hand off to the `data-capture-sdk` skill for non-ID-Capture questions.** If the user asks about Barcode Capture, SparkScan, MatrixScan, Label Capture, or choosing between products, defer to the `data-capture-sdk` skill.
 
 ## Intent Routing
@@ -57,7 +56,7 @@ Based on the user's request, load the appropriate reference file before respondi
 
 ## API Usage Policy
 
-Only use APIs that are explicitly documented in the Scandit references below. Do not invent or guess method signatures, parameters, or property names. If unsure whether an API exists or how it is called — or if a compile error occurs — fetch the relevant documentation page before responding. Do not tell the user to check the docs themselves. After answering, always include the relevant link so the user can explore further.
+Only use APIs that are explicitly documented in the Scandit references below. Do not invent or guess method signatures, parameters, or property names. If unsure whether an API exists or how to call it — or if a compile error occurs — fetch the relevant documentation page before responding. Do not tell the user to check the docs themselves. After answering, always include the relevant link so the user can explore further.
 
 **Never construct or guess documentation URLs.** Fetch the index page and follow links from there.
 
@@ -78,7 +77,7 @@ All classes available on the native iOS SDK. The modern document/scanner API (`a
 - **`IdCaptureSettings`** — `IdCaptureSettings()`; properties: `scanner` (`IdCaptureScanner`), `acceptedDocuments` / `rejectedDocuments` (`[any IdCaptureDocument]`), `rejectVoidedIds`, `rejectExpiredIds`, `rejectIdsExpiringIn` (`Duration?`), `rejectNotRealIdCompliant`, `rejectForgedAamvaBarcodes`, `rejectInconsistentData`, `rejectHolderBelowAge` (`Int?`), `anonymizationMode` (`IdAnonymizationMode`); methods `setIncludeImage(_:for:)` / `includeImage(for:)`, `addAnonymizedField(_:forDocument:)`, `removeAnonymizedField(_:forDocument:)`.
 - **`IdCaptureScanner`** — `IdCaptureScanner(physicalDocument: (any PhysicalDocumentScanner)?)` and `IdCaptureScanner(physicalDocument:mobileDocument:)`; `physicalDocument` / `mobileDocument` properties.
 - **Physical scanners**: `FullDocumentScanner()` — both sides, all zones; `SingleSideScanner(enablingBarcode:machineReadableZone:visualInspectionZone:)` — single side, selected zones; props `barcode` / `machineReadableZone` / `visualInspectionZone`.
-- **`MobileDocumentScanner`** — `MobileDocumentScanner(enablingIso180135:ocr:)`; `iso180135` / `ocr` props. Use for IDs displayed on another device's screen.
+- **`MobileDocumentScanner`** — `MobileDocumentScanner(enablingIso180135:ocr:)`; `iso180135` / `ocr` props. `iso180135` uses ISO 18013-5 QR + Bluetooth handover; `ocr` reads a mobile document displayed on another device's screen.
 - **Document types** (`IdCaptureDocument` protocol, props `region: IdCaptureRegion` + `documentType: IdCaptureDocumentType`): `IdCard(region:)`, `DriverLicense(region:)`, `Passport(region:)`, `VisaIcao(region:)`, `ResidencePermit(region:)`, `HealthInsuranceCard(region:)`, `RegionSpecific(subtype: RegionSpecificSubtype)`.
 - **`IdCaptureRegion`** enum — `.any`, `.euAndSchengen`, and ~250 region values (`.us`, `.uk`, `.uae`, `.germany`, …).
 - **`IdCaptureListener`** protocol — `idCapture(_:didCapture:)` (required), `idCapture(_:didReject:reason:)` (required).
@@ -103,9 +102,3 @@ All classes available on the native iOS SDK. The modern document/scanner API (`a
 - **NFC** (`NfcScanner`, `NfcScannerListener`) — native iOS only; covered by a separate skill.
 - **Deserializer** (`IdCaptureDeserializer`) — available on iOS native but not in scope here.
 
-### Documented for other platforms but NOT on native iOS Swift
-
-- **`IdCapture.Create(...)` / `IdCapture.forDataCaptureContext(...)`** — .NET / Android factories; use `IdCapture(context:settings:)`.
-- **`IIdCaptureListener`** — .NET interface name; the Swift protocol is `IdCaptureListener`.
-- **`CapturedId.Mrz` / `.Viz` / `.Barcode`** (PascalCase) — .NET style; Swift uses `mrzResult` / `vizResult` / `barcode`.
-- **`AamvaBarcodeVerifier` class** — exists on web/Xamarin; not on native iOS. Use settings flags.
