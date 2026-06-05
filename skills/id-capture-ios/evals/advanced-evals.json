@@ -11,6 +11,7 @@
         {"text": "Sets settings.rejectForgedAamvaBarcodes = true"},
         {"text": "Sets settings.rejectInconsistentData = true"},
         {"text": "Sets settings.rejectExpiredIds = true"},
+        {"text": "Calls settings.setIncludeImage(true, for: .croppedDocument) — required for frontReviewImage to be populated"},
         {"text": "Does NOT use AamvaBarcodeVerifier or DataConsistencyVerifier — verification is settings-driven"},
         {"text": "In didReject, accesses capturedId?.verificationResult.dataConsistency?.frontReviewImage when reason == .inconsistentData"},
         {"text": "Handles .inconsistentData, .forgedAamvaBarcode, and .documentExpired in didReject with distinct messages"},

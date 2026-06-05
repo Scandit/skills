@@ -211,7 +211,7 @@ func idCapture(_ idCapture: IdCapture, didCapture capturedId: CapturedId) {
 **Key `VerificationResult` members:**
 - `capturedId.verificationResult.dataConsistency` — `DataConsistencyResult?`
   - `.allChecksPassed` — `Bool`
-  - `.frontReviewImage` — `UIImage?` (annotated image highlighting inconsistencies)
+  - `.frontReviewImage` — `UIImage?` (annotated image highlighting inconsistencies). **Requires `settings.setIncludeImage(true, for: .croppedDocument)` — without it, `frontReviewImage` is always `nil`.**
 - `capturedId.verificationResult.aamvaBarcodeVerification` — `AamvaBarcodeVerificationResult?`
   - `.status` — `AamvaBarcodeVerificationStatus` (`.authentic` / `.likelyForged` / `.forged`)
 
