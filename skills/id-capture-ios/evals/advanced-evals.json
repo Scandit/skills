@@ -31,5 +31,16 @@
         {"text": "Manages camera lifecycle in viewWillAppear / viewDidDisappear"}
       ]
     }
+    ,{
+      "id": 3,
+      "prompt": "I only need to read the MRZ from passports — I don't need the VIZ or barcode.",
+      "expected_output": "IdCaptureSettings with acceptedDocuments containing Passport and scanner set to IdCaptureScanner(physicalDocument: SingleSideScanner(enablingBarcode: false, machineReadableZone: true, visualInspectionZone: false)).",
+      "files": ["evals/fixtures/EmptyViewController.swift"],
+      "assertions": [
+        {"text": "Sets acceptedDocuments to include Passport"},
+        {"text": "Uses SingleSideScanner with machineReadableZone: true and visualInspectionZone: false and enablingBarcode: false — does NOT use FullDocumentScanner"},
+        {"text": "Wraps the scanner in IdCaptureScanner(physicalDocument: SingleSideScanner(...))"}
+      ]
+    }
   ]
 }
