@@ -15,7 +15,7 @@
         {"text": "Does NOT use AamvaBarcodeVerifier or DataConsistencyVerifier — verification is settings-driven"},
         {"text": "In didReject, accesses capturedId?.verificationResult.dataConsistency?.frontReviewImage when reason == .inconsistentData"},
         {"text": "Handles .inconsistentData, .forgedAamvaBarcode, and .documentExpired in didReject with distinct messages"},
-        {"text": "Uses idCapture.reset() when re-enabling capture after showing the verification result (or correctly re-enables isEnabled)"}
+        {"text": "Re-enables idCapture.isEnabled = true after showing the verification result"}
       ]
     },
     {
