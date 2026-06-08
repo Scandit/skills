@@ -1,66 +1,35 @@
 # ID Capture — iOS (Swift/UIKit) Integration Guide
 
-ID Capture extracts data from identity documents — passports, driver's licenses, ID cards, residence permits, health-insurance cards, visas — by reading the MRZ (machine-readable zone), VIZ (visual inspection zone / printed text), and/or the PDF417 barcode on the back. You declare which documents you accept and which scanner to use, and the SDK returns a `CapturedId` with the holder's data.
-
-Examples below use Swift and a `UIViewController`. Adapt ownership of `DataCaptureContext`, `Camera`, `IdCapture`, `DataCaptureView`, and the overlay to the project's existing structure.
+ID Capture reads identity documents — passports, driver's licenses, ID cards, residence permits, health-insurance cards, visas — via MRZ, VIZ, and/or PDF417 barcode. You declare which documents to accept and which scanner to use; the SDK returns a `CapturedId`.
 
 ## Prerequisites
 
-- Scandit Data Capture SDK for iOS — add via Swift Package Manager:
-  - URL: `https://github.com/Scandit/datacapture-spm`
-  - Add `ScanditIdCapture` and `ScanditCaptureCore` package products to your target
-- A valid Scandit license key:
-  - Sign in at <https://ssl.scandit.com> to generate one.
-  - No account yet? Sign up at <https://ssl.scandit.com/dashboard/sign-up?p=test>.
-- `NSCameraUsageDescription` in `Info.plist`:
-  ```xml
-  <key>NSCameraUsageDescription</key>
-  <string>Used to scan identity documents.</string>
-  ```
-  Without this key the app crashes on first camera access. iOS prompts the user for permission automatically the first time the camera opens — there is no separate runtime-permission code to write.
+- SPM: `https://github.com/Scandit/datacapture-spm` — add `ScanditIdCapture` and `ScanditCaptureCore`
+- A valid Scandit license key from <https://ssl.scandit.com>
+- `NSCameraUsageDescription` in `Info.plist` — iOS prompts automatically, no runtime-permission code needed
 
-## Interactive Document Configuration
+## Before writing code — ask the user
 
-Before writing any code, walk the user through what they're scanning. Ask one question at a time.
+1. **Which documents?** `Passport`, `DriverLicense`, `IdCard`, `ResidencePermit`, `HealthInsuranceCard`, `VisaIcao`, `RegionSpecific`. Each takes an `IdCaptureRegion` (`.any`, `.us`, `.euAndSchengen`, …). Use the narrowest region that fits.
+2. **Which scanner?** — see Step 2 below.
+3. **Any documents to explicitly exclude?** — use `rejectedDocuments`.
+4. **Which fields to read?** Top-level (`fullName`, `dateOfBirth`, `documentNumber`, …) or zone-specific (`mrzResult`, `vizResult`, `barcode`)?
+5. **Document images needed?** Face photo, cropped document, or raw frame?
+6. **Which `UIViewController` to integrate into?** Write code directly into that file.
 
-**Question A — Which documents do you need to accept?** Present this list and ask which apply:
-- `Passport` — passport booklets (MRZ)
-- `DriverLicense` — driver's licenses (front VIZ + back PDF417 barcode)
-- `IdCard` — national / regional ID cards
-- `ResidencePermit` — residence permits
-- `HealthInsuranceCard` — health-insurance cards
-- `VisaIcao` — ICAO visas
-- `RegionSpecific` — special document subtypes (e.g. a US Global Entry card) selected via `RegionSpecificSubtype`
-
-Each takes an `IdCaptureRegion` (e.g. `.any`, `.us`, `.euAndSchengen`). Recommend the narrowest region the use case allows — it's faster and more accurate than `.any`.
-
-**Question B — Which scanner?**
-- **`FullDocumentScanner()`** — reads front and back automatically. The right default for most ID/DL use cases.
-- **`SingleSideScanner(enablingBarcode:machineReadableZone:visualInspectionZone:)`** — reads a single side from only the zones you enable. Use when you only need, say, the back PDF417 barcode of a US license, or only the passport MRZ. (See `references/advanced.md`.)
-- **`MobileDocumentScanner(enablingIso180135:ocr:)`** — mobile driver's licenses (mDL) displayed on a screen. (See `references/advanced.md`.)
-
-**Question C — Which fields do you need to read?** (full name, date of birth, expiry, document number, nationality, …) This drives what you pull off `CapturedId` and informs whether anonymization is appropriate.
-
-**Question D — Which `UIViewController` should the integration code go in?** Then write the code directly into that file.
-
-## Step 1 — Initialize the SDK and create the DataCaptureContext
-
-Initialize the SDK with your license key once (typically in `viewDidLoad` or a lazy property), then access the shared context.
+## Step 1 — Initialize and create context
 
 ```swift
 import ScanditCaptureCore
 import ScanditIdCapture
 
-// In viewDidLoad or a lazy property:
 DataCaptureContext.initialize(licenseKey: "-- ENTER YOUR SCANDIT LICENSE KEY HERE --")
 let context = DataCaptureContext.shared
 ```
 
-The `DataCaptureContext` is the central hub. Construct it once and reuse it for the lifetime of the scanning surface.
+## Step 2 — Configure settings
 
-## Step 2 — Build the settings (accepted documents + scanner)
-
-`IdCaptureSettings` is configured by setting properties — there is no builder and no `supportedDocuments` bitmask. Set `acceptedDocuments` to the documents you accept and `scanner` to an `IdCaptureScanner` wrapping a physical and/or mobile scanner.
+### Accepted and rejected documents
 
 ```swift
 let settings = IdCaptureSettings()
@@ -71,48 +40,92 @@ settings.acceptedDocuments = [
     IdCard(region: .any),
 ]
 
+// Optional: explicitly reject a subset of accepted documents.
+// "Rejected always wins" — a match in rejectedDocuments overrides acceptedDocuments.
+settings.rejectedDocuments = [IdCard(region: .france)]
+```
+
+Document constructors: `IdCard(region:)`, `DriverLicense(region:)`, `Passport(region:)`, `VisaIcao(region:)`, `ResidencePermit(region:)`, `HealthInsuranceCard(region:)`, `RegionSpecific(subtype:)`.
+
+> **US Visa foil number:** `VisaIcao(region: .us)` with MRZ enabled also captures the foil number; returned in `capturedId.vizResult`.
+
+### Scanner
+
+Choose based on what data you need:
+
+**`FullDocumentScanner`** — reads both sides, all zones. Use when you need complete data from front and back.
+
+```swift
 settings.scanner = IdCaptureScanner(physicalDocument: FullDocumentScanner())
 ```
 
-**Notes:**
-- `acceptedDocuments` takes an array of `IdCaptureDocument` values constructed with a region: `IdCard(region: .any)`, `DriverLicense(region: .us)`, etc.
-- `scanner` always requires an `IdCaptureScanner` wrapper. For a typical document scan, use `IdCaptureScanner(physicalDocument: FullDocumentScanner())`.
-- Do **not** write `settings.supportedDocuments` (v6 API) or `settings.scannerType = FullDocumentScanner()` (v7 API) — both are removed.
-- Optional rejection rules, verification flags, and anonymization are set as properties here — see `references/advanced.md`.
+**`SingleSideScanner`** — one side, only the zones you enable. Use when you need a specific zone only.
 
-## Step 3 — Create the IdCapture mode
+```swift
+// Back barcode only (US DL):
+settings.scanner = IdCaptureScanner(physicalDocument: SingleSideScanner(
+    enablingBarcode: true, machineReadableZone: false, visualInspectionZone: false))
+
+// MRZ only (passport):
+settings.scanner = IdCaptureScanner(physicalDocument: SingleSideScanner(
+    enablingBarcode: false, machineReadableZone: true, visualInspectionZone: false))
+```
+
+> When `SingleSideScanner` has both `machineReadableZone` and `visualInspectionZone` enabled and `acceptedDocuments` includes `Passport`, the SDK captures VIZ + MRZ together in a single pass. This is passport-specific — other MRZ documents are not affected.
+
+**`MobileDocumentScanner`** — for IDs presented on another device's screen. Not for physical documents.
+
+- `enablingIso180135: true` — ISO 18013-5 QR + Bluetooth handover
+- `ocr: true` — OCR of a digital document displayed on screen
+
+```swift
+settings.scanner = IdCaptureScanner(
+    physicalDocument: FullDocumentScanner(),
+    mobileDocument: MobileDocumentScanner(enablingIso180135: true, ocr: false))
+```
+
+### Rejection rules
+
+Set flags before creating `IdCapture`. The SDK calls `didReject` with the matching `RejectionReason` when a rule trips.
+
+| Setting | Rejection reason |
+|---|---|
+| `rejectExpiredIds = true` | `.documentExpired` |
+| `rejectIdsExpiringIn = Duration(days:months:years:)` | `.documentExpiresSoon` |
+| `rejectVoidedIds = true` | `.documentVoided` |
+| `rejectHolderBelowAge = 21` | `.holderUnderage` |
+| `rejectNotRealIdCompliant = true` | `.notRealIdCompliant` |
+| `rejectForgedAamvaBarcodes = true` | `.forgedAamvaBarcode` |
+| `rejectInconsistentData = true` | `.inconsistentData` |
+
+Verification is settings-driven — there is no verifier class.
+
+### Image capture
+
+Opt in before creating `IdCapture`. Images increase processing time — only request what you need.
+
+```swift
+settings.setIncludeImage(true, for: .face)            // holder portrait
+settings.setIncludeImage(true, for: .croppedDocument) // cropped document image (required for frontReviewImage)
+settings.setIncludeImage(true, for: .frame)            // full camera frame
+```
+
+## Step 3 — Create IdCapture
 
 ```swift
 let idCapture = IdCapture(context: context, settings: settings)
+idCapture.addListener(self)  // register once at setup, not in viewWillAppear
 ```
 
-Key members:
-
-| Member | Description |
-|---|---|
-| `IdCapture(context:settings:)` | Creates the mode and attaches it to the context. |
-| `isEnabled` | `Bool` (get/set) — set `false` while a result is shown; re-enable to scan again. |
-| `static recommendedCameraSettings` | Recommended camera settings for ID capture. |
-| `applySettings(_:)` | Apply new settings at runtime. |
-| `addListener(_:)` / `removeListener(_:)` | Register / remove an `IdCaptureListener`. |
-| `feedback` | `IdCaptureFeedback` (get/set) — sound / vibration. |
-| `reset()` | Reset capture state (e.g. before starting a new scan after showing results). |
-
-## Step 4 — Set up the camera
-
-Get the default camera, apply the recommended ID-capture settings to it, and attach it to the context.
+## Step 4 — Camera
 
 ```swift
 let camera = Camera.default
 context.setFrameSource(camera, completionHandler: nil)
-
-let recommendedCameraSettings = IdCapture.recommendedCameraSettings
-camera?.apply(recommendedCameraSettings)
+camera?.apply(IdCapture.recommendedCameraSettings)
 ```
 
-The camera is off by default. Turn it on in `viewWillAppear` and off in `viewDidDisappear` (Step 7).
-
-## Step 5 — Visualize with DataCaptureView + IdCaptureOverlay
+## Step 5 — DataCaptureView + overlay
 
 ```swift
 let captureView = DataCaptureView(context: context, frame: view.bounds)
@@ -122,83 +135,75 @@ view.addSubview(captureView)
 let overlay = IdCaptureOverlay(idCapture: idCapture, view: captureView)
 ```
 
-The `IdCaptureOverlay` draws the document viewfinder on top of the camera preview and is optional but strongly recommended. Key members:
-
-| Member | Description |
-|---|---|
-| `IdCaptureOverlay(idCapture:view:)` | Creates and attaches the overlay to the view. |
-| `idLayoutStyle` | `.rounded` (default) / `.square`. |
-| `idLayoutLineStyle` | `.bold` / `.light`. |
-| `showTextHints` / `textHintPosition` | Toggle/position on-screen hints. |
-| `setFrontSideTextHint(_:)` / `setBackSideTextHint(_:)` | Customize hint text. |
-| `capturedBrush` / `localizedBrush` / `rejectedBrush` | Brush appearance per scan state. |
-
 ## Step 6 — Implement IdCaptureListener
 
-Conform to `IdCaptureListener`. **Both callbacks are called on a background thread** — dispatch UI work to the main thread, and disable the mode while a result is displayed so the same document isn't captured repeatedly.
+Both callbacks run on a **background thread** — dispatch UI work to the main thread. Disable the mode before showing results to prevent re-capture.
 
 ```swift
 extension IdCaptureViewController: IdCaptureListener {
 
     func idCapture(_ idCapture: IdCapture, didCapture capturedId: CapturedId) {
-        // Stop capturing while we show the result.
         idCapture.isEnabled = false
-
-        // Callback is on a background thread — dispatch to the main queue.
         DispatchQueue.main.async {
-            let message = self.descriptionForCapturedId(capturedId)
-            self.showAlert(title: "Recognized Document", message: message) {
-                idCapture.isEnabled = true  // resume scanning
+            // Read results — see "Reading results" below
+            self.showAlert(title: "Recognized", message: ...) {
+                idCapture.isEnabled = true
             }
         }
     }
 
     func idCapture(_ idCapture: IdCapture, didReject capturedId: CapturedId?, reason: RejectionReason) {
         idCapture.isEnabled = false
-
-        let message: String
-        switch reason {
-        case .timeout:
-            message = "Capture failed. Make sure the document is well lit and try again."
-        default:
-            message = "Document not supported. Try scanning another document."
-        }
-
         DispatchQueue.main.async {
-            self.showAlert(message: message) {
-                idCapture.isEnabled = true
+            let message: String
+            switch reason {
+            case .documentExpired: message = "This ID has expired."
+            case .holderUnderage:  message = "Age requirement not met."
+            case .timeout:         message = "Capture timed out. Try again."
+            default:               message = "Document not supported."
             }
+            self.showAlert(message: message) { idCapture.isEnabled = true }
         }
     }
 }
 ```
 
-Register the listener once after creating the mode, typically in your setup method or `viewDidLoad`.
+Always handle every `RejectionReason` you enable with a distinct user-facing message.
 
-### Reading field values
+### Reading results
 
-`CapturedId` exposes the common holder fields at the top level, regardless of which zone they came from:
+**Top-level fields** (aggregated from all zones):
 
-| Accessor | Type | Notes |
-|---|---|---|
-| `capturedId.fullName` / `firstName` / `lastName` | `String?` | |
-| `capturedId.dateOfBirth` / `dateOfExpiry` / `dateOfIssue` | `DateResult?` | `.day` / `.month` / `.year` (`Int`) |
-| `capturedId.documentNumber` / `documentAdditionalNumber` | `String?` | |
-| `capturedId.nationality` / `nationalityISO` | `String?` | |
-| `capturedId.sex` / `sexType` | `String?` / `Sex` enum | |
-| `capturedId.age` | `Int?` | |
-| `capturedId.isExpired` | `Bool` | |
-| `capturedId.address` | `String?` | |
-| `capturedId.document?.documentType` | `IdCaptureDocumentType` | which document was recognised |
-| `capturedId.issuingCountry` | `IdCaptureRegion` | |
+```swift
+capturedId.fullName          // String?
+capturedId.dateOfBirth       // DateResult? (.day, .month, .year)
+capturedId.dateOfExpiry      // DateResult?
+capturedId.documentNumber    // String?
+capturedId.nationality       // String?
+capturedId.issuingCountry    // IdCaptureRegion
+capturedId.document?.documentType  // IdCaptureDocumentType
+```
 
-For the richer zone-specific results (`capturedId.mrzResult`, `capturedId.vizResult`, `capturedId.barcode`, `capturedId.mobileDocumentResult`), document images (`capturedId.images`), and the verification outcome (`capturedId.verificationResult`), see `references/advanced.md`.
+**Zone-specific results** (available when that zone was scanned):
 
-Always guard for `nil` — a field that wasn't present on the scanned document is `nil`.
+```swift
+capturedId.mrzResult         // MrzResult? — MRZ string, check digits
+capturedId.vizResult         // VizResult? — VIZ data, capturedSides
+capturedId.barcode           // BarcodeResult? — AAMVA data for US/Canadian DLs
+capturedId.mobileDocumentResult  // MobileDocumentResult? — ISO 18013-5 mDL data
+```
+
+Driving license details (vehicle class, restrictions, endorsements) are nested under `capturedId.barcode` for AAMVA documents.
+
+**Images** (only populated if opted in via `setIncludeImage`):
+
+```swift
+capturedId.images.face                         // UIImage?
+capturedId.images.croppedDocument(side: .front) // UIImage?
+capturedId.images.frame                        // UIImage?
+```
 
 ## Step 7 — Camera lifecycle
-
-Toggle the camera across the `UIViewController` lifecycle. The listener is registered once at setup time (Step 6) and stays registered for the lifetime of the view controller.
 
 ```swift
 override func viewWillAppear(_ animated: Bool) {
@@ -214,19 +219,9 @@ override func viewDidDisappear(_ animated: Bool) {
 }
 ```
 
-> Use `viewDidDisappear` (not `viewWillDisappear`) to turn the camera off — it ensures the camera stays on during push transitions where the scanning screen is still visible.
+Use `viewDidDisappear` (not `viewWillDisappear`) so the camera stays on during push transitions.
 
-## Setup checklist
-
-1. Add `ScanditCaptureCore` and `ScanditIdCapture` to the project via SPM (`https://github.com/Scandit/datacapture-spm`).
-2. Add `NSCameraUsageDescription` to `Info.plist`.
-3. Replace `-- ENTER YOUR SCANDIT LICENSE KEY HERE --` with your key from <https://ssl.scandit.com>.
-4. Call `DataCaptureContext.initialize(licenseKey:)` before accessing `DataCaptureContext.shared`.
-5. Apply `IdCapture.recommendedCameraSettings` to the camera.
-6. Implement **both** `IdCaptureListener` callbacks and dispatch UI work to the main thread.
-7. Set `idCapture.isEnabled = false` before showing results and re-enable when dismissed.
-
-## Complete minimal example
+## Complete example
 
 ```swift
 import ScanditCaptureCore
@@ -243,7 +238,6 @@ class IdCaptureViewController: UIViewController {
     private var camera: Camera?
     private var idCapture: IdCapture!
     private var captureView: DataCaptureView!
-    private var overlay: IdCaptureOverlay!
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -272,17 +266,12 @@ class IdCaptureViewController: UIViewController {
         view.addSubview(captureView)
 
         let settings = IdCaptureSettings()
-        settings.acceptedDocuments = [
-            Passport(region: .any),
-            DriverLicense(region: .any),
-            IdCard(region: .any),
-        ]
+        settings.acceptedDocuments = [Passport(region: .any), DriverLicense(region: .any), IdCard(region: .any)]
         settings.scanner = IdCaptureScanner(physicalDocument: FullDocumentScanner())
 
         idCapture = IdCapture(context: context, settings: settings)
         idCapture.addListener(self)
-
-        overlay = IdCaptureOverlay(idCapture: idCapture, view: captureView)
+        IdCaptureOverlay(idCapture: idCapture, view: captureView)
     }
 }
 
@@ -290,31 +279,21 @@ extension IdCaptureViewController: IdCaptureListener {
 
     func idCapture(_ idCapture: IdCapture, didCapture capturedId: CapturedId) {
         idCapture.isEnabled = false
-        let message = [
-            capturedId.fullName.map { "Name: \($0)" },
-            capturedId.dateOfBirth.map { "DOB: \($0.day)/\($0.month)/\($0.year)" },
-            capturedId.documentNumber.map { "Doc #: \($0)" },
-        ].compactMap { $0 }.joined(separator: "\n")
-
+        let message = [capturedId.fullName, capturedId.documentNumber]
+            .compactMap { $0 }.joined(separator: "\n")
         DispatchQueue.main.async {
             let alert = UIAlertController(title: "Recognized", message: message, preferredStyle: .alert)
-            alert.addAction(UIAlertAction(title: "OK", style: .default) { _ in
-                idCapture.isEnabled = true
-            })
+            alert.addAction(UIAlertAction(title: "OK", style: .default) { _ in idCapture.isEnabled = true })
             self.present(alert, animated: true)
         }
     }
 
     func idCapture(_ idCapture: IdCapture, didReject capturedId: CapturedId?, reason: RejectionReason) {
         idCapture.isEnabled = false
-        let message = reason == .timeout
-            ? "Capture timed out. Please try again."
-            : "Document not supported."
+        let message = reason == .timeout ? "Capture timed out." : "Document not supported."
         DispatchQueue.main.async {
-            let alert = UIAlertController(title: "Not recognized", message: message, preferredStyle: .alert)
-            alert.addAction(UIAlertAction(title: "OK", style: .default) { _ in
-                idCapture.isEnabled = true
-            })
+            let alert = UIAlertController(title: "Rejected", message: message, preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: "OK", style: .default) { _ in idCapture.isEnabled = true })
             self.present(alert, animated: true)
         }
     }
@@ -323,20 +302,15 @@ extension IdCaptureViewController: IdCaptureListener {
 
 ## Key rules
 
-1. **One context per scanning surface** — call `DataCaptureContext.initialize(licenseKey:)` once and use `DataCaptureContext.shared`.
-2. **No settings builder, no bitmask** — `IdCaptureSettings()` then set `acceptedDocuments` and `scanner`.
-3. **Documents take a region** — `DriverLicense(region: .us)`, `Passport(region: .any)`, etc.
-4. **`scanner` takes an `IdCaptureScanner` wrapper** — `IdCaptureScanner(physicalDocument: FullDocumentScanner())`.
-5. **`IdCapture(context:settings:)`** — initializer, not a factory or static `Create`.
-6. **Apply `IdCapture.recommendedCameraSettings`** to the camera before starting.
-7. **Handle both `didCapture` and `didReject`** — both run on a background thread; dispatch UI work to the main thread.
-8. **Set `isEnabled = false` before showing results** and re-enable when the user dismisses.
-9. **Camera lifecycle in `viewWillAppear` / `viewDidDisappear`** — turn the camera `.on` when appearing and `.off` when disappearing.
-10. **`NSCameraUsageDescription` in `Info.plist`** — required; iOS prompts automatically, no runtime-permission code needed.
-11. **`didCapture` fires once per complete document** (not per side or zone — that was the v6 behaviour).
-12. **Never read `session.newlyCapturedId`** — `IdCaptureSession` was removed in v7; results are delivered directly via `didCapture(_:capturedId:)`.
+1. `DataCaptureContext.initialize(licenseKey:)` once — then `DataCaptureContext.shared`.
+2. `settings.scanner` always takes an `IdCaptureScanner` wrapper — not `scannerType` (v7) or `supportedDocuments` (v6).
+3. `IdCapture(context:settings:)` — not a factory or static `Create`.
+4. `addListener` once after creating the mode, not in `viewWillAppear`.
+5. Both callbacks run on a background thread — always `DispatchQueue.main.async` for UI.
+6. `isEnabled = false` before showing results; `true` when dismissed.
+7. `didCapture` fires once per complete document — not per side or zone (that was v6 behaviour).
 
 ## Where to go next
 
-- `references/advanced.md` — scanner selection, rejection rules, verification, anonymization, rich results, overlay customization, BarcodeCapture co-existence.
+- `references/advanced.md` — USDL verification, anonymization, BarcodeCapture co-existence, overlay/feedback customization.
 - [Get Started (iOS)](https://docs.scandit.com/sdks/ios/id-capture/get-started/)

@@ -50,8 +50,8 @@ Your training data may contain outdated or incorrect Scandit ID Capture APIs. Th
 
 Based on the user's request, load the appropriate reference file before responding:
 
-- **Integrating ID Capture from scratch, configuring accepted documents and the scanner, creating the mode, hosting the `DataCaptureView` + `IdCaptureOverlay`, wiring the camera lifecycle, handling captured/rejected IDs, and reading the common `CapturedId` fields** → read `references/integration.md` and follow it.
-- **Tuning the scanner (single-side / mobile docs), rejection rules (expired / voided / underage / expiring / forged-AAMVA / inconsistent), verification, anonymization, reading the rich sub-results (MRZ / VIZ / barcode / mobile document / images), customizing the overlay, co-existing with BarcodeCapture** → read `references/advanced.md` and follow it.
+- **Integrating ID Capture from scratch, or any question about document selection, scanner choice, rejection rules, image capture, or reading results (top-level fields or zone-specific mrzResult/vizResult/barcode)** → read `references/integration.md` and follow it.
+- **USDL verification (forged barcodes, data inconsistency, frontReviewImage), anonymization, BarcodeCapture co-existence, overlay customization, or custom feedback** → read `references/advanced.md` and follow it.
 - **Upgrading the Scandit iOS SDK version on an existing ID Capture integration** (e.g. "migrate from 6.x to 7", "update Scandit to the latest version", "we're on 7.x and the build breaks after bumping packages", code that still uses `supportedDocuments` / `IdDocumentType` / `didCaptureIn session:`) → read `references/migration.md` and follow it.
 
 ## API Usage Policy
