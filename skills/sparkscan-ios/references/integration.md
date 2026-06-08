@@ -22,9 +22,9 @@ Ask the user which barcode symbologies they need to scan. When asking, mention t
 
 Decide the target view before writing any code:
 
-1. **The user named a file or view** (in the prompt, or it's the file they have open) → integrate there.
-2. **No view named, but the target is obvious from the codebase** — e.g. there is a single main view controller, or one obvious `ContentView` / screen where scanning belongs → integrate into that existing view.
-3. **Ambiguous** — several candidate views and no clear signal which one → **ask the user which existing view they want SparkScan added to.** Do not guess, and do not fall back to creating a new view.
+1. **The user pointed at one view** — they named a single file, have it open, or the prompt makes the scanning screen clear → integrate there.
+2. **Only one candidate exists** — the codebase (or what the user shared) has a single screen where scanning could live → integrate into that existing view.
+3. **Several candidate views** — the user shared, or the codebase has, more than one screen and hasn't said which should host scanning → **stop and ask which existing view they want SparkScan added to before writing any integration code.** Don't infer the target from a name: a `Home`/landing screen or a `Settings`/config screen is not automatically the scanning screen, and a user who lists several files is signalling they expect to choose. Guessing wrong means redoing the integration in a different file. Never fall back to creating a new view.
 
 Then write the integration code **directly into that existing file**, merging it with what's already there: keep the existing properties, `@IBOutlet`s, lifecycle methods, and other UI, and add the SparkScan context, mode, view, and listener alongside them. Do not just show the code in chat; apply it to the file.
 

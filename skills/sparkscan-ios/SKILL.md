@@ -4,7 +4,7 @@ description: Use when SparkScan is involved in an iOS project — whether the us
 license: MIT
 metadata:
   author: scandit
-  version: "1.1.1"
+  version: "1.1.2"
 ---
 
 # SparkScan iOS Skill
