@@ -1,0 +1,50 @@
+{
+  "expectations": [
+    {
+      "text": "Sets settings.rejectExpiredIds = true",
+      "passed": true,
+      "evidence": "Line 61: settings.rejectExpiredIds = true"
+    },
+    {
+      "text": "Sets settings.rejectHolderBelowAge = 21",
+      "passed": true,
+      "evidence": "Line 62: settings.rejectHolderBelowAge = 21"
+    },
+    {
+      "text": "Uses a switch statement on the RejectionReason parameter in didReject",
+      "passed": true,
+      "evidence": "Lines 86\u201395: switch reason { ... } inside idCapture(_:didReject:reason:)"
+    },
+    {
+      "text": "Has a case for .documentExpired with a distinct user-facing message about the document being expired",
+      "passed": true,
+      "evidence": "Lines 87\u201388: case .documentExpired: message = Constants.Message.expired \u2014 \"This ID has expired. Please use a valid document.\""
+    },
+    {
+      "text": "Has a case for .holderUnderage with a distinct user-facing message about the age requirement",
+      "passed": true,
+      "evidence": "Lines 89\u201390: case .holderUnderage: message = Constants.Message.underage \u2014 \"The document holder does not meet the age requirement (21+).\""
+    },
+    {
+      "text": "Has a case for .timeout with a distinct user-facing message about the capture timing out",
+      "passed": true,
+      "evidence": "Lines 91\u201392: case .timeout: message = Constants.Message.timeout \u2014 \"Document capture failed. Make sure the document is well lit and free of glare. Alternatively, try scanning another document.\""
+    },
+    {
+      "text": "Has a default case for all other rejection reasons",
+      "passed": true,
+      "evidence": "Lines 93\u201394: default: message = Constants.Message.rejected"
+    },
+    {
+      "text": "Does NOT use rejectHolderBelowAge as a String \u2014 it must be an Int literal (21)",
+      "passed": true,
+      "evidence": "Line 62: settings.rejectHolderBelowAge = 21 \u2014 assigned as an Int literal, not a String"
+    }
+  ],
+  "summary": {
+    "pass_rate": 1.0,
+    "passed": 8,
+    "failed": 0,
+    "total": 8
+  }
+}

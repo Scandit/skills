@@ -1,0 +1,25 @@
+{
+  "summary": {
+    "pass_rate": 1.0,
+    "passed": 3,
+    "failed": 0,
+    "total": 3
+  },
+  "expectations": [
+    {
+      "text": "Sets acceptedDocuments to [IdCard(region: .us), DriverLicense(region: .us)] — does NOT put passports in acceptedDocuments",
+      "passed": true,
+      "evidence": "Line 46-49: settings.acceptedDocuments = [IdCard(region: .us), DriverLicense(region: .us)]. No Passport in this array."
+    },
+    {
+      "text": "Sets rejectedDocuments to contain Passport — does NOT use acceptedDocuments to exclude passports",
+      "passed": true,
+      "evidence": "Line 52-54: settings.rejectedDocuments = [Passport(region: .any)]. Passport is exclusively in rejectedDocuments."
+    },
+    {
+      "text": "Does NOT confuse acceptedDocuments and rejectedDocuments",
+      "passed": true,
+      "evidence": "acceptedDocuments contains only IdCard and DriverLicense; rejectedDocuments contains only Passport. Arrays are correctly separated."
+    }
+  ]
+}

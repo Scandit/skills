@@ -1,0 +1,55 @@
+{
+  "expectations": [
+    {
+      "text": "Sets acceptedDocuments to [DriverLicense(region: .us)] only",
+      "passed": false,
+      "evidence": "Lines 56\u201363: `acceptedDocuments` is set to `[DriverLicense(region: .us)]` correctly, but the model also sets `rejectedDocuments` to three additional document types, going beyond the required configuration."
+    },
+    {
+      "text": "Sets settings.rejectForgedAamvaBarcodes = true",
+      "passed": false,
+      "evidence": "No `rejectForgedAamvaBarcodes` assignment anywhere in the file. The model used `AamvaBarcodeVerifier` via the old verifier-based API instead."
+    },
+    {
+      "text": "Sets settings.rejectInconsistentData = true",
+      "passed": false,
+      "evidence": "No `rejectInconsistentData` assignment anywhere in the file. Consistency checking is attempted through `AamvaVizBarcodeComparisonVerifier` via the deprecated verifier path."
+    },
+    {
+      "text": "Sets settings.rejectExpiredIds = true",
+      "passed": true,
+      "evidence": "Line 73: `settings.rejectExpiredIds = true`"
+    },
+    {
+      "text": "Calls settings.setIncludeImage(true, for: .croppedDocument) \u2014 required for frontReviewImage to be populated",
+      "passed": false,
+      "evidence": "No call to `setIncludeImage(_:for:)` anywhere in the file. Without this, `frontReviewImage` will always be nil."
+    },
+    {
+      "text": "Does NOT use AamvaBarcodeVerifier or DataConsistencyVerifier \u2014 verification is settings-driven",
+      "passed": false,
+      "evidence": "Lines 66\u201372: instantiates `AamvaVizBarcodeComparisonVerifier()` and `AamvaBarcodeVerifier()` and passes them to `USDLVerificationSettings(verifiers:)`, which is the deprecated verifier-based approach."
+    },
+    {
+      "text": "In didReject, accesses capturedId?.verificationResult.dataConsistency?.frontReviewImage when reason == .inconsistentData",
+      "passed": false,
+      "evidence": "Lines 209\u2013211: accesses `capturedId.usdlVerificationResult?.frontReviewImage` \u2014 uses the wrong property path (`usdlVerificationResult` instead of `verificationResult.dataConsistency`)."
+    },
+    {
+      "text": "Handles .inconsistentData, .forgedAamvaBarcode, and .documentExpired in didReject with distinct messages",
+      "passed": false,
+      "evidence": "Line 208 handles `.inconsistentData`. There is no `case .forgedAamvaBarcode` branch. Line 204 uses `.expired` (not `.documentExpired`), which is a different enum value. Two of the three required cases are absent or wrong."
+    },
+    {
+      "text": "Uses idCapture.reset() when re-enabling capture after showing the verification result (or correctly re-enables isEnabled)",
+      "passed": true,
+      "evidence": "`idCapture.isEnabled = true` is set in the completion block of every `showAlert` and `displayReviewImage` call throughout didCapture and didReject, correctly re-enabling capture after dismissal."
+    }
+  ],
+  "summary": {
+    "pass_rate": 0.2222,
+    "passed": 2,
+    "failed": 7,
+    "total": 9
+  }
+}

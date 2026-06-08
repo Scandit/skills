@@ -1,0 +1,15 @@
+{
+  "eval_id": 2,
+  "eval_name": "rejection-rules",
+  "prompt": "Update the ID Capture integration to reject expired IDs and holders under 21 years old. Show a distinct message for each rejection reason: expired document, underage holder, timeout, and any other rejection.",
+  "assertions": [
+    {"text": "Sets settings.rejectExpiredIds = true"},
+    {"text": "Sets settings.rejectHolderBelowAge = 21"},
+    {"text": "Uses a switch statement on the RejectionReason parameter in didReject"},
+    {"text": "Has a case for .documentExpired with a distinct user-facing message about the document being expired"},
+    {"text": "Has a case for .holderUnderage with a distinct user-facing message about the age requirement"},
+    {"text": "Has a case for .timeout with a distinct user-facing message about the capture timing out"},
+    {"text": "Has a default case for all other rejection reasons"},
+    {"text": "Does NOT use rejectHolderBelowAge as a String — it must be an Int literal (21)"}
+  ]
+}

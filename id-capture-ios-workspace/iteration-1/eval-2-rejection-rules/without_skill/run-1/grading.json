@@ -1,0 +1,50 @@
+{
+  "expectations": [
+    {
+      "text": "Sets settings.rejectExpiredIds = true",
+      "passed": false,
+      "evidence": "Property is never set. Lines 54\u201362 show IdCaptureSettings configuration but rejectExpiredIds is absent. Instead, expiry is checked manually via isExpired() in didCapture."
+    },
+    {
+      "text": "Sets settings.rejectHolderBelowAge = 21",
+      "passed": false,
+      "evidence": "Property is never set. Age is checked manually via isUnderage() in didCapture rather than using the SDK rejection setting."
+    },
+    {
+      "text": "Uses a switch statement on the RejectionReason parameter in didReject",
+      "passed": true,
+      "evidence": "Lines 125\u2013133: switch reason { ... } inside idCapture(_:didReject:reason:)"
+    },
+    {
+      "text": "Has a case for .documentExpired with a distinct user-facing message about the document being expired",
+      "passed": false,
+      "evidence": "No case .documentExpired in the switch. The switch only handles .timeout and default."
+    },
+    {
+      "text": "Has a case for .holderUnderage with a distinct user-facing message about the age requirement",
+      "passed": false,
+      "evidence": "No case .holderUnderage in the switch. The switch only handles .timeout and default."
+    },
+    {
+      "text": "Has a case for .timeout with a distinct user-facing message about the capture timing out",
+      "passed": true,
+      "evidence": "Lines 126\u2013127: case .timeout: message = Constants.Message.timeout \u2014 \"Document capture failed. Make sure the document is well lit and free of glare. Alternatively, try scanning another document\""
+    },
+    {
+      "text": "Has a default case for all other rejection reasons",
+      "passed": true,
+      "evidence": "Lines 128\u2013129: default: message = Constants.Message.rejected"
+    },
+    {
+      "text": "Does NOT use rejectHolderBelowAge as a String \u2014 it must be an Int literal (21)",
+      "passed": false,
+      "evidence": "rejectHolderBelowAge is never used at all. The age check is implemented manually (isUnderage()) rather than via the SDK setting, so the required Int literal assignment is absent."
+    }
+  ],
+  "summary": {
+    "pass_rate": 0.375,
+    "passed": 3,
+    "failed": 5,
+    "total": 8
+  }
+}

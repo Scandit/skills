@@ -1,0 +1,105 @@
+{
+  "summary": {
+    "pass_rate": 1.0,
+    "passed": 19,
+    "failed": 0,
+    "total": 19
+  },
+  "expectations": [
+    {
+      "text": "Imports ScanditIdCapture (and optionally ScanditCaptureCore)",
+      "passed": true,
+      "evidence": "import ScanditCaptureCore and import ScanditIdCapture both present at top of file"
+    },
+    {
+      "text": "Calls DataCaptureContext.initialize(licenseKey:) before using DataCaptureContext.shared",
+      "passed": true,
+      "evidence": "Lazy var calls DataCaptureContext.initialize(licenseKey: \"-- ENTER YOUR SCANDIT LICENSE KEY HERE --\") then returns DataCaptureContext.shared"
+    },
+    {
+      "text": "Uses Camera.default and calls context.setFrameSource",
+      "passed": true,
+      "evidence": "camera = Camera.default followed by context.setFrameSource(camera, completionHandler: nil)"
+    },
+    {
+      "text": "Applies IdCapture.recommendedCameraSettings to the camera",
+      "passed": true,
+      "evidence": "camera?.apply(IdCapture.recommendedCameraSettings)"
+    },
+    {
+      "text": "Creates DataCaptureView(context:frame:) and adds it as a subview",
+      "passed": true,
+      "evidence": "captureView = DataCaptureView(context: context, frame: view.bounds) and view.addSubview(captureView)"
+    },
+    {
+      "text": "Creates IdCaptureSettings() and sets acceptedDocuments to include Passport(region: .any), DriverLicense(region: .any), and IdCard(region: .any)",
+      "passed": true,
+      "evidence": "settings.acceptedDocuments = [Passport(region: .any), DriverLicense(region: .any), IdCard(region: .any)]"
+    },
+    {
+      "text": "Sets settings.scanner = IdCaptureScanner(physicalDocument: FullDocumentScanner()) — uses FullDocumentScanner (both sides required), does NOT use SingleSideScanner, settings.supportedDocuments, or settings.scannerType",
+      "passed": true,
+      "evidence": "settings.scanner = IdCaptureScanner(physicalDocument: FullDocumentScanner()); no SingleSideScanner, supportedDocuments, or scannerType anywhere in file"
+    },
+    {
+      "text": "Creates IdCapture(context: context, settings: settings) — does NOT use IdCapture.Create or IdCapture.forDataCaptureContext",
+      "passed": true,
+      "evidence": "idCapture = IdCapture(context: context, settings: settings)"
+    },
+    {
+      "text": "Creates IdCaptureOverlay(idCapture:view:)",
+      "passed": true,
+      "evidence": "overlay = IdCaptureOverlay(idCapture: idCapture, view: captureView)"
+    },
+    {
+      "text": "Implements idCapture(_:didCapture:capturedId:) — does NOT use didCaptureIn session:frameData:",
+      "passed": true,
+      "evidence": "func idCapture(_ idCapture: IdCapture, didCapture capturedId: CapturedId) — correct modern signature"
+    },
+    {
+      "text": "Implements idCapture(_:didReject:reason:) — does NOT use didRejectIn session:frameData:",
+      "passed": true,
+      "evidence": "func idCapture(_ idCapture: IdCapture, didReject capturedId: CapturedId?, reason: RejectionReason) — correct modern signature"
+    },
+    {
+      "text": "Sets idCapture.isEnabled = false inside didCapture before showing the alert",
+      "passed": true,
+      "evidence": "idCapture.isEnabled = false is the first statement in didCapture(_:didCapture:capturedId:), before DispatchQueue.main.async alert presentation"
+    },
+    {
+      "text": "Re-enables idCapture.isEnabled = true when the alert is dismissed",
+      "passed": true,
+      "evidence": "alert.addAction(UIAlertAction(title: \"OK\", ...) { _ in idCapture.isEnabled = true })"
+    },
+    {
+      "text": "Dispatches UI work to DispatchQueue.main or the main thread",
+      "passed": true,
+      "evidence": "DispatchQueue.main.async used in both didCapture and didReject before presenting UIAlertController"
+    },
+    {
+      "text": "Calls idCapture.addListener(self) once at setup time (e.g. in setupRecognition or viewDidLoad), NOT in viewWillAppear",
+      "passed": true,
+      "evidence": "idCapture.addListener(self) called in setupRecognition(), which is called from viewDidLoad(); not present in viewWillAppear"
+    },
+    {
+      "text": "Turns camera on in viewWillAppear and off in viewDidDisappear",
+      "passed": true,
+      "evidence": "viewWillAppear: camera?.switch(toDesiredState: .on); viewDidDisappear: camera?.switch(toDesiredState: .off)"
+    },
+    {
+      "text": "Reads capturedId.fullName, capturedId.dateOfBirth, and capturedId.documentNumber from the CapturedId",
+      "passed": true,
+      "evidence": "capturedId.fullName, capturedId.dateOfBirth, and capturedId.documentNumber all accessed in didCapture"
+    },
+    {
+      "text": "Does NOT reference IdCaptureSession or FrameData",
+      "passed": true,
+      "evidence": "No mention of IdCaptureSession or FrameData anywhere in the file"
+    },
+    {
+      "text": "Does NOT reference AamvaBarcodeVerifier or DataConsistencyVerifier",
+      "passed": true,
+      "evidence": "No mention of AamvaBarcodeVerifier or DataConsistencyVerifier anywhere in the file"
+    }
+  ]
+}

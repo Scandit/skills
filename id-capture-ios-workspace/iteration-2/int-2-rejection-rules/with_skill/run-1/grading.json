@@ -1,0 +1,50 @@
+{
+  "summary": {
+    "pass_rate": 1.0,
+    "passed": 8,
+    "failed": 0,
+    "total": 8
+  },
+  "expectations": [
+    {
+      "text": "Sets settings.rejectExpiredIds = true",
+      "passed": true,
+      "evidence": "Line 61: `settings.rejectExpiredIds = true`"
+    },
+    {
+      "text": "Sets settings.rejectHolderBelowAge = 21",
+      "passed": true,
+      "evidence": "Line 62: `settings.rejectHolderBelowAge = 21`"
+    },
+    {
+      "text": "Uses a switch statement on the RejectionReason parameter in didReject",
+      "passed": true,
+      "evidence": "Lines 86–95: `switch reason { case .documentExpired: ... case .holderUnderage: ... case .timeout: ... default: ... }`"
+    },
+    {
+      "text": "Has a case for .documentExpired with a distinct user-facing message about the document being expired",
+      "passed": true,
+      "evidence": "Lines 87–88: `case .documentExpired: message = Constants.Message.expired` where expired = \"This ID has expired. Please use a valid document.\""
+    },
+    {
+      "text": "Has a case for .holderUnderage with a distinct user-facing message about the age requirement",
+      "passed": true,
+      "evidence": "Lines 89–90: `case .holderUnderage: message = Constants.Message.underage` where underage = \"The document holder does not meet the age requirement (21+).\""
+    },
+    {
+      "text": "Has a case for .timeout with a distinct user-facing message about the capture timing out",
+      "passed": true,
+      "evidence": "Lines 91–92: `case .timeout: message = Constants.Message.timeout` where timeout = \"Document capture failed. Make sure the document is well lit and free of glare. Alternatively, try scanning another document\""
+    },
+    {
+      "text": "Has a default case for all other rejection reasons",
+      "passed": true,
+      "evidence": "Lines 93–94: `default: message = Constants.Message.rejected`"
+    },
+    {
+      "text": "Does NOT use rejectHolderBelowAge as a String — it must be an Int literal (21)",
+      "passed": true,
+      "evidence": "Line 62: `settings.rejectHolderBelowAge = 21` — assigned as an integer literal with no quotes"
+    }
+  ]
+}

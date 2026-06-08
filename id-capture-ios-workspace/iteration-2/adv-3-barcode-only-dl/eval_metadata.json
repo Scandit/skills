@@ -1,0 +1,5 @@
+{
+  "eval_id": 6,
+  "eval_name": "barcode-only-dl",
+  "prompt": "I only need to read the barcode from US driver's licenses \u2014 I don't need the VIZ or MRZ."
+}

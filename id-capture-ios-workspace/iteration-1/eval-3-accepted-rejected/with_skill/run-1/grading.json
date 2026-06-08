@@ -1,0 +1,25 @@
+{
+  "expectations": [
+    {
+      "text": "Sets acceptedDocuments to [IdCard(region: .us), DriverLicense(region: .us)] \u2014 does NOT put passports in acceptedDocuments",
+      "passed": true,
+      "evidence": "Lines 46-49: settings.acceptedDocuments = [IdCard(region: .us), DriverLicense(region: .us)]. No Passport in acceptedDocuments."
+    },
+    {
+      "text": "Sets rejectedDocuments to contain Passport \u2014 does NOT use acceptedDocuments to exclude passports",
+      "passed": true,
+      "evidence": "Lines 52-54: settings.rejectedDocuments = [Passport(region: .any)]. Passport is correctly placed in rejectedDocuments, not excluded via acceptedDocuments."
+    },
+    {
+      "text": "Does NOT confuse acceptedDocuments and rejectedDocuments \u2014 wanted documents go in acceptedDocuments, unwanted in rejectedDocuments",
+      "passed": true,
+      "evidence": "US IdCard and DriverLicense (wanted) are in acceptedDocuments; Passport (unwanted) is in rejectedDocuments. The two arrays are not swapped or conflated."
+    }
+  ],
+  "summary": {
+    "pass_rate": 1.0,
+    "passed": 3,
+    "failed": 0,
+    "total": 3
+  }
+}

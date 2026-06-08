@@ -1,0 +1,105 @@
+{
+  "expectations": [
+    {
+      "text": "Imports ScanditIdCapture (and optionally ScanditCaptureCore)",
+      "passed": true,
+      "evidence": "import ScanditIdCapture at line 2 and import ScanditCaptureCore at line 3"
+    },
+    {
+      "text": "Calls DataCaptureContext.initialize(licenseKey:) before using DataCaptureContext.shared",
+      "passed": false,
+      "evidence": "Uses context = DataCaptureContext(licenseKey: ...) at line 31 (direct initializer), never calls DataCaptureContext.initialize(licenseKey:) or DataCaptureContext.shared"
+    },
+    {
+      "text": "Uses Camera.default and calls context.setFrameSource",
+      "passed": true,
+      "evidence": "camera = Camera.default at line 34; context.setFrameSource(camera, completionHandler: nil) at line 35"
+    },
+    {
+      "text": "Applies IdCapture.recommendedCameraSettings to the camera",
+      "passed": true,
+      "evidence": "let cameraSettings = IdCapture.recommendedCameraSettings at line 37; camera?.apply(cameraSettings) at line 38"
+    },
+    {
+      "text": "Creates DataCaptureView(context:frame:) and adds it as a subview",
+      "passed": true,
+      "evidence": "captureView = DataCaptureView(context: context, frame: view.bounds) at line 41; view.addSubview(captureView) at line 43"
+    },
+    {
+      "text": "Creates IdCaptureSettings() and sets acceptedDocuments to include Passport(region: .any), DriverLicense(region: .any), and IdCard(region: .any)",
+      "passed": false,
+      "evidence": "Uses settings.supportedDocuments with IdDocumentType enum values (.passport, .driverLicense, .idCard) at lines 46-55 instead of acceptedDocuments with typed instances Passport(region: .any), DriverLicense(region: .any), IdCard(region: .any)"
+    },
+    {
+      "text": "Sets settings.scanner = IdCaptureScanner(physicalDocument: FullDocumentScanner()) \u2014 does NOT use settings.supportedDocuments or settings.scannerType",
+      "passed": false,
+      "evidence": "Sets settings.supportedDocuments at line 55; never sets settings.scanner. IdCaptureScanner and FullDocumentScanner are not used anywhere."
+    },
+    {
+      "text": "Creates IdCapture(context: context, settings: settings) \u2014 does NOT use IdCapture.Create or IdCapture.forDataCaptureContext",
+      "passed": true,
+      "evidence": "idCapture = IdCapture(context: context, settings: settings) at line 59; no IdCapture.Create or IdCapture.forDataCaptureContext present"
+    },
+    {
+      "text": "Creates IdCaptureOverlay(idCapture:view:)",
+      "passed": true,
+      "evidence": "let overlay = IdCaptureOverlay(idCapture: idCapture, view: captureView) at line 63"
+    },
+    {
+      "text": "Implements idCapture(_:didCapture:capturedId:) \u2014 does NOT use didCaptureIn session:frameData:",
+      "passed": false,
+      "evidence": "Implements func idCapture(_ idCapture: IdCapture, didCaptureIn session: IdCaptureSession, frameData: FrameData) at line 87 \u2014 uses the old deprecated signature, not didCapture(_:didCapture:capturedId:)"
+    },
+    {
+      "text": "Implements idCapture(_:didReject:reason:) \u2014 does NOT use didRejectIn session:frameData:",
+      "passed": false,
+      "evidence": "Implements func idCapture(_ idCapture: IdCapture, didRejectIn session: IdCaptureSession, frameData: FrameData) at line 103 \u2014 uses the old deprecated signature, not didReject(_:didReject:reason:)"
+    },
+    {
+      "text": "Sets idCapture.isEnabled = false inside didCapture before showing the alert",
+      "passed": false,
+      "evidence": "The didCapture equivalent (didCaptureIn) calls showResult() which dispatches to main queue and sets isEnabled = false inside the async block at line 71, not directly inside the listener callback before the dispatch. Additionally the method signature is wrong (see assertion 10)."
+    },
+    {
+      "text": "Re-enables idCapture.isEnabled = true when the alert is dismissed",
+      "passed": true,
+      "evidence": "self?.idCapture.isEnabled = true at line 76 inside the UIAlertAction OK handler"
+    },
+    {
+      "text": "Dispatches UI work to DispatchQueue.main or the main thread",
+      "passed": true,
+      "evidence": "DispatchQueue.main.async { [weak self] in at line 68 inside showResult()"
+    },
+    {
+      "text": "Calls idCapture.addListener(self) once at setup time (e.g. in setupRecognition or viewDidLoad), NOT in viewWillAppear",
+      "passed": true,
+      "evidence": "idCapture.addListener(self) at line 60, inside setupScanning() called from viewDidLoad; not in viewWillAppear"
+    },
+    {
+      "text": "Turns camera on in viewWillAppear and off in viewDidDisappear",
+      "passed": false,
+      "evidence": "camera?.switch(toDesiredState: .on) at line 19 in viewWillAppear is correct, but camera is turned off in viewWillDisappear (line 25) rather than viewDidDisappear"
+    },
+    {
+      "text": "Reads capturedId.fullName, capturedId.dateOfBirth, and capturedId.documentNumber from the CapturedId",
+      "passed": true,
+      "evidence": "capturedId.fullName at line 91, capturedId.dateOfBirth at line 92, capturedId.documentNumber at line 93 \u2014 accessed via session.newlyCapturedId"
+    },
+    {
+      "text": "Does NOT reference IdCaptureSession or FrameData",
+      "passed": false,
+      "evidence": "IdCaptureSession referenced at lines 87 and 103; FrameData referenced at lines 87 and 103"
+    },
+    {
+      "text": "Does NOT reference AamvaBarcodeVerifier or DataConsistencyVerifier",
+      "passed": true,
+      "evidence": "No occurrences of AamvaBarcodeVerifier or DataConsistencyVerifier anywhere in the file"
+    }
+  ],
+  "summary": {
+    "pass_rate": 0.5789,
+    "passed": 11,
+    "failed": 8,
+    "total": 19
+  }
+}

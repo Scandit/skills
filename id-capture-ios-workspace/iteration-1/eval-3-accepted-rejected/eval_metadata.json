@@ -1,0 +1,10 @@
+{
+  "eval_id": 3,
+  "eval_name": "accepted-rejected-documents",
+  "prompt": "Configure ID Capture to accept ID cards and driver's licenses from the US, but explicitly reject passports.",
+  "assertions": [
+    {"text": "Sets acceptedDocuments to [IdCard(region: .us), DriverLicense(region: .us)] — does NOT put passports in acceptedDocuments"},
+    {"text": "Sets rejectedDocuments to contain Passport — does NOT use acceptedDocuments to exclude passports"},
+    {"text": "Does NOT confuse acceptedDocuments and rejectedDocuments — wanted documents go in acceptedDocuments, unwanted in rejectedDocuments"}
+  ]
+}

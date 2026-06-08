@@ -1,0 +1,25 @@
+{
+  "summary": {
+    "pass_rate": 1.0,
+    "passed": 3,
+    "failed": 0,
+    "total": 3
+  },
+  "expectations": [
+    {
+      "text": "Sets acceptedDocuments to [DriverLicense(region: .us)]",
+      "passed": true,
+      "evidence": "Line 44: settings.acceptedDocuments = [DriverLicense(region: .us)]"
+    },
+    {
+      "text": "Uses SingleSideScanner with enablingBarcode: true and machineReadableZone: false and visualInspectionZone: false — does NOT use FullDocumentScanner",
+      "passed": true,
+      "evidence": "Lines 47-51: SingleSideScanner(enablingBarcode: true, machineReadableZone: false, visualInspectionZone: false). No FullDocumentScanner is present."
+    },
+    {
+      "text": "Wraps the scanner in IdCaptureScanner(physicalDocument: SingleSideScanner(...))",
+      "passed": true,
+      "evidence": "Lines 46-52: settings.scanner = IdCaptureScanner(physicalDocument: SingleSideScanner(...))"
+    }
+  ]
+}

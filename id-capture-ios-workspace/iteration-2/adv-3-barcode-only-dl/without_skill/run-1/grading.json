@@ -1,0 +1,25 @@
+{
+  "summary": {
+    "pass_rate": 0.0,
+    "passed": 0,
+    "failed": 3,
+    "total": 3
+  },
+  "expectations": [
+    {
+      "text": "Sets acceptedDocuments to [DriverLicense(region: .us)]",
+      "passed": false,
+      "evidence": "Line 30-32: uses settings.acceptedDocuments = [IdCapture.document(.driverLicenseOrId, .unitedStatesOfAmerica)] — wrong API style, not DriverLicense(region: .us)."
+    },
+    {
+      "text": "Uses SingleSideScanner with enablingBarcode: true and machineReadableZone: false and visualInspectionZone: false — does NOT use FullDocumentScanner",
+      "passed": false,
+      "evidence": "Line 33-37: the scanner flags are correct (barcode: true, mrz: false, viz: false) but it is assigned directly as settings.scannerType = SingleSideScanner(...), bypassing IdCaptureScanner wrapping — which is the hallmark of the wrong SDK version / invented API."
+    },
+    {
+      "text": "Wraps the scanner in IdCaptureScanner(physicalDocument: SingleSideScanner(...))",
+      "passed": false,
+      "evidence": "No IdCaptureScanner wrapper is used anywhere in the file. The SingleSideScanner is assigned directly to settings.scannerType, which is not the correct API."
+    }
+  ]
+}

@@ -1,0 +1,5 @@
+{
+  "eval_id": 3,
+  "eval_name": "accepted-rejected-documents",
+  "prompt": "Configure ID Capture to accept ID cards and driver's licenses from the US, but explicitly reject passports."
+}
