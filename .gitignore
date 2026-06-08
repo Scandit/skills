@@ -3,3 +3,4 @@ product-advisor-workspace
 data-capture-sdk-workspace/
 .claude/
 eval-runs/
+*-workspace/

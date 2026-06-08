@@ -1,5 +1,0 @@
-{
-  "eval_id": 2,
-  "eval_name": "rejection-rules",
-  "prompt": "Update the ID Capture integration to reject expired IDs and holders under 21 years old. Show a distinct message for each rejection reason: expired document, underage holder, timeout, and any other rejection."
-}

@@ -1,5 +1,0 @@
-{
-  "eval_id": 1,
-  "eval_name": "full-doc-scanner",
-  "prompt": "Add ID Capture to this blank UIViewController to scan passports, driver's licenses, and ID cards from any region. I need data from both sides of the document. When a document is recognized, show the full name, date of birth, and document number in an alert. When a document is rejected, show an appropriate message."
-}

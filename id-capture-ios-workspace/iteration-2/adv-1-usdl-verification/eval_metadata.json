@@ -1,5 +1,0 @@
-{
-  "eval_id": 4,
-  "eval_name": "usdl-verification",
-  "prompt": "Configure ID Capture to scan US driver's licenses only and verify them for forged AAMVA barcodes and data inconsistency. Also reject expired IDs. On rejection for inconsistent data, extract and display the front review image."
-}

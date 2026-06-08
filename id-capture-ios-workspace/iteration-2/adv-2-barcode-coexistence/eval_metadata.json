@@ -1,5 +1,0 @@
-{
-  "eval_id": 5,
-  "eval_name": "barcode-coexistence",
-  "prompt": "The app already uses BarcodeCapture for scanning barcodes. Now add an ID scanning screen using IdCapture. Make sure the two modes don't interfere."
-}

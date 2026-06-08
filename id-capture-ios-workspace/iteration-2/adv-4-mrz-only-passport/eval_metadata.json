@@ -1,5 +1,0 @@
-{
-  "eval_id": 7,
-  "eval_name": "mrz-only-passport",
-  "prompt": "I only need to read the MRZ from passports \u2014 I don't need the VIZ or barcode."
-}
