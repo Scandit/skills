@@ -33,6 +33,17 @@
     }
     ,{
       "id": 3,
+      "prompt": "I only need to read the barcode from US driver's licenses — I don't need the VIZ or MRZ.",
+      "expected_output": "IdCaptureSettings with acceptedDocuments containing DriverLicense(region: .us) and scanner set to IdCaptureScanner(physicalDocument: SingleSideScanner(enablingBarcode: true, machineReadableZone: false, visualInspectionZone: false)).",
+      "files": ["evals/fixtures/EmptyViewController.swift"],
+      "assertions": [
+        {"text": "Sets acceptedDocuments to [DriverLicense(region: .us)]"},
+        {"text": "Uses SingleSideScanner with enablingBarcode: true and machineReadableZone: false and visualInspectionZone: false — does NOT use FullDocumentScanner"},
+        {"text": "Wraps the scanner in IdCaptureScanner(physicalDocument: SingleSideScanner(...))"}
+      ]
+    }
+    ,{
+      "id": 4,
       "prompt": "I only need to read the MRZ from passports — I don't need the VIZ or barcode.",
       "expected_output": "IdCaptureSettings with acceptedDocuments containing Passport and scanner set to IdCaptureScanner(physicalDocument: SingleSideScanner(enablingBarcode: false, machineReadableZone: true, visualInspectionZone: false)).",
       "files": ["evals/fixtures/EmptyViewController.swift"],
