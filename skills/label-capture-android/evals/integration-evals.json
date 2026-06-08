@@ -78,6 +78,49 @@
         { "text": "Camera.getDefaultCamera(LabelCapture.createRecommendedCameraSettings()) is called" },
         { "text": "LabelCaptureValidationFlowOverlay is NOT used (the user did not ask for Validation Flow)" }
       ]
+    },
+    {
+      "id": 5,
+      "prompt": "Add Scandit Label Capture to my Android app to scan the box of a smartphone. I need to read the IMEI 1, the IMEI 2, and the device's serial number printed on the box. Here is my activity: MainActivity.kt.",
+      "expected_output": "The skill uses the pre-built barcode-semantic field builders addImeiOneBarcode(), addImeiTwoBarcode(), and addSerialNumberBarcode() (NOT custom barcode/text fields with hand-written regex), and includes the label-text-models Gradle dependency because barcode-semantic fields require the model at runtime — it does NOT claim the artifact can be skipped because the label is barcode-only.",
+      "files": [
+        "fixtures/MainActivity.kt"
+      ],
+      "assertions": [
+        { "text": "addImeiOneBarcode() is used for the IMEI 1 field" },
+        { "text": "addImeiTwoBarcode() is used for the IMEI 2 field" },
+        { "text": "addSerialNumberBarcode() is used for the serial number field" },
+        { "text": "No hallucinated regex: addCustomText() is NOT used with a hand-written IMEI or serial-number regex pattern, and addCustomBarcode() is NOT used as a stand-in for IMEI/serial — the pre-built barcode-semantic builders are used instead" },
+        { "text": "The com.scandit.datacapture:label-text-models Gradle dependency is included" },
+        { "text": "The response does NOT state that label-text-models can be omitted because the label only has barcode fields (the barcode-semantic fields require it)" },
+        { "text": "DataCaptureContext.forLicenseKey( and LabelCapture.forDataCaptureContext( are present" }
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "I want to use Scandit Label Capture in my Android retail app to scan printed price shelf labels — the product barcode plus the displayed price. Write the integration into MainActivity.kt.",
+      "expected_output": "The skill recognises this as a price/shelf-label scenario and uses the pre-built whole-label factory LabelDefinition.createPriceCaptureDefinition(...) rather than hand-assembling the label from addCustomBarcode()/addTotalPriceText() individual builders. It includes the label-text-models dependency.",
+      "files": [
+        "fixtures/MainActivity.kt"
+      ],
+      "assertions": [
+        { "text": "LabelDefinition.createPriceCaptureDefinition( is used to define the price/shelf label" },
+        { "text": "The label is NOT hand-assembled from individual addTotalPriceText()/addUnitPriceText()/addCustomBarcode() builders when the pre-built price-capture definition covers the scenario" },
+        { "text": "LabelDefinition is imported from com.scandit.datacapture.label" },
+        { "text": "The com.scandit.datacapture:label-text-models Gradle dependency is included" },
+        { "text": "LabelCapture.forDataCaptureContext( and DataCaptureContext.forLicenseKey( are present" }
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "In my Android app I'm already using Scandit Label Capture to read a shipping label. I also want to run Barcode Capture at the same time, on the same camera session, to continuously scan separate standalone package barcodes. How do I wire up both modes on the same DataCaptureContext?",
+      "expected_output": "The skill explains that Label Capture and Barcode Capture cannot both be active at the same time in the same DataCaptureContext, and recommends modelling the extra barcode as a field inside the Label Capture label definition (addCustomBarcode() or a pre-built barcode field) instead of adding a second mode.",
+      "files": [],
+      "assertions": [
+        { "text": "The response states that Label Capture and Barcode Capture cannot both run as active modes simultaneously in the same DataCaptureContext" },
+        { "text": "The response recommends adding the barcode as a field within the Label Capture label definition (addCustomBarcode() or a pre-built barcode field) as the supported approach" },
+        { "text": "The response does NOT provide code that creates and enables both BarcodeCapture.forDataCaptureContext(...) and LabelCapture.forDataCaptureContext(...) as concurrently active modes" }
+      ]
     }
   ]
 }
