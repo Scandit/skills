@@ -19,8 +19,17 @@ overlay.labelBrush = new Brush(Color.fromHex('1A000000'), Color.fromHex('0000000
 overlay.shouldShowScanAreaGuides = true;
 
 overlay.listener = {
+  // Return a Brush to customize the field, or null to use the default.
+  // Key off field.name to color specific fields (use alpha < 1 so content isn't occluded).
   brushForFieldOfLabel(_overlay, field, _label) {
-    return field.isRequired ? overlay.predictedFieldBrush : null;
+    switch (field.name) {
+      case 'Barcode':
+        return new Brush(Color.fromRGBA(0, 255, 255, 0.5), Color.fromRGBA(0, 255, 255, 0.5), 0);
+      case 'Expiry Date':
+        return new Brush(Color.fromRGBA(255, 165, 0, 0.5), Color.fromRGBA(255, 165, 0, 0.5), 0);
+      default:
+        return null;
+    }
   },
   brushForLabel(_overlay, _label) {
     return null;

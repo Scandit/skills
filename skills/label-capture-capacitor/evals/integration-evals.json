@@ -5,65 +5,399 @@
       "id": 1,
       "prompt": "Add Label Capture to my Capacitor app. Here's my main script: empty-app.js. I need to scan a Code 128 barcode and an expiry date on a perishable product label.",
       "expected_output": "The skill walks the user through the Interactive Label Definition (Question A/B/C), then writes complete Label Capture integration code into empty-app.js with initializePlugins+DataCaptureContext.initialize. A Validation Flow overlay is wired up. The setup checklist is shown.",
-      "files": ["fixtures/empty-app.js"],
+      "files": [
+        "fixtures/empty-app.js"
+      ],
       "assertions": [
-        {"text": "Interactive Label Definition asks the user which fields are on the label (Question A)"},
-        {"text": "Setup checklist mentions scandit-capacitor-datacapture-core, -barcode, and -label packages"},
-        {"text": "Setup checklist mentions npx cap sync"},
-        {"text": "Setup checklist mentions NSCameraUsageDescription in iOS Info.plist"},
-        {"text": "await ScanditCaptureCorePlugin.initializePlugins() is called before DataCaptureContext.initialize"},
-        {"text": "DataCaptureContext.initialize( is present"},
-        {"text": "License key placeholder (e.g. -- ENTER YOUR SCANDIT LICENSE KEY HERE -- or similar) is present"},
-        {"text": "CustomBarcode.initWithNameAndSymbologies( is present"},
-        {"text": "Symbology.Code128 is enabled on the CustomBarcode"},
-        {"text": "new ExpiryDateText( is present"},
-        {"text": "new LabelDefinition( is present"},
-        {"text": "labelDefinition.fields = [...] assignment is present"},
-        {"text": "LabelCaptureSettings.settingsFromLabelDefinitions( is called"},
-        {"text": "new LabelCapture(settings) is present (no LabelCaptureSettingsBuilder)"},
-        {"text": "LabelCaptureSettingsBuilder is NOT used (web-only)"},
-        {"text": "LabelDefinitionBuilder is NOT used (web-only)"},
-        {"text": "Factory function shorthand like label(...) or customBarcode(...) is NOT used (web-only)"},
-        {"text": "DataCaptureView.forContext( is used and view.connectToElement( is called"},
-        {"text": "LabelCaptureBasicOverlay or LabelCaptureValidationFlowOverlay is added via view.addOverlay(...)"},
-        {"text": "didCaptureLabelWithFields callback is registered — NOT onValidationFlowLabelCaptured"},
-        {"text": "onValidationFlowLabelCaptured is NOT used (web-only)"},
-        {"text": "onManualInput is NOT used (web-only)"},
-        {"text": "view.webViewContentOnTop is set (true when showing DOM modal, false during scanning) at least once"},
-        {"text": "Imports come from scandit-capacitor-datacapture-core, scandit-capacitor-datacapture-barcode, and scandit-capacitor-datacapture-label"}
+        {
+          "text": "Interactive Label Definition asks the user which fields are on the label (Question A)"
+        },
+        {
+          "text": "Setup checklist mentions scandit-capacitor-datacapture-core, -barcode, and -label packages"
+        },
+        {
+          "text": "Setup checklist mentions npx cap sync"
+        },
+        {
+          "text": "Setup checklist mentions NSCameraUsageDescription in iOS Info.plist"
+        },
+        {
+          "text": "await ScanditCaptureCorePlugin.initializePlugins() is called before DataCaptureContext.initialize"
+        },
+        {
+          "text": "DataCaptureContext.initialize( is present"
+        },
+        {
+          "text": "License key placeholder (e.g. -- ENTER YOUR SCANDIT LICENSE KEY HERE -- or similar) is present"
+        },
+        {
+          "text": "CustomBarcode.initWithNameAndSymbologies( is present"
+        },
+        {
+          "text": "Symbology.Code128 is enabled on the CustomBarcode"
+        },
+        {
+          "text": "new ExpiryDateText( is present"
+        },
+        {
+          "text": "new LabelDefinition( is present"
+        },
+        {
+          "text": "labelDefinition.fields = [...] assignment is present"
+        },
+        {
+          "text": "LabelCaptureSettings.settingsFromLabelDefinitions( is called"
+        },
+        {
+          "text": "new LabelCapture(settings) is present (no LabelCaptureSettingsBuilder)"
+        },
+        {
+          "text": "LabelCaptureSettingsBuilder is NOT used (web-only)"
+        },
+        {
+          "text": "LabelDefinitionBuilder is NOT used (web-only)"
+        },
+        {
+          "text": "Factory function shorthand like label(...) or customBarcode(...) is NOT used (web-only)"
+        },
+        {
+          "text": "DataCaptureView.forContext( is used and view.connectToElement( is called"
+        },
+        {
+          "text": "LabelCaptureBasicOverlay or LabelCaptureValidationFlowOverlay is added via view.addOverlay(...)"
+        },
+        {
+          "text": "didCaptureLabelWithFields callback is registered — NOT onValidationFlowLabelCaptured"
+        },
+        {
+          "text": "onValidationFlowLabelCaptured is NOT used (web-only)"
+        },
+        {
+          "text": "onManualInput is NOT used (web-only)"
+        },
+        {
+          "text": "view.webViewContentOnTop is set (true when showing DOM modal, false during scanning) at least once"
+        },
+        {
+          "text": "Imports come from scandit-capacitor-datacapture-core, scandit-capacitor-datacapture-barcode, and scandit-capacitor-datacapture-label"
+        },
+        {
+          "text": "Camera.withSettings(LabelCapture.createRecommendedCameraSettings()) is used and context.setFrameSource(camera) is called"
+        },
+        {
+          "text": "camera.switchToDesiredState(FrameSourceState.On) is called to start the camera"
+        }
+      ],
+      "tags": [
+        "camera-setup"
       ]
     },
     {
       "id": 2,
       "prompt": "Add Label Capture with the Validation Flow overlay so the user can confirm OCR results and manually correct fields if needed. Use the redesigned flow. My package.json says I'm on 8.4.0.",
       "expected_output": "The skill recognises 8.4+, uses LabelCaptureValidationFlowOverlay, and registers a listener with didCaptureLabelWithFields, didSubmitManualInputForField, and didUpdateValidationFlowResult.",
-      "files": ["fixtures/empty-app.js", "fixtures/package_8.4.json"],
+      "files": [
+        "fixtures/empty-app.js",
+        "fixtures/package_8.4.json"
+      ],
       "assertions": [
-        {"text": "LabelCaptureValidationFlowOverlay is constructed and added via view.addOverlay(...)"},
-        {"text": "didCaptureLabelWithFields callback is registered on the listener"},
-        {"text": "didSubmitManualInputForField callback is registered on the listener (v8.2+)"},
-        {"text": "didUpdateValidationFlowResult is either registered or explicitly noted as optional and 8.4+"},
-        {"text": "onValidationFlowLabelCaptured is NOT used (web-only)"},
-        {"text": "onManualInput is NOT used (web-only)"},
-        {"text": "await ScanditCaptureCorePlugin.initializePlugins() is called"},
-        {"text": "License key placeholder is present"}
+        {
+          "text": "LabelCaptureValidationFlowOverlay is constructed and added via view.addOverlay(...)"
+        },
+        {
+          "text": "didCaptureLabelWithFields callback is registered on the listener"
+        },
+        {
+          "text": "didSubmitManualInputForField callback is registered on the listener (v8.2+)"
+        },
+        {
+          "text": "didUpdateValidationFlowResult is either registered or explicitly noted as optional and 8.4+"
+        },
+        {
+          "text": "onValidationFlowLabelCaptured is NOT used (web-only)"
+        },
+        {
+          "text": "onManualInput is NOT used (web-only)"
+        },
+        {
+          "text": "await ScanditCaptureCorePlugin.initializePlugins() is called"
+        },
+        {
+          "text": "License key placeholder is present"
+        }
       ]
     },
     {
       "id": 3,
       "prompt": "Add Label Capture with just the basic overlay (no validation flow). My package.json says I'm on 8.2.0. I want to scan a CustomBarcode plus a TotalPriceText field.",
       "expected_output": "The skill writes a Label Capture integration that uses LabelCaptureBasicOverlay (no Validation Flow). The mode listener handles didUpdateSession and reads captured labels from the session.",
-      "files": ["fixtures/empty-app.js", "fixtures/package_8.2.json"],
+      "files": [
+        "fixtures/empty-app.js",
+        "fixtures/package_8.2.json"
+      ],
       "assertions": [
-        {"text": "LabelCaptureBasicOverlay is constructed and added via view.addOverlay(...)"},
-        {"text": "LabelCaptureValidationFlowOverlay is NOT used"},
-        {"text": "labelCapture.addListener( is called with a listener that includes didUpdateSession"},
-        {"text": "session.capturedLabels is read inside didUpdateSession"},
-        {"text": "CustomBarcode.initWithNameAndSymbologies( is present"},
-        {"text": "new TotalPriceText( is present"},
-        {"text": "new LabelDefinition( is present and labelDefinition.fields = [...] is set"},
-        {"text": "LabelCaptureSettings.settingsFromLabelDefinitions( is called"},
-        {"text": "DataCaptureContext.initialize( is used"}
+        {
+          "text": "LabelCaptureBasicOverlay is constructed and added via view.addOverlay(...)"
+        },
+        {
+          "text": "LabelCaptureValidationFlowOverlay is NOT used"
+        },
+        {
+          "text": "labelCapture.addListener( is called with a listener that includes didUpdateSession"
+        },
+        {
+          "text": "session.capturedLabels is read inside didUpdateSession"
+        },
+        {
+          "text": "CustomBarcode.initWithNameAndSymbologies( is present"
+        },
+        {
+          "text": "new TotalPriceText( is present"
+        },
+        {
+          "text": "new LabelDefinition( is present and labelDefinition.fields = [...] is set"
+        },
+        {
+          "text": "LabelCaptureSettings.settingsFromLabelDefinitions( is called"
+        },
+        {
+          "text": "DataCaptureContext.initialize( is used"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "My Capacitor Label Capture app already works while scanning, but the camera keeps running in the background when the app is backgrounded, draining battery. Here's my main script: empty-app.js. Wire up the camera so it turns off when the app is backgrounded and resumes when it returns to the foreground.",
+      "expected_output": "The skill adds a Capacitor App plugin appStateChange listener that switches the camera to FrameSourceState.Off when the app goes inactive and back to FrameSourceState.On when it returns, remembering whether the camera was on. It does NOT dispose the DataCaptureContext.",
+      "files": [
+        "fixtures/empty-app.js"
+      ],
+      "assertions": [
+        {
+          "text": "The App plugin is imported from @capacitor/app and App.addListener('appStateChange', ...) is registered"
+        },
+        {
+          "text": "On background (isActive false) the camera is switched off via camera.switchToDesiredState(FrameSourceState.Off)"
+        },
+        {
+          "text": "On foreground (isActive true) the camera is switched back on via camera.switchToDesiredState(FrameSourceState.On)"
+        },
+        {
+          "text": "The previous camera state is captured (e.g. via camera.getCurrentState()) so the camera is only re-enabled if it was on before backgrounding"
+        },
+        {
+          "text": "context.dispose() is NOT called — the singleton context lives for the whole app lifetime"
+        }
+      ],
+      "tags": [
+        "lifecycle-handling"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "Add Label Capture to my Capacitor app (empty-app.js). The label has a Code 128 barcode that is required, plus an expiry date and a total price that are both optional — the app should still consider the label captured even if those text fields are missing.",
+      "expected_output": "The skill writes an integration where the barcode field has optional = false and the expiry date and total price fields have optional = true, and explains that optional fields do not block the label from being considered captured.",
+      "files": [
+        "fixtures/empty-app.js"
+      ],
+      "assertions": [
+        {
+          "text": "The CustomBarcode field is marked required via field.optional = false"
+        },
+        {
+          "text": "The expiry date field is marked optional via field.optional = true (the property, not an isOptional method)"
+        },
+        {
+          "text": "The total price field is marked optional via field.optional = true"
+        },
+        {
+          "text": "new ExpiryDateText( and new TotalPriceText( are used for the text fields"
+        },
+        {
+          "text": "LabelCaptureSettings.settingsFromLabelDefinitions( is called"
+        }
+      ],
+      "tags": [
+        "optional-fields"
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "I'm scanning a smart-device box label on Capacitor (empty-app.js). It has two IMEI barcodes, a serial number barcode, and a part number barcode. Use the pre-built barcode field types rather than plain custom barcodes so I get the tuned defaults.",
+      "expected_output": "The skill uses the semantic pre-built barcode field types ImeiOneBarcode, ImeiTwoBarcode, SerialNumberBarcode, and PartNumberBarcode (constructed with initWithNameAndSymbologies) instead of CustomBarcode, and builds the label definition from them.",
+      "files": [
+        "fixtures/empty-app.js"
+      ],
+      "assertions": [
+        {
+          "text": "ImeiOneBarcode.initWithNameAndSymbologies( is used for the first IMEI field"
+        },
+        {
+          "text": "ImeiTwoBarcode.initWithNameAndSymbologies( is used for the second IMEI field"
+        },
+        {
+          "text": "SerialNumberBarcode.initWithNameAndSymbologies( is used for the serial number field"
+        },
+        {
+          "text": "PartNumberBarcode.initWithNameAndSymbologies( is used for the part number field"
+        },
+        {
+          "text": "These pre-built barcode field types are imported from scandit-capacitor-datacapture-label"
+        },
+        {
+          "text": "LabelCaptureSettings.settingsFromLabelDefinitions( is called with the label definition"
+        }
+      ],
+      "tags": [
+        "barcode-semantic-fields"
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "I want to scan a retail price tag (price, unit price, weight) on Capacitor. Is there a ready-made label for this so I don't have to define each field myself? Write the setup into empty-app.js.",
+      "expected_output": "The skill uses the pre-built LabelDefinition.createPriceCaptureDefinition(name) instead of hand-defining fields, and warns that the PriceCapture pre-made label is NOT compatible with the Validation Flow (so the basic overlay path must be used).",
+      "files": [
+        "fixtures/empty-app.js"
+      ],
+      "assertions": [
+        {
+          "text": "LabelDefinition.createPriceCaptureDefinition( is used to create the price label definition"
+        },
+        {
+          "text": "The pre-made definition is passed to LabelCaptureSettings.settingsFromLabelDefinitions( without mutating it (no addField on the returned definition)"
+        },
+        {
+          "text": "The response warns that the PriceCapture pre-made label is NOT compatible with the Validation Flow overlay and uses / recommends the basic overlay path instead"
+        },
+        {
+          "text": "LabelDefinition is imported from scandit-capacitor-datacapture-label"
+        }
+      ],
+      "tags": [
+        "prebuilt-label-definitions"
+      ]
+    },
+    {
+      "id": 8,
+      "prompt": "I'm using Smart Label Capture on Capacitor with the basic overlay (no validation flow). I want to highlight the barcode field in cyan and the expiry date field in orange in the camera preview. Show me how to customize the field brushes.",
+      "expected_output": "The skill sets a LabelCaptureBasicOverlay listener implementing brushForFieldOfLabel that returns a per-field Brush, constructed with Color (e.g. Color.fromRGBA) and Brush from scandit-capacitor-datacapture-core, keyed off field.name.",
+      "files": [],
+      "assertions": [
+        {
+          "text": "A LabelCaptureBasicOverlay is created and its listener implements brushForFieldOfLabel (called per field to decide the brush)"
+        },
+        {
+          "text": "The brushForFieldOfLabel implementation switches on field.name and returns a different Brush for the barcode field vs the expiry date field"
+        },
+        {
+          "text": "Brush and Color are imported from scandit-capacitor-datacapture-core and a new Brush(...) is constructed"
+        },
+        {
+          "text": "The brush color uses transparency (alpha < 1) so the captured content is not occluded"
+        },
+        {
+          "text": "onValidationFlowLabelCaptured is NOT used (web-only) and the basic overlay path is used (no LabelCaptureValidationFlowOverlay)"
+        }
+      ],
+      "tags": [
+        "basic-overlay-customization"
+      ]
+    },
+    {
+      "id": 9,
+      "prompt": "On Capacitor I need a live AR overlay for Smart Label Capture — I want to draw a custom DOM tag anchored next to each captured field in the camera feed, not the validation flow checklist. How do I do that?",
+      "expected_output": "The skill uses LabelCaptureAdvancedOverlay with a listener implementing viewForCapturedLabelField / anchorForCapturedLabelField / offsetForCapturedLabelField, and reminds the user to set view.webViewContentOnTop = true so the DOM views receive touches.",
+      "files": [],
+      "assertions": [
+        {
+          "text": "LabelCaptureAdvancedOverlay is constructed and added via view.addOverlay(...)"
+        },
+        {
+          "text": "The advanced overlay listener implements viewForCapturedLabelField (or viewForCapturedLabel) to supply the custom view per field/label"
+        },
+        {
+          "text": "anchorForCapturedLabelField and offsetForCapturedLabelField (or the per-label equivalents) are implemented to position the view, using Anchor and PointWithUnit/NumberWithUnit/MeasureUnit"
+        },
+        {
+          "text": "LabelCaptureAdvancedOverlay is imported from scandit-capacitor-datacapture-label"
+        },
+        {
+          "text": "The response reminds the user to set view.webViewContentOnTop = true so the DOM-based custom views receive touch events"
+        }
+      ],
+      "tags": [
+        "advanced-overlay"
+      ]
+    },
+    {
+      "id": 10,
+      "prompt": "My customer's shipping labels are worn and the on-device OCR misses fields. Can I use a cloud fallback on Capacitor to improve accuracy? Add it to my existing label definition.",
+      "expected_output": "The skill enables the Adaptive Recognition Engine by setting labelDefinition.adaptiveRecognitionMode = AdaptiveRecognitionMode.Auto, and flags that ARE is a Beta feature that requires Scandit Support (support@scandit.com) to enable on the production subscription.",
+      "files": [],
+      "assertions": [
+        {
+          "text": "adaptiveRecognitionMode is set on the LabelDefinition to AdaptiveRecognitionMode.Auto"
+        },
+        {
+          "text": "AdaptiveRecognitionMode is imported from scandit-capacitor-datacapture-label"
+        },
+        {
+          "text": "The response flags that the Adaptive Recognition Engine is a Beta feature that may change in future SDK versions"
+        },
+        {
+          "text": "The response states that enabling ARE for production requires contacting Scandit Support at support@scandit.com"
+        }
+      ],
+      "tags": [
+        "adaptive-recognition-cloud"
+      ]
+    },
+    {
+      "id": 11,
+      "prompt": "I want to scan whole receipts on Capacitor and get back the store name, total, and line items. How do I set that up with Scandit?",
+      "expected_output": "The skill uses the LabelCaptureAdaptiveRecognitionOverlay with a listener whose onRecognized callback receives a ReceiptScanningResult (storeName, paymentTotal, lineItems, etc.), and flags that Receipt Scanning is a Beta feature built on the Adaptive Recognition Engine that requires Scandit Support (support@scandit.com) to enable.",
+      "files": [],
+      "assertions": [
+        {
+          "text": "LabelCaptureAdaptiveRecognitionOverlay is used (the separate receipt-scanning overlay, NOT the standard basic/validation overlay)"
+        },
+        {
+          "text": "The overlay listener implements onRecognized and reads fields off the ReceiptScanningResult (e.g. result.storeName, result.paymentTotal, result.lineItems)"
+        },
+        {
+          "text": "The response flags that Receipt Scanning is a Beta feature built on the Adaptive Recognition Engine and may change in future SDK versions"
+        },
+        {
+          "text": "The response states that enabling it requires contacting Scandit Support at support@scandit.com"
+        }
+      ],
+      "tags": [
+        "receipt-scanning"
+      ]
+    },
+    {
+      "id": 12,
+      "prompt": "My Smart Label Capture app on Capacitor shows a black camera preview on one device, and on another the preview is fine but the expiry-date and total-price fields never come back populated. The barcode field works. What's going wrong?",
+      "expected_output": "The skill diagnoses the black preview as the camera permission not being granted (NSCameraUsageDescription on iOS / runtime CAMERA permission on Android) or the camera never being switched on, and the empty text fields as the ScanditLabelCaptureText / ScanditPriceLabel modules not being bundled (the scandit-capacitor-datacapture-label package missing or npx cap sync not re-run). It does not invent new APIs.",
+      "files": [
+        "fixtures/empty-app.js"
+      ],
+      "assertions": [
+        {
+          "text": "The black/blank preview is attributed to the camera permission not being granted (iOS NSCameraUsageDescription in Info.plist / Android runtime CAMERA permission) and/or camera.switchToDesiredState(FrameSourceState.On) never being called"
+        },
+        {
+          "text": "The empty expiry-date and total-price text fields are attributed to the missing on-device text models — the ScanditLabelCaptureText module (arbitrary text) and ScanditPriceLabel module (price fields), which ship in scandit-capacitor-datacapture-label; the fix is to ensure that package is installed and npx cap sync is re-run"
+        },
+        {
+          "text": "The response notes the barcode field works without the text models because barcode-only fields do not require them"
+        },
+        {
+          "text": "The response does NOT invent new diagnostic APIs or configuration flags that are not in the Scandit references"
+        }
+      ],
+      "tags": [
+        "error-troubleshooting"
       ]
     }
   ]

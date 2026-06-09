@@ -30,35 +30,29 @@ While ARE is processing inside the Validation Flow, the placeholder shown in the
 
 ## Path 2 — Standalone receipt scanning (different product)
 
-`LabelCaptureAdaptiveRecognitionOverlay` is a **separate overlay** for end-to-end receipt scanning — the customer points the camera at a full receipt, the cloud returns a structured `ReceiptScanningResult` (store name/address, date, line items, tax, total). This is its own UX and is **not** the same as turning on `adaptiveRecognitionMode` for a normal label.
-
-Today only `AdaptiveRecognitionResultType.Receipt` is supported (8.2+ on Capacitor).
+`LabelCaptureAdaptiveRecognitionOverlay` is a **separate overlay** for end-to-end receipt scanning — the customer points the camera at a full receipt, the cloud returns a structured `ReceiptScanningResult`. This is its own UX and is **not** the same as turning on `adaptiveRecognitionMode` for a normal label. Receipt scanning uses a different integration pattern: the `LabelCaptureAdaptiveRecognitionOverlay` instead of the standard overlay, and a `LabelCaptureAdaptiveRecognitionListener` to receive results.
 
 ```javascript
 import {
-  AdaptiveRecognitionResultType,
   LabelCaptureAdaptiveRecognitionOverlay,
-  LabelCaptureAdaptiveRecognitionSettings,
 } from 'scandit-capacitor-datacapture-label';
-
-const settings = new LabelCaptureAdaptiveRecognitionSettings(AdaptiveRecognitionResultType.Receipt);
-settings.processingHintText = 'Reading receipt…';
 
 const overlay = new LabelCaptureAdaptiveRecognitionOverlay(labelCapture);
 overlay.listener = {
-  didRecognize(result) {
+  // Fires when the cloud returns a ReceiptScanningResult.
+  onRecognized(result) {
     // result is a ReceiptScanningResult:
-    // result.storeName, result.storeAddress, result.date,
-    // result.lineItems, result.paymentTotal, result.paymentTax, …
-  },
-  didFail() {
-    // Cloud call failed or no receipt was recognized.
+    // result.storeName, result.storeAddress, result.storeCity,
+    // result.date, result.time, result.paymentPreTaxTotal,
+    // result.paymentTax, result.paymentTotal, result.loyaltyNumber,
+    // result.lineItems — each line item has name, unitPrice, discount, quantity, totalPrice.
   },
 };
 
-await overlay.applySettings(settings);
 await view.addOverlay(overlay);
 ```
+
+All `ReceiptScanningResult` scalar fields are nullable — guard before use.
 
 Use Path 2 only when the customer's goal is **receipts specifically**. For general "scan this label, improve accuracy with the cloud", use Path 1.
 
