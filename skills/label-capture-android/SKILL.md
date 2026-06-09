@@ -4,7 +4,7 @@ description: Use when Label Capture (Smart Label Capture) is involved in an Andr
 license: MIT
 metadata:
   author: scandit
-  version: "1.0.0"
+  version: "1.1.0"
 ---
 
 # Label Capture Android Skill
@@ -19,11 +19,23 @@ Your training data may contain outdated or incorrect Scandit Label Capture APIs.
 
 **Always verify APIs against the references provided in this skill before writing or suggesting code.** Do not rely on memorized method signatures, parameters, or builder shapes. If you cannot find an API in the provided references, fetch the relevant documentation page before responding.
 
+## Label Capture is broader than it looks — two reflexes that prevent most failures
+
+Label Capture ships a rich catalogue of **pre-built fields** and **whole pre-built label definitions** for the data people actually scan — serial numbers, IMEI 1 & 2, expiry/packing dates, prices, weights, VINs, seven-segment displays. The two most common ways an integration goes wrong are forgetting these exist, and crashing at runtime over a missing model artifact. Two reflexes:
+
+1. **Reach for a pre-built field or pre-built label before composing anything custom.** When the user names a recognisable thing to scan — "serial number", "IMEI", "expiry date", "price/shelf label", "VIN" — there is almost always a dedicated builder or a whole-label factory tuned for it, with anchor/value regexes already dialled in. Use it. Inventing a custom barcode/text field with a hand-written regex for something that has a pre-built builder is the single biggest source of bad integrations: the regex you guess will not match real labels as well as the tuned one, and it signals you didn't know the pre-built existed. Only fall back to `addCustomBarcode()`/`addCustomText()` when nothing pre-built fits. The full catalogue and the routing rules live in `references/integration.md` — consult it rather than relying on memory.
+
+2. **Bundle `label-text-models` whenever any pre-built field is used — including barcode-semantic ones.** It is *not* only for text fields. Serial number, IMEI, and part-number fields are "barcode" fields but still load a model at runtime; a label using them without the artifact crashes on launch. `references/integration.md` has the exact rule.
+
+## Constraint: Label Capture cannot run alongside Barcode Capture
+
+A `DataCaptureContext` runs only one active mode at a time, so Label Capture and Barcode Capture cannot both be active simultaneously — attaching both makes the context error out. If the user wants to read a standalone barcode "as well as" the label, model that barcode as a field inside the label definition (`addCustomBarcode()` or a pre-built barcode field) rather than adding a second mode — this is the answer in almost every case. (Only when they genuinely need two distinct scanning steps do you switch the active mode with `setMode()`.) See `references/integration.md`.
+
 ## Intent Routing
 
 Based on the user's request, load the appropriate reference file before responding:
 
-- **Integrating Label Capture from scratch** (e.g. "add Label Capture to my Android app", "scan a price tag with barcode and expiry date", "how do I use Smart Label Capture") → read `references/integration.md` and follow the instructions there.
+- **Integrating Label Capture from scratch** (e.g. "add Label Capture to my Android app", "scan a price tag with barcode and expiry date", "scan serial numbers / IMEI off a phone box", "read a VIN", "how do I use Smart Label Capture") → read `references/integration.md` and follow the instructions there. It contains the full pre-built field catalogue and the pre-built whole-label definitions — consult it before composing any custom field or regex.
 - **Enabling or customizing the Validation Flow** (e.g. "how do I enable the Validation Flow", "add the validation flow overlay", "customize the placeholder text / button labels in the validation flow", "how do I handle the result from the validation flow") → read `references/validation-flow.md` and follow the instructions there.
 - **Migrating or upgrading an existing Label Capture integration** (e.g. "upgrade my Label Capture to the latest SDK", "migrate from v7 to v8", "what changed between SDK versions for Label Capture", "keyboard covers the input in Validation Flow after upgrading", "migrate Validation Flow to 2.0") → read `references/migration.md` and follow the instructions there.
 
