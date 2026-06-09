@@ -47,6 +47,49 @@ Before writing any code, walk the user through their label. Ask one question at 
 
 > **Do not show code as part of the Q&A round for Questions A and B (the field-definition questions).** That includes "preview" snippets, illustrative DSL examples, sample `LabelCaptureSettings { … }` blocks, or skeleton view-controller code. The Minimal Integration section below is reference material for **after** the user answers A and B — not for quoting during the field-definition questions. Showing code up front pre-supposes field choices the user hasn't made and turns the questions into rhetorical prompts. Ask the field questions first; then write the code. (The overlay decision below is *not* a blocking question — see Question C.)
 
+**Step 0 — Is the *whole label* a pre-built definition?** Before composing fields one by one, check whether the user's label matches one of the pre-built *whole-label* factory definitions. When it does, use the factory — it ships its own fixed field set with anchor/value regexes already tuned, and out-performs anything you hand-assemble from individual builders.
+
+| User's label | iOS factory (Swift) | Since |
+|---|---|---|
+| "retail **price label**", "shelf label", "price tag", "price check" (barcode + price text) | `LabelDefinition.priceCapture(withName: "price-label")` | 7.4.0 |
+| "**VIN**", "vehicle identification number" label | `LabelDefinition.vinLabelDefinition(withName: "vehicle-vin")` | 7.4.0 |
+| "**seven-segment** display", LCD/LED meter/scale readout, digital gauge | `LabelDefinition.sevenSegmentDisplay(withName: "display")` | 7.5.0 |
+
+These factory methods live on `LabelDefinition` and slot straight into either initializer form:
+
+```swift
+// v8.1+ result-builder DSL
+let settings = try LabelCaptureSettings {
+    LabelDefinition.priceCapture(withName: "price-label")
+}
+
+// v8.0 array initializer
+let settings = try LabelCaptureSettings(
+    labelDefinitions: [LabelDefinition.priceCapture(withName: "price-label")]
+)
+```
+
+**Don't guess the field names of a pre-built definition.** A factory ships its own fixed field set — the name you pass in (`"price-label"`) is just the *label's* name, not the field names. Hardcoding a guessed field name silently returns nothing. The field names are fixed by the SDK:
+
+- `priceCapture(withName:)` → `"SKU"` (barcode field, `.ean13UPCA` + `.code128`) and `"priceText"` (price text field). Read them by name or iterate `label.fields`:
+
+  ```swift
+  for field in capturedLabel.fields {
+      switch field.name {
+      case "SKU":       let barcode = field.barcode?.data
+      case "priceText": let price = field.text
+      default: break
+      }
+  }
+  ```
+
+- `vinLabelDefinition(withName:)` → an optional `text` field and an optional `barcode` field, both matching `[A-Z0-9]{17}`.
+- `sevenSegmentDisplay(withName:)` → a single `weight` text field tuned for 7-segment glyphs (it tolerates the common `O`/`0`, `Q`/`0`, `B`/`8` confusions).
+
+> **Pre-built whole-label definitions are NOT Validation-Flow compatible.** `LabelDefinition.priceCapture(withName:)`, `vinLabelDefinition(withName:)`, and `sevenSegmentDisplay(withName:)` are documented as not intended for use with the Validation Flow — using them inside the VF "may result in incorrect data being captured." For these factories, use the **Basic Overlay** (or Advanced Overlay) path, not `LabelCaptureValidationFlowOverlay`. If the user needs the VF guided experience for a price/VIN/seven-segment use case, build an equivalent custom `LabelDefinition` from `CustomBarcode` + the relevant pre-built text fields instead. `priceCapture` additionally requires the **`ScanditPriceLabel`** SPM product (its `priceText` field uses the specialised price recogniser), in addition to `ScanditLabelCaptureText`.
+
+If no whole-label factory fits, build the label from individual fields below — preferring the pre-built field builders.
+
 **Question A — What's on your label?** Present this checklist of supported field types and ask the user to pick everything that applies.
 
 > **Always prefer pre-built field builders over custom ones.** If the user's use case matches a pre-built type (e.g. expiry date, weight, price, IMEI, serial number, part number), use that builder — it ships with tuned regex patterns and anchor text optimised for that field type. Only reach for `CustomText` when no pre-built type covers the field, and only use `CustomBarcode` when none of the pre-built barcode types (`IMEIOneBarcode`, `PartNumberBarcode`, etc.) apply. Do not propose a custom regex up front if a pre-built builder exists for the field type — that's a customer-facing regression in accuracy and a needless maintenance burden.
@@ -633,6 +676,32 @@ let settings = try LabelCaptureSettings {
 With `.auto`, the SDK decides when to invoke the cloud fallback. Results arrive through the same Validation Flow callback — no additional handling is needed.
 
 Mention ARE only if the user asks about improving OCR accuracy or mentions difficulty reading certain labels. Do not enable it by default.
+
+## Receipt Scanning (Beta — built on ARE)
+
+If the user wants to extract structured data from a **whole receipt** (store, totals, line items) rather than a few fields off a printed label, that's **Receipt Scanning** — a separate ARE-powered feature available on iOS since SDK 7.6.0. It is **Beta** and, like ARE generally, requires a license key with the Adaptive Recognition Engine enabled. Flag this up front and direct the user to <support@scandit.com> to get it enabled on their subscription before they try to use it. Do not present it as generally available.
+
+Receipt Scanning does **not** use the standard label-capture overlays or a `LabelDefinition`. It uses a different integration pattern:
+
+- The overlay is **`LabelCaptureAdaptiveRecognitionOverlay`** (instead of `LabelCaptureBasicOverlay` / `LabelCaptureValidationFlowOverlay`).
+- Results arrive through a **`LabelCaptureAdaptiveRecognitionListener`**, whose recognition callback delivers a **`ReceiptScanningResult`**.
+
+`ReceiptScanningResult` carries the parsed receipt — all fields are optional because not every receipt prints every value:
+
+| Field | Type | Description |
+|---|---|---|
+| `storeName` | `String?` | Store / merchant name |
+| `storeAddress` | `String?` | Full store address |
+| `storeCity` | `String?` | City |
+| `date` | `String?` | Transaction date |
+| `time` | `String?` | Transaction time |
+| `paymentPreTaxTotal` | `Float?` | Balance before taxes |
+| `paymentTax` | `Float?` | Total tax |
+| `paymentTotal` | `Float?` | Total paid |
+| `loyaltyNumber` | `Int?` | Loyalty program identifier |
+| `lineItems` | list | Each item carries `name`, `unitPrice`, `discount`, `quantity`, `totalPrice` |
+
+> **Verify the exact delegate selector before writing the listener.** The Receipt Scanning overlay and listener are Beta, and the receipt callback's precise Swift signature is not pinned in the integration references here. Fetch the [Advanced Configurations](https://docs.scandit.com/sdks/ios/label-capture/advanced/) page (Receipt Scanning section) and the linked API page for `LabelCaptureAdaptiveRecognitionListener` before emitting the delegate method — don't guess the selector. The overlay type (`LabelCaptureAdaptiveRecognitionOverlay`), the listener type (`LabelCaptureAdaptiveRecognitionListener`), and the result type (`ReceiptScanningResult`) above are confirmed; the delegate method name is not, so look it up.
 
 ## Setup Checklist
 

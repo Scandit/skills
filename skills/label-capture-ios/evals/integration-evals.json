@@ -343,6 +343,65 @@
         { "text": "DataCaptureContext.initialize(licenseKey: is present (NOT DataCaptureContext.forLicenseKey)" },
         { "text": "LabelCaptureSettings { LabelDefinition(\"...\") { ... } } result-builder DSL is used (no .addLabel(...).buildFluent(...) chain, no LabelCaptureSettingsBuilder())" }
       ]
+    },
+    {
+      "id": 24,
+      "prompt": "I'm building an iOS price-checker app. I want to scan retail shelf / price labels — the barcode plus the printed price — with Smart Label Capture. Write the integration into ScanViewController.swift.",
+      "expected_output": "The skill recognises this as the price/shelf-label scenario covered by the pre-built whole-label factory and uses LabelDefinition.priceCapture(withName:) instead of hand-assembling the label from CustomBarcode + TotalPriceText/UnitPriceText. It reads the factory's fixed field names (SKU, priceText) generically rather than guessing, links the ScanditPriceLabel SPM product, and does NOT use the Validation Flow overlay (the pre-built price definition is not VF-compatible).",
+      "files": [
+        "fixtures/ScanViewController.swift"
+      ],
+      "assertions": [
+        { "text": "LabelDefinition.priceCapture(withName: \"...\") is used to define the price/shelf label (camelCase Swift form, NOT the Android LabelDefinition.createPriceCaptureDefinition form)" },
+        { "text": "The label is NOT hand-assembled from individual CustomBarcode(...) + TotalPriceText(...)/UnitPriceText(...) builders when the pre-built price-capture factory covers the scenario" },
+        { "text": "The captured fields are read by the factory's fixed field names SKU (barcode) and priceText (price text) — e.g. iterating capturedLabel.fields and switching on field.name — rather than guessing arbitrary field names" },
+        { "text": "The setup checklist names ScanditPriceLabel as a required SPM product (in addition to ScanditCaptureCore, ScanditBarcodeCapture, ScanditLabelCapture, and ScanditLabelCaptureText) because the price field uses the specialised price recogniser" },
+        { "text": "LabelCaptureValidationFlowOverlay is NOT used for this pre-built price definition — the response uses LabelCaptureBasicOverlay (or Advanced Overlay) and explains that the pre-built price/VIN/seven-segment definitions are not Validation-Flow compatible" },
+        { "text": "DataCaptureContext.initialize(licenseKey: is present (NOT DataCaptureContext.forLicenseKey) with a license-key placeholder such as -- ENTER YOUR SCANDIT LICENSE KEY HERE --" }
+      ],
+      "tags": ["prebuilt-label-definitions"]
+    },
+    {
+      "id": 25,
+      "prompt": "On iOS I need to scan a VIN (vehicle identification number) off a car — it can be printed text or a barcode. Does Smart Label Capture have something pre-built for that, or do I have to write my own 17-character regex?",
+      "expected_output": "The skill directs the user to the pre-built VIN whole-label factory LabelDefinition.vinLabelDefinition(withName:) rather than writing a custom [A-Z0-9]{17} field, explains it ships an optional text field and an optional barcode field both tuned for the 17-character VIN, and notes it is not Validation-Flow compatible.",
+      "files": [],
+      "assertions": [
+        { "text": "The response uses / recommends LabelDefinition.vinLabelDefinition(withName: \"...\") (camelCase Swift form) for the VIN label" },
+        { "text": "The response steers the user away from hand-writing a custom [A-Z0-9]{17} CustomText/CustomBarcode regex, because the pre-built VIN factory already ships tuned text and barcode fields" },
+        { "text": "The response notes the pre-built VIN definition is NOT intended for use with the Validation Flow (use the Basic / Advanced Overlay path), or that pre-built whole-label definitions in general are not VF-compatible" }
+      ],
+      "tags": ["prebuilt-label-definitions"]
+    },
+    {
+      "id": 26,
+      "prompt": "I'm scanning the numeric readout off a digital scale / seven-segment LED display on iOS with Smart Label Capture. Is there a pre-built way to do this? Write the setup into ScanViewController.swift.",
+      "expected_output": "The skill uses the pre-built seven-segment whole-label factory LabelDefinition.sevenSegmentDisplay(withName:) rather than a hand-written CustomText regex, notes it returns a single weight text field tuned for 7-segment glyph confusions (O/0, Q/0, B/8), and does NOT use the Validation Flow overlay (the pre-built definition is not VF-compatible).",
+      "files": [
+        "fixtures/ScanViewController.swift"
+      ],
+      "assertions": [
+        { "text": "LabelDefinition.sevenSegmentDisplay(withName: \"...\") is used (camelCase Swift form, NOT sevenSegmentDisplayLabelDefinition and NOT the Android createSevenSegmentDisplayLabelDefinition form)" },
+        { "text": "The label is NOT hand-assembled from a CustomText(name:) with a guessed seven-segment regex when the pre-built factory covers it" },
+        { "text": "The response notes the factory returns a single tuned text field (named weight) for the display value, or otherwise reads the captured field generically rather than guessing an arbitrary field name" },
+        { "text": "LabelCaptureValidationFlowOverlay is NOT used for this pre-built definition — the response uses LabelCaptureBasicOverlay (or Advanced Overlay) and flags that pre-built whole-label definitions are not Validation-Flow compatible" },
+        { "text": "DataCaptureContext.initialize(licenseKey: is present (NOT DataCaptureContext.forLicenseKey)" }
+      ],
+      "tags": ["prebuilt-label-definitions", "seven-segment-display"]
+    },
+    {
+      "id": 27,
+      "prompt": "My customer wants to scan whole grocery receipts on iOS with Scandit — pull out the store name, the total, and the individual line items. Can Smart Label Capture do that?",
+      "expected_output": "The skill identifies this as the Receipt Scanning feature (ARE-powered, available on iOS since 7.6.0), flags clearly that it is Beta and requires a license key with the Adaptive Recognition Engine enabled (contact support@scandit.com), and describes the distinct integration pattern: LabelCaptureAdaptiveRecognitionOverlay + LabelCaptureAdaptiveRecognitionListener delivering a ReceiptScanningResult (store fields, payment totals, lineItems). It does NOT fabricate the exact delegate selector and points the user at the Advanced Configurations / API page to confirm it.",
+      "files": [],
+      "assertions": [
+        { "text": "The response identifies the feature as Receipt Scanning and states it is in Beta" },
+        { "text": "The response states Receipt Scanning requires a license key with the Adaptive Recognition Engine (ARE) enabled, and directs the user to contact support@scandit.com to enable it" },
+        { "text": "The response names LabelCaptureAdaptiveRecognitionOverlay as the overlay used (instead of the standard Basic / Validation Flow overlays) and LabelCaptureAdaptiveRecognitionListener as the listener" },
+        { "text": "The response names ReceiptScanningResult as the result type and describes its content — store fields (e.g. storeName), payment totals (e.g. paymentTotal), and a lineItems collection (each with name, unitPrice, quantity, totalPrice)" },
+        { "text": "The response does NOT fabricate an exact delegate-method selector for the receipt callback — it either omits the precise signature or explicitly tells the user to confirm it against the Advanced Configurations page / the LabelCaptureAdaptiveRecognitionListener API reference" }
+      ],
+      "tags": ["receipt-scanning"]
     }
   ]
 }
