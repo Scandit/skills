@@ -1,0 +1,108 @@
+{
+  "skill_name": "matrixscan-count-ios",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Customize the highlight colors in my MatrixScan Count app: recognized barcodes should be green and not-in-list barcodes orange. File: IntegratedBarcodeCountViewController.swift",
+      "expected_output": "The skill sets the view's static brush properties — barcodeCountView.recognizedBrush to a green Brush and barcodeCountView.notInListBrush to an orange Brush, each constructed with Brush(fill:stroke:strokeWidth:). Because brushes render in the Dot style, the view should use the Dot style (style: .dot) or the response should note that brushes apply to the Dot style. Nothing else in the integration changes.",
+      "files": ["fixtures/IntegratedBarcodeCountViewController.swift"],
+      "assertions": [
+        {"text": "barcodeCountView.recognizedBrush is set to a green Brush constructed with Brush(fill:stroke:strokeWidth:) (a green-ish fill)"},
+        {"text": "barcodeCountView.notInListBrush is set to an orange Brush constructed with Brush(fill:stroke:strokeWidth:) (an orange-ish fill)"},
+        {"text": "Brush is constructed with the fill:/stroke:/strokeWidth: labels (NOT fillColor:/strokeColor:)"},
+        {"text": "Because brushes only render in the Dot style, the BarcodeCountView is created with style: .dot OR the response explicitly notes that brush colors apply to the Dot style"},
+        {"text": "No per-barcode icon customization (BarcodeCountIcon) is used — that API is not in the released SDK"},
+        {"text": "The context, mode, camera, listener, uiDelegate and lifecycle are unchanged"}
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "In my MatrixScan Count app, color each recognized barcode by its data: purple if the data is an even number, green if it's an odd number, and blue if the data can't be parsed as a number. File: IntegratedBarcodeCountViewController.swift",
+      "expected_output": "The skill sets barcodeCountView.delegate and implements BarcodeCountViewDelegate.barcodeCountView(_:brushForRecognizedBarcode:), parsing trackedBarcode.barcode.data as an Int and returning a purple Brush for even, green for odd, and blue when it can't be parsed. Uses Brush(fill:stroke:strokeWidth:). Because brushes render in the Dot style, the view should use style: .dot (or the response notes it).",
+      "files": ["fixtures/IntegratedBarcodeCountViewController.swift"],
+      "assertions": [
+        {"text": "barcodeCountView.delegate is set (the BarcodeCountViewDelegate, distinct from uiDelegate)"},
+        {"text": "The view controller conforms to BarcodeCountViewDelegate and implements barcodeCountView(_:brushForRecognizedBarcode:) returning Brush?"},
+        {"text": "It reads trackedBarcode.barcode.data and attempts to parse it to an Int (e.g. Int(data))"},
+        {"text": "Logic returns a purple Brush for an even number, a green Brush for an odd number, and a blue Brush when the data is nil or not parseable as an Int"},
+        {"text": "Brushes are constructed with Brush(fill:stroke:strokeWidth:)"},
+        {"text": "Because brushes only render in the Dot style, the view is created with style: .dot OR the response notes brushes apply to the Dot style"},
+        {"text": "No icon-customization API (BarcodeCountIcon / iconForRecognizedBarcode) is used; the context/mode/camera/lifecycle/uiDelegate are unchanged"}
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "In my SwiftUI MatrixScan Count app, color each recognized barcode by its data: purple if the data is an even number, green if odd, and blue if it can't be parsed as a number. File: IntegratedBarcodeCountSwiftUIView.swift",
+      "expected_output": "The skill makes the same change as eval 2 but inside the UIKit CountViewController hosted in the SwiftUI file: sets the BarcodeCountViewDelegate and implements brushForRecognizedBarcode with the even/odd/unparseable color logic. The SwiftUI ScanView struct and the UIViewControllerRepresentable stay free of Scandit code.",
+      "files": ["fixtures/IntegratedBarcodeCountSwiftUIView.swift"],
+      "assertions": [
+        {"text": "Inside the UIKit CountViewController, barcodeCountView.delegate is set and the controller conforms to BarcodeCountViewDelegate implementing barcodeCountView(_:brushForRecognizedBarcode:) returning Brush?"},
+        {"text": "Logic parses trackedBarcode.barcode.data to an Int and returns purple (even), green (odd), blue (nil/unparseable), using Brush(fill:stroke:strokeWidth:)"},
+        {"text": "Because brushes render in the Dot style, the BarcodeCountView is created with style: .dot OR the response notes it"},
+        {"text": "The change is made in the UIKit layer; the SwiftUI ScanView struct and the UIViewControllerRepresentable remain free of Scandit API calls"},
+        {"text": "No icon-customization API is used; the rest of the integration is unchanged"}
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "Switch my MatrixScan Count view to the Dot style. File: IntegratedBarcodeCountViewController.swift",
+      "expected_output": "The skill changes the BarcodeCountView initializer to pass style: .dot (BarcodeCountViewStyle.dot), leaving the rest of the integration unchanged.",
+      "files": ["fixtures/IntegratedBarcodeCountViewController.swift"],
+      "assertions": [
+        {"text": "The BarcodeCountView is constructed with the style: argument set to .dot (BarcodeCountView(frame:context:barcodeCount:style:))"},
+        {"text": "No invalid style API is used (no post-init 'style' assignment — style is read-only and set via the initializer; no BarcodeCountViewSettings)"},
+        {"text": "The context, mode, camera, listener, uiDelegate and lifecycle are unchanged"}
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "I set barcodeCountView.recognizedBrush to a custom color in my MatrixScan Count app, but the highlight color doesn't change. Why?",
+      "expected_output": "The skill explains that brush colors only render in the Dot style; the default Icon style shows Scandit icons, not brush-colored dots. To see the custom brush, create the BarcodeCountView with style: .dot.",
+      "files": [],
+      "assertions": [
+        {"text": "The answer explains that brushes (recognizedBrush / brushForRecognizedBarcode) only take effect in the Dot style"},
+        {"text": "It notes the default style is Icon, which renders Scandit icons rather than brush-colored dots"},
+        {"text": "It tells the user to create the BarcodeCountView with style: .dot (set via the initializer, since style is read-only afterward)"},
+        {"text": "It does NOT invent a way to recolor the Icon style (no BarcodeCountIcon — that API is not in the released SDK)"}
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "In MatrixScan Count, what are the ways to set a custom highlight brush for a specific barcode?",
+      "expected_output": "The skill describes both approaches: (1) the BarcodeCountViewDelegate callback barcodeCountView(_:brushForRecognizedBarcode:), which is called per barcode and returns the Brush to use (inspect the TrackedBarcode to decide); and (2) the imperative barcodeCountView.setBrush(_:forRecognizedBarcode:) when you already hold a TrackedBarcode. Both apply to the Dot style.",
+      "files": [],
+      "assertions": [
+        {"text": "It describes the delegate approach: BarcodeCountViewDelegate.barcodeCountView(_:brushForRecognizedBarcode:) returning a Brush per barcode based on the TrackedBarcode"},
+        {"text": "It describes the imperative approach: barcodeCountView.setBrush(_:forRecognizedBarcode:) for a specific TrackedBarcode you hold"},
+        {"text": "It mentions both (not just one) and that brush colors apply to the Dot style"},
+        {"text": "It does NOT use the non-existent brushForUnrecognizedBarcode name or an icon API"}
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "In my MatrixScan Count app, keep the default highlight for recognized barcodes but make barcodes whose data starts with \"X\" red. File: IntegratedBarcodeCountViewController.swift",
+      "expected_output": "The skill sets barcodeCountView.delegate and implements brushForRecognizedBarcode, returning a red Brush when trackedBarcode.barcode.data starts with \"X\" and BarcodeCountView.defaultRecognizedBrush otherwise. Uses the Dot style so brushes render.",
+      "files": ["fixtures/IntegratedBarcodeCountViewController.swift"],
+      "assertions": [
+        {"text": "barcodeCountView.delegate is set and the controller implements barcodeCountView(_:brushForRecognizedBarcode:) returning Brush?"},
+        {"text": "Returns a red Brush(fill:stroke:strokeWidth:) when trackedBarcode.barcode.data starts with \"X\""},
+        {"text": "Returns BarcodeCountView.defaultRecognizedBrush (the SDK default) for all other recognized barcodes"},
+        {"text": "Because brushes render in the Dot style, the view uses style: .dot OR the response notes it"},
+        {"text": "No icon API is used; the rest of the integration is unchanged"}
+      ]
+    },
+    {
+      "id": 8,
+      "prompt": "In my MatrixScan Count app, make accepted barcodes blue and rejected barcodes purple. File: IntegratedBarcodeCountViewController.swift",
+      "expected_output": "The skill customizes the accepted and rejected highlight brushes — barcodeCountView.acceptedBrush to blue and barcodeCountView.rejectedBrush to purple (or the brushForAcceptedBarcode / brushForRejectedBarcode delegate callbacks), each via Brush(fill:stroke:strokeWidth:). These states are only visible when scanning against a list. (NOTE: this eval is intentionally run before the list-scanning guide exists — re-run after adding it to see if results improve.)",
+      "files": ["fixtures/IntegratedBarcodeCountViewController.swift"],
+      "assertions": [
+        {"text": "barcodeCountView.acceptedBrush is set to a blue Brush, and barcodeCountView.rejectedBrush to a purple Brush (or the brushForAcceptedBarcode / brushForRejectedBarcode delegate callbacks are implemented returning those)"},
+        {"text": "Brushes are constructed with Brush(fill:stroke:strokeWidth:) (not fillColor:/strokeColor:)"},
+        {"text": "It uses the correct state names acceptedBrush/rejectedBrush (or brushForAcceptedBarcode/brushForRejectedBarcode) — NOT brushForUnrecognizedBarcode or any icon API"},
+        {"text": "Because brushes render in the Dot style, the view uses style: .dot OR the response notes it"},
+        {"text": "The context, mode, camera, listener, uiDelegate and lifecycle are unchanged"}
+      ]
+    }
+  ]
+}
