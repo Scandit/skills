@@ -235,15 +235,40 @@ internal class LabelCaptureService(DataCaptureContext dataCaptureContext) : ILab
 - For a custom text value pattern use `.SetValueRegex("<pattern>")`. Do **not** use the old native `setPattern` / `setDataTypePattern`.
 - `LabelCapture.Create(context, settings)` is a **static factory** — the constructor is private and there is no `forDataCaptureContext`.
 
+### Semantic barcode fields (serial number / part number / IMEI)
+
+For common identifiers, use the preset barcode field types instead of a `CustomBarcode` with hand-written symbologies/regexes — their `Symbologies` and `ValueRegexes` are already tuned. Each is built with the same `.Builder()...Build("name")` shape and reads back as a barcode field (`field.Barcode?.Data`):
+
+```csharp
+// Electronics / asset label: serial + part number (HDD-style label).
+fields.Add(SerialNumberBarcode.Builder().Build("Serial Number"));
+fields.Add(PartNumberBarcode.Builder().Build("Part Number"));
+
+// Mobile-device label: IMEI codes (ImeiTwo for dual-SIM devices).
+fields.Add(ImeiOneBarcode.Builder().Build("IMEI"));
+fields.Add(ImeiTwoBarcode.Builder().Build("IMEI2"));
+```
+
+These live in `Scandit.DataCapture.Label.Data` (the same namespace as `CustomBarcode`). They accept the shared builder members (`IsOptional(bool)`, `SetSymbologies`/`SetSymbology`, `SetValueRegex(es)`) if you need to narrow the presets, but for standard labels the defaults are enough. Read their values exactly like any barcode field, matching the `Name` you passed to `.Build("...")`.
+
 ### Prebuilt label definitions
 
-For common documents, skip manual field building and use a prebuilt definition:
+For whole common documents, skip manual field building entirely and use a prebuilt `LabelDefinition` factory. Each takes only a name and returns a definition you pass straight to `LabelCaptureSettings.Create(...)`:
 
 ```csharp
 LabelDefinition vin   = LabelDefinition.CreateVinLabelDefinition("VIN");
 LabelDefinition price = LabelDefinition.CreatePriceCaptureDefinition("Price Tag");
 LabelDefinition seg   = LabelDefinition.CreateSevenSegmentDisplayLabelDefinition("Meter");
+
+// Use one (or several) directly as the settings:
+var settings = LabelCaptureSettings.Create(new List<LabelDefinition> { price });
 ```
+
+- `CreatePriceCaptureDefinition(name)` — retail price tags (product barcode + price/weight text).
+- `CreateVinLabelDefinition(name)` — vehicle VIN labels.
+- `CreateSevenSegmentDisplayLabelDefinition(name)` — seven-segment digital displays (e.g. utility meters, scales).
+
+Read the captured fields by their built-in names the same way as custom fields. If you don't know the field names a prebuilt definition exposes, iterate `label.Fields` and switch on `field.Type` (`LabelFieldType.Barcode` → `field.Barcode?.Data`, `LabelFieldType.Text` → `field.Text`). All three factories are available on `dotnet.android` since 8.1 and `dotnet.ios` since 8.2.
 
 ### LabelCapture members
 
@@ -558,6 +583,58 @@ After writing the integration code, show this checklist:
 10. **Read values via `LabelField`** — `Barcode?.Data`, `Text`, or `Date` (`LabelDate`), matching the field's declared name.
 11. **Camera lifecycle in `OnAppearing`/`OnDisappearing`** (via `ResumeAsync`/`SleepAsync`); request `Permissions.Camera` before turning the camera on.
 12. **Android `SupportedOSPlatformVersion` ≥ 24, iOS ≥ 15**; `NSCameraUsageDescription` in `Info.plist`.
+
+## Advanced overlay (custom / AR views over labels)
+
+For augmented-reality style use cases — showing a custom view anchored to a captured label or field (e.g. an "expires soon" badge over an expiry date) — use `LabelCaptureAdvancedOverlay` instead of the basic overlay. It is created like the basic overlay (`LabelCaptureAdvancedOverlay.Create(labelCapture)` in `HandlerChanged`, then `dataCaptureView.AddOverlay(...)`) and driven by an `ILabelCaptureAdvancedOverlayListener`.
+
+> **MAUI caveat (important):** the advanced-overlay listener returns a **native platform view** — `Android.Views.View` on Android, `UIKit.UIView` on iOS — not a MAUI `View`. There is no cross-platform overload. So in a MAUI app you must implement the listener with the `partial`-class split per platform (under `Platforms/Android` / `Platforms/iOS`), or build a MAUI `View` and call `.ToPlatform(mauiContext)` to get the native view. This is the same pattern the MatrixScan AR overlays use in MAUI. The basic overlay (`LabelCaptureBasicOverlay`) needs none of this — prefer it unless you genuinely need custom views.
+
+```csharp
+using Scandit.DataCapture.Label.UI.Overlay;
+
+// In HandlerChanged, alongside (or instead of) the basic overlay:
+var advancedOverlay = LabelCaptureAdvancedOverlay.Create(labelCapture);
+this.dataCaptureView.AddOverlay(advancedOverlay);
+advancedOverlay.Listener = new MyAdvancedOverlayListener();
+
+// Plain C# class implementing the listener. The View?/Anchor/PointWithUnit
+// return values are platform-native — split per platform in MAUI.
+public partial class MyAdvancedOverlayListener : ILabelCaptureAdvancedOverlayListener
+{
+    public Anchor AnchorForCapturedLabel(LabelCaptureAdvancedOverlay overlay, CapturedLabel label) => Anchor.Center;
+    public Anchor AnchorForCapturedLabelField(LabelCaptureAdvancedOverlay overlay, LabelField field) => Anchor.BottomCenter;
+    // ViewForCapturedLabel / ViewForCapturedLabelField / OffsetForCapturedLabel(Field)
+    // return native views/offsets — implement in the per-platform partial.
+}
+```
+
+The listener callbacks (`ViewForCapturedLabel`, `ViewForCapturedLabelField`, `AnchorForCapturedLabel(Field)`, `OffsetForCapturedLabel(Field)`) are documented on the Advanced Configurations page. Fetch it before writing the per-platform view code — don't guess the native view construction.
+
+## Adaptive Recognition — cloud fallback (Beta)
+
+> ⚠️ **Beta.** The Adaptive Recognition Engine is in beta and may change. It must be enabled on your Scandit subscription — contact support@scandit.com. Do not enable it speculatively.
+
+When the on-device model can't capture a field, Adaptive Recognition can fall back to a larger cloud-hosted model so the user doesn't have to type the value. It is turned on **per label definition** with a single property — no extra overlay or package:
+
+```csharp
+var labelDefinition = LabelDefinition.Create(LABEL_RETAIL_ITEM, fields);
+labelDefinition.AdaptiveRecognitionMode = AdaptiveRecognitionMode.Auto; // default is Off
+var settings = LabelCaptureSettings.Create(new List<LabelDefinition> { labelDefinition });
+```
+
+`AdaptiveRecognitionMode` is an enum on `LabelDefinition` (`Off` is the default; `Auto` enables the cloud fallback). It pairs naturally with the Validation Flow (see `references/validation-flow.md`). Everything else in the integration stays the same.
+
+## Receipt Scanning (Beta)
+
+> ⚠️ **Beta.** Receipt Scanning requires the Adaptive Recognition Engine (beta) and must be enabled on your subscription — contact support@scandit.com.
+
+Receipt Scanning extracts structured data from a whole receipt **in the cloud** (store info, payment totals, individual line items) and uses a **different integration pattern** from standard label capture:
+
+- A `LabelCaptureAdaptiveRecognitionOverlay` (not the basic overlay), created in `HandlerChanged` and attached via `dataCaptureView.AddOverlay(...)`.
+- An `ILabelCaptureAdaptiveRecognitionListener` whose recognized callback delivers a `ReceiptScanningResult` — store name/address/city, transaction date/time, pre-tax total, tax, total, loyalty number, and a list of `ReceiptScanningLineItem` (each with name, unit price, discount, quantity, total price).
+
+Because this is a beta, cloud-only flow with platform-specific overlay shapes, **fetch the Advanced Configurations page before implementing it** and confirm the exact .NET listener method name and `ReceiptScanningResult` property casing against the API reference — the binding shapes are not duplicated here to avoid drift.
 
 ## Where to go next
 
