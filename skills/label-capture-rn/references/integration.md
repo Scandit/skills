@@ -169,7 +169,7 @@ label.fields = [barcode, expiry];
 | `PartNumberBarcode` / `SerialNumberBarcode` | `SerialNumberBarcode.initWithNameAndSymbologies(name, [...])` |
 | `ExpiryDateText` / `PackingDateText` / `DateText` | `new ExpiryDateText(name)` (etc.) |
 | `WeightText` / `UnitPriceText` / `TotalPriceText` | `new WeightText(name)` (etc.) |
-| `CustomText` | `new CustomText(name)` then assign `field.valueRegex = '<pattern>'` |
+| `CustomText` | `new CustomText(name)` then assign `field.valueRegexes = ['<pattern>']` (array form; `field.valueRegex = '<pattern>'` also works for a single pattern) |
 
 For every field you can set `field.optional = true` (default for some presets) or `field.optional = false`.
 

@@ -28,7 +28,7 @@
           "text": "DataCaptureContext.initialize( is present"
         },
         {
-          "text": "License key placeholder (e.g. -- ENTER YOUR SCANDIT LICENSE KEY HERE -- or similar) is present"
+          "text": "A license key placeholder string is present (semantic)"
         },
         {
           "text": "CustomBarcode.initWithNameAndSymbologies( is present"
@@ -43,7 +43,7 @@
           "text": "new LabelDefinition( is present"
         },
         {
-          "text": "labelDefinition.fields = [...] assignment is present"
+          "text": "The label definition's fields array is assigned (semantic)"
         },
         {
           "text": "LabelCaptureSettings.settingsFromLabelDefinitions( is called"
@@ -52,28 +52,31 @@
           "text": "new LabelCapture(settings) is present (no LabelCaptureSettingsBuilder)"
         },
         {
-          "text": "LabelCaptureSettingsBuilder is NOT used (web-only)"
+          "text": "LabelCaptureSettingsBuilder is NOT present"
         },
         {
-          "text": "LabelDefinitionBuilder is NOT used (web-only)"
+          "text": "LabelDefinitionBuilder is NOT present"
         },
         {
           "text": "Factory function shorthand like label(...) or customBarcode(...) is NOT used (web-only)"
         },
         {
-          "text": "DataCaptureView.forContext( is used and view.connectToElement( is called"
+          "text": "DataCaptureView.forContext( is present"
+        },
+        {
+          "text": "view.connectToElement( is present"
         },
         {
           "text": "LabelCaptureBasicOverlay or LabelCaptureValidationFlowOverlay is added via view.addOverlay(...)"
         },
         {
-          "text": "didCaptureLabelWithFields callback is registered — NOT onValidationFlowLabelCaptured"
+          "text": "didCaptureLabelWithFields callback is registered \u2014 NOT onValidationFlowLabelCaptured"
         },
         {
-          "text": "onValidationFlowLabelCaptured is NOT used (web-only)"
+          "text": "onValidationFlowLabelCaptured is NOT present"
         },
         {
-          "text": "onManualInput is NOT used (web-only)"
+          "text": "onManualInput is NOT present"
         },
         {
           "text": "view.webViewContentOnTop is set (true when showing DOM modal, false during scanning) at least once"
@@ -82,7 +85,10 @@
           "text": "Imports come from scandit-capacitor-datacapture-core, scandit-capacitor-datacapture-barcode, and scandit-capacitor-datacapture-label"
         },
         {
-          "text": "Camera.withSettings(LabelCapture.createRecommendedCameraSettings()) is used and context.setFrameSource(camera) is called"
+          "text": "Camera.withSettings(LabelCapture.createRecommendedCameraSettings()) is present"
+        },
+        {
+          "text": "context.setFrameSource(camera) is present"
         },
         {
           "text": "camera.switchToDesiredState(FrameSourceState.On) is called to start the camera"
@@ -114,10 +120,10 @@
           "text": "didUpdateValidationFlowResult is either registered or explicitly noted as optional and 8.4+"
         },
         {
-          "text": "onValidationFlowLabelCaptured is NOT used (web-only)"
+          "text": "onValidationFlowLabelCaptured is NOT present"
         },
         {
-          "text": "onManualInput is NOT used (web-only)"
+          "text": "onManualInput is NOT present"
         },
         {
           "text": "await ScanditCaptureCorePlugin.initializePlugins() is called"
@@ -186,7 +192,7 @@
           "text": "The previous camera state is captured (e.g. via camera.getCurrentState()) so the camera is only re-enabled if it was on before backgrounding"
         },
         {
-          "text": "context.dispose() is NOT called — the singleton context lives for the whole app lifetime"
+          "text": "context.dispose() is NOT called \u2014 the singleton context lives for the whole app lifetime"
         }
       ],
       "tags": [
@@ -195,7 +201,7 @@
     },
     {
       "id": 5,
-      "prompt": "Add Label Capture to my Capacitor app (empty-app.js). The label has a Code 128 barcode that is required, plus an expiry date and a total price that are both optional — the app should still consider the label captured even if those text fields are missing.",
+      "prompt": "Add Label Capture to my Capacitor app (empty-app.js). The label has a Code 128 barcode that is required, plus an expiry date and a total price that are both optional \u2014 the app should still consider the label captured even if those text fields are missing.",
       "expected_output": "The skill writes an integration where the barcode field has optional = false and the expiry date and total price fields have optional = true, and explains that optional fields do not block the label from being considered captured.",
       "files": [
         "fixtures/empty-app.js"
@@ -296,7 +302,7 @@
           "text": "The brush color uses transparency (alpha < 1) so the captured content is not occluded"
         },
         {
-          "text": "onValidationFlowLabelCaptured is NOT used (web-only) and the basic overlay path is used (no LabelCaptureValidationFlowOverlay)"
+          "text": "onValidationFlowLabelCaptured is NOT present"
         }
       ],
       "tags": [
@@ -305,7 +311,7 @@
     },
     {
       "id": 9,
-      "prompt": "On Capacitor I need a live AR overlay for Smart Label Capture — I want to draw a custom DOM tag anchored next to each captured field in the camera feed, not the validation flow checklist. How do I do that?",
+      "prompt": "On Capacitor I need a live AR overlay for Smart Label Capture \u2014 I want to draw a custom DOM tag anchored next to each captured field in the camera feed, not the validation flow checklist. How do I do that?",
       "expected_output": "The skill uses LabelCaptureAdvancedOverlay with a listener implementing viewForCapturedLabelField / anchorForCapturedLabelField / offsetForCapturedLabelField, and reminds the user to set view.webViewContentOnTop = true so the DOM views receive touches.",
       "files": [],
       "assertions": [
@@ -387,7 +393,7 @@
           "text": "The black/blank preview is attributed to the camera permission not being granted (iOS NSCameraUsageDescription in Info.plist / Android runtime CAMERA permission) and/or camera.switchToDesiredState(FrameSourceState.On) never being called"
         },
         {
-          "text": "The empty expiry-date and total-price text fields are attributed to the missing on-device text models — the ScanditLabelCaptureText module (arbitrary text) and ScanditPriceLabel module (price fields), which ship in scandit-capacitor-datacapture-label; the fix is to ensure that package is installed and npx cap sync is re-run"
+          "text": "The empty expiry-date and total-price text fields are attributed to the missing on-device text models \u2014 the ScanditLabelCaptureText module (arbitrary text) and ScanditPriceLabel module (price fields), which ship in scandit-capacitor-datacapture-label; the fix is to ensure that package is installed and npx cap sync is re-run"
         },
         {
           "text": "The response notes the barcode field works without the text models because barcode-only fields do not require them"

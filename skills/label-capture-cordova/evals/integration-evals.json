@@ -28,7 +28,7 @@
           "text": "Scandit.DataCaptureContext.initialize( is present"
         },
         {
-          "text": "License key placeholder (e.g. -- ENTER YOUR SCANDIT LICENSE KEY HERE -- or similar) is present"
+          "text": "A license key placeholder string is present (semantic)"
         },
         {
           "text": "Scandit.CustomBarcode.initWithNameAndSymbologies( is present"
@@ -43,7 +43,7 @@
           "text": "new Scandit.LabelDefinition( is present"
         },
         {
-          "text": "labelDefinition.fields = [...] assignment is present"
+          "text": "The label definition's fields array is assigned (semantic)"
         },
         {
           "text": "Scandit.LabelCaptureSettings.settingsFromLabelDefinitions( is called"
@@ -55,25 +55,28 @@
           "text": "LabelCaptureSettingsBuilder is NOT used (web-only)"
         },
         {
-          "text": "LabelDefinitionBuilder is NOT used (web-only)"
+          "text": "LabelDefinitionBuilder is NOT present"
         },
         {
           "text": "Factory function shorthand like label(...) or customBarcode(...) is NOT used (web-only)"
         },
         {
-          "text": "Scandit.DataCaptureView.forContext( is used and view.connectToElement( is called"
+          "text": "Scandit.DataCaptureView.forContext( is present"
+        },
+        {
+          "text": "view.connectToElement( is present"
         },
         {
           "text": "LabelCaptureBasicOverlay or LabelCaptureValidationFlowOverlay is added via view.addOverlay(...)"
         },
         {
-          "text": "didCaptureLabelWithFields callback is registered — NOT onValidationFlowLabelCaptured"
+          "text": "didCaptureLabelWithFields callback is registered \u2014 NOT onValidationFlowLabelCaptured"
         },
         {
-          "text": "onValidationFlowLabelCaptured is NOT used (web-only)"
+          "text": "onValidationFlowLabelCaptured is NOT present"
         },
         {
-          "text": "onManualInput is NOT used (web-only)"
+          "text": "onManualInput is NOT present"
         }
       ]
     },
@@ -99,10 +102,10 @@
           "text": "didUpdateValidationFlowResult is either registered or explicitly noted as optional and 8.4+"
         },
         {
-          "text": "onValidationFlowLabelCaptured is NOT used (web-only)"
+          "text": "onValidationFlowLabelCaptured is NOT present"
         },
         {
-          "text": "onManualInput is NOT used (web-only)"
+          "text": "onManualInput is NOT present"
         },
         {
           "text": "deviceready event is used"
@@ -125,7 +128,7 @@
           "text": "Scandit.LabelCaptureBasicOverlay is constructed and added via view.addOverlay(...)"
         },
         {
-          "text": "Scandit.LabelCaptureValidationFlowOverlay is NOT used"
+          "text": "The integration instantiates a Basic Overlay rather than a Validation Flow overlay (semantic)"
         },
         {
           "text": "labelCapture.addListener( is called with a listener that includes didUpdateSession"
@@ -168,7 +171,7 @@
           "text": "camera.applySettings( is called with the recommended camera settings"
         },
         {
-          "text": "context.setFrameSource(camera) (or equivalent setFrameSource with the camera) is called"
+          "text": "setFrameSource( is present"
         },
         {
           "text": "camera.switchToDesiredState(Scandit.FrameSourceState.On) is called to turn the camera on"
@@ -177,7 +180,7 @@
           "text": "Camera setup runs inside document.addEventListener('deviceready', ...)"
         },
         {
-          "text": "License key placeholder (-- ENTER YOUR SCANDIT LICENSE KEY HERE -- or similar) is present"
+          "text": "A license key placeholder string is present (semantic)"
         }
       ],
       "tags": [
@@ -264,7 +267,10 @@
           "text": "Each semantic barcode field is constructed with initWithNameAndSymbologies( or initWithNameAndSymbology( and a Scandit.Symbology value"
         },
         {
-          "text": "The fields are added to a Scandit.LabelDefinition and Scandit.LabelCaptureSettings.settingsFromLabelDefinitions( is called"
+          "text": "Scandit.LabelDefinition is present"
+        },
+        {
+          "text": "Scandit.LabelCaptureSettings.settingsFromLabelDefinitions( is present"
         }
       ],
       "tags": [
@@ -323,7 +329,7 @@
     },
     {
       "id": 10,
-      "prompt": "I want a live AR overlay in my Cordova Label Capture app — a small tag rendered next to each captured field on the camera preview. How do I do that?",
+      "prompt": "I want a live AR overlay in my Cordova Label Capture app \u2014 a small tag rendered next to each captured field on the camera preview. How do I do that?",
       "expected_output": "The skill uses Scandit.LabelCaptureAdvancedOverlay with a listener implementing viewForCapturedLabelField / anchorForCapturedLabelField / offsetForCapturedLabelField (and the label-level equivalents), positioning views with Scandit.Anchor and Scandit.PointWithUnit/NumberWithUnit. Added via view.addOverlay.",
       "files": [
         "fixtures/empty-app.js"
@@ -433,7 +439,7 @@
           "text": "The black/blank preview is attributed to the camera permission not being granted (Android runtime CAMERA permission, e.g. via cordova.plugins.diagnostic / iOS NSCameraUsageDescription in Info.plist or config.xml) and/or camera.switchToDesiredState(Scandit.FrameSourceState.On) never being called"
         },
         {
-          "text": "The empty expiry-date and total-price text fields are attributed to the missing on-device text models — the ScanditLabelCaptureText module (arbitrary text) and ScanditPriceLabel module (price fields), which ship in scandit-cordova-datacapture-label; the fix is to ensure that plugin is installed and cordova prepare is re-run"
+          "text": "The empty expiry-date and total-price text fields are attributed to the missing on-device text models \u2014 the ScanditLabelCaptureText module (arbitrary text) and ScanditPriceLabel module (price fields), which ship in scandit-cordova-datacapture-label; the fix is to ensure that plugin is installed and cordova prepare is re-run"
         },
         {
           "text": "The response notes the barcode field works without the text models because barcode-only fields do not require them"

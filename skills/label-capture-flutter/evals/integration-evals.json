@@ -31,7 +31,7 @@
           "text": "DataCaptureContext.sharedInstance is used"
         },
         {
-          "text": "License key placeholder (e.g. -- ENTER YOUR SCANDIT LICENSE KEY HERE -- or similar) is present"
+          "text": "A license key placeholder string is present (semantic)"
         },
         {
           "text": "CustomBarcodeBuilder() is used"
@@ -43,7 +43,10 @@
           "text": "ExpiryDateTextBuilder() is used"
         },
         {
-          "text": "LabelDefinitionBuilder() is used and .build('<name>') is called"
+          "text": "LabelDefinitionBuilder( is present"
+        },
+        {
+          "text": ".build( is present"
         },
         {
           "text": "LabelCaptureSettings([...]) is constructed with a list of LabelDefinition"
@@ -76,7 +79,7 @@
           "text": "onValidationFlowLabelCaptured is NOT used (web-only)"
         },
         {
-          "text": "onManualInput is NOT used (web-only)"
+          "text": "onManualInput is NOT present"
         },
         {
           "text": "WidgetsBindingObserver is used for app lifecycle"
@@ -118,7 +121,7 @@
           "text": "onValidationFlowLabelCaptured is NOT used (web-only)"
         },
         {
-          "text": "onManualInput is NOT used (web-only)"
+          "text": "onManualInput is NOT present"
         },
         {
           "text": "await ScanditFlutterDataCaptureLabel.initialize() is called"

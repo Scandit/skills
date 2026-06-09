@@ -49,7 +49,7 @@
       ],
       "assertions": [
         {"text": "A CustomText field is created via CustomText.Builder()...Build(\"<name>\")"},
-        {"text": "The value pattern is set with SetValueRegex(\"LOT-[0-9]{6}\") (or SetValueRegexes with that pattern)"},
+        {"text": "A value regex matching the LOT-NNNNNN format is set via SetValueRegex or SetValueRegexes (semantic)"},
         {"text": "The old native names setPattern / setDataTypePattern / setPatterns are NOT used"},
         {"text": "The new field is added to the existing List<LabelFieldDefinition> (it is NOT marked optional, since it is required)"},
         {"text": "The lot number value is read from the captured label via field.Text matching its declared name"},
@@ -151,7 +151,7 @@
         {"text": "The pre-built seven-segment definition is created via LabelDefinition.CreateSevenSegmentDisplayLabelDefinition(\"<name>\")"},
         {"text": "It is passed to LabelCaptureSettings.Create(new List<LabelDefinition>{ ... })"},
         {"text": "The captured value is read from the label field via field.Text (matching the declared Name)"},
-        {"text": "The standard integration scaffolding (DataCaptureContext, Camera.GetDefaultCamera, DataCaptureView.Create, LabelCaptureBasicOverlay.Create, SessionUpdated/AddListener) is present"}
+        {"text": "The standard integration scaffolding (context, camera, view, basic overlay, settings, mode) is present (semantic)"}
       ],
       "tags": ["seven-segment-display"]
     },

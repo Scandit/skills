@@ -12,9 +12,10 @@
         { "text": "Setup checklist is shown and mentions @scandit/web-datacapture-core, @scandit/web-datacapture-barcode, and @scandit/web-datacapture-label npm packages" },
         { "text": "DataCaptureContext.forLicenseKey( is present with libraryLocation and moduleLoaders" },
         { "text": "labelCaptureLoader() is present in moduleLoaders" },
-        { "text": "License key placeholder (e.g. ENTER YOUR SCANDIT LICENSE KEY or similar) is present" },
+        { "text": "A license key placeholder string is present (semantic)" },
         { "text": "new LabelCaptureSettingsBuilder() is used with .addLabel(...).build()" },
-        { "text": "new LabelDefinitionBuilder() is used and .build(\"Perishable Product\") or a similar label name is called" },
+        { "text": "new LabelDefinitionBuilder( is present" },
+        { "text": ".build( is present" },
         { "text": "new CustomBarcodeBuilder() is used, with setSymbology(Symbology.EAN13UPCA) or setSymbologies including EAN13UPCA, and .build(\"Barcode\") or a similar field name" },
         { "text": "Symbology.EAN13UPCA is enabled" },
         { "text": "new ExpiryDateTextBuilder() is used with .build(\"Expiry Date\") or similar field name" },
@@ -40,7 +41,7 @@
         "eval-fixtures/package-8.2.json"
       ],
       "assertions": [
-        { "text": "Minimal integration (context, view, camera, settings, mode) is present" },
+        { "text": "A minimal integration with context, view, camera, settings, and mode is present (semantic)" },
         { "text": "LabelCaptureValidationFlowOverlay.withLabelCaptureForView( is used instead of (or in addition to) LabelCaptureBasicOverlay" },
         { "text": "LabelCaptureValidationFlowSettings.create() is called" },
         { "text": "setPlaceholderTextForLabelDefinition is called on the validation-flow settings at least once" },

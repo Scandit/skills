@@ -11,7 +11,7 @@
       "assertions": [
         { "text": "Setup checklist is shown and mentions the four Gradle dependencies: com.scandit.datacapture:core, :barcode, :label, and :label-text-models; no Scandit Maven repository is referenced" },
         { "text": "DataCaptureContext.forLicenseKey( is present" },
-        { "text": "License key placeholder (e.g. ENTER YOUR SCANDIT LICENSE KEY or similar) is present" },
+        { "text": "A license key placeholder string is present (semantic)" },
         { "text": "LabelCaptureSettings.builder() is used" },
         { "text": ".addLabel() is called on the builder and terminated with .buildFluent(\"...\") followed by .build()" },
         { "text": ".addCustomBarcode() is chained on the label builder and terminated with .buildFluent(\"...\")" },
@@ -159,7 +159,7 @@
         { "text": "The launch crash is attributed to the missing com.scandit.datacapture:label-text-models Gradle dependency, required because the label uses pre-built fields (serial-number barcode and/or expiry-date text)" },
         { "text": "The black/blank preview is attributed to the CAMERA runtime permission not being granted before the camera starts, and/or camera.switchToDesiredState(FrameSourceState.ON) not being called" },
         { "text": "The response mentions adding <uses-permission android:name=\"android.permission.CAMERA\" /> to AndroidManifest.xml and requesting it at runtime before starting the camera" },
-        { "text": "The response does NOT invent new diagnostic APIs or configuration flags that are not in the Scandit references" }
+        { "text": "The response does NOT invent non-existent Scandit APIs; note the com.scandit.datacapture:label-text-models Gradle artifact IS real and allowed (semantic)" }
       ],
       "tags": ["error-troubleshooting"]
     },

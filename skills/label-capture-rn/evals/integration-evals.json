@@ -28,7 +28,7 @@
           "text": "DataCaptureContext.sharedInstance is used to obtain the context"
         },
         {
-          "text": "License key placeholder (e.g. -- ENTER YOUR SCANDIT LICENSE KEY HERE -- or similar) is present"
+          "text": "A license key placeholder string is present (semantic)"
         },
         {
           "text": "CustomBarcode.initWithNameAndSymbologies( is present"
@@ -43,7 +43,7 @@
           "text": "new LabelDefinition( is present"
         },
         {
-          "text": "labelDefinition.fields = [...] assignment is present"
+          "text": "The label definition's fields array is assigned (semantic)"
         },
         {
           "text": "LabelCaptureSettings.settingsFromLabelDefinitions( is called"
@@ -52,10 +52,10 @@
           "text": "new LabelCapture(settings) is present (no LabelCaptureSettingsBuilder)"
         },
         {
-          "text": "LabelCaptureSettingsBuilder is NOT used (web-only)"
+          "text": "LabelCaptureSettingsBuilder is NOT present"
         },
         {
-          "text": "LabelDefinitionBuilder is NOT used (web-only)"
+          "text": "LabelDefinitionBuilder is NOT present"
         },
         {
           "text": "Factory function shorthand like label(...) or customBarcode(...) is NOT used (web-only)"
@@ -70,10 +70,10 @@
           "text": "didCaptureLabelWithFields callback is registered (via listener) — NOT onValidationFlowLabelCaptured"
         },
         {
-          "text": "onValidationFlowLabelCaptured is NOT used (web-only)"
+          "text": "onValidationFlowLabelCaptured is NOT present"
         },
         {
-          "text": "onManualInput is NOT used (web-only)"
+          "text": "onManualInput is NOT present"
         },
         {
           "text": "The component is written as a function component (no class syntax)"
@@ -123,10 +123,10 @@
           "text": "didUpdateValidationFlowResult is either registered or explicitly noted as optional and 8.4+"
         },
         {
-          "text": "onValidationFlowLabelCaptured is NOT used (web-only)"
+          "text": "onValidationFlowLabelCaptured is NOT present"
         },
         {
-          "text": "onManualInput is NOT used (web-only)"
+          "text": "onManualInput is NOT present"
         },
         {
           "text": "DataCaptureContext.initialize( is used"
@@ -190,7 +190,7 @@
           "text": "new CustomText( is used for the batch number field (no pre-built field fits)"
         },
         {
-          "text": "field.valueRegexes = [...] is set with the FZ-prefixed digit pattern (e.g. 'FZ\\\\d{5,10}')"
+          "text": "A value regex with the FZ-prefixed digit pattern is set via field.valueRegexes or field.valueRegex (semantic)"
         },
         {
           "text": "field.anchorRegexes = [...] is set with the 'Batch' keyword to disambiguate the field"
@@ -225,7 +225,7 @@
           "text": "The barcode field is left required (field.optional = false or simply not marked optional)"
         },
         {
-          "text": "When reading the captured value, the code null-checks the field/value (e.g. optional chaining field?.text / ?? fallback or a presence check) instead of assuming the optional field is present"
+          "text": "When reading the captured value, the code null-checks the field/value (semantic)"
         }
       ],
       "tags": [
