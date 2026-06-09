@@ -321,6 +321,24 @@ validationFlowSettings.scanningText = "Scan in progress"
 validationFlowSettings.adaptiveScanningText = "Processing"
 ```
 
+## Troubleshooting common failures
+
+When the user reports a problem, map the symptom to its cause before suggesting code changes. The most common failures are environmental, not API misuse.
+
+- **App crashes on launch when the label definition is built** — the label uses a pre-built field (any `add*Text()` field, or a barcode-semantic field such as `addSerialNumberBarcode()` / `addImeiOneBarcode()` / `addImeiTwoBarcode()` / `addPartNumberBarcode()`), or a pre-built whole-label definition, but the `com.scandit.datacapture:label-text-models` Gradle artifact is missing. These fields load an on-device model at runtime. Add the dependency at the same version as the other Scandit artifacts. See the Gradle rule above — this is the single most common Label Capture crash.
+
+- **Black / blank camera preview, no error** — almost always the `CAMERA` runtime permission was never granted, or the camera was never switched on. Check that (1) `<uses-permission android:name="android.permission.CAMERA" />` is in `AndroidManifest.xml`, (2) the runtime permission is requested and granted **before** the camera is started, and (3) `camera.switchToDesiredState(FrameSourceState.ON)` runs in `onResume` after permission is granted. Also confirm `dataCaptureContext.setFrameSource(camera)` was called and that `Camera.getDefaultCamera(...)` did not return `null`.
+
+- **Camera preview shows but nothing is ever captured** — verify the `DataCaptureView` was actually added to the view hierarchy and an overlay (`LabelCaptureBasicOverlay.newInstance(...)` or a Validation Flow overlay) was attached, that `labelCapture.isEnabled` is `true`, and that the mode was not left disabled after a previous capture (re-enable with `labelCapture.isEnabled = true`). Remember `onSessionUpdated` runs on a background thread — if your handler throws or blocks, it can look like nothing happens.
+
+- **A field never matches** — the field's `valueRegex` or `anchorRegex` doesn't match the real label. Prefer the pre-built field for that data (its regexes are tuned) over a hand-written one. If the label has no keyword near the value, call `.resetAnchorRegexes()` on the field to drop the default anchor keywords and rely on the value regex alone. Keep regexes simple — lookahead/lookbehind are not supported and silently fail to match.
+
+- **Handwritten text is never read** — this is expected. Label Capture reads **printed text only**; the on-device OCR and the Adaptive Recognition Engine do not recognise handwriting. Use the Validation Flow's manual-entry fallback so the user can type the value when it cannot be scanned (see `references/validation-flow.md`).
+
+- **Context errors out when Barcode Capture is also active** — a `DataCaptureContext` runs only one active mode at a time. Model the extra barcode as a field inside the label definition instead of adding a second mode. See the "cannot run alongside Barcode Capture" section above.
+
+For OCR accuracy problems on worn or low-contrast printed labels, the cloud-based Adaptive Recognition Engine (BETA) can be enabled as a fallback — see `references/advanced.md`.
+
 ## Where to Go Next
 
 After the core integration is running, point the user at the right resource for follow-ups:
