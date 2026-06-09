@@ -1,0 +1,154 @@
+# Smart Label Capture (`LabelCapture`) feature taxonomy — pilot seed.
+#
+# Curated edge-case checklist (NOT an API dump): each entry is a distinct thing a
+# developer integrating LabelCapture has to get right and that therefore deserves an
+# eval. `match` patterns are case-insensitive regexes applied to eval prompt +
+# expected_output + assertion texts; they are a bootstrap heuristic until evals carry
+# explicit `tags` (then tags become the source of truth and these only catch new
+# untagged evals). `evidence` is not yet consumed by scripts; it records mining
+# provenance for future gap-ranking (docs ∧ sample ∧ support ≫ single-source).
+#
+# Provenance (mined 2026-06-09, four parallel source classes):
+#   public_docs  data-capture-documentation @ 60d979dd (docs/sparkscan-scanning-mode-examples)
+#                docs/sdks/*/label-capture/** + src/data/{products,features}.json
+#   samples      datacapture-{ios,android,web,rn,flutter,capacitor,cordova,dotnet}-samples
+#                03_Advanced_Batch_Scanning_Samples/05_Smart_Label_Capture/LabelCaptureSimpleSample
+#   sdk_source   data-capture-sdk @ d588b9f3afa — docs/api_availability/** exclusions
+#   eval-survey  existing skills/label-capture-*/evals/*.json (vocabulary calibration)
+#
+# Platform-truth notes that drive the exclusions below (layer 1):
+#   - LabelCapture is available on ALL 10 platforms. The api_availability entries for
+#     flutter/rn/capacitor/cordova/.NET are constructor-variant / representational
+#     (different factory, member re-homed to base class), NOT feature gaps — so they
+#     are deliberately NOT encoded as excluded_platforms.
+#   - 7-segment display is genuinely n/a on web (features.json) -> excluded: web.
+#   - .NET shipped LabelCapture at 8.1+ (net-android 8.1, net-ios 8.2), so the 7.x->8.0
+#     regex-rename migration has no pre-existing .NET code to migrate -> excluded there.
+product: label-capture
+skill_prefix: label-capture-
+features:
+  # ---- Required: core to any LabelCapture integration ----
+  - id: basic-integration
+    required: true
+    evidence: [docs, sample]
+    # "fresh add" phrasing only — bare "label capture" matches nearly every eval
+    match: ["add (smart )?label.?capture", "integrate label.?capture", "set.?up label.?capture", "fresh integration", "new (ios|android|web|flutter|react.?native|capacitor|cordova|maui|\\.net) (app|project)"]
+  - id: license-init
+    required: true
+    evidence: [docs, sample]
+    match: ["datacapturecontext", "license key", "licensekey", "forlicensekey", "\\.initialize\\("]
+  - id: label-capture-settings
+    required: true
+    evidence: [docs, sample]
+    match: ["labelcapturesettings", "label capture settings", "settingsfromlabeldefinitions"]
+  - id: label-definition
+    required: true
+    evidence: [docs, sample]
+    match: ["labeldefinition", "label definition", "addlabel", "buildfluent", "labeldefinitionbuilder"]
+  - id: captured-field-handling
+    required: true
+    evidence: [docs, sample]
+    # read results: listener/session + per-field extraction
+    match: ["labelfield", "capturedlabel", "capturedlabels", "field\\.barcode", "field\\.text", "asdate", "labelfieldtype", "labeldateresult", "labelcapturelistener", "onsessionupdated", "didupdate"]
+  - id: basic-overlay
+    required: true
+    evidence: [docs, sample]
+    match: ["labelcapturebasicoverlay", "basic overlay", "datacaptureview"]
+  - id: camera-setup
+    required: true
+    evidence: [docs, sample]
+    match: ["recommendedcamerasettings", "createrecommendedcamerasettings", "getdefaultcamera", "switchtodesiredstate", "framesourcestate"]
+  - id: lifecycle-handling
+    required: true
+    evidence: [docs, sample]
+    match: ["onpause", "onresume", "viewwillappear", "viewdiddisappear", "\\.isenabled", "isenabled =", "lifecycle", "dispose", "appstate", "background/foreground", "background and foreground", "switchtodesiredstate"]
+  - id: validation-flow
+    required: true
+    evidence: [docs, sample]
+    # blessed result path in every sample app
+    match: ["validation flow", "validationflow", "labelcapturevalidationflowoverlay", "didcapturelabelwith", "onvalidationflowlabelcaptured"]
+
+  # ---- Optional: field definition edge cases ----
+  - id: custom-barcode-field
+    required: false
+    evidence: [docs, sample]
+    match: ["custombarcode", "addcustombarcode", "custom barcode"]
+  - id: custom-text-field
+    required: false
+    evidence: [docs, sample]
+    match: ["customtext", "addcustomtext", "custom text"]
+  - id: field-regex-anchors
+    required: false
+    evidence: [docs]
+    match: ["valueregex", "anchorregex", "setvalueregex", "setanchorregex", "resetanchorregexes", "anchor.*regex", "regex pattern"]
+  - id: optional-fields
+    required: false
+    evidence: [docs, sample]
+    match: ["isoptional", "optional\\(true", "\\.optional", "required vs optional", "optional field"]
+  - id: date-text-fields
+    required: false
+    evidence: [docs, sample]
+    match: ["expirydatetext", "packingdatetext", "datetext", "labeldateformat", "labeldatecomponentformat", "acceptpartialdates", "expiry date", "packing date"]
+  - id: price-weight-text-fields
+    required: false
+    evidence: [docs, sample]
+    match: ["totalpricetext", "unitpricetext", "weighttext", "total price", "unit price", "net weight"]
+  - id: barcode-semantic-fields
+    required: false
+    evidence: [docs, sample]
+    match: ["serialnumberbarcode", "partnumberbarcode", "imeionebarcode", "imeitwobarcode", "imei", "serial number", "part number"]
+  - id: prebuilt-label-definitions
+    required: false
+    evidence: [docs]
+    match: ["createpricecapturedefinition", "price capture", "vin label", "vin definition", "pre.?built label"]
+  - id: seven-segment-display
+    required: false
+    evidence: [docs]
+    excluded_platforms: [web]
+    match: ["7.?segment", "seven.?segment", "digital scale", "meter display"]
+
+  # ---- Optional: overlays & UX ----
+  - id: basic-overlay-customization
+    required: false
+    evidence: [docs, sample]
+    match: ["brushforlabel", "brushforfield", "brushforfieldoflabel", "labelbrush", "capturedfieldbrush", "predictedfieldbrush", "didtaplabel", "overlay.*brush", "brush.*field"]
+  - id: advanced-overlay
+    required: false
+    evidence: [docs]
+    match: ["labelcaptureadvancedoverlay", "advancedoverlaylistener", "viewforcapturedlabel", "anchorforcapturedlabel", "offsetforcapturedlabel", "advanced overlay"]
+  - id: validation-flow-customization
+    required: false
+    evidence: [docs, sample]
+    match: ["validationflowsettings", "labelcapturevalidationflowsettings", "setplaceholdertext", "placeholder text", "manualinput", "onmanualinput", "manual input", "finishbuttontext", "standbyhint"]
+
+  # ---- Optional: beta / cloud (subscription-gated) ----
+  - id: adaptive-recognition-cloud
+    required: false
+    evidence: [docs]
+    match: ["adaptiverecognition", "adaptive recognition", "cloud fallback", "cloud vlm"]
+  - id: receipt-scanning
+    required: false
+    evidence: [docs]
+    match: ["receipt scanning", "labelcaptureadaptiverecognitionoverlay", "receiptscanningresult", "line items", "lineitems"]
+
+  # ---- Optional: migration ----
+  - id: migration-regex-api-rename
+    required: true
+    evidence: [docs]
+    # 7.x->8.0 setPattern/setDataTypePattern -> setValueRegex/setAnchorRegex.
+    # .NET launched at 8.1+ (no pre-8.0 code to migrate) -> excluded.
+    # Flutter: the field/regex API was introduced fresh at 8.0 with valueRegex/
+    # anchorRegex naming (no pre-8.0 setPattern existed) -> no rename to migrate.
+    excluded_platforms: [net-android, net-ios, net-maui, flutter]
+    match: ["setpattern", "setdatatypepattern", "regex method rename", "setvalueregex", "setanchorregex"]
+  - id: migration-validation-flow-listeners
+    required: false
+    evidence: [docs]
+    # 8.2 manual-input + keyboard-inset, 8.4 partial result update
+    match: ["didsubmitmanualinput", "onmanualinput", "didupdatevalidationflowresult", "onvalidationflowresultupdate", "keyboard inset", "labelresultupdatetype", "validationflowextendedlistener", "partial result"]
+
+  # ---- Optional: troubleshooting ----
+  - id: error-troubleshooting
+    required: false
+    evidence: [support]
+    match: ["error", "crash", "not working", "troubleshoot", "blank", "black screen", "permission denied", "not detected", "ocr not working"]
