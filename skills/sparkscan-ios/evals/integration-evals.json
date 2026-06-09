@@ -307,6 +307,22 @@
         {"text": "No new view controller is created as a separate scanning screen"},
         {"text": "The response does not silently pick one of HomeViewController or SettingsViewController without asking"}
       ]
+    },
+    {
+      "id": 17,
+      "prompt": "Add SparkScan to my app and use the latest Scandit SDK version. Here's my main view controller: EmptyViewController.swift. I need to scan EAN-13 barcodes.",
+      "expected_output": "The skill resolves the latest stable SDK version from the datacapture-spm git tags (not from memory and not from the package's default-branch Package.swift), integrates SparkScan into EmptyViewController.swift, and instructs the user to pin that resolved version when adding the SPM dependency.",
+      "files": [
+        "fixtures/EmptyViewController.swift"
+      ],
+      "assertions": [
+        {"text": "The response determines the latest version from the datacapture-spm git tags (e.g. mentions git ls-remote --tags, the GitHub tags page, or otherwise resolving from tags)"},
+        {"text": "The response excludes prereleases (-beta/-alpha/-rc) when selecting the latest stable version"},
+        {"text": "The response does NOT read or rely on Package.swift from the package's default branch (main) as the source of the latest version"},
+        {"text": "The response does NOT hardcode or guess a version purely from the model's own knowledge"},
+        {"text": "The setup checklist or guidance tells the user to pin the resolved latest stable version for the SPM dependency"},
+        {"text": "SparkScan integration code is written into EmptyViewController.swift with .ean13UPCA enabled"}
+      ]
     }
   ]
 }

@@ -23,9 +23,20 @@ If you cannot find `Package.resolved` or `Podfile.lock`, ask the user which vers
 
 ## Step 2: Update the package version
 
-Before touching source files, update the SDK version in the dependency manager:
+Before touching source files, update the SDK version in the dependency manager.
 
-- **SPM**: In Xcode → Package Dependencies, update `datacapture-spm` to the target version.
+When the user wants to upgrade "to the latest" (rather than a specific version), resolve the latest **stable** version from the authoritative git tags — do not guess from memory and do not read `Package.swift` from the package's default branch (`main`), which can point at an older major line after a backport release:
+
+```bash
+git ls-remote --tags --refs https://github.com/Scandit/datacapture-spm.git \
+  | awk -F/ '{print $NF}' \
+  | grep -vE -- '-(beta|alpha|rc)' \
+  | sort -V | tail -1
+```
+
+Then apply the target version:
+
+- **SPM**: In Xcode → Package Dependencies, update `datacapture-spm` to the target version, then commit the updated `Package.resolved`.
 - **CocoaPods**: Update the version constraint in `Podfile`, then run `pod update`.
 
 Ask the user which dependency manager they use if it's not clear from the project.

@@ -7,10 +7,30 @@ SparkScan is a pre-built scanning UI for high-volume single-scanning workflows. 
 - Scandit Data Capture SDK for iOS — add via Swift Package Manager:
   - URL: `https://github.com/Scandit/datacapture-spm`
   - Add `ScanditBarcodeCapture` and `ScanditCaptureCore` package products to your target
+  - Use the latest stable SDK version — see **Resolve the latest SDK version** below
 - A valid Scandit license key:
   - Sign in at https://ssl.scandit.com to generate one
   - No account yet? Sign up at https://ssl.scandit.com/dashboard/sign-up?p=test
 - `NSCameraUsageDescription` in `Info.plist`
+
+## Resolve the latest SDK version
+
+Before adding the SPM dependency, determine the latest **stable** Scandit SDK version. Do **not** guess a version from memory (it will be stale), and do **not** read `Package.swift` from the package's default branch (`main`) — that branch points at the most *recently published* release across **all** major lines, so a patch released on an older line (e.g. `7.6.x`) can make it reference an *older* version than the current latest. The git **tags** are the authoritative source — they are what SPM resolves against, and each tag is self-consistent.
+
+Resolve the latest stable version with:
+
+```bash
+git ls-remote --tags --refs https://github.com/Scandit/datacapture-spm.git \
+  | awk -F/ '{print $NF}' \
+  | grep -vE -- '-(beta|alpha|rc)' \
+  | sort -V | tail -1
+```
+
+This lists every tag (no API pagination or rate limits), drops prereleases (`-beta`/`-alpha`/`-rc`), sorts by semantic version, and prints the highest stable one — for example `8.4.0`.
+
+If you cannot run shell commands, open https://github.com/Scandit/datacapture-spm/tags and take the highest version tag that has no `-beta`/`-alpha`/`-rc` suffix. As a last resort, ask the user which version to target.
+
+**Pinning in the app:** add the package with that resolved version as the minimum, using Xcode's default **"Up to Next Major Version"** rule (`upToNextMajor(from:)`) so compatible patch/minor updates flow in while the major line stays fixed. Xcode records the exact resolved version in `Package.resolved`; commit that file so the team and CI build reproducibly. Set an **exact** version pin only if the user explicitly wants to lock to one version.
 
 ## Minimal Integration (Swift)
 
@@ -31,7 +51,7 @@ Then write the integration code **directly into that existing file**, merging it
 After providing the code, show this setup checklist:
 
 **Setup checklist:**
-1. Add `ScanditBarcodeCapture` and `ScanditCaptureCore` via Swift Package Manager: `https://github.com/Scandit/datacapture-spm`
+1. Add `ScanditBarcodeCapture` and `ScanditCaptureCore` via Swift Package Manager: `https://github.com/Scandit/datacapture-spm`, pinned to the latest stable version (see **Resolve the latest SDK version** above)
 2. Make sure you have `NSCameraUsageDescription` added to your `Info.plist`
 3. Replace `-- ENTER YOUR SCANDIT LICENSE KEY HERE --` with your key from https://ssl.scandit.com
 
