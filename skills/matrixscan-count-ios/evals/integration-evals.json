@@ -135,6 +135,19 @@
         {"text": "The change is made in the UIKit layer; the SwiftUI ScanView struct and the UIViewControllerRepresentable remain free of Scandit API calls"},
         {"text": "Nothing else in the integration is modified"}
       ]
+    },
+    {
+      "id": 11,
+      "prompt": "When the user taps a counted barcode in my MatrixScan Count app, I want to react to it (e.g. show its data). File: IntegratedBarcodeCountViewController.swift",
+      "expected_output": "The skill sets barcodeCountView.delegate to a BarcodeCountViewDelegate and implements barcodeCountView(_:didTapRecognizedBarcode:), using the TrackedBarcode passed in. It does NOT touch the uiDelegate (List/Exit) wiring and does not add highlight/brush customization unless asked.",
+      "files": ["fixtures/IntegratedBarcodeCountViewController.swift"],
+      "assertions": [
+        {"text": "barcodeCountView.delegate is set (the BarcodeCountViewDelegate — distinct from uiDelegate)"},
+        {"text": "The view controller conforms to BarcodeCountViewDelegate and implements barcodeCountView(_:didTapRecognizedBarcode:) with a TrackedBarcode parameter"},
+        {"text": "The tap handler reads from the tapped TrackedBarcode (e.g. trackedBarcode.barcode.data) rather than inventing an API"},
+        {"text": "It does NOT use the non-existent didTapUnrecognizedBarcode / brushForUnrecognizedBarcode names"},
+        {"text": "The existing uiDelegate (List/Exit) wiring and the rest of the integration are unchanged; no brush/icon customization is added unless needed"}
+      ]
     }
   ]
 }

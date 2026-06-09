@@ -341,6 +341,34 @@ To read the recognized barcodes at tap time, use the `allRecognizedBarcodes` you
 > current released SDK (8.4.0) — do not use them yet** (`BarcodeCountSessionSnapshot` won't resolve).
 > Stick with the no-snapshot variants above until the snapshot API ships.
 
+## Reacting to barcode taps (optional)
+
+This is **optional** — the basic integration does **not** wire up tap handling, and you should add it
+only if the app's use case calls for reacting to a tap on a barcode (e.g. showing details for the
+tapped item). Do not add it by default.
+
+Tapping the List / Exit buttons is already handled by the `uiDelegate` above. If you *do* need to react
+when the user taps a **barcode highlight** itself, set the view's `delegate` (a
+`BarcodeCountViewDelegate` — separate from the `uiDelegate`) and implement
+`barcodeCountView(_:didTapRecognizedBarcode:)`:
+
+```swift
+barcodeCountView.delegate = self
+
+extension CountViewController: BarcodeCountViewDelegate {
+    func barcodeCountView(_ view: BarcodeCountView,
+                          didTapRecognizedBarcode trackedBarcode: TrackedBarcode) {
+        // e.g. show details for the tapped barcode (trackedBarcode.barcode.data)
+    }
+}
+```
+
+`trackedBarcode` is a `TrackedBarcode` (from the batch module) exposing `.barcode`, `.identifier`, and
+`.location`. `BarcodeCountViewDelegate` is main-actor, so these callbacks arrive on the main queue.
+There are matching tap callbacks for the other highlight states (`didTapRecognizedBarcodeNotInList`,
+`didTapAcceptedBarcode`, `didTapRejectedBarcode`, `didTapFilteredBarcode`); the same `delegate` is also
+where per-barcode brush / icon customization lives — see `highlights.md`.
+
 ## Beyond the basics
 
 These are common follow-ups; fetch the
