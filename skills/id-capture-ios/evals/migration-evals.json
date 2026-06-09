@@ -1,0 +1,49 @@
+{
+  "skill_name": "id-capture-ios",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Migrate this v6 ID Capture implementation to the current SDK API.",
+      "expected_output": "Updated IdCaptureViewController using acceptedDocuments with typed document objects, IdCaptureScanner(physicalDocument: FullDocumentScanner()), didCapture(_:capturedId:) and didReject(_:capturedId:reason:) callbacks, and DataCaptureContext.initialize(licenseKey:) + DataCaptureContext.shared.",
+      "files": [
+        "evals/fixtures/V6IdCaptureViewController.swift"
+      ],
+      "assertions": [
+        {
+          "text": "Replaces supportedDocuments bitmask with acceptedDocuments array using typed document objects e.g. IdCard(region: .any), DriverLicense(region: .any), Passport(region: .any)"
+        },
+        {
+          "text": "Replaces didCaptureIn session:frameData: with didCapture(_:capturedId:) \u2014 reads capturedId directly from the parameter, NOT from session.newlyCapturedId"
+        },
+        {
+          "text": "Replaces didRejectIn session:frameData: with didReject(_:capturedId:reason:) with a RejectionReason parameter"
+        },
+        {
+          "text": "Does NOT reference IdCaptureSession or FrameData"
+        },
+        {
+          "text": "Sets settings.scanner = IdCaptureScanner(physicalDocument: FullDocumentScanner()) \u2014 does NOT use settings.scannerType or settings.supportedSides"
+        },
+        {
+          "text": "Replaces DataCaptureContext.licensed with DataCaptureContext.initialize(licenseKey:) + DataCaptureContext.shared"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Migrate this v7 ID Capture implementation to the current SDK API.",
+      "expected_output": "Updated IdCaptureViewController replacing settings.scannerType = FullDocumentScanner() with settings.scanner = IdCaptureScanner(physicalDocument: FullDocumentScanner()), and replacing DataCaptureContext.shared (accessed without initialization) with DataCaptureContext.initialize(licenseKey:) + DataCaptureContext.shared.",
+      "files": [
+        "evals/fixtures/V7IdCaptureViewController.swift"
+      ],
+      "assertions": [
+        {
+          "text": "Replaces settings.scannerType = FullDocumentScanner() with settings.scanner = IdCaptureScanner(physicalDocument: FullDocumentScanner())"
+        },
+        {
+          "text": "Does NOT use settings.scannerType"
+        }
+      ]
+    }
+  ]
+}

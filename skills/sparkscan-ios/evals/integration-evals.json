@@ -254,6 +254,59 @@
         {"text": "resumeCapturingDelay is configured on error feedback"},
         {"text": "Existing listener conformance is preserved"}
       ]
+    },
+    {
+      "id": 14,
+      "prompt": "I want to add SparkScan to my app so I can scan EAN-13 barcodes. Here's my project — it's a single-screen SwiftUI app.",
+      "expected_output": "The prompt does not name a target view, but the project has only one screen (ContentView). The skill integrates SparkScan into that existing ContentView — adding scanning to that screen (e.g. via a .withSparkScan modifier on its existing body) — instead of creating a new, separate SwiftUI scanning screen. The existing ContentView content is preserved.",
+      "files": [
+        "fixtures/ContentView.swift"
+      ],
+      "assertions": [
+        {"text": "SparkScan is added to the existing ContentView so scanning appears on that existing screen (e.g. a .withSparkScan modifier, or equivalent hosting, is applied to ContentView's body)"},
+        {"text": "No new standalone SwiftUI screen is introduced as a dedicated scanner page the user navigates to (a UIViewController host applied to the existing view via a modifier is acceptable; a separate navigable scanning View is not)"},
+        {"text": "The existing ContentView content (the NavigationView/List showing items) is preserved"},
+        {"text": "DataCaptureContext.initialize( is present (v7 API, not the deprecated constructor)"},
+        {"text": "SparkScan(settings: is present"},
+        {"text": ".ean13UPCA symbology is enabled"},
+        {"text": "No symbologies other than ean13UPCA are enabled"},
+        {"text": "prepareScanning() and stopScanning() lifecycle methods are wired up"}
+      ]
+    },
+    {
+      "id": 15,
+      "prompt": "Add SparkScan barcode scanning to my app. I need to scan Code 128 barcodes.",
+      "expected_output": "The prompt does not name a target view, but the project contains a single view controller (ProductListViewController). The skill integrates SparkScan into that existing view controller, preserving all existing code, rather than creating a new view controller for scanning.",
+      "files": [
+        "fixtures/ProductListViewController.swift"
+      ],
+      "assertions": [
+        {"text": "SparkScan integration is added to the existing ProductListViewController class"},
+        {"text": "No new UIViewController subclass is created to act as a separate scanning screen"},
+        {"text": "DataCaptureContext.initialize( is present (v7 API, not the deprecated constructor)"},
+        {"text": "SparkScan(settings: is present"},
+        {"text": ".code128 symbology is enabled"},
+        {"text": "No symbologies other than code128 are enabled"},
+        {"text": "SparkScanView( is present"},
+        {"text": "tableView IBOutlet is preserved"},
+        {"text": "scannedProducts array is preserved"},
+        {"text": "UITableViewDataSource conformance is preserved"}
+      ]
+    },
+    {
+      "id": 16,
+      "prompt": "Add SparkScan barcode scanning to my app. Here are my screens: HomeViewController.swift and SettingsViewController.swift.",
+      "expected_output": "Several candidate views exist, none is named as the integration target, and neither is obviously the scanning screen. The skill asks the user which existing view to add SparkScan to, and does not write integration code or create a new view until the user answers.",
+      "files": [
+        "fixtures/HomeViewController.swift",
+        "fixtures/SettingsViewController.swift"
+      ],
+      "assertions": [
+        {"text": "The response asks the user which existing view/view controller SparkScan should be integrated into"},
+        {"text": "No SparkScan integration code is written into any file yet — the skill waits for the user's answer"},
+        {"text": "No new view controller is created as a separate scanning screen"},
+        {"text": "The response does not silently pick one of HomeViewController or SettingsViewController without asking"}
+      ]
     }
   ]
 }

@@ -165,6 +165,7 @@ Always include both the docs.scandit.com link and the platform-specific sample-a
 | MatrixScan Count | .NET for Android | `matrixscan-count-net-android` | "Ask me to integrate MatrixScan Count into your .NET Android app" |
 | MatrixScan Count | .NET for iOS | `matrixscan-count-net-ios` | "Ask me to integrate MatrixScan Count into your .NET iOS app" |
 | MatrixScan Count | .NET MAUI | `matrixscan-count-maui` | "Ask me to integrate MatrixScan Count into your .NET MAUI app" |
+| MatrixScan Pick | iOS | `matrixscan-pick-ios` | "Ask me to integrate MatrixScan Pick into your iOS app" |
 
 **MatrixScan AR on iOS has two specialized sibling skills**: `matrixscan-ar-highlight-ios` (highlight styling and interaction) and `matrixscan-ar-annotation-ios` (annotation content, appearance, and interaction). Always hand off to `matrixscan-ar-ios` as the entry point — it routes highlight- and annotation-specific work to the siblings itself. Only name a sibling directly when the user's request is *exclusively* about highlights or annotations on an existing MatrixScan AR iOS integration.
 
