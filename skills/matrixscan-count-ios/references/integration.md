@@ -196,7 +196,17 @@ For the exact `Symbology` case to pass (e.g. QR is `.qr`, not `.qrCode`), consul
 [Symbology API reference](https://docs.scandit.com/data-capture-sdk/ios/barcode-capture/api/symbology.html) —
 don't guess the case name. Per-symbology tuning (active symbol counts, color-inverted decoding,
 checksums, extensions) is available via `settings.settings(for:)`; set it on `BarcodeCountSettings`
-before constructing the mode.
+before constructing the mode. For example, to restrict a variable-length symbology to a length range:
+
+```swift
+settings.settings(for: .code128).activeSymbolCounts = Set(8...20)
+```
+
+`activeSymbolCounts` is **`Set<Int>` in Swift** — the underlying ObjC type is `NSSet<NSNumber*>` but it
+is `NS_REFINED_FOR_SWIFT`, so assign a `Set<Int>` (e.g. `Set(8...20)`), **not** a `Set<NSNumber>`.
+Other `SymbologySettings` members: `isColorInvertedEnabled: Bool`, `checksums: Checksum` (an
+`OptionSet` — assign with array-literal syntax, e.g. `[.mod10]`), and `enabledExtensions` (mutate via
+`set(extension:enabled:)`).
 
 If you're sure the scene contains only unique barcodes, set
 `settings.expectsOnlyUniqueBarcodes = true` to improve performance.
@@ -352,8 +362,12 @@ API reference for exact signatures before writing code.
   (`barcodeCountView.delegate`).
 - **Status mode** (`setStatusProvider(_:)`) and the **not-in-list action**
   (`barcodeNotInListActionSettings`) are advanced customizations.
-- **Feedback (sound / haptic)**: configured through `BarcodeCount.feedback` (a `BarcodeCountFeedback`);
-  assign a customized instance to change or silence it.
+- **Feedback (sound / haptic)**: configured through `BarcodeCount.feedback` (a `BarcodeCountFeedback`),
+  whose `success` / `failure` are `Feedback` objects. The default (`BarcodeCountFeedback.defaultFeedback`)
+  beeps and vibrates; the plain initializer `BarcodeCountFeedback()` is **silent** (its channels default
+  to an empty `Feedback()`), so to suppress the beep and vibration assign `barcodeCount.feedback =
+  BarcodeCountFeedback()`. Note: BarcodeCount has **no** `isSoundEnabled` / `isHapticsEnabled` boolean
+  (that is the MatrixScan Pick API) — feedback is always configured via the `BarcodeCountFeedback` object.
 
 ## SwiftUI
 
