@@ -430,6 +430,125 @@ this.labelCapture.Feedback = feedback;
 
 > `LabelCaptureFeedback.Default` is a **static property**, and `LabelCaptureFeedback` exposes only a `Success` slot (there is no `Failure`). Audio plays only if the device is not muted.
 
+## Step 9 — Customize the basic overlay (optional)
+
+The basic overlay highlights detected labels and fields with a `Brush` (fill + stroke). You can change the highlight either **globally** (one brush for all fields/labels) or **per field/label** through a listener.
+
+Globally — set the brush properties on the overlay instance:
+
+```csharp
+using Scandit.DataCapture.Core.UI.Style; // Brush
+
+// All three are Brush? (get/set); the static Default*Brush values provide the SDK defaults.
+this.overlay.CapturedFieldBrush  = new Brush(fillColor, strokeColor, strokeWidth: 2f); // matched this frame
+this.overlay.PredictedFieldBrush = LabelCaptureBasicOverlay.DefaultPredictedFieldBrush; // predicted / in-progress
+this.overlay.LabelBrush          = Brush.TransparentBrush;                              // hide the whole-label box
+```
+
+> `CapturedFieldBrush` is the brush for a field matched in the current frame; `PredictedFieldBrush` is the brush for a field the SDK has predicted but not yet confirmed. `LabelBrush` is the box around the whole label. Use `Brush.TransparentBrush` to hide a box entirely.
+
+Per field / per label — implement `ILabelCaptureBasicOverlayListener` and return a `Brush?` (return `null` to fall back to the default). `BrushForField` is called once per field, `BrushForLabel` once per label; `OnLabelTapped` fires on a user tap.
+
+```csharp
+using Android.Content;
+using Scandit.DataCapture.Core.UI.Style;
+using Scandit.DataCapture.Label.Data;
+using Scandit.DataCapture.Label.UI.Overlay;
+
+public sealed class HighlightListener : Java.Lang.Object, ILabelCaptureBasicOverlayListener
+{
+    private readonly Brush expiryBrush;
+
+    public HighlightListener(Brush expiryBrush) => this.expiryBrush = expiryBrush;
+
+    // Per-field brush. Match by the name passed to .Build("...").
+    public Brush? BrushForField(LabelCaptureBasicOverlay overlay, LabelField field, CapturedLabel label) =>
+        field.Name == "Expiry Date" ? this.expiryBrush : null; // null => default brush
+
+    // Per-label brush; return null to keep the default whole-label box (or Brush.TransparentBrush to hide it).
+    public Brush? BrushForLabel(LabelCaptureBasicOverlay overlay, CapturedLabel label) => null;
+
+    public void OnLabelTapped(LabelCaptureBasicOverlay overlay, CapturedLabel label)
+    {
+        // React to the user tapping a highlighted label.
+    }
+}
+
+// Wire it up:
+this.overlay.Listener = new HighlightListener(myExpiryBrush);
+```
+
+> `Brush` lives in `Scandit.DataCapture.Core.UI.Style`. Construct it with `new Brush(Color fillColor, Color strokeColor, float strokeWidth)`. On .NET, `Brush.Transparent` is exposed as the **property** `Brush.TransparentBrush`, not a method.
+
+## Step 10 — Advanced overlay for custom Android views (optional)
+
+For Augmented-Reality use cases — drawing your own Android `View` (e.g. a warning badge) anchored to a captured label or field — use `LabelCaptureAdvancedOverlay` instead of (or alongside) the basic overlay. You implement `ILabelCaptureAdvancedOverlayListener`; the overlay calls you back to supply a `View?` plus an `Anchor` and `PointWithUnit` offset for each captured label and field.
+
+```csharp
+using Android.Views;
+using Scandit.DataCapture.Core.Common.Geometry; // Anchor, PointWithUnit, MeasureUnit
+using Scandit.DataCapture.Label.Data;
+using Scandit.DataCapture.Label.UI.Overlay;
+
+var advancedOverlay = LabelCaptureAdvancedOverlay.Create(this.labelCapture);
+this.dataCaptureView.AddOverlay(advancedOverlay);
+advancedOverlay.Listener = new ExpiryWarningOverlayListener(this);
+
+public sealed class ExpiryWarningOverlayListener : Java.Lang.Object, ILabelCaptureAdvancedOverlayListener
+{
+    private readonly Context context;
+    public ExpiryWarningOverlayListener(Context context) => this.context = context;
+
+    // Whole-label view (return null to add views only to specific fields).
+    public View? ViewForCapturedLabel(LabelCaptureAdvancedOverlay overlay, CapturedLabel capturedLabel) => null;
+
+    public Anchor AnchorForCapturedLabel(LabelCaptureAdvancedOverlay overlay, CapturedLabel capturedLabel) =>
+        Anchor.Center;
+
+    public PointWithUnit OffsetForCapturedLabel(
+        LabelCaptureAdvancedOverlay overlay, CapturedLabel capturedLabel, View view) =>
+        new PointWithUnit(0f, 0f, MeasureUnit.Pixel);
+
+    // Per-field view — return an Android View to anchor over the field, or null for none.
+    public View? ViewForCapturedLabelField(LabelCaptureAdvancedOverlay overlay, LabelField labelField)
+    {
+        if (labelField.Name == "Expiry Date" && labelField.Type == LabelFieldType.Text)
+        {
+            var badge = new TextView(this.context) { Text = "Expires soon!" };
+            return badge;
+        }
+        return null;
+    }
+
+    public Anchor AnchorForCapturedLabelField(LabelCaptureAdvancedOverlay overlay, LabelField labelField) =>
+        Anchor.BottomCenter;
+
+    public PointWithUnit OffsetForCapturedLabelField(
+        LabelCaptureAdvancedOverlay overlay, LabelField labelField, View view) =>
+        new PointWithUnit(0f, 22f, MeasureUnit.Dip);
+}
+```
+
+> The advanced overlay is a separate `DataCaptureOverlay` from the basic one — you can add both to the same `DataCaptureView`. Use the basic overlay for highlight boxes (Step 9) and the advanced overlay for arbitrary AR content.
+
+## Step 11 — Adaptive Recognition / Cloud Fallback (Beta, optional)
+
+> **Beta.** The Adaptive Recognition Engine (ARE) is in beta and may change. It requires a license key with the ARE feature flag — contact `support@scandit.com` to enable it on a production subscription; trial keys are available for evaluation.
+
+ARE is a cloud-based OCR fallback: when the on-device model fails to capture a field, the SDK escalates the frame to a larger cloud model so the user doesn't have to type the value by hand. It only kicks in through the **Validation Flow** (see `references/validation-flow.md`). Enable it with a single line on the `LabelDefinition` — set `AdaptiveRecognitionMode` to `AdaptiveRecognitionMode.Auto`:
+
+```csharp
+using Scandit.DataCapture.Label.Capture;
+
+LabelDefinition labelDefinition = LabelDefinition.Create(LabelName, fields);
+labelDefinition.AdaptiveRecognitionMode = AdaptiveRecognitionMode.Auto; // Beta: enables the cloud fallback
+
+LabelCaptureSettings settings =
+    LabelCaptureSettings.Create(new List<LabelDefinition> { labelDefinition });
+```
+
+> `AdaptiveRecognitionMode.Off` (the default) keeps everything on-device. Cloud fallback only takes effect when the label is scanned through `LabelCaptureValidationFlowOverlay`.
+
 ## Setup checklist
 
 After writing the integration code, show this checklist:

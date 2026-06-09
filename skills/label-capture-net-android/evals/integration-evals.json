@@ -69,6 +69,106 @@
         {"text": "It does NOT write Activity-based non-MAUI integration code (no [Activity], DataCaptureView.Create + AddView, AppCompatActivity) into the MAUI project"},
         {"text": "It points the user toward the MAUI integration path (e.g. a MAUI-specific skill / hosting the view as a XAML element)"}
       ]
+    },
+    {
+      "id": 4,
+      "prompt": "I already have Smart Label Capture working in my .NET Android app (see IntegratedActivity.cs) using the basic overlay. I want to change how detected fields are highlighted in the camera feed: draw the expiry date field box in a different color than the barcode field box, and hide the box around the whole label. Keep the rest of my integration as-is.",
+      "expected_output": "The skill customizes the LabelCaptureBasicOverlay. It either sets the overlay brush properties globally (CapturedFieldBrush / PredictedFieldBrush / LabelBrush) and/or implements an ILabelCaptureBasicOverlayListener returning a Brush? per field (BrushForField matching by the field Name) and per label (BrushForLabel), assigns it via overlay.Listener, and uses new Brush(fillColor, strokeColor, strokeWidth) from Scandit.DataCapture.Core.UI.Style. It hides the whole-label box with Brush.TransparentBrush (or by returning a transparent brush from BrushForLabel). The existing camera/context/label definition/SessionUpdated wiring is preserved.",
+      "files": [
+        "fixtures/IntegratedActivity.cs"
+      ],
+      "assertions": [
+        {"text": "The basic overlay highlight is customized either via overlay brush properties (CapturedFieldBrush / PredictedFieldBrush / LabelBrush) or via an ILabelCaptureBasicOverlayListener"},
+        {"text": "If a listener is used, it implements ILabelCaptureBasicOverlayListener with BrushForField(LabelCaptureBasicOverlay, LabelField, CapturedLabel) and BrushForLabel(LabelCaptureBasicOverlay, CapturedLabel) and is assigned via overlay.Listener"},
+        {"text": "The expiry field is distinguished from the barcode field by matching field.Name (the same names passed to .Build(\"...\"))"},
+        {"text": "A Brush is constructed with new Brush(fillColor, strokeColor, strokeWidth) (the three-argument Brush constructor)"},
+        {"text": "The whole-label box is hidden using Brush.TransparentBrush (NOT a method call Brush.Transparent())"},
+        {"text": "A per-field/per-label override returns null to fall back to the default brush rather than throwing or returning a hardcoded default"},
+        {"text": "The existing camera, LabelCapture.Create, DataCaptureView, and SessionUpdated wiring is preserved"}
+      ],
+      "tags": ["basic-overlay-customization"]
+    },
+    {
+      "id": 5,
+      "prompt": "I already have Smart Label Capture working in my .NET Android app (see IntegratedActivity.cs). On top of the normal highlighting, I want to draw my own Android view — a small 'Expires soon!' badge — anchored just below the expiry date field whenever it's detected. Keep my basic overlay for the highlight boxes.",
+      "expected_output": "The skill adds a LabelCaptureAdvancedOverlay alongside the existing LabelCaptureBasicOverlay. It creates it with LabelCaptureAdvancedOverlay.Create(labelCapture), adds it via dataCaptureView.AddOverlay(advancedOverlay), and assigns an ILabelCaptureAdvancedOverlayListener. The listener returns a custom Android View (e.g. a TextView) from ViewForCapturedLabelField for the expiry field (matched by Name/Type) and null otherwise, supplies an Anchor (e.g. Anchor.BottomCenter) and a PointWithUnit offset (with MeasureUnit) for the field, and returns null from ViewForCapturedLabel so no whole-label view is drawn. The existing basic overlay and integration are preserved.",
+      "files": [
+        "fixtures/IntegratedActivity.cs"
+      ],
+      "assertions": [
+        {"text": "A LabelCaptureAdvancedOverlay is created via LabelCaptureAdvancedOverlay.Create(labelCapture)"},
+        {"text": "The advanced overlay is added to the DataCaptureView via dataCaptureView.AddOverlay(...)"},
+        {"text": "A class implementing ILabelCaptureAdvancedOverlayListener is assigned via advancedOverlay.Listener"},
+        {"text": "ViewForCapturedLabelField returns a custom Android View (e.g. a TextView) for the expiry field, matched by field.Name (and optionally field.Type == LabelFieldType.Text), and null for other fields"},
+        {"text": "AnchorForCapturedLabelField returns an Anchor (e.g. Anchor.BottomCenter) and OffsetForCapturedLabelField returns a PointWithUnit using a MeasureUnit (e.g. MeasureUnit.Dip)"},
+        {"text": "ViewForCapturedLabel returns null so no whole-label AR view is drawn"},
+        {"text": "The existing LabelCaptureBasicOverlay is kept (both overlays attach to the same DataCaptureView)"}
+      ],
+      "tags": ["advanced-overlay"]
+    },
+    {
+      "id": 6,
+      "prompt": "I want to add Smart Label Capture to my .NET for Android app. Here's my empty Activity: EmptyActivity.cs. The labels are hard-disk-drive asset stickers: each has a serial number barcode, a part number barcode, and the device IMEI printed as a barcode. Read all three.",
+      "expected_output": "The skill builds the label definition out of the pre-built semantic barcode fields rather than raw CustomBarcode: SerialNumberBarcode.Builder().Build(name), PartNumberBarcode.Builder().Build(name), and ImeiOneBarcode.Builder().Build(name) (ImeiTwoBarcode for the second IMEI segment if relevant). These come with preset symbologies/regexes, so it does not re-specify them unless the user asks. It assembles them with LabelDefinition.Create(name, fields) and LabelCaptureSettings.Create(...), and reads each value via field.Barcode?.Data matching the declared name. The rest of the integration (context, camera, view, basic overlay, SessionUpdated) follows the standard pattern.",
+      "files": [
+        "fixtures/EmptyActivity.cs"
+      ],
+      "assertions": [
+        {"text": "A serial-number field is built with SerialNumberBarcode.Builder()...Build(\"<name>\")"},
+        {"text": "A part-number field is built with PartNumberBarcode.Builder()...Build(\"<name>\")"},
+        {"text": "An IMEI field is built with ImeiOneBarcode.Builder()...Build(\"<name>\") (ImeiTwoBarcode if a second IMEI segment is needed)"},
+        {"text": "The pre-built semantic fields are used instead of generic CustomBarcode for serial/part/IMEI (their preset symbologies and regexes are relied on, not re-specified)"},
+        {"text": "The fields are assembled via LabelDefinition.Create(name, fields) and LabelCaptureSettings.Create(new List<LabelDefinition>{...})"},
+        {"text": "Each value is read from the captured label via field.Barcode?.Data matching its declared Name"},
+        {"text": "Kotlin-style factory or fluent forms (e.g. SerialNumberBarcode.fieldWithName / addSerialNumberBarcode().buildFluent()) are NOT used"}
+      ],
+      "tags": ["barcode-semantic-fields"]
+    },
+    {
+      "id": 7,
+      "prompt": "I'm building a retail .NET Android app and I want Smart Label Capture to read standard price tags without me hand-defining every field. Here's my empty Activity: EmptyActivity.cs. Use whatever pre-built support exists for price labels.",
+      "expected_output": "The skill uses the pre-built price-capture label definition instead of manually building fields: LabelDefinition.CreatePriceCaptureDefinition(\"<name>\"), then LabelCaptureSettings.Create(new List<LabelDefinition>{ priceLabel }). It wires up the rest of the integration (context, camera, DataCaptureView, LabelCaptureBasicOverlay, SessionUpdated reading fields by name via Text / Barcode?.Data) as usual. It does NOT pair the pre-built price definition with the Validation Flow overlay (documented as incompatible).",
+      "files": [
+        "fixtures/EmptyActivity.cs"
+      ],
+      "assertions": [
+        {"text": "The pre-built price definition is created via LabelDefinition.CreatePriceCaptureDefinition(\"<name>\")"},
+        {"text": "It is passed to LabelCaptureSettings.Create(new List<LabelDefinition>{ ... }) (NOT a settings builder)"},
+        {"text": "Manual field-by-field building (CustomBarcode/TotalPriceText/UnitPriceText) is NOT used when the pre-built definition covers the need"},
+        {"text": "The pre-built price definition is NOT combined with LabelCaptureValidationFlowOverlay (it is documented as VF-incompatible); the basic overlay is used"},
+        {"text": "Kotlin-style createPriceCaptureLabel / forPriceCapture naming is NOT used (the .NET factory is CreatePriceCaptureDefinition)"}
+      ],
+      "tags": ["prebuilt-label-definitions"]
+    },
+    {
+      "id": 8,
+      "prompt": "I want Smart Label Capture in my .NET Android app to read a seven-segment display (a digital meter readout). Here's my empty Activity: EmptyActivity.cs. Is there built-in support, and how do I wire it up?",
+      "expected_output": "The skill uses the pre-built seven-segment-display label definition: LabelDefinition.CreateSevenSegmentDisplayLabelDefinition(\"<name>\"), passed to LabelCaptureSettings.Create(new List<LabelDefinition>{ ... }). It wires the rest of the integration (context, camera, DataCaptureView, basic overlay, SessionUpdated reading the field value via Text) as usual. It does not hand-build a CustomText field with a digits regex when the pre-built definition exists.",
+      "files": [
+        "fixtures/EmptyActivity.cs"
+      ],
+      "assertions": [
+        {"text": "The pre-built seven-segment definition is created via LabelDefinition.CreateSevenSegmentDisplayLabelDefinition(\"<name>\")"},
+        {"text": "It is passed to LabelCaptureSettings.Create(new List<LabelDefinition>{ ... })"},
+        {"text": "The captured value is read from the label field via field.Text (matching the declared Name)"},
+        {"text": "The standard integration scaffolding (DataCaptureContext, Camera.GetDefaultCamera, DataCaptureView.Create, LabelCaptureBasicOverlay.Create, SessionUpdated/AddListener) is present"}
+      ],
+      "tags": ["seven-segment-display"]
+    },
+    {
+      "id": 9,
+      "prompt": "My customer scans worn, faded shipping labels and the on-device OCR sometimes misses the expiry date, forcing warehouse staff to type it. I'm already using the Validation Flow in my .NET Android app. Is there a cloud option that improves recognition, and how do I turn it on?",
+      "expected_output": "The skill explains the Adaptive Recognition Engine (ARE) — a cloud-based OCR fallback that escalates frames the on-device model can't read to a larger cloud model. It flags that ARE is in Beta, requires a license key with the ARE feature flag (contact support@scandit.com for production; trial keys for evaluation), and works ONLY through the Validation Flow. It shows the enabling API: setting LabelDefinition.AdaptiveRecognitionMode = AdaptiveRecognitionMode.Auto on the existing label definition (a single added line), keeping the rest of the VF setup unchanged.",
+      "files": [],
+      "assertions": [
+        {"text": "The response defines ARE as the Adaptive Recognition Engine, a cloud-based OCR fallback that triggers when the on-device model fails"},
+        {"text": "The response states ARE is in Beta"},
+        {"text": "The response states ARE requires a license key with the ARE feature flag and that production use requires contacting support@scandit.com"},
+        {"text": "The response states ARE works only with the Validation Flow (not the basic or advanced overlay)"},
+        {"text": "The enabling API is shown as LabelDefinition.AdaptiveRecognitionMode = AdaptiveRecognitionMode.Auto on the label definition"},
+        {"text": "Kotlin/iOS-style forms (.adaptiveRecognition(.auto), setAdaptiveRecognitionMode underscore enums) are NOT used"}
+      ],
+      "tags": ["adaptive-recognition-cloud", "beta"]
     }
   ]
 }
