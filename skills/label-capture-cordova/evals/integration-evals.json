@@ -5,63 +5,445 @@
       "id": 1,
       "prompt": "Add Label Capture to my Cordova app. Here's my main script: empty-app.js. I need to scan a Code 128 barcode and an expiry date on a perishable product label.",
       "expected_output": "The skill walks the user through the Interactive Label Definition (Question A/B/C), then writes complete Label Capture integration code into empty-app.js wrapped in deviceready. A Validation Flow overlay is wired up. The setup checklist is shown.",
-      "files": ["fixtures/empty-app.js"],
+      "files": [
+        "fixtures/empty-app.js"
+      ],
       "assertions": [
-        {"text": "Interactive Label Definition asks the user which fields are on the label (Question A)"},
-        {"text": "Setup checklist mentions cordova plugin add for scandit-cordova-datacapture-core, -barcode, and -label"},
-        {"text": "Setup checklist mentions cordova prepare ios and android"},
-        {"text": "Setup checklist mentions NSCameraUsageDescription"},
-        {"text": "All Scandit code is wrapped in document.addEventListener('deviceready', ..."},
-        {"text": "Scandit.DataCaptureContext.initialize( is present"},
-        {"text": "License key placeholder (e.g. -- ENTER YOUR SCANDIT LICENSE KEY HERE -- or similar) is present"},
-        {"text": "Scandit.CustomBarcode.initWithNameAndSymbologies( is present"},
-        {"text": "Scandit.Symbology.Code128 is enabled on the CustomBarcode"},
-        {"text": "new Scandit.ExpiryDateText( is present"},
-        {"text": "new Scandit.LabelDefinition( is present"},
-        {"text": "labelDefinition.fields = [...] assignment is present"},
-        {"text": "Scandit.LabelCaptureSettings.settingsFromLabelDefinitions( is called"},
-        {"text": "new Scandit.LabelCapture(settings) is present (no LabelCaptureSettingsBuilder)"},
-        {"text": "LabelCaptureSettingsBuilder is NOT used (web-only)"},
-        {"text": "LabelDefinitionBuilder is NOT used (web-only)"},
-        {"text": "Factory function shorthand like label(...) or customBarcode(...) is NOT used (web-only)"},
-        {"text": "Scandit.DataCaptureView.forContext( is used and view.connectToElement( is called"},
-        {"text": "LabelCaptureBasicOverlay or LabelCaptureValidationFlowOverlay is added via view.addOverlay(...)"},
-        {"text": "didCaptureLabelWithFields callback is registered — NOT onValidationFlowLabelCaptured"},
-        {"text": "onValidationFlowLabelCaptured is NOT used (web-only)"},
-        {"text": "onManualInput is NOT used (web-only)"}
+        {
+          "text": "Interactive Label Definition asks the user which fields are on the label (Question A)"
+        },
+        {
+          "text": "Setup checklist mentions cordova plugin add for scandit-cordova-datacapture-core, -barcode, and -label"
+        },
+        {
+          "text": "Setup checklist mentions cordova prepare ios and android"
+        },
+        {
+          "text": "Setup checklist mentions NSCameraUsageDescription"
+        },
+        {
+          "text": "All Scandit code is wrapped in document.addEventListener('deviceready', ..."
+        },
+        {
+          "text": "Scandit.DataCaptureContext.initialize( is present"
+        },
+        {
+          "text": "License key placeholder (e.g. -- ENTER YOUR SCANDIT LICENSE KEY HERE -- or similar) is present"
+        },
+        {
+          "text": "Scandit.CustomBarcode.initWithNameAndSymbologies( is present"
+        },
+        {
+          "text": "Scandit.Symbology.Code128 is enabled on the CustomBarcode"
+        },
+        {
+          "text": "new Scandit.ExpiryDateText( is present"
+        },
+        {
+          "text": "new Scandit.LabelDefinition( is present"
+        },
+        {
+          "text": "labelDefinition.fields = [...] assignment is present"
+        },
+        {
+          "text": "Scandit.LabelCaptureSettings.settingsFromLabelDefinitions( is called"
+        },
+        {
+          "text": "new Scandit.LabelCapture(settings) is present (no LabelCaptureSettingsBuilder)"
+        },
+        {
+          "text": "LabelCaptureSettingsBuilder is NOT used (web-only)"
+        },
+        {
+          "text": "LabelDefinitionBuilder is NOT used (web-only)"
+        },
+        {
+          "text": "Factory function shorthand like label(...) or customBarcode(...) is NOT used (web-only)"
+        },
+        {
+          "text": "Scandit.DataCaptureView.forContext( is used and view.connectToElement( is called"
+        },
+        {
+          "text": "LabelCaptureBasicOverlay or LabelCaptureValidationFlowOverlay is added via view.addOverlay(...)"
+        },
+        {
+          "text": "didCaptureLabelWithFields callback is registered — NOT onValidationFlowLabelCaptured"
+        },
+        {
+          "text": "onValidationFlowLabelCaptured is NOT used (web-only)"
+        },
+        {
+          "text": "onManualInput is NOT used (web-only)"
+        }
       ]
     },
     {
       "id": 2,
       "prompt": "Add Label Capture with the Validation Flow overlay so the user can confirm OCR results and manually correct fields if needed. Use the redesigned flow. My config.xml says I'm on 8.4.0.",
       "expected_output": "The skill recognises 8.4+, uses LabelCaptureValidationFlowOverlay, and registers a listener with both didCaptureLabelWithFields and didSubmitManualInputForField. Optionally registers didUpdateValidationFlowResult since the user is on 8.4+.",
-      "files": ["fixtures/empty-app.js", "fixtures/config_8.4.xml"],
+      "files": [
+        "fixtures/empty-app.js",
+        "fixtures/config_8.4.xml"
+      ],
       "assertions": [
-        {"text": "Scandit.LabelCaptureValidationFlowOverlay is constructed and added via view.addOverlay(...)"},
-        {"text": "didCaptureLabelWithFields callback is registered on the listener"},
-        {"text": "didSubmitManualInputForField callback is registered on the listener (v8.2+)"},
-        {"text": "didUpdateValidationFlowResult is either registered or explicitly noted as optional and 8.4+"},
-        {"text": "onValidationFlowLabelCaptured is NOT used (web-only)"},
-        {"text": "onManualInput is NOT used (web-only)"},
-        {"text": "deviceready event is used"},
-        {"text": "License key placeholder is present"}
+        {
+          "text": "Scandit.LabelCaptureValidationFlowOverlay is constructed and added via view.addOverlay(...)"
+        },
+        {
+          "text": "didCaptureLabelWithFields callback is registered on the listener"
+        },
+        {
+          "text": "didSubmitManualInputForField callback is registered on the listener (v8.2+)"
+        },
+        {
+          "text": "didUpdateValidationFlowResult is either registered or explicitly noted as optional and 8.4+"
+        },
+        {
+          "text": "onValidationFlowLabelCaptured is NOT used (web-only)"
+        },
+        {
+          "text": "onManualInput is NOT used (web-only)"
+        },
+        {
+          "text": "deviceready event is used"
+        },
+        {
+          "text": "License key placeholder is present"
+        }
       ]
     },
     {
       "id": 3,
       "prompt": "Add Label Capture with just the basic overlay (no validation flow). My config.xml says I'm on 8.2.0. I want to scan a CustomBarcode plus a TotalPriceText field.",
       "expected_output": "The skill writes a Label Capture integration that uses LabelCaptureBasicOverlay (no Validation Flow). The mode listener handles didUpdateSession and reads captured labels from the session.",
-      "files": ["fixtures/empty-app.js", "fixtures/config_8.2.xml"],
+      "files": [
+        "fixtures/empty-app.js",
+        "fixtures/config_8.2.xml"
+      ],
       "assertions": [
-        {"text": "Scandit.LabelCaptureBasicOverlay is constructed and added via view.addOverlay(...)"},
-        {"text": "Scandit.LabelCaptureValidationFlowOverlay is NOT used"},
-        {"text": "labelCapture.addListener( is called with a listener that includes didUpdateSession"},
-        {"text": "session.capturedLabels is read inside didUpdateSession to extract labels"},
-        {"text": "Scandit.CustomBarcode.initWithNameAndSymbologies( is present"},
-        {"text": "new Scandit.TotalPriceText( is present"},
-        {"text": "new Scandit.LabelDefinition( is present and labelDefinition.fields = [...] is set"},
-        {"text": "Scandit.LabelCaptureSettings.settingsFromLabelDefinitions( is called"},
-        {"text": "Scandit.DataCaptureContext.initialize( is used"}
+        {
+          "text": "Scandit.LabelCaptureBasicOverlay is constructed and added via view.addOverlay(...)"
+        },
+        {
+          "text": "Scandit.LabelCaptureValidationFlowOverlay is NOT used"
+        },
+        {
+          "text": "labelCapture.addListener( is called with a listener that includes didUpdateSession"
+        },
+        {
+          "text": "session.capturedLabels is read inside didUpdateSession to extract labels"
+        },
+        {
+          "text": "Scandit.CustomBarcode.initWithNameAndSymbologies( is present"
+        },
+        {
+          "text": "new Scandit.TotalPriceText( is present"
+        },
+        {
+          "text": "new Scandit.LabelDefinition( is present and labelDefinition.fields = [...] is set"
+        },
+        {
+          "text": "Scandit.LabelCaptureSettings.settingsFromLabelDefinitions( is called"
+        },
+        {
+          "text": "Scandit.DataCaptureContext.initialize( is used"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "Set up the camera correctly for my Label Capture Cordova integration. I want the recommended camera configuration and to turn the camera on once everything is wired up. Write it into empty-app.js.",
+      "expected_output": "The skill configures the camera using Scandit.LabelCapture.createRecommendedCameraSettings(), gets the default camera via Scandit.Camera.default, applies the settings, sets it as the context frame source, and turns it on with switchToDesiredState(FrameSourceState.On). All inside deviceready.",
+      "files": [
+        "fixtures/empty-app.js"
+      ],
+      "assertions": [
+        {
+          "text": "Scandit.LabelCapture.createRecommendedCameraSettings() is called to obtain the recommended camera settings"
+        },
+        {
+          "text": "Scandit.Camera.default is used to obtain the default camera"
+        },
+        {
+          "text": "camera.applySettings( is called with the recommended camera settings"
+        },
+        {
+          "text": "context.setFrameSource(camera) (or equivalent setFrameSource with the camera) is called"
+        },
+        {
+          "text": "camera.switchToDesiredState(Scandit.FrameSourceState.On) is called to turn the camera on"
+        },
+        {
+          "text": "Camera setup runs inside document.addEventListener('deviceready', ...)"
+        },
+        {
+          "text": "License key placeholder (-- ENTER YOUR SCANDIT LICENSE KEY HERE -- or similar) is present"
+        }
+      ],
+      "tags": [
+        "camera-setup"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "My Label Capture Cordova app keeps the camera running in the background and drains battery. Handle the app lifecycle so the camera turns off when the app is backgrounded and resumes when it returns to the foreground. Edit empty-app.js.",
+      "expected_output": "The skill adds Cordova pause/resume listeners on document. On pause it records whether the camera was On (via getCurrentState) and switches it Off; on resume it switches it back On only if it was previously on. It does NOT dispose the singleton context.",
+      "files": [
+        "fixtures/empty-app.js"
+      ],
+      "assertions": [
+        {
+          "text": "A document.addEventListener('pause', ...) listener is registered for app backgrounding"
+        },
+        {
+          "text": "A document.addEventListener('resume', ...) listener is registered for app foregrounding"
+        },
+        {
+          "text": "camera.switchToDesiredState(Scandit.FrameSourceState.Off) is called on pause"
+        },
+        {
+          "text": "camera.switchToDesiredState(Scandit.FrameSourceState.On) is called on resume"
+        },
+        {
+          "text": "The previous camera state is checked (e.g. camera.getCurrentState() compared against Scandit.FrameSourceState.On) before resuming"
+        },
+        {
+          "text": "context.dispose() is NOT called (the singleton context lives for the whole app lifetime)"
+        }
+      ],
+      "tags": [
+        "lifecycle-handling"
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "In my Cordova Label Capture label, the barcode and expiry date are required but the total price is optional and should not block the user from finishing. Show me how to mark fields optional. Write into empty-app.js.",
+      "expected_output": "The skill defines fields and sets field.optional = false on required fields and field.optional = true on the optional total price field. It uses the property assignment form (not an isOptional setter, which does not exist on Cordova).",
+      "files": [
+        "fixtures/empty-app.js"
+      ],
+      "assertions": [
+        {
+          "text": "A required field is marked with field.optional = false"
+        },
+        {
+          "text": "The optional field (e.g. total price) is marked with .optional = true"
+        },
+        {
+          "text": "The optional value is set via the optional property assignment, not via an isOptional(...) setter method"
+        },
+        {
+          "text": "new Scandit.LabelDefinition( is present and the fields are assigned to labelDefinition.fields = [...]"
+        },
+        {
+          "text": "Scandit.LabelCaptureSettings.settingsFromLabelDefinitions( is called"
+        }
+      ],
+      "tags": [
+        "optional-fields"
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "I need to scan a smart-device label in my Cordova app: the IMEI barcode, a serial number barcode, and a part number barcode. Build the label definition. Write into empty-app.js.",
+      "expected_output": "The skill uses the pre-built semantic barcode field types ImeiOneBarcode, SerialNumberBarcode, and PartNumberBarcode (constructed via initWithNameAndSymbologies or initWithNameAndSymbology), adds them to a LabelDefinition, and builds LabelCaptureSettings.",
+      "files": [
+        "fixtures/empty-app.js"
+      ],
+      "assertions": [
+        {
+          "text": "Scandit.ImeiOneBarcode is used as a pre-built IMEI barcode field"
+        },
+        {
+          "text": "Scandit.SerialNumberBarcode is used as a pre-built serial number barcode field"
+        },
+        {
+          "text": "Scandit.PartNumberBarcode is used as a pre-built part number barcode field"
+        },
+        {
+          "text": "Each semantic barcode field is constructed with initWithNameAndSymbologies( or initWithNameAndSymbology( and a Scandit.Symbology value"
+        },
+        {
+          "text": "The fields are added to a Scandit.LabelDefinition and Scandit.LabelCaptureSettings.settingsFromLabelDefinitions( is called"
+        }
+      ],
+      "tags": [
+        "barcode-semantic-fields"
+      ]
+    },
+    {
+      "id": 8,
+      "prompt": "My Cordova app needs to scan a retail price tag, and separately a VIN on a car dashboard. Are there ready-made label definitions for these so I don't have to define fields manually? Show me how.",
+      "expected_output": "The skill uses the pre-built label definitions: Scandit.LabelDefinition.createPriceCaptureDefinition(name) for the price tag and Scandit.LabelDefinition.createVinLabelDefinition(name) for the VIN, passing each into settingsFromLabelDefinitions. It notes these pre-made labels are NOT compatible with the Validation Flow.",
+      "files": [
+        "fixtures/empty-app.js"
+      ],
+      "assertions": [
+        {
+          "text": "Scandit.LabelDefinition.createPriceCaptureDefinition( is used for the retail price tag"
+        },
+        {
+          "text": "Scandit.LabelDefinition.createVinLabelDefinition( is used for the VIN"
+        },
+        {
+          "text": "The pre-built definition is passed into Scandit.LabelCaptureSettings.settingsFromLabelDefinitions("
+        },
+        {
+          "text": "It is noted that createPriceCaptureDefinition / createVinLabelDefinition are NOT compatible with the Validation Flow (use the basic overlay path)"
+        }
+      ],
+      "tags": [
+        "prebuilt-label-definitions"
+      ]
+    },
+    {
+      "id": 9,
+      "prompt": "I'm using the LabelCaptureBasicOverlay in my Cordova app and want to color captured fields green and predicted fields amber, with a custom outline. How do I customize the overlay brushes?",
+      "expected_output": "The skill customizes the LabelCaptureBasicOverlay via brush properties and/or the basic overlay listener (brushForFieldOfLabel / brushForLabel), constructing Scandit.Brush instances with Scandit.Color. It uses iOS-style Cordova listener method names, not web names.",
+      "files": [
+        "fixtures/empty-app.js"
+      ],
+      "assertions": [
+        {
+          "text": "Scandit.LabelCaptureBasicOverlay is constructed for the label capture mode"
+        },
+        {
+          "text": "Brush customization uses new Scandit.Brush(...) with a Scandit.Color value (e.g. Scandit.Color.fromHex or Scandit.Color.fromRGBA)"
+        },
+        {
+          "text": "Brushes are applied via overlay brush properties (e.g. predictedFieldBrush / capturedFieldBrush) and/or a basic-overlay listener method brushForFieldOfLabel"
+        },
+        {
+          "text": "The overlay is added to the view via view.addOverlay("
+        }
+      ],
+      "tags": [
+        "basic-overlay-customization"
+      ]
+    },
+    {
+      "id": 10,
+      "prompt": "I want a live AR overlay in my Cordova Label Capture app — a small tag rendered next to each captured field on the camera preview. How do I do that?",
+      "expected_output": "The skill uses Scandit.LabelCaptureAdvancedOverlay with a listener implementing viewForCapturedLabelField / anchorForCapturedLabelField / offsetForCapturedLabelField (and the label-level equivalents), positioning views with Scandit.Anchor and Scandit.PointWithUnit/NumberWithUnit. Added via view.addOverlay.",
+      "files": [
+        "fixtures/empty-app.js"
+      ],
+      "assertions": [
+        {
+          "text": "Scandit.LabelCaptureAdvancedOverlay is constructed for the label capture mode"
+        },
+        {
+          "text": "The advanced overlay listener implements viewForCapturedLabelField (and/or viewForCapturedLabel) to supply custom views"
+        },
+        {
+          "text": "An anchor is provided via anchorForCapturedLabelField (or anchorForCapturedLabel) returning a Scandit.Anchor value"
+        },
+        {
+          "text": "An offset is provided via offsetForCapturedLabelField (or offsetForCapturedLabel) using Scandit.PointWithUnit and Scandit.NumberWithUnit"
+        },
+        {
+          "text": "The advanced overlay is added to the view via view.addOverlay("
+        }
+      ],
+      "tags": [
+        "advanced-overlay"
+      ]
+    },
+    {
+      "id": 11,
+      "prompt": "Can I improve Label Capture accuracy in my Cordova app by falling back to the Scandit cloud when the on-device model fails? Enable adaptive recognition on my label definition.",
+      "expected_output": "The skill enables the Adaptive Recognition Engine by setting labelDefinition.adaptiveRecognitionMode = Scandit.AdaptiveRecognitionMode.Auto. It explicitly flags that ARE is a beta API and that production use requires contacting support@scandit.com.",
+      "files": [
+        "fixtures/empty-app.js"
+      ],
+      "assertions": [
+        {
+          "text": "labelDefinition.adaptiveRecognitionMode is set to Scandit.AdaptiveRecognitionMode.Auto"
+        },
+        {
+          "text": "The Adaptive Recognition Engine is explicitly flagged as a beta API that may change in future SDK versions"
+        },
+        {
+          "text": "It is stated that enabling ARE for production requires contacting support@scandit.com"
+        },
+        {
+          "text": "Scandit.LabelCaptureSettings.settingsFromLabelDefinitions( is still used to build settings from the label definition"
+        }
+      ],
+      "tags": [
+        "adaptive-recognition-cloud"
+      ]
+    },
+    {
+      "id": 12,
+      "prompt": "I want to scan full receipts in my Cordova app and get back the store name, line items, and total. How do I set up receipt scanning with Label Capture?",
+      "expected_output": "The skill uses the receipt-scanning path: Scandit.LabelCaptureAdaptiveRecognitionOverlay with a listener implementing didRecognize(result) and didFail(), and Scandit.LabelCaptureAdaptiveRecognitionSettings with Scandit.AdaptiveRecognitionResultType.Receipt. It flags receipt scanning / ARE as beta requiring support@scandit.com.",
+      "files": [
+        "fixtures/empty-app.js"
+      ],
+      "assertions": [
+        {
+          "text": "Scandit.LabelCaptureAdaptiveRecognitionOverlay is used for receipt scanning"
+        },
+        {
+          "text": "Scandit.AdaptiveRecognitionResultType.Receipt is used (via LabelCaptureAdaptiveRecognitionSettings)"
+        },
+        {
+          "text": "The overlay listener implements didRecognize(result) to receive the receipt result (NOT a web-style onRecognized name)"
+        },
+        {
+          "text": "A didFail() callback is also provided on the listener"
+        },
+        {
+          "text": "Receipt Scanning / the Adaptive Recognition Engine is flagged as beta and requiring support@scandit.com to enable"
+        }
+      ],
+      "tags": [
+        "receipt-scanning"
+      ]
+    },
+    {
+      "id": 13,
+      "prompt": "My Cordova app needs to read the digits off a seven-segment digital display (a weighing scale readout). Is there a ready-made label for that?",
+      "expected_output": "The skill uses Scandit.LabelDefinition.createSevenSegmentDisplayLabelDefinition(name) and passes it into settingsFromLabelDefinitions to build the settings.",
+      "files": [
+        "fixtures/empty-app.js"
+      ],
+      "assertions": [
+        {
+          "text": "Scandit.LabelDefinition.createSevenSegmentDisplayLabelDefinition( is used for the seven-segment display"
+        },
+        {
+          "text": "The pre-built definition is passed into Scandit.LabelCaptureSettings.settingsFromLabelDefinitions("
+        }
+      ],
+      "tags": [
+        "seven-segment-display"
+      ]
+    },
+    {
+      "id": 14,
+      "prompt": "On Cordova my Smart Label Capture preview is black on Android, and on iOS where the preview works the expiry-date and total-price fields are never populated even though the barcode reads fine. How do I fix this?",
+      "expected_output": "The skill diagnoses the black preview as the camera permission not being granted (Android runtime CAMERA / iOS NSCameraUsageDescription) or the camera never being switched on, and the empty text fields as the ScanditLabelCaptureText / ScanditPriceLabel modules not being bundled (scandit-cordova-datacapture-label missing or cordova prepare not re-run). It does not invent new APIs.",
+      "files": [
+        "fixtures/empty-app.js"
+      ],
+      "assertions": [
+        {
+          "text": "The black/blank preview is attributed to the camera permission not being granted (Android runtime CAMERA permission, e.g. via cordova.plugins.diagnostic / iOS NSCameraUsageDescription in Info.plist or config.xml) and/or camera.switchToDesiredState(Scandit.FrameSourceState.On) never being called"
+        },
+        {
+          "text": "The empty expiry-date and total-price text fields are attributed to the missing on-device text models — the ScanditLabelCaptureText module (arbitrary text) and ScanditPriceLabel module (price fields), which ship in scandit-cordova-datacapture-label; the fix is to ensure that plugin is installed and cordova prepare is re-run"
+        },
+        {
+          "text": "The response notes the barcode field works without the text models because barcode-only fields do not require them"
+        },
+        {
+          "text": "The response does NOT invent new diagnostic APIs or configuration flags that are not in the Scandit references"
+        }
+      ],
+      "tags": [
+        "error-troubleshooting"
       ]
     }
   ]

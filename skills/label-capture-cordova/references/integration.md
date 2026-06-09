@@ -338,6 +338,20 @@ function continueScan() {
 - **DOM-anchored view.** `view.connectToElement(document.getElementById(...))`. Make sure the host `<div>` is sized.
 - **License key in source is a placeholder** (`'-- ENTER YOUR SCANDIT LICENSE KEY HERE --'`). Replace it before shipping.
 
+## Troubleshooting common failures
+
+When the user reports a problem, map the symptom to its cause before suggesting code changes. The most common failures are environmental, not API misuse.
+
+- **Black / blank camera preview, no error** — almost always the camera permission was never granted, or the camera was never switched on. Check that (1) on iOS `NSCameraUsageDescription` is in `Info.plist` (or declared via `<config-file>` in `config.xml`) and the OS prompt was accepted; on Android the runtime `CAMERA` permission is requested and granted (e.g. via `cordova.plugins.diagnostic`) **before** the camera starts; (2) `camera.switchToDesiredState(Scandit.FrameSourceState.On)` runs after permission is granted; and (3) `context.setFrameSource(camera)` was called and `view.connectToElement(...)` points at a sized host `<div>`. All Scandit code must run inside the `deviceready` handler.
+
+- **Camera preview shows but nothing is ever captured** — verify the `Scandit.LabelCaptureBasicOverlay` (or `Scandit.LabelCaptureValidationFlowOverlay`) was added with `await view.addOverlay(...)`, that `labelCapture.isEnabled` is `true`, and that the mode was not left disabled after a previous capture (re-enable with `labelCapture.isEnabled = true`). Confirm the `LabelDefinition.fields` array is not empty and that `Scandit.CustomBarcode` enables the symbologies actually printed on the label.
+
+- **Text / OCR fields never match (`ExpiryDateText`, `TotalPriceText`, `CustomText`, etc.)** — the on-device text models must be bundled. The `ScanditLabelCaptureText` module is required for arbitrary text fields and `ScanditPriceLabel` for price fields (`UnitPriceText` / `TotalPriceText`); both ship inside `scandit-cordova-datacapture-label`, so confirm that plugin is installed and `cordova prepare` was re-run. Barcode-only labels do not need them.
+
+- **A field never matches even though the text is on the label** — the field's `valueRegexes` or `anchorRegexes` is too strict. Prefer the preset field (its regexes are tuned) over a hand-written `Scandit.CustomText`. If the label has no keyword near the value, clear the anchors with `field.anchorRegexes = []` and rely on the value regex alone. Keep regexes simple — lookahead/lookbehind are not supported and silently fail to match.
+
+- **Handwritten or non-Latin text is never read** — expected. Label Capture reads **printed text** in the supported Latin character set only (see Recognition Limits above). Use the Validation Flow's manual-entry sheet so the user can type the value when it cannot be scanned.
+
 ## Where to Go Next
 
 - [Label Definitions](https://docs.scandit.com/sdks/cordova/label-capture/label-definitions/)
