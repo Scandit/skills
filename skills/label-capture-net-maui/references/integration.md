@@ -461,6 +461,23 @@ this.labelCapture.AddListener(new LabelCaptureListener());
 
 A convenient pattern for "barcode value, falling back to text" (also used by the official sample) is `field.Barcode?.Data ?? field.Text`. This matters for the validation flow, where a manually-typed barcode value comes back as `Text`.
 
+When you don't want to hard-code field names — e.g. a prebuilt definition (`CreateVinLabelDefinition`, `CreatePriceCaptureDefinition`) whose internal field names you shouldn't guess — iterate `label.Fields` and switch on `field.Type` to pick the right accessor:
+
+```csharp
+foreach (LabelField field in label.Fields)
+{
+    string? value = field.Type switch
+    {
+        LabelFieldType.Barcode => field.Barcode?.Data,
+        LabelFieldType.Text => field.Text,
+        _ => null,
+    };
+    // field.Name identifies which field this is; value holds its captured content.
+}
+```
+
+> Read captured values by the field's **`Type`** (or by the `Name` you passed to `.Build("...")`), never by guessing internal field-name strings.
+
 Other `LabelField` members: `Name`, `Type` (`LabelFieldType.Barcode`/`Text`/`Unknown`), `State` (`LabelFieldState.Captured`/`Predicted`/`Unknown`), `Required` (`bool`), `PredictedLocation` (`Quadrilateral`). (`ValueType` is iOS-only — avoid in portable MAUI code.) `CapturedLabel` exposes `Fields`, `Name`, `Complete` (all required fields captured), and `TrackingId`. `LabelCaptureSession` exposes `CapturedLabels` (`IList<CapturedLabel>`), `FrameSequenceId` (`long`), `LastProcessedFrameId` (`int`).
 
 ## Step 6 — Camera lifecycle and permission
@@ -609,7 +626,7 @@ public partial class MyAdvancedOverlayListener : ILabelCaptureAdvancedOverlayLis
 }
 ```
 
-The listener callbacks (`ViewForCapturedLabel`, `ViewForCapturedLabelField`, `AnchorForCapturedLabel(Field)`, `OffsetForCapturedLabel(Field)`) are documented on the Advanced Configurations page. Fetch it before writing the per-platform view code — don't guess the native view construction.
+The listener callbacks (`ViewForCapturedLabel`, `ViewForCapturedLabelField`, `AnchorForCapturedLabel(Field)`, `OffsetForCapturedLabel(Field)`) are documented on the Advanced Configurations page. **Do not claim these callbacks return a plain cross-platform MAUI `View`** — they return native `Android.Views.View` / `UIKit.UIView`, so the native view construction must be written per platform. Point the user to the [Advanced Configurations](https://docs.scandit.com/sdks/net/android/label-capture/advanced/) ([iOS](https://docs.scandit.com/sdks/net/ios/label-capture/advanced/)) reference and fetch it before writing the per-platform view code — don't guess the native view construction.
 
 ## Adaptive Recognition — cloud fallback (Beta)
 

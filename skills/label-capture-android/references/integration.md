@@ -93,28 +93,24 @@ If no whole-label factory fits, build the label from fields — preferring pre-b
 
 Before writing any code, walk the user through their label. Ask one question at a time.
 
-**Question A — What's on your label?** Present this checklist and ask the user to pick everything that applies. As they answer, map each item to its **pre-built** builder first.
+**Question A — What's on your label?** Present this checklist and ask the user to pick everything that applies. As they answer, map each item to its **pre-built** builder first. The full set of supported field builders on `addLabel()`:
 
-*Barcode fields:*
+| Field type | Builder method | Notes |
+|---|---|---|
+| Custom barcode | `addCustomBarcode()` | Any barcode, user chooses symbologies. Use only when no pre-built barcode field fits. |
+| Serial number | `addSerialNumberBarcode()` | Pre-built (preset symbologies + regex). |
+| Part number | `addPartNumberBarcode()` | Pre-built. |
+| IMEI 1 | `addImeiOneBarcode()` | Pre-built (typically smartphone / electronics boxes). |
+| IMEI 2 | `addImeiTwoBarcode()` | Pre-built. |
+| Expiry date | `addExpiryDateText()` | Pre-built (with optional date format). |
+| Packing / production date | `addPackingDateText()` | Pre-built. |
+| Generic date | `addDateText()` | Pre-built (a date but not specifically expiry or packing). |
+| Total price | `addTotalPriceText()` | Pre-built. |
+| Unit price | `addUnitPriceText()` | Pre-built. |
+| Weight | `addWeightText()` | Pre-built. |
+| Custom text | `addCustomText()` | Last resort — any text; user provides a value regex. Use only when no preset recogniser matches. |
 
-- `addCustomBarcode()` — any barcode, user chooses symbologies (use only when none of the below fit)
-- `addSerialNumberBarcode()` — serial number (preset symbologies + regex)
-- `addPartNumberBarcode()` — part number
-- `addImeiOneBarcode()` — IMEI 1 (typically smartphone / electronics boxes)
-- `addImeiTwoBarcode()` — IMEI 2
-
-*Text fields (preset recognisers):*
-
-- `addExpiryDateText()` — expiry date (with optional date format)
-- `addPackingDateText()` — packing / production date
-- `addDateText()` — generic date (when it's a date but not specifically expiry or packing)
-- `addTotalPriceText()` — total price
-- `addUnitPriceText()` — unit price
-- `addWeightText()` — weight
-
-*Text fields (custom — last resort):*
-
-- `addCustomText()` — any text; user provides a value regex. Use only when no preset recogniser matches the field.
+Barcode fields are the first five rows; text fields are the rest. Prefer a pre-built builder over `addCustomBarcode()` / `addCustomText()` whenever one matches the field.
 
 **Question B — For each selected field:**
 - Is it **required** or **optional**? (required = label is not considered captured until this field matches; optional = captured when/if it matches). Call `.isOptional(true)` for optional fields; required is the default.

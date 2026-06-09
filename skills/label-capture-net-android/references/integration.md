@@ -535,7 +535,7 @@ public sealed class ExpiryWarningOverlayListener : Java.Lang.Object, ILabelCaptu
 
 > **Beta.** The Adaptive Recognition Engine (ARE) is in beta and may change. It requires a license key with the ARE feature flag — contact `support@scandit.com` to enable it on a production subscription; trial keys are available for evaluation.
 
-ARE is a cloud-based OCR fallback: when the on-device model fails to capture a field, the SDK escalates the frame to a larger cloud model so the user doesn't have to type the value by hand. It only kicks in through the **Validation Flow** (see `references/validation-flow.md`). Enable it with a single line on the `LabelDefinition` — set `AdaptiveRecognitionMode` to `AdaptiveRecognitionMode.Auto`:
+ARE is a cloud-based OCR fallback: when the on-device model fails to capture a field, the SDK escalates the frame to a larger cloud model so the user doesn't have to type the value by hand. **ARE works ONLY with the Validation Flow overlay (`LabelCaptureValidationFlowOverlay`) — not the basic overlay (`LabelCaptureBasicOverlay`, Step 5) and not the advanced overlay (`LabelCaptureAdvancedOverlay`, Step 10).** Setting `AdaptiveRecognitionMode.Auto` while scanning through the basic or advanced overlay has no effect; the cloud fallback only triggers inside the Validation Flow (see `references/validation-flow.md`). Enable it with a single line on the `LabelDefinition` — set `AdaptiveRecognitionMode` to `AdaptiveRecognitionMode.Auto`:
 
 ```csharp
 using Scandit.DataCapture.Label.Capture;
@@ -547,7 +547,7 @@ LabelCaptureSettings settings =
     LabelCaptureSettings.Create(new List<LabelDefinition> { labelDefinition });
 ```
 
-> `AdaptiveRecognitionMode.Off` (the default) keeps everything on-device. Cloud fallback only takes effect when the label is scanned through `LabelCaptureValidationFlowOverlay`.
+> `AdaptiveRecognitionMode.Off` (the default) keeps everything on-device. Cloud fallback only takes effect when the label is scanned through `LabelCaptureValidationFlowOverlay` — it is **not** available with the basic or advanced overlay.
 
 ## Setup checklist
 

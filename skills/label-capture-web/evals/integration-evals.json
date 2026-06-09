@@ -4,7 +4,7 @@
     {
       "id": 1,
       "prompt": "I want to add Scandit Label Capture to my web app. Here's my main file: empty-app.ts. The label is a perishable-product sticker with an EAN-13 barcode and an expiry date (required) and a total price (optional).",
-      "expected_output": "The skill reads integration.md, walks through the interactive label-definition questions, writes complete Label Capture integration code into empty-app.ts, and shows the setup checklist.",
+      "expected_output": "The user has answered Questions A and B (fields + required/optional + symbology) but is silent on the overlay choice. Per the skill's recommended-default policy, the agent writes a Validation Flow integration into empty-app.ts, shows the setup checklist, and ends with a brief offer to swap to the Basic Overlay if the user wants no confirmation step.",
       "files": [
         "eval-fixtures/empty-app.ts"
       ],
@@ -21,15 +21,18 @@
         { "text": "new ExpiryDateTextBuilder() is used with .build(\"Expiry Date\") or similar field name" },
         { "text": "new TotalPriceTextBuilder() is used with .build(\"Total Price\") or similar field name, and is marked as optional (isOptional(true))" },
         { "text": "LabelCapture.forContext( is present" },
-        { "text": "LabelCaptureBasicOverlay.withLabelCaptureForView( is present" },
-        { "text": "addListener with didUpdateSession callback is present" },
-        { "text": "session.capturedLabels is accessed inside didUpdateSession" },
+        { "text": "LabelCaptureValidationFlowOverlay.withLabelCaptureForView( is present (the Validation Flow overlay is used by default per the skill's recommended-default policy)" },
+        { "text": "onValidationFlowLabelCaptured is present" },
+        { "text": "The captured label fields are read from the Validation Flow callback (semantic)" },
         { "text": "Camera.pickBestGuess() is called" },
         { "text": "camera.applySettings(LabelCapture.createRecommendedCameraSettings()) is called" },
         { "text": "camera.switchToDesiredState(FrameSourceState.On) is called" },
-        { "text": "No renamed-away regex properties: pattern, patterns, dataTypePattern, dataTypePatterns are absent from the generated code" },
+        { "text": "setPattern is NOT present" },
+        { "text": "setPatterns is NOT present" },
+        { "text": "setDataTypePattern is NOT present" },
+        { "text": "setDataTypePatterns is NOT present" },
         { "text": "No v8.5-only factory functions: labelCaptureSettings(, label(, customBarcode(, expiryDateText(, totalPriceText( are absent" },
-        { "text": "LabelCaptureValidationFlowOverlay is NOT used (the user did not ask for Validation Flow)" }
+        { "text": "The response offers the Basic Overlay as an alternative the user can swap in if they want fully automated scanning with no confirmation step (semantic)" }
       ]
     },
     {

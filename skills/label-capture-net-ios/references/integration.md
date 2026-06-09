@@ -418,6 +418,23 @@ this.labelCapture.AddListener(new LabelCaptureRepository());
 
 A convenient pattern for "barcode value, falling back to text" (also used by the official iOS sample) is `field.Barcode?.Data ?? field.Text`.
 
+When you don't want to hard-code field names — e.g. a prebuilt definition (`CreateVinLabelDefinition`, `CreatePriceCaptureDefinition`) whose internal field names you shouldn't guess — iterate `label.Fields` and switch on `field.Type` to pick the right accessor:
+
+```csharp
+foreach (LabelField field in label.Fields)
+{
+    string? value = field.Type switch
+    {
+        LabelFieldType.Barcode => field.Barcode?.Data,
+        LabelFieldType.Text => field.Text,
+        _ => null,
+    };
+    // field.Name identifies which field this is; value holds its captured content.
+}
+```
+
+> Read captured values by the field's **`Type`** (or by the `Name` you passed to `.Build("...")`), never by guessing internal field-name strings — `field.Text` returns the captured numeric/text value after matching the field.
+
 Other `LabelField` members: `Name`, `Type` (`LabelFieldType.Barcode`/`Text`/`Unknown`), **`ValueType` (`LabelFieldValueType.Date`/`Price`/`Weight`/`Text`/`Numeric`, iOS-only)**, `State` (`LabelFieldState.Captured`/`Predicted`/`Unknown`), `Required` (`bool`), `PredictedLocation` (`Quadrilateral`). `CapturedLabel` exposes `Fields`, `Name`, `Complete` (all required fields captured), and `TrackingId`.
 
 ### LabelCaptureSession members

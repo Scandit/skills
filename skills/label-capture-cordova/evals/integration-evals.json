@@ -10,7 +10,7 @@
       ],
       "assertions": [
         {
-          "text": "Interactive Label Definition asks the user which fields are on the label (Question A)"
+          "text": "The agent uses the fields the user already specified rather than re-asking which fields are on the label (semantic)"
         },
         {
           "text": "Setup checklist mentions cordova plugin add for scandit-cordova-datacapture-core, -barcode, and -label"

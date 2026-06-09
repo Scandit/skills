@@ -10,7 +10,7 @@
       ],
       "assertions": [
         {
-          "text": "Interactive Label Definition asks the user which fields are on the label (Question A)"
+          "text": "The agent uses the fields the user already specified (barcode + expiry date + total price) rather than re-asking which fields are on the label (semantic)"
         },
         {
           "text": "Setup checklist mentions scandit-react-native-datacapture-core, scandit-react-native-datacapture-barcode, and scandit-react-native-datacapture-label"
@@ -397,7 +397,7 @@
           "text": "The black/blank preview is attributed to the camera permission not being granted (Android runtime CAMERA via PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.CAMERA) / iOS NSCameraUsageDescription in Info.plist) and/or camera.switchToDesiredState(FrameSourceState.On) never being called"
         },
         {
-          "text": "The empty expiry-date and total-price text fields are attributed to the missing on-device text models — the ScanditLabelCaptureText module (arbitrary text) and ScanditPriceLabel module (price fields), which ship in scandit-react-native-datacapture-label; the fix is to ensure that package is installed and the iOS pods are re-installed (cd ios && pod install)"
+          "text": "The empty expiry-date and total-price text fields are attributed to the missing on-device text models — the ScanditLabelCaptureText model (arbitrary/date text) and ScanditPriceLabel model (price fields), which ship as separate optional packages (scandit-react-native-datacapture-label-text and scandit-react-native-datacapture-price-label); the fix is to install the needed package(s) and re-install the iOS pods (cd ios && pod install)"
         },
         {
           "text": "The response notes the barcode field works without the text models because barcode-only fields do not require them"

@@ -26,7 +26,10 @@
         { "text": "Camera.getDefaultCamera(LabelCapture.createRecommendedCameraSettings()) is called" },
         { "text": "camera.switchToDesiredState(FrameSourceState.ON) is called in onResume" },
         { "text": "camera.switchToDesiredState(FrameSourceState.OFF) is called in onPause" },
-        { "text": "No renamed-away regex methods: setPattern, setPatterns, setDataTypePattern, setDataTypePatterns are absent from the generated code" },
+        { "text": "setPattern is NOT present in the generated code" },
+        { "text": "setPatterns is NOT present in the generated code" },
+        { "text": "setDataTypePattern is NOT present in the generated code" },
+        { "text": "setDataTypePatterns is NOT present in the generated code" },
         { "text": "LabelCaptureValidationFlowOverlay is NOT used (the user did not ask for Validation Flow)" }
       ]
     },

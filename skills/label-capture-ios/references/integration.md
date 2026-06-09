@@ -134,6 +134,8 @@ If no whole-label factory fits, build the label from individual fields below —
 > - **Alternative — call `.anchorRegexes([])` on the data-typed text builder.** This clears the text-side anchor pattern (the language-specific keyword like `EXP`, `BBE`, …) while keeping the `valueRegex` defaults intact, so the conflict goes away. Use this only when the user explicitly wants to keep the data-typed barcode builder and the label's value format is reliable enough on its own. Tell the user it relaxes anchor matching.
 >
 > Both workarounds are surfaced in the SDK's own unit test for this constraint; the second is what the SDK team uses to assert the build now succeeds after the conflict is cleared.
+>
+> *Version note:* this exclusion is present on all currently shipped SDKs (through 8.4.x). It is lifted in 8.5.0+ (the engine now allows data-type patterns on both a barcode and a text field in the same label). Apply the workarounds for any release the user is actually on today; only skip them if the project is pinned to 8.5.0 or later.
 
 **Question B — For each selected field:**
 
@@ -142,6 +144,8 @@ If no whole-label factory fits, build the label from individual fields below —
   - **Optional** (call `.optional(true)` on the builder): the field is captured if found, but its absence does not block capture or the Validation Flow submission. The user can complete the flow without it.
 - For `CustomBarcode`: which **symbologies**? Mention to the user that enabling only the symbologies they actually need improves scanning performance and accuracy. iOS symbology enum values use camelCase: `.ean13UPCA`, `.code128`, `.gs1DatabarExpanded`, `.qr`, `.dataMatrix`, etc. — never the Android-style underscore form `.EAN13_UPCA`.
 - For `CustomText`: what **regex pattern** should the text match? See the regex notes below.
+
+> **Regex engine limits — keep patterns simple.** The SDK's value/anchor regex engine is built on the standard library `std::regex` (ECMAScript grammar), **not** PCRE/PCRE2. It supports standard character classes (`\d`, `[A-Z]`), quantifiers (`{2}`, `+`, `*`, `?`), alternation (`a|b`), and capture/non-capture groups. It does **not** support **lookbehind** (`(?<= …)` / `(?<! …)`), **named groups** (`(?<name> …)`), or **Unicode property escapes** (`\p{L}`, `\p{Nd}`) — those throw at pattern compilation and the field will silently never match. Lookahead (`(?= …)`) and backreferences (`\1`) happen to compile, but prefer to avoid them too: keep value/anchor regexes to the simple subset above. If a user pastes a complex regex from another engine (Python, PCRE, .NET), rewrite it without those constructs.
 - For `ExpiryDateText` / `PackingDateText`: does the user need a specific date format? If so, pass `.labelDateFormat(LabelDateFormat(componentFormat: .MDY, acceptPartialDates: false))` (substitute the component order and partial-date flag for the user's case). Optional — these builders ship with a sensible default.
 - For `DateText`: a `LabelDateFormat` is **required** at construction. Pass it directly to the initializer: `DateText(name: "Date", labelDateFormat: LabelDateFormat(componentFormat: .MDY, acceptPartialDates: false))`.
 
@@ -499,7 +503,7 @@ WeightText(name: "Weight")
 
 This works on every pre-built text builder (`ExpiryDateText`, `PackingDateText`, `WeightText`, `UnitPriceText`, `TotalPriceText`) and is the recommended pattern.
 
-**Keep regexes simple.** The SDK regex engine supports standard character classes (`\d`, `[A-Z]`), quantifiers (`{2}`, `+`, `*`), alternation (`a|b`), and groups (`(...)`). **Lookahead and lookbehind assertions are not supported** and will cause the pattern to fail to match. Backreferences and Unicode property escapes (`\p{...}`) are also unsupported. If a user pastes a complex regex from a different engine, rewrite it without those constructs.
+**Keep regexes simple.** The SDK regex engine is the standard library `std::regex` (ECMAScript grammar), **not** PCRE/PCRE2. It supports standard character classes (`\d`, `[A-Z]`), quantifiers (`{2}`, `+`, `*`, `?`), alternation (`a|b`), and groups (`(...)`). **Lookbehind assertions (`(?<= ...)` / `(?<! ...)`), named groups (`(?<name> ...)`), and Unicode property escapes (`\p{...}`) are not supported** — they throw at pattern compilation, so the field silently never matches. Lookahead (`(?= ...)`) and backreferences (`\1`) do compile, but prefer to avoid them — stick to the simple subset above. If a user pastes a complex regex from a different engine (Python, PCRE, .NET), rewrite it without those constructs.
 
 ## Supported characters
 
@@ -526,10 +530,30 @@ let validationFlowOverlay = LabelCaptureValidationFlowOverlay(
     labelCapture: labelCapture,
     view: captureView
 )
+
+// v8.2+: per-field placeholder hint shown in the manual-entry input.
+let validationFlowSettings = LabelCaptureValidationFlowSettings()
+validationFlowSettings.setPlaceholderText("MM/DD/YYYY", forLabelDefinition: "Expiry Date")
+validationFlowOverlay.apply(validationFlowSettings)
+
 validationFlowOverlay.delegate = self
 ```
 
-…and adopt `LabelCaptureValidationFlowDelegate` instead of `LabelCaptureListener`. **Also drop the `labelCapture.isEnabled = true/false` toggles from `viewWillAppear` / `viewWillDisappear`** — the Validation Flow overlay manages the capture lifecycle internally, and leaving the toggles in place fights the overlay. Keep the `camera?.switch(toDesiredState:)` lifecycle calls (the overlay does not control the camera). Then go to `validation-flow.md` for everything else.
+…and adopt `LabelCaptureValidationFlowDelegate` instead of `LabelCaptureListener`. The only **required** delegate method is `labelCaptureValidationFlowOverlay(_:didCaptureLabelWith:)`. On v8.1+/v8.2+ there are two **optional** methods worth surfacing to the user even if you don't implement them — show their signatures so the user can opt in:
+
+```swift
+// Optional (v8.1+) — user manually submitted/corrected a value through the VF UI
+func labelCaptureValidationFlowOverlay(_ overlay: LabelCaptureValidationFlowOverlay,
+    didSubmitManualInputFor field: LabelField,
+    replacingValue oldValue: String?, withValue newValue: String) { }
+
+// Optional (v8.2+) — progressive result update during the flow; carries FrameData?
+func labelCaptureValidationFlowOverlay(_ overlay: LabelCaptureValidationFlowOverlay,
+    didUpdateResult type: LabelResultUpdateType, asyncId: Int,
+    fields: [LabelField], frameData: FrameData?) { }
+```
+
+See `references/validation-flow.md` for full version-aware guidance. **Also drop the `labelCapture.isEnabled = true/false` toggles from `viewWillAppear` / `viewWillDisappear`** — the Validation Flow overlay manages the capture lifecycle internally, and leaving the toggles in place fights the overlay. Keep the `camera?.switch(toDesiredState:)` lifecycle calls (the overlay does not control the camera). Then go to `validation-flow.md` for everything else.
 
 ### Basic Overlay
 
@@ -621,11 +645,15 @@ extension ScanViewController: LabelCaptureListener {
         didUpdate session: LabelCaptureSession,
         frameData: FrameData
     ) {
-        guard let capturedLabel = session.capturedLabels.first else { return }
+        // `didUpdate` fires on EVERY frame (~30 fps). Guard on a non-empty
+        // capturedLabels FIRST so we never encode a JPEG on empty frames.
+        guard !session.capturedLabels.isEmpty else { return }
+        let capturedLabel = session.capturedLabels.first!
 
-        // Disable the mode first so scanning stops before we read the frame
+        // Disable the mode so scanning stops before we read the frame
         labelCapture.isEnabled = false
 
+        // Only reached after the guard above — jpegData is never called per-frame unconditionally.
         let image = frameData.imageBuffers.first?.image
         let jpeg = image?.jpegData(compressionQuality: 0.3)
 

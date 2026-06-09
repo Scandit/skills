@@ -62,6 +62,8 @@ overlay.listener = object : LabelCaptureBasicOverlayListener {
 
 ## Advanced Overlay (custom AR views)
 
+**When to use it — and the cost.** The Advanced Overlay is the most work of the three overlays: you build, position, and style your own Android `View`s rather than letting the SDK draw highlights (Basic Overlay) or a guided checklist with manual-entry fallback (Validation Flow). Reach for it **only** when you need full custom AR control that the Basic Overlay's brushes and the Validation Flow can't give you. If you just want recoloured field/label highlights, use the Basic Overlay brushes above; if you want a guided capture-and-confirm UX, use the Validation Flow (`references/validation-flow.md`) — both are far less code.
+
 For custom AR — your own Android `View`s anchored to labels and fields — use `LabelCaptureAdvancedOverlay` and implement `LabelCaptureAdvancedOverlayListener`. The listener has two families of callbacks: one set for the whole label, one set for individual fields. Return a `View?` (`null` = no AR view), an `Anchor`, and a `PointWithUnit` offset for each.
 
 ```kotlin

@@ -10,6 +10,8 @@ Label Capture (Smart Label Capture) extracts multiple fields from a single label
   - `scandit-react-native-datacapture-core`
   - `scandit-react-native-datacapture-barcode`
   - `scandit-react-native-datacapture-label`
+  - `scandit-react-native-datacapture-label-text` — **optional**, required only for arbitrary/date text fields (provides the `ScanditLabelCaptureText` model). Skip it for barcode-only labels.
+  - `scandit-react-native-datacapture-price-label` — **optional**, required only for price/weight text fields like `UnitPriceText` / `TotalPriceText` (provides the `ScanditPriceLabel` model).
 - After installing, run `npx pod-install` (or `cd ios && pod install`) for iOS. Android auto-links via Gradle — no manual step.
 - React Native `>=0.70`. The New Architecture (Fabric / TurboModules) is supported — no additional setup required beyond the standard RN template.
 - A valid Scandit license key:
@@ -171,7 +173,7 @@ label.fields = [barcode, expiry];
 | `WeightText` / `UnitPriceText` / `TotalPriceText` | `new WeightText(name)` (etc.) |
 | `CustomText` | `new CustomText(name)` then assign `field.valueRegexes = ['<pattern>']` (array form; `field.valueRegex = '<pattern>'` also works for a single pattern) |
 
-For every field you can set `field.optional = true` (default for some presets) or `field.optional = false`.
+For every field you can set `field.optional = true` or `field.optional = false`. **Required is the default** — a field is optional only when you explicitly set `field.optional = true`. Omitting `field.optional` (or setting it `false`) makes the field required: the label is not considered captured until that field matches.
 
 ## Step 3 — Build LabelCaptureSettings
 
@@ -518,7 +520,7 @@ When the user reports a problem, map the symptom to its cause before suggesting 
 
 - **Camera preview shows but nothing is ever captured** — verify the `LabelCaptureBasicOverlay` (or a Validation Flow overlay) was added imperatively in the view's `ref` callback, that `labelCapture.isEnabled` is `true`, and that the mode was not left disabled after a previous capture (re-enable with `labelCapture.isEnabled = true`). Confirm the `LabelDefinition.fields` array is not empty and that `CustomBarcode.initWithNameAndSymbologies(...)` enables the symbologies actually printed on the label.
 
-- **Text / OCR fields never match (`ExpiryDateText`, `TotalPriceText`, `CustomText`, etc.)** — the on-device text models must be bundled. The `ScanditLabelCaptureText` module is required for arbitrary text fields and `ScanditPriceLabel` for price fields (`UnitPriceText` / `TotalPriceText`); both ship inside `scandit-react-native-datacapture-label`, so confirm that package is installed and the iOS pods were re-installed (`cd ios && pod install`). Barcode-only labels do not need them.
+- **Text / OCR fields never match or come back empty (`ExpiryDateText`, `TotalPriceText`, `CustomText`, etc.)** — the on-device text models are missing. They ship as **separate optional npm packages**, not inside `scandit-react-native-datacapture-label`: the `ScanditLabelCaptureText` module (package `scandit-react-native-datacapture-label-text`) is required for arbitrary/date text fields, and the `ScanditPriceLabel` module (package `scandit-react-native-datacapture-price-label`) for price fields (`UnitPriceText` / `TotalPriceText`). Install whichever you need alongside the label package, then re-install the iOS pods (`cd ios && pod install`). Barcode-only fields work without either model.
 
 - **A field never matches even though the text is on the label** — the field's `valueRegexes` or `anchorRegexes` is too strict. Prefer the preset field (its regexes are tuned) over a hand-written `CustomText`. If the label has no keyword near the value, clear the anchors with `field.anchorRegexes = []` and rely on the value regex alone. Keep regexes simple — lookahead/lookbehind are not supported and silently fail to match.
 
