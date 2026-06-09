@@ -31,8 +31,8 @@ class _ScanScreenState extends State<ScanScreen>
   void initState() {
     super.initState();
     _context = DataCaptureContext.sharedInstance;
-    _camera = Camera.atPosition(CameraPosition.worldFacing);
-    _camera?.applySettings(LabelCapture.recommendedCameraSettings);
+    _camera = Camera.defaultCamera;
+    _camera?.applySettings(LabelCapture.createRecommendedCameraSettings());
     _context.setFrameSource(_camera);
 
     final barcode = CustomBarcodeBuilder()

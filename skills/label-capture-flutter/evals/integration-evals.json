@@ -4,64 +4,433 @@
     {
       "id": 1,
       "prompt": "Add Label Capture to my Flutter app. Here's my screen file: empty-app.dart. I need to scan a Code 128 barcode and an expiry date on a perishable product label.",
-      "expected_output": "The skill walks the user through the Interactive Label Definition (Question A/B/C), then writes complete Label Capture integration code into empty-app.dart as a StatefulWidget. A Validation Flow overlay is wired up. The setup checklist is shown.",
-      "files": ["fixtures/empty-app.dart"],
+      "expected_output": "The skill walks the user through the Interactive Label Definition (Question A/B/C), then writes complete Label Capture integration code into empty-app.dart as a StatefulWidget. A Validation Flow overlay is wired up. The camera is configured with the recommended settings and turned on. The setup checklist is shown.",
+      "files": [
+        "fixtures/empty-app.dart"
+      ],
+      "tags": [
+        "camera-setup"
+      ],
       "assertions": [
-        {"text": "Interactive Label Definition asks the user which fields are on the label (Question A)"},
-        {"text": "Setup checklist mentions scandit_flutter_datacapture_core, scandit_flutter_datacapture_barcode, and scandit_flutter_datacapture_label"},
-        {"text": "Setup checklist mentions NSCameraUsageDescription in ios/Runner/Info.plist"},
-        {"text": "await ScanditFlutterDataCaptureLabel.initialize() is called before DataCaptureContext.initialize"},
-        {"text": "DataCaptureContext.initialize( is present"},
-        {"text": "DataCaptureContext.sharedInstance is used"},
-        {"text": "License key placeholder (e.g. -- ENTER YOUR SCANDIT LICENSE KEY HERE -- or similar) is present"},
-        {"text": "CustomBarcodeBuilder() is used"},
-        {"text": "Symbology.code128 is enabled on the CustomBarcode"},
-        {"text": "ExpiryDateTextBuilder() is used"},
-        {"text": "LabelDefinitionBuilder() is used and .build('<name>') is called"},
-        {"text": "LabelCaptureSettings([...]) is constructed with a list of LabelDefinition"},
-        {"text": "LabelCapture.forContext( OR new LabelCapture(settings) is used"},
-        {"text": "DataCaptureView.forContext( is used"},
-        {"text": "LabelCaptureBasicOverlay or LabelCaptureValidationFlowOverlay is constructed"},
-        {"text": "didCaptureLabelWithFields callback is implemented — NOT onValidationFlowLabelCaptured"},
-        {"text": "onValidationFlowLabelCaptured is NOT used (web-only)"},
-        {"text": "onManualInput is NOT used (web-only)"},
-        {"text": "WidgetsBindingObserver is used for app lifecycle"},
-        {"text": "didChangeAppLifecycleState handles paused/resumed transitions"},
-        {"text": "Imports come from scandit_flutter_datacapture_core, scandit_flutter_datacapture_barcode, and scandit_flutter_datacapture_label"}
+        {
+          "text": "Interactive Label Definition asks the user which fields are on the label (Question A)"
+        },
+        {
+          "text": "Setup checklist mentions scandit_flutter_datacapture_core, scandit_flutter_datacapture_barcode, and scandit_flutter_datacapture_label"
+        },
+        {
+          "text": "Setup checklist mentions NSCameraUsageDescription in ios/Runner/Info.plist"
+        },
+        {
+          "text": "await ScanditFlutterDataCaptureLabel.initialize() is called before DataCaptureContext.initialize"
+        },
+        {
+          "text": "DataCaptureContext.initialize( is present"
+        },
+        {
+          "text": "DataCaptureContext.sharedInstance is used"
+        },
+        {
+          "text": "License key placeholder (e.g. -- ENTER YOUR SCANDIT LICENSE KEY HERE -- or similar) is present"
+        },
+        {
+          "text": "CustomBarcodeBuilder() is used"
+        },
+        {
+          "text": "Symbology.code128 is enabled on the CustomBarcode"
+        },
+        {
+          "text": "ExpiryDateTextBuilder() is used"
+        },
+        {
+          "text": "LabelDefinitionBuilder() is used and .build('<name>') is called"
+        },
+        {
+          "text": "LabelCaptureSettings([...]) is constructed with a list of LabelDefinition"
+        },
+        {
+          "text": "LabelCapture.forContext( OR new LabelCapture(settings) is used"
+        },
+        {
+          "text": "DataCaptureView.forContext( is used"
+        },
+        {
+          "text": "Camera.defaultCamera is used to obtain the camera (NOT a hardcoded camera position when the recommended default suffices)"
+        },
+        {
+          "text": "LabelCapture.createRecommendedCameraSettings() is called (the method form) and applied via camera.applySettings(...) — NOT the LabelCapture.recommendedCameraSettings property form, which does not exist on Flutter"
+        },
+        {
+          "text": "context.setFrameSource( is called with the camera"
+        },
+        {
+          "text": "camera.switchToDesiredState(FrameSourceState.on) is called to start the camera"
+        },
+        {
+          "text": "LabelCaptureBasicOverlay or LabelCaptureValidationFlowOverlay is constructed"
+        },
+        {
+          "text": "didCaptureLabelWithFields callback is implemented — NOT onValidationFlowLabelCaptured"
+        },
+        {
+          "text": "onValidationFlowLabelCaptured is NOT used (web-only)"
+        },
+        {
+          "text": "onManualInput is NOT used (web-only)"
+        },
+        {
+          "text": "WidgetsBindingObserver is used for app lifecycle"
+        },
+        {
+          "text": "didChangeAppLifecycleState handles paused/resumed transitions"
+        },
+        {
+          "text": "Imports come from scandit_flutter_datacapture_core, scandit_flutter_datacapture_barcode, and scandit_flutter_datacapture_label"
+        }
       ]
     },
     {
       "id": 2,
       "prompt": "Add Label Capture with the Validation Flow overlay so the user can confirm OCR results and manually correct fields if needed. My pubspec.yaml says I'm on 8.4.0.",
       "expected_output": "The skill recognises 8.4+, uses LabelCaptureValidationFlowOverlay with LabelCaptureValidationFlowExtendedListener, and implements didCaptureLabelWithFields, didSubmitManualInputForField, and didUpdateValidationFlowResult.",
-      "files": ["fixtures/empty-app.dart", "fixtures/pubspec_8.4.yaml"],
+      "files": [
+        "fixtures/empty-app.dart",
+        "fixtures/pubspec_8.4.yaml"
+      ],
+      "tags": [],
       "assertions": [
-        {"text": "LabelCaptureValidationFlowOverlay is constructed and attached to the view"},
-        {"text": "LabelCaptureValidationFlowExtendedListener is implemented (since user wants manual-correction handling)"},
-        {"text": "didCaptureLabelWithFields is implemented"},
-        {"text": "didSubmitManualInputForField is implemented (v8.2+)"},
-        {"text": "didUpdateValidationFlowResult is implemented or noted as optional"},
-        {"text": "onValidationFlowLabelCaptured is NOT used (web-only)"},
-        {"text": "onManualInput is NOT used (web-only)"},
-        {"text": "await ScanditFlutterDataCaptureLabel.initialize() is called"},
-        {"text": "License key placeholder is present"}
+        {
+          "text": "LabelCaptureValidationFlowOverlay is constructed and attached to the view"
+        },
+        {
+          "text": "LabelCaptureValidationFlowExtendedListener is implemented (since user wants manual-correction handling)"
+        },
+        {
+          "text": "didCaptureLabelWithFields is implemented"
+        },
+        {
+          "text": "didSubmitManualInputForField is implemented (v8.2+)"
+        },
+        {
+          "text": "didUpdateValidationFlowResult is implemented or noted as optional"
+        },
+        {
+          "text": "onValidationFlowLabelCaptured is NOT used (web-only)"
+        },
+        {
+          "text": "onManualInput is NOT used (web-only)"
+        },
+        {
+          "text": "await ScanditFlutterDataCaptureLabel.initialize() is called"
+        },
+        {
+          "text": "License key placeholder is present"
+        }
       ]
     },
     {
       "id": 3,
       "prompt": "Add Label Capture with just the basic overlay (no validation flow). My pubspec.yaml says I'm on 8.2.0. I want to scan a CustomBarcode plus a TotalPriceText field.",
       "expected_output": "The skill writes a Label Capture integration that uses LabelCaptureBasicOverlay (no Validation Flow). The mode listener implements didUpdateSession and reads captured labels from the session.",
-      "files": ["fixtures/empty-app.dart", "fixtures/pubspec_8.2.yaml"],
+      "files": [
+        "fixtures/empty-app.dart",
+        "fixtures/pubspec_8.2.yaml"
+      ],
+      "tags": [],
       "assertions": [
-        {"text": "LabelCaptureBasicOverlay is constructed and attached"},
-        {"text": "LabelCaptureValidationFlowOverlay is NOT used"},
-        {"text": "labelCapture.addListener( is called with a LabelCaptureListener that implements didUpdateSession"},
-        {"text": "session.capturedLabels is read inside didUpdateSession"},
-        {"text": "CustomBarcodeBuilder() is used"},
-        {"text": "TotalPriceTextBuilder() is used"},
-        {"text": "LabelDefinitionBuilder().addCustomBarcode(...).addTotalPriceText(...).build('<name>') is used"},
-        {"text": "LabelCaptureSettings([labelDefinition]) is used"},
-        {"text": "await ScanditFlutterDataCaptureLabel.initialize() is called"}
+        {
+          "text": "LabelCaptureBasicOverlay is constructed and attached"
+        },
+        {
+          "text": "LabelCaptureValidationFlowOverlay is NOT used"
+        },
+        {
+          "text": "labelCapture.addListener( is called with a LabelCaptureListener that implements didUpdateSession"
+        },
+        {
+          "text": "session.capturedLabels is read inside didUpdateSession"
+        },
+        {
+          "text": "CustomBarcodeBuilder() is used"
+        },
+        {
+          "text": "TotalPriceTextBuilder() is used"
+        },
+        {
+          "text": "LabelDefinitionBuilder().addCustomBarcode(...).addTotalPriceText(...).build('<name>') is used"
+        },
+        {
+          "text": "LabelCaptureSettings([labelDefinition]) is used"
+        },
+        {
+          "text": "await ScanditFlutterDataCaptureLabel.initialize() is called"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "I'm scanning a grocery label on Flutter. The label has a 'BBE' best-before keyword printed next to the date, but also a separate packaging date that matches the same date format. I'm using ExpiryDateText. How do I make sure it locks onto the best-before value and not the packaging date? And what if a different label has the date but no keyword at all?",
+      "expected_output": "The skill explains the difference between anchorRegexes (the contextual keyword that locates the value, e.g. 'BBE'/'EXP') and valueRegexes (the value format). It shows setAnchorRegexes / setAnchorRegex on ExpiryDateTextBuilder to pin the keyword, and resetAnchorRegexes() (or setAnchorRegexes([])) to clear anchors when there is no keyword. It notes the regex engine has no lookahead/lookbehind/backreferences.",
+      "files": [],
+      "tags": [
+        "field-regex-anchors"
+      ],
+      "assertions": [
+        {
+          "text": "The response defines anchorRegexes as the keyword/context near the field (e.g. 'BBE', 'EXP', 'Best Before') and valueRegexes as matching the actual field value"
+        },
+        {
+          "text": "The response shows setAnchorRegexes([...]) (or setAnchorRegex(Regex(...))) chained on ExpiryDateTextBuilder() to pin the contextual keyword"
+        },
+        {
+          "text": "The response shows how to handle a missing keyword: resetAnchorRegexes() (or setAnchorRegexes([])) on the pre-built field builder to clear the default anchor patterns and rely on valueRegexes alone"
+        },
+        {
+          "text": "The response notes the SDK regex engine does NOT support lookahead/lookbehind assertions (and ideally also backreferences), or otherwise tells the user to keep regexes to standard character classes, quantifiers, alternation, and groups"
+        },
+        {
+          "text": "setValueRegexes([...]) is named as the way to override the value pattern (the list form — there is no singular setValueRegex String setter on Flutter)"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "On Flutter, my label has a lot number with a custom format (LOT followed by 6+ alphanumerics, like LOT-AB12CD) that none of the pre-built fields cover. Write the field definition for it. It's optional.",
+      "expected_output": "The skill uses CustomTextBuilder with setValueRegexes for the value pattern, setAnchorRegexes for the 'LOT' keyword, isOptional(true), and build('<name>'). It correctly reserves CustomText for cases the pre-built fields don't cover.",
+      "files": [],
+      "tags": [
+        "custom-text-field",
+        "optional-fields"
+      ],
+      "assertions": [
+        {
+          "text": "CustomTextBuilder() is used (not a pre-built date/price builder) because no pre-built field covers a lot number"
+        },
+        {
+          "text": "setValueRegexes([...]) is called with the lot-number pattern (the list form — there is no singular setValueRegex String setter on Flutter)"
+        },
+        {
+          "text": "setAnchorRegexes([...]) (or setAnchorRegex(Regex(...))) is called to match the 'LOT' keyword"
+        },
+        {
+          "text": "isOptional(true) is chained on the builder so the field does not block capture"
+        },
+        {
+          "text": ".build('<name>') is called to produce the field"
+        },
+        {
+          "text": "The response notes that CustomText is the last-resort builder, used only when no pre-built field type fits"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "On Flutter, what's the difference between a required and an optional field in Smart Label Capture? My total-price field isn't always printed, so I don't want it to block capture. Show me the API.",
+      "expected_output": "The skill explains required (label is not considered captured until the field matches; in the Validation Flow the user cannot finish until it is scanned or typed) vs optional (absence does not block). It shows isOptional(true) on the builder, notes required is the default (isOptional(false) or omitted), and notes that an unmatched optional field's value is null and must be null-checked.",
+      "files": [],
+      "tags": [
+        "optional-fields"
+      ],
+      "assertions": [
+        {
+          "text": "The response shows isOptional(true) chained on the field builder (e.g. TotalPriceTextBuilder().isOptional(true).build('Total Price'))"
+        },
+        {
+          "text": "The response states that required is the default — omitting isOptional (or passing isOptional(false)) makes the field required"
+        },
+        {
+          "text": "The response distinguishes the meaning of required vs optional: required blocks the label from being considered captured (and blocks Finish in the Validation Flow) until matched, optional does not block"
+        },
+        {
+          "text": "The response notes that an optional field that was not captured yields a null value (field.text / field.barcode is null), so the result-handling code must null-check before using it"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "On Flutter I'm scanning a smart-device box. I need the main product barcode plus the IMEI, the serial number, and the part number. Which field types should I use, and write the label definition.",
+      "expected_output": "The skill uses the pre-built barcode semantic fields ImeiOneBarcodeBuilder (and ImeiTwoBarcodeBuilder for dual-SIM), SerialNumberBarcodeBuilder, and PartNumberBarcodeBuilder for the semantic fields and CustomBarcodeBuilder for the generic product barcode, assembled via LabelDefinitionBuilder addX methods. It prefers the semantic builders over CustomBarcode for IMEI/serial/part number.",
+      "files": [],
+      "tags": [
+        "barcode-semantic-fields"
+      ],
+      "assertions": [
+        {
+          "text": "ImeiOneBarcodeBuilder() is used for the IMEI field (and ImeiTwoBarcodeBuilder() is mentioned or used for a second IMEI on dual-SIM devices)"
+        },
+        {
+          "text": "SerialNumberBarcodeBuilder() is used for the serial number field"
+        },
+        {
+          "text": "PartNumberBarcodeBuilder() is used for the part number field"
+        },
+        {
+          "text": "CustomBarcodeBuilder() with setSymbologies({...}) is used for the generic main product barcode"
+        },
+        {
+          "text": "The pre-built semantic barcode builders are added via LabelDefinitionBuilder().addImeiOneBarcode(...).addSerialNumberBarcode(...).addPartNumberBarcode(...).addCustomBarcode(...).build('<name>')"
+        },
+        {
+          "text": "The response prefers the semantic builders (Imei/Serial/PartNumber) over CustomBarcode for those fields because their data patterns are predefined"
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "prompt": "On Flutter I want to scan a retail price tag (price, unit price, weight) and separately a car's VIN. Do I really have to define every field by hand?",
+      "expected_output": "The skill recommends the pre-built label definitions: LabelDefinition.priceCaptureDefinitionWithName('<name>') for the price tag and LabelDefinition.vinLabelDefinitionWithName('<name>') for the VIN. It warns that both are NOT compatible with the Validation Flow (use the basic overlay path), and that pre-built labels are sealed (do not add fields).",
+      "files": [],
+      "tags": [
+        "prebuilt-label-definitions"
+      ],
+      "assertions": [
+        {
+          "text": "LabelDefinition.priceCaptureDefinitionWithName('<name>') is recommended for the retail price tag"
+        },
+        {
+          "text": "LabelDefinition.vinLabelDefinitionWithName('<name>') is recommended for the VIN"
+        },
+        {
+          "text": "The response warns that the priceCapture and VIN pre-built labels are NOT compatible with the Validation Flow and should use the basic overlay path"
+        },
+        {
+          "text": "The response notes that pre-built label definitions are sealed — you must not add custom fields to them; build a custom definition if a hybrid is needed"
+        },
+        {
+          "text": "The pre-built definition is passed into LabelCaptureSettings (e.g. LabelCaptureSettings([priceLabel])) rather than wrapped in a hand-built LabelDefinitionBuilder"
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "prompt": "On Flutter I'm using the LabelCaptureBasicOverlay (no Validation Flow). I want detected barcode fields highlighted cyan and expiry-date fields orange, and the label box itself transparent. How do I customize the brushes?",
+      "expected_output": "The skill implements LabelCaptureBasicOverlayListener with async brushForFieldOfLabel and brushForLabel returning Future<Brush?> (return null for the default), constructs Brush(fill, stroke, strokeWidth), and assigns overlay.listener. It may also mention the global setters labelBrush / capturedFieldBrush / predictedFieldBrush.",
+      "files": [],
+      "tags": [
+        "basic-overlay-customization"
+      ],
+      "assertions": [
+        {
+          "text": "A class implements (or extends) LabelCaptureBasicOverlayListener"
+        },
+        {
+          "text": "brushForFieldOfLabel(LabelCaptureBasicOverlay overlay, LabelField field, CapturedLabel label) is implemented and returns Future<Brush?> (async, returning null for the default brush)"
+        },
+        {
+          "text": "brushForLabel(LabelCaptureBasicOverlay overlay, CapturedLabel label) is implemented and returns Future<Brush?>"
+        },
+        {
+          "text": "Brush(fill, stroke, strokeWidth) is constructed for the highlighted fields, keyed off field.name to pick cyan vs orange"
+        },
+        {
+          "text": "overlay.listener = <listener> is assigned on the LabelCaptureBasicOverlay"
+        },
+        {
+          "text": "The response references the global brush setters (labelBrush / capturedFieldBrush / predictedFieldBrush) as the simpler option when per-field/per-name logic is not needed"
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "prompt": "On Flutter I want a live AR overlay: when an expiry date is detected and it's within 3 days of expiring, draw a custom warning widget anchored below that field. I don't want the fixed Validation Flow UI. How do I do this?",
+      "expected_output": "The skill uses LabelCaptureAdvancedOverlay with a LabelCaptureAdvancedOverlayListener, returning a LabelCaptureAdvancedOverlayWidget from widgetForCapturedLabelField (null to show nothing), and setting the Anchor and PointWithUnit offset. It adds the overlay via dataCaptureView.addOverlay and assigns overlay.listener.",
+      "files": [],
+      "tags": [
+        "advanced-overlay"
+      ],
+      "assertions": [
+        {
+          "text": "LabelCaptureAdvancedOverlay(labelCapture) is constructed and added via dataCaptureView.addOverlay(...)"
+        },
+        {
+          "text": "A class implements (or extends) LabelCaptureAdvancedOverlayListener"
+        },
+        {
+          "text": "widgetForCapturedLabelField(...) returns a Future<LabelCaptureAdvancedOverlayWidget?> (a LabelCaptureAdvancedOverlayWidget subclass, or null to show nothing for fields that are not close to expiring)"
+        },
+        {
+          "text": "anchorForCapturedLabelField(...) returns an Anchor (e.g. Anchor.bottomCenter) and offsetForCapturedLabelField(...) returns a PointWithUnit"
+        },
+        {
+          "text": "overlay.listener = <listener> is assigned on the LabelCaptureAdvancedOverlay"
+        },
+        {
+          "text": "The response confirms the Advanced Overlay is the right path for fully custom AR (vs the fixed-layout Validation Flow), and flags its higher implementation cost"
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "prompt": "On Flutter, my customer's shipping labels are worn and the on-device OCR sometimes misses the expiry date. Can Smart Label Capture fall back to a cloud model to improve accuracy? Show me how to enable it on my existing label definition.",
+      "expected_output": "The skill explains the Adaptive Recognition Engine (cloud fallback), flags it as BETA, and shows enabling it by setting labelDefinition.adaptiveRecognitionMode = AdaptiveRecognitionMode.auto (or .adaptiveRecognition(AdaptiveRecognitionMode.auto) on the builder). It states production use requires contacting support@scandit.com and that it works with the Validation Flow.",
+      "files": [],
+      "tags": [
+        "adaptive-recognition-cloud"
+      ],
+      "assertions": [
+        {
+          "text": "The response identifies the feature as the Adaptive Recognition Engine (ARE) / cloud fallback for Smart Label Capture's on-device model"
+        },
+        {
+          "text": "The response explicitly flags the Adaptive Recognition API as BETA / still in beta"
+        },
+        {
+          "text": "The response shows enabling it via AdaptiveRecognitionMode.auto — either labelDefinition.adaptiveRecognitionMode = AdaptiveRecognitionMode.auto or .adaptiveRecognition(AdaptiveRecognitionMode.auto) chained on the LabelDefinitionBuilder"
+        },
+        {
+          "text": "The response states that enabling ARE on a production subscription requires contacting support@scandit.com"
+        }
+      ]
+    },
+    {
+      "id": 12,
+      "prompt": "On Flutter, can I use Smart Label Capture to scan a whole receipt and get the store name, total, and line items as structured data? How?",
+      "expected_output": "The skill explains Receipt Scanning runs on the Adaptive Recognition Engine (cloud) and is BETA. It uses the LabelCaptureAdaptiveRecognitionOverlay (not the standard overlay) with a LabelCaptureAdaptiveRecognitionListener, and reads the ReceiptScanningResult (storeName, paymentTotal, lineItems, etc.). It states production use requires contacting support@scandit.com.",
+      "files": [],
+      "tags": [
+        "receipt-scanning"
+      ],
+      "assertions": [
+        {
+          "text": "The response explains Receipt Scanning uses the Adaptive Recognition Engine (cloud) and explicitly flags it as BETA"
+        },
+        {
+          "text": "The response uses LabelCaptureAdaptiveRecognitionOverlay (the receipt-specific overlay), NOT the standard LabelCaptureBasicOverlay or Validation Flow overlay"
+        },
+        {
+          "text": "The response uses a LabelCaptureAdaptiveRecognitionListener to receive results"
+        },
+        {
+          "text": "The response reads a ReceiptScanningResult and names at least storeName, paymentTotal, and lineItems as available fields"
+        },
+        {
+          "text": "The response states that production use requires contacting support@scandit.com to enable the Adaptive Recognition Engine on the subscription"
+        }
+      ]
+    },
+    {
+      "id": 13,
+      "prompt": "My Flutter Smart Label Capture screen shows a black camera preview on Android, and on iOS the expiry-date and total-price fields never come back even though the barcode reads correctly. What's wrong?",
+      "expected_output": "The skill diagnoses the black preview as the runtime CAMERA permission not being granted (via permission_handler) / NSCameraUsageDescription missing, the camera never being switched on, or Camera.defaultCamera returning null; and the empty text fields as the ScanditLabelCaptureText / ScanditPriceLabel modules not being bundled (scandit_flutter_datacapture_label missing from pubspec.yaml or the plugin not initialized). It does not invent new APIs.",
+      "files": [
+        "fixtures/empty-app.dart"
+      ],
+      "assertions": [
+        {
+          "text": "The black/blank preview is attributed to the camera permission not being granted (Android runtime CAMERA via permission_handler / iOS NSCameraUsageDescription in ios/Runner/Info.plist), camera.switchToDesiredState(FrameSourceState.on) never being called, and/or Camera.defaultCamera returning null"
+        },
+        {
+          "text": "The empty expiry-date and total-price text fields are attributed to the missing on-device text models — the ScanditLabelCaptureText module (arbitrary text) and ScanditPriceLabel module (price fields), which come with scandit_flutter_datacapture_label in pubspec.yaml, and the fix also requires ScanditFlutterDataCaptureLabel.initialize() to run before DataCaptureContext.initialize"
+        },
+        {
+          "text": "The response notes the barcode field works without the text models because barcode-only fields do not require them"
+        },
+        {
+          "text": "The response does NOT invent new diagnostic APIs or configuration flags that are not in the Scandit references"
+        }
+      ],
+      "tags": [
+        "error-troubleshooting"
       ]
     }
   ]
