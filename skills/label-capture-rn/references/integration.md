@@ -510,6 +510,20 @@ const styles = StyleSheet.create({
 - **Cleanup on unmount.** Call `dataCaptureContext.removeMode(labelCapture)` and remove the `AppState` subscription in the `useEffect` cleanup.
 - **License key in source is a placeholder** (`-- ENTER YOUR SCANDIT LICENSE KEY HERE --`). Replace it before shipping.
 
+## Troubleshooting common failures
+
+When the user reports a problem, map the symptom to its cause before suggesting code changes. The most common failures are environmental, not API misuse.
+
+- **Black / blank camera preview, no error** — almost always the camera permission was never granted, or the camera was never switched on. Check that (1) on iOS `NSCameraUsageDescription` is in `ios/<App>/Info.plist` and the OS prompt was accepted; on Android the runtime `CAMERA` permission is requested with `PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.CAMERA)` and granted **before** the scan screen is rendered; (2) `camera.switchToDesiredState(FrameSourceState.On)` runs after permission is granted; and (3) `dataCaptureContext.setFrameSource(camera)` was called and the overlay was attached via the `<DataCaptureView>` `ref` callback after the view mounted.
+
+- **Camera preview shows but nothing is ever captured** — verify the `LabelCaptureBasicOverlay` (or a Validation Flow overlay) was added imperatively in the view's `ref` callback, that `labelCapture.isEnabled` is `true`, and that the mode was not left disabled after a previous capture (re-enable with `labelCapture.isEnabled = true`). Confirm the `LabelDefinition.fields` array is not empty and that `CustomBarcode.initWithNameAndSymbologies(...)` enables the symbologies actually printed on the label.
+
+- **Text / OCR fields never match (`ExpiryDateText`, `TotalPriceText`, `CustomText`, etc.)** — the on-device text models must be bundled. The `ScanditLabelCaptureText` module is required for arbitrary text fields and `ScanditPriceLabel` for price fields (`UnitPriceText` / `TotalPriceText`); both ship inside `scandit-react-native-datacapture-label`, so confirm that package is installed and the iOS pods were re-installed (`cd ios && pod install`). Barcode-only labels do not need them.
+
+- **A field never matches even though the text is on the label** — the field's `valueRegexes` or `anchorRegexes` is too strict. Prefer the preset field (its regexes are tuned) over a hand-written `CustomText`. If the label has no keyword near the value, clear the anchors with `field.anchorRegexes = []` and rely on the value regex alone. Keep regexes simple — lookahead/lookbehind are not supported and silently fail to match.
+
+- **Handwritten or non-Latin text is never read** — expected. Label Capture reads **printed text** in the supported Latin character set only (see Recognition Limits above). Use the Validation Flow's manual-entry sheet so the user can type the value when it cannot be scanned.
+
 ## Where to Go Next
 
 - [Label Definitions](https://docs.scandit.com/sdks/react-native/label-capture/label-definitions/) — full catalogue of pre-built text/barcode field types and how to tune their regex anchors and value patterns.

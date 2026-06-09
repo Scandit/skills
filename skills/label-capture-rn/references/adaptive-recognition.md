@@ -51,13 +51,10 @@ settings.processingHintText = 'Reading receipt…';
 
 const overlay = new LabelCaptureAdaptiveRecognitionOverlay(labelCapture);
 const listener: LabelCaptureAdaptiveRecognitionListener = {
-  didRecognize(result) {
+  onRecognized(result) {
     const receipt = result as ReceiptScanningResult;
-    // receipt.storeName, receipt.storeAddress, receipt.date,
-    // receipt.lineItems, receipt.paymentTotal, receipt.paymentTax, …
-  },
-  didFail() {
-    // Cloud call failed or no receipt was recognized.
+    // receipt.storeName, receipt.storeAddress, receipt.storeCity, receipt.date, receipt.time,
+    // receipt.lineItems, receipt.paymentTotal, receipt.paymentTax, receipt.paymentPreTaxTotal, …
   },
 };
 overlay.listener = listener;
