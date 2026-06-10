@@ -218,7 +218,11 @@ Other useful pieces on `CapturedId`:
 - `capturedId.Document?.DocumentType` (`IdCaptureDocumentType`) and `capturedId.IsRegionSpecific(RegionSpecificSubtype.X)` to inspect which document was scanned (there are no `IsPassport()` / `IsDriverLicense()` helpers on .NET).
 - `capturedId.UsRealIdStatus` (`NotAvailable` / `NotRealIdCompliant` / `RealIdCompliant`).
 
-`DrivingLicenseDetails` / `DrivingLicenseCategory` (vehicle categories, restrictions, endorsements), `ProfessionalDrivingPermit`, and `VehicleRestriction` are also available — the barcode/mobile-document results expose category lists. The full per-field catalogue (the `BarcodeResult` AAMVA surface is large) is in the API reference; fetch it rather than guessing field names.
+`DrivingLicenseDetails` (with `DrivingLicenseCategories`, each `DrivingLicenseCategory` exposing `Code`/`DateOfIssue`/`DateOfExpiry`), `ProfessionalDrivingPermit`, and `VehicleRestriction` surface vehicle categories, restrictions, and endorsements off the barcode/mobile-document results. The full per-field catalogue (the `BarcodeResult` AAMVA surface is large) is in the API reference; fetch it rather than guessing field names.
+
+## European driving-license back decoding
+
+**European driving-license back decoding is not available on .NET.** The `DecodeBackOfEuropeanDrivingLicense` setting exists, but the decoded category data (`VizResult.DrivingLicenseDetails`) is not exposed on the .NET bindings (it is available on iOS/Android/Web/Flutter/React Native/Capacitor/Cordova). Do not attempt to read driving-license categories from the VIZ result on .NET.
 
 ## Overlay customization
 
