@@ -213,6 +213,8 @@ This is one of the pre-built whole-label definitions on `LabelDefinition` (along
 ## Adaptive Recognition Engine (ARE) — cloud fallback (BETA)
 
 > **BETA.** The Adaptive Recognition API is still in beta and may change in future SDK versions. It requires a license key with the ARE feature flag enabled. To enable it on a production subscription the customer must contact **support@scandit.com**. Always surface the beta status and the contact-support requirement to the user — do not present ARE as a generally-available feature.
+>
+> **Availability.** The `adaptiveRecognition(...)` builder method is **not present in public SDK releases up to and including 8.4.0** (verified against the published AAR). Before generating ARE code, check the project's SDK version — on 8.4.0 or older this snippet will not compile, and the honest answer is that the feature isn't available to them yet.
 
 ARE is Scandit's cloud-based OCR fallback. When Smart Label Capture's on-device model fails to capture a field, the SDK can automatically trigger the larger cloud model to recognise complex or unforeseen data, reducing how often the user has to type a value manually.
 
@@ -248,32 +250,40 @@ ARE works in combination with the Validation Flow — the cloud fallback fills f
 ## Receipt Scanning (BETA)
 
 > **BETA.** Receipt Scanning requires the Adaptive Recognition Engine, which is still in beta. To enable it on a subscription the customer must contact **support@scandit.com**. Surface the beta status and contact-support requirement to the user.
+>
+> **Availability.** The public Receipt Scanning classes (`LabelCaptureAdaptiveRecognitionOverlay`, `LabelCaptureAdaptiveRecognitionListener`, `ReceiptScanningResult`) are **not present in public SDK releases up to and including 8.4.0** (verified against the published AAR — only internal native counterparts exist there). Check the project's SDK version before generating this code; on 8.4.0 or older it will not compile.
 
 Receipt Scanning uses ARE to extract structured data from receipts in the cloud — store information, payment details, and individual line items. It uses a **different integration pattern** from the standard label overlays:
 
-- Use `LabelCaptureAdaptiveRecognitionOverlay.newInstance(labelCapture, dataCaptureView)` instead of the standard overlay.
-- Implement `LabelCaptureAdaptiveRecognitionListener` and its `onRecognized` callback.
+- Use `LabelCaptureAdaptiveRecognitionOverlay.newInstance(context, labelCapture, dataCaptureView)` instead of the standard overlay — note the `Context` first argument, unlike the other overlays' `newInstance`.
+- Implement `LabelCaptureAdaptiveRecognitionListener`. Its `onRecognized(result: AdaptiveRecognitionResult)` callback receives the **sealed base type** `AdaptiveRecognitionResult` — narrow it to `ReceiptScanningResult` before reading receipt fields (overriding `onRecognized` with a `ReceiptScanningResult` parameter does not compile — "overrides nothing"). The listener also offers optional `onFailure()` and `onProcessingFrame(frameData)` callbacks.
 
-The `onRecognized` callback returns a `ReceiptScanningResult`, whose fields include `storeName`, `storeAddress`, `storeCity`, `date`, `time`, `paymentPreTaxTotal`, `paymentTax`, `paymentTotal`, `loyaltyNumber`, and `lineItems` (each line item carries `name`, `unitPrice`, `discount`, `quantity`, and `totalPrice`).
+`ReceiptScanningResult` carries `storeName`/`storeCity`/`storeAddress` (`String?`), `date`/`time` (`String?`), `paymentPreTaxTotal`/`paymentTax`/`paymentTotal` (`Float?`), `loyaltyNumber` (`Int?`), and `lineItems` (each line item: `name`, `unitPrice`, `discount`, `quantity`, `totalPrice`).
 
 ```kotlin
-import com.scandit.datacapture.label.ui.overlay.adaptive.LabelCaptureAdaptiveRecognitionListener
-import com.scandit.datacapture.label.ui.overlay.adaptive.LabelCaptureAdaptiveRecognitionOverlay
+import com.scandit.datacapture.label.ui.overlay.adaptiverecognition.AdaptiveRecognitionResult
+import com.scandit.datacapture.label.ui.overlay.adaptiverecognition.LabelCaptureAdaptiveRecognitionListener
+import com.scandit.datacapture.label.ui.overlay.adaptiverecognition.LabelCaptureAdaptiveRecognitionOverlay
+import com.scandit.datacapture.label.ui.overlay.adaptiverecognition.ReceiptScanningResult
 
 val adaptiveOverlay = LabelCaptureAdaptiveRecognitionOverlay.newInstance(
+    context,
     labelCapture,
     dataCaptureView,
 )
 adaptiveOverlay.listener = object : LabelCaptureAdaptiveRecognitionListener {
-    override fun onRecognized(result: ReceiptScanningResult) {
-        val store = result.storeName
-        val total = result.paymentTotal
-        for (item in result.lineItems) {
+    override fun onRecognized(result: AdaptiveRecognitionResult) {
+        val receipt = result as? ReceiptScanningResult ?: return
+        val store = receipt.storeName
+        val total = receipt.paymentTotal
+        for (item in receipt.lineItems) {
             // item.name, item.unitPrice, item.quantity, item.totalPrice
         }
     }
 }
 ```
+
+The package is `com.scandit.datacapture.label.ui.overlay.adaptiverecognition` (one word) — **not** `...ui.overlay.adaptive`, which doesn't exist and fails to compile.
 
 ## Where to go next
 

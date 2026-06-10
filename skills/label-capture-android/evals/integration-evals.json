@@ -191,7 +191,8 @@
         { "text": "The response describes the Adaptive Recognition Engine as a cloud-based OCR fallback that triggers when the on-device model fails" },
         { "text": "The enabling API is shown: adaptiveRecognition(adaptiveRecognitionMode = AdaptiveRecognitionMode.AUTO) (AdaptiveRecognitionMode.AUTO) on the label definition" },
         { "text": "The response flags that the Adaptive Recognition API is in BETA" },
-        { "text": "The response states it requires a license key with the ARE feature flag and that enabling it for production requires contacting support@scandit.com" }
+        { "text": "The response states it requires a license key with the ARE feature flag and that enabling it for production requires contacting support@scandit.com" },
+        { "text": "The response surfaces that the adaptiveRecognition(...) API is not present in public SDK releases up to and including 8.4.0 (availability caveat), so the user's SDK version must be checked" }
       ],
       "tags": ["adaptive-recognition-cloud"]
     },
@@ -202,9 +203,10 @@
       "files": [],
       "assertions": [
         { "text": "The response states Receipt Scanning uses the LabelCaptureAdaptiveRecognitionOverlay instead of the standard Basic/Validation Flow overlay" },
-        { "text": "The response uses a LabelCaptureAdaptiveRecognitionListener with an onRecognized callback that returns a ReceiptScanningResult" },
+        { "text": "The response uses a LabelCaptureAdaptiveRecognitionListener whose onRecognized callback receives the sealed base type AdaptiveRecognitionResult and narrows it to ReceiptScanningResult (it does NOT type the override parameter as ReceiptScanningResult, which doesn't compile)" },
         { "text": "The response names ReceiptScanningResult fields such as storeName, paymentTotal, and lineItems" },
-        { "text": "The response flags that Receipt Scanning / the Adaptive Recognition Engine is in BETA and requires contacting support@scandit.com to enable" }
+        { "text": "The response flags that Receipt Scanning / the Adaptive Recognition Engine is in BETA and requires contacting support@scandit.com to enable" },
+        { "text": "The response surfaces that the public Receipt Scanning classes are not present in public SDK releases up to and including 8.4.0 (availability caveat)" }
       ],
       "tags": ["receipt-scanning"]
     },
