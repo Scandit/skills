@@ -4,6 +4,8 @@ ID Capture reads identity documents — passports, driver's licenses, national I
 
 You declare **which documents to accept** and **which scanner to use**, attach a listener, and the SDK delivers a `CapturedId` per successful scan (or a `RejectionReason` when a document is seen but not accepted).
 
+> **One mode at a time.** ID Capture cannot run simultaneously with another capture mode (e.g. Barcode Capture) on the same `DataCaptureContext`. Only one capture mode should be active at a time — remove or deactivate the other mode (`await context.removeMode(otherMode)`) before activating `IdCapture`.
+
 ## Prerequisites
 
 - Scandit Capacitor packages in `package.json`:
@@ -255,7 +257,7 @@ const handle = await App.addListener('appStateChange', async ({ isActive }) => {
 - Document: `documentNumber`, `documentAdditionalNumber`, `dateOfExpiry`, `dateOfIssue`, `isExpired`, `issuingCountry` / `issuingCountryIso`. The document **type** is on `capturedId.document` (an `IdCaptureDocument | null`): use `capturedId.document?.documentType` (an `IdCaptureDocumentType`) or the convenience methods `isIdCard()`, `isDriverLicense()`, `isPassport()`, `isResidencePermit()`, `isHealthInsuranceCard()`, `isVisaIcao()`, `isRegionSpecific(subtype)`. There is **no** `capturedId.documentType` getter, **no** `isVisa()`, **no** `isVisaLetter()`.
 - Source-specific results (nullable): `mrzResult` (`MRZResult | null`), `vizResult` (`VIZResult | null`), `barcode` (`BarcodeResult | null`), `mobileDocument` (`MobileDocumentResult | null`), `mobileDocumentOcr` (`MobileDocumentOCRResult | null`).
 - `images` (`IdImages`) — read images with `images.face`, `images.frame`, `images.getCroppedDocument(IdSide.Front)`, `images.getFrame(IdSide.Front)`. **Each returns a base64 `string | null`**, e.g. `<img src="data:image/png;base64,${face}">` or `imgEl.src = 'data:image/png;base64,' + face`. There is no `images.croppedDocument` getter — use `getCroppedDocument(IdSide.Front)` / `IdSide.Back`. Images are only populated for the `IdImageType`s you opted into via `setShouldPassImageTypeToResult(...)`.
-- `verificationResult` (`VerificationResult`) — contains `dataConsistency` and `aamvaBarcodeVerification` (see `references/supplementary-modules.md`).
+- `verificationResult` (`VerificationResult`) — contains `dataConsistency` (`DataConsistencyResult | null`, populated when `settings.rejectInconsistentData = true`; read `dataConsistency.allChecksPassed`) and `aamvaBarcodeVerification` (see `references/supplementary-modules.md`).
 
 Date fields are `DateResult | null` with `{ year, month, day }`. Format e.g. with `new Date(Date.UTC(d.year, d.month - 1, d.day)).toLocaleDateString('en-GB', { timeZone: 'UTC' })`. Branch on the source when you need zone-specific data:
 

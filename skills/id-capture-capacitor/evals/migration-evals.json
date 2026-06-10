@@ -45,6 +45,28 @@
         {"text": "these flags are described as surfacing reasons in didRejectId, e.g. DocumentExpired and HolderUnderage (semantic)"},
         {"text": "settings.scannerType is no longer used in the migrated code (semantic)"}
       ]
+    },
+    {
+      "id": 4,
+      "prompt": "This ID Capture code is from an old v6 integration and no longer compiles on the current SDK (v8). Migrate it. Here's before-v6-idcapture.ts.",
+      "expected_output": "The skill replaces the v6 supportedDocuments / IdDocumentType bitmask with acceptedDocuments populated by typed document objects (IdCard, DriverLicense, Passport with an IdCaptureRegion), replaces supportedSides with settings.scanner = new IdCaptureScanner(new FullDocumentScanner()), renames the onIdCaptured / onIdCapturedTimedOut listener to didCaptureId / didRejectId (timeout now surfaces as RejectionReason.Timeout in didRejectId), and reads the document type via capturedId.document?.documentType instead of capturedId.documentType.",
+      "files": ["fixtures/before-v6-idcapture.ts"],
+      "assertions": [
+        {"text": "settings.acceptedDocuments is populated with typed document objects, e.g. new IdCard(IdCaptureRegion.Any) (semantic)"},
+        {"text": "new FullDocumentScanner( is present"},
+        {"text": "settings.scanner = new IdCaptureScanner( is present"},
+        {"text": "settings.supportedDocuments is no longer used in the migrated code (semantic)"},
+        {"text": "IdDocumentType is no longer used in the migrated code (semantic)"},
+        {"text": "settings.supportedSides is no longer used in the migrated code (semantic)"},
+        {"text": "didCaptureId is present"},
+        {"text": "didRejectId is present"},
+        {"text": "onIdCaptured is no longer used as the success callback name in the migrated code (semantic)"},
+        {"text": "onIdCapturedTimedOut is no longer used in the migrated code; timeout is handled via RejectionReason.Timeout in didRejectId (semantic)"},
+        {"text": "RejectionReason.Timeout is present"},
+        {"text": "the document type is read via capturedId.document?.documentType, not capturedId.documentType (semantic)"},
+        {"text": "capturedId.documentType is no longer used in the migrated code (semantic)"}
+      ],
+      "tags": ["migration-v6-to-v7"]
     }
   ]
 }
