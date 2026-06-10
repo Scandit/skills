@@ -70,6 +70,22 @@ Per-platform — who runs the gate:
    `docs/api_availability/`). This catches hallucinated symbols/signatures but not all
    syntax — so it is "propose-only / mark not-build-verified," never an auto-commit path.
 
+**Mechanical gate scripts** (`scripts/fix_gate_*.sh`) — run the right one on the file you
+drafted; each resolves the real Scandit packages, compiles, and prints `GATE-PASS` /
+`GATE-FAIL` / `GATE-SKIP` (skip = toolchain absent, exit 3 — don't pretend it passed):
+
+    scripts/fix_gate_flutter.sh <dart-file> [version] [pub-pkg]
+    scripts/fix_gate_ts.sh      <web|rn|capacitor> <ts-file> [version]
+    scripts/fix_gate_swift.sh   <swift-file> [frameworks-csv]
+    scripts/fix_gate_dotnet.sh  <cs-file> [version] [extra-pkg ...]   # covers net-android/net-ios/maui
+
+Notes: default version 8.4.0. `dotnet` builds a plain net8.0 project against the package's
+net8.0 managed slice — no android/ios workloads needed (keep platform-UI-only types like
+`Android.Views.*`/`UIKit.*` out of the gated snippet). Swift needs the xcframeworks resolved
+once (an SPM sample build) or `$SCANDIT_XCFRAMEWORKS`. Toolchain overrides: `$FLUTTER`,
+`$DOTNET`. These are the mechanical form of the rule above — proven to catch real bugs
+(e.g. the `BarcodeFilterHighlightSettingsBrush` namespace error in matrixscan-count .NET).
+
 ## Honesty rules
 
 - Never dismiss a low pass rate as "judge bugs" without proof — rebuild/re-run the
