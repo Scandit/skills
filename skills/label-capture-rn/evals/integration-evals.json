@@ -9,32 +9,96 @@
         "fixtures/empty-app.tsx"
       ],
       "assertions": [
-        {"text": "Interactive Label Definition asks the user which fields are on the label (Question A)"},
-        {"text": "Setup checklist mentions scandit-react-native-datacapture-core, scandit-react-native-datacapture-barcode, and scandit-react-native-datacapture-label"},
-        {"text": "Setup checklist mentions npx pod-install for iOS"},
-        {"text": "Setup checklist mentions NSCameraUsageDescription in ios Info.plist"},
-        {"text": "DataCaptureContext.initialize( is present"},
-        {"text": "DataCaptureContext.sharedInstance is used to obtain the context"},
-        {"text": "License key placeholder (e.g. -- ENTER YOUR SCANDIT LICENSE KEY HERE -- or similar) is present"},
-        {"text": "CustomBarcode.initWithNameAndSymbologies( is present"},
-        {"text": "Symbology.Code128 is enabled on the CustomBarcode"},
-        {"text": "new ExpiryDateText( is present"},
-        {"text": "new LabelDefinition( is present"},
-        {"text": "labelDefinition.fields = [...] assignment is present"},
-        {"text": "LabelCaptureSettings.settingsFromLabelDefinitions( is called"},
-        {"text": "new LabelCapture(settings) is present (no LabelCaptureSettingsBuilder)"},
-        {"text": "LabelCaptureSettingsBuilder is NOT used (web-only)"},
-        {"text": "LabelDefinitionBuilder is NOT used (web-only)"},
-        {"text": "Factory function shorthand like label(...) or customBarcode(...) is NOT used (web-only)"},
-        {"text": "<DataCaptureView is rendered as JSX with context"},
-        {"text": "LabelCaptureBasicOverlay or LabelCaptureValidationFlowOverlay is added via view.addOverlay(...)"},
-        {"text": "didCaptureLabelWithFields callback is registered (via listener) — NOT onValidationFlowLabelCaptured"},
-        {"text": "onValidationFlowLabelCaptured is NOT used (web-only)"},
-        {"text": "onManualInput is NOT used (web-only)"},
-        {"text": "The component is written as a function component (no class syntax)"},
-        {"text": "useRef is used to hold the LabelCapture and view references"},
-        {"text": "AppState.addEventListener handles background/foreground transitions"},
-        {"text": "Imports come from scandit-react-native-datacapture-core, scandit-react-native-datacapture-barcode, and scandit-react-native-datacapture-label"}
+        {
+          "text": "The agent uses the fields the user already specified (barcode + expiry date + total price) rather than re-asking which fields are on the label (semantic)"
+        },
+        {
+          "text": "Setup checklist mentions scandit-react-native-datacapture-core, scandit-react-native-datacapture-barcode, and scandit-react-native-datacapture-label"
+        },
+        {
+          "text": "Setup checklist mentions npx pod-install for iOS"
+        },
+        {
+          "text": "Setup checklist mentions NSCameraUsageDescription in ios Info.plist"
+        },
+        {
+          "text": "DataCaptureContext.initialize( is present"
+        },
+        {
+          "text": "DataCaptureContext.sharedInstance is used to obtain the context"
+        },
+        {
+          "text": "A license key placeholder string is present (semantic)"
+        },
+        {
+          "text": "CustomBarcode.initWithNameAndSymbologies( is present"
+        },
+        {
+          "text": "Symbology.Code128 is enabled on the CustomBarcode"
+        },
+        {
+          "text": "new ExpiryDateText( is present"
+        },
+        {
+          "text": "new LabelDefinition( is present"
+        },
+        {
+          "text": "The label definition's fields array is assigned (semantic)"
+        },
+        {
+          "text": "LabelCaptureSettings.settingsFromLabelDefinitions( is called"
+        },
+        {
+          "text": "new LabelCapture(settings) is present (no LabelCaptureSettingsBuilder)"
+        },
+        {
+          "text": "LabelCaptureSettingsBuilder is NOT present"
+        },
+        {
+          "text": "LabelDefinitionBuilder is NOT present"
+        },
+        {
+          "text": "Factory function shorthand like label(...) or customBarcode(...) is NOT used (web-only)"
+        },
+        {
+          "text": "<DataCaptureView is rendered as JSX with context"
+        },
+        {
+          "text": "LabelCaptureBasicOverlay or LabelCaptureValidationFlowOverlay is added via view.addOverlay(...)"
+        },
+        {
+          "text": "didCaptureLabelWithFields callback is registered (via listener) — NOT onValidationFlowLabelCaptured"
+        },
+        {
+          "text": "onValidationFlowLabelCaptured is NOT present"
+        },
+        {
+          "text": "onManualInput is NOT present"
+        },
+        {
+          "text": "The component is written as a function component (no class syntax)"
+        },
+        {
+          "text": "useRef is used to hold the LabelCapture and view references"
+        },
+        {
+          "text": "AppState.addEventListener handles background/foreground transitions"
+        },
+        {
+          "text": "Imports come from scandit-react-native-datacapture-core, scandit-react-native-datacapture-barcode, and scandit-react-native-datacapture-label"
+        },
+        {
+          "text": "LabelCapture.createRecommendedCameraSettings() is used to obtain the recommended camera settings"
+        },
+        {
+          "text": "A Camera is created and set as the frame source via dataCaptureContext.setFrameSource( (e.g. Camera.withSettings(...) or Camera.default)"
+        },
+        {
+          "text": "camera.switchToDesiredState(FrameSourceState.On) is called to turn the camera on"
+        }
+      ],
+      "tags": [
+        "camera-setup"
       ]
     },
     {
@@ -46,14 +110,33 @@
         "fixtures/package_8.4.json"
       ],
       "assertions": [
-        {"text": "LabelCaptureValidationFlowOverlay is constructed and added via view.addOverlay(...)"},
-        {"text": "didCaptureLabelWithFields callback is registered on the listener"},
-        {"text": "didSubmitManualInputForField callback is registered on the listener (v8.2+)"},
-        {"text": "didUpdateValidationFlowResult is either registered or explicitly noted as optional and 8.4+"},
-        {"text": "onValidationFlowLabelCaptured is NOT used (web-only)"},
-        {"text": "onManualInput is NOT used (web-only)"},
-        {"text": "DataCaptureContext.initialize( is used"},
-        {"text": "License key placeholder is present"}
+        {
+          "text": "LabelCaptureValidationFlowOverlay is constructed and added via view.addOverlay(...)"
+        },
+        {
+          "text": "didCaptureLabelWithFields callback is registered on the listener"
+        },
+        {
+          "text": "didSubmitManualInputForField callback is registered on the listener (v8.2+)"
+        },
+        {
+          "text": "didUpdateValidationFlowResult is either registered or explicitly noted as optional and 8.4+"
+        },
+        {
+          "text": "onValidationFlowLabelCaptured is NOT present"
+        },
+        {
+          "text": "onManualInput is NOT present"
+        },
+        {
+          "text": "DataCaptureContext.initialize( is used"
+        },
+        {
+          "text": "License key placeholder is present"
+        }
+      ],
+      "tags": [
+        "validation-flow"
       ]
     },
     {
@@ -65,15 +148,266 @@
         "fixtures/package_8.2.json"
       ],
       "assertions": [
-        {"text": "LabelCaptureBasicOverlay is constructed and added via view.addOverlay(...)"},
-        {"text": "LabelCaptureValidationFlowOverlay is NOT used"},
-        {"text": "labelCapture.addListener( is called with a listener that includes didUpdateSession"},
-        {"text": "session.capturedLabels is read inside didUpdateSession to extract labels"},
-        {"text": "CustomBarcode.initWithNameAndSymbologies( is present"},
-        {"text": "new TotalPriceText( is present"},
-        {"text": "new LabelDefinition( is present and labelDefinition.fields = [...] is set"},
-        {"text": "LabelCaptureSettings.settingsFromLabelDefinitions( is called"},
-        {"text": "DataCaptureContext.initialize( is used"}
+        {
+          "text": "LabelCaptureBasicOverlay is constructed and added via view.addOverlay(...)"
+        },
+        {
+          "text": "LabelCaptureValidationFlowOverlay is NOT used"
+        },
+        {
+          "text": "labelCapture.addListener( is called with a listener that includes didUpdateSession"
+        },
+        {
+          "text": "session.capturedLabels is read inside didUpdateSession to extract labels"
+        },
+        {
+          "text": "CustomBarcode.initWithNameAndSymbologies( is present"
+        },
+        {
+          "text": "new TotalPriceText( is present"
+        },
+        {
+          "text": "new LabelDefinition( is present and labelDefinition.fields = [...] is set"
+        },
+        {
+          "text": "LabelCaptureSettings.settingsFromLabelDefinitions( is called"
+        },
+        {
+          "text": "DataCaptureContext.initialize( is used"
+        }
+      ],
+      "tags": [
+        "basic-overlay"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "I'm building a Label Capture label in my React Native app. The label has a batch number printed as text in the form FZ12345 (5 to 10 digits after the FZ prefix), with the word 'Batch' printed next to it. There's no pre-made field for this. How do I capture it?",
+      "expected_output": "The skill uses CustomText (no pre-built equivalent exists for a batch number) and configures it with valueRegexes for the value pattern and anchorRegexes for the 'Batch' keyword. It assembles the field into a LabelDefinition and builds LabelCaptureSettings.",
+      "files": [],
+      "assertions": [
+        {
+          "text": "new CustomText( is used for the batch number field (no pre-built field fits)"
+        },
+        {
+          "text": "A value regex with the FZ-prefixed digit pattern is set via field.valueRegexes or field.valueRegex (semantic)"
+        },
+        {
+          "text": "field.anchorRegexes = [...] is set with the 'Batch' keyword to disambiguate the field"
+        },
+        {
+          "text": "new LabelDefinition( is present and the CustomText field is added to its fields"
+        },
+        {
+          "text": "LabelCaptureSettings.settingsFromLabelDefinitions( is called"
+        },
+        {
+          "text": "Imports come from scandit-react-native-datacapture-label"
+        }
+      ],
+      "tags": [
+        "custom-text-field"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "In my React Native Label Capture app, the barcode is always present but the total price is sometimes missing from the label. How do I mark the total price as optional, and how do I safely read it when it might not be there?",
+      "expected_output": "The skill sets field.optional = true on the TotalPriceText field (and notes required is the default — omitting it makes a field required). When reading the captured field it null-checks before using the value, because an optional field may be absent.",
+      "files": [],
+      "assertions": [
+        {
+          "text": "field.optional = true is set on the TotalPriceText (optional) field"
+        },
+        {
+          "text": "The response notes that required is the default and omitting field.optional (or setting it false) makes the field required"
+        },
+        {
+          "text": "The barcode field is left required (field.optional = false or simply not marked optional)"
+        },
+        {
+          "text": "When reading the captured value, the code null-checks the field/value (semantic)"
+        }
+      ],
+      "tags": [
+        "optional-fields"
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "Add Label Capture for a hard disk drive label in my React Native app. The label has a serial number and a part number, both printed as Code 128 barcodes. Write the field definitions.",
+      "expected_output": "The skill uses the pre-built semantic barcode fields SerialNumberBarcode and PartNumberBarcode (rather than two generic CustomBarcode fields), enabling Code 128, and assembles them into a LabelDefinition + LabelCaptureSettings.",
+      "files": [],
+      "assertions": [
+        {
+          "text": "SerialNumberBarcode is used for the serial number field (not a generic CustomBarcode)"
+        },
+        {
+          "text": "PartNumberBarcode is used for the part number field (not a generic CustomBarcode)"
+        },
+        {
+          "text": "Symbology.Code128 is enabled on the semantic barcode fields"
+        },
+        {
+          "text": "new LabelDefinition( is present and both semantic fields are added to its fields"
+        },
+        {
+          "text": "LabelCaptureSettings.settingsFromLabelDefinitions( is called"
+        }
+      ],
+      "tags": [
+        "barcode-semantic-fields"
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "I just want to scan a retail price tag (price, unit price, weight) in my React Native app. Is there a ready-made label definition for that so I don't have to define every field myself?",
+      "expected_output": "The skill recommends the pre-built price-capture label definition via LabelDefinition.createPriceCaptureDefinition(name) and builds LabelCaptureSettings from it directly, without defining individual fields. It notes the definition is sealed (do not addField to it).",
+      "files": [],
+      "assertions": [
+        {
+          "text": "LabelDefinition.createPriceCaptureDefinition( is used to create the pre-built price label definition"
+        },
+        {
+          "text": "LabelCaptureSettings.settingsFromLabelDefinitions( is called with the pre-built definition"
+        },
+        {
+          "text": "The response does NOT define individual price/unit-price/weight fields by hand — it uses the sealed pre-built definition"
+        },
+        {
+          "text": "The response notes the pre-built definition should not be mutated with .addField(...) (it is sealed native-side)"
+        }
+      ],
+      "tags": [
+        "prebuilt-label-definitions"
+      ]
+    },
+    {
+      "id": 8,
+      "prompt": "I'm using LabelCaptureBasicOverlay in my React Native Label Capture app. I want to highlight the Barcode field in cyan and the Expiry Date field in orange, and leave everything else transparent. How do I customize the field highlight colors?",
+      "expected_output": "The skill implements a LabelCaptureBasicOverlayListener and returns a per-field Brush from brushForFieldOfLabel based on field.name, optionally returning a brush from brushForLabel. It assigns the listener to the overlay. Brush/Color come from scandit-react-native-datacapture-core.",
+      "files": [],
+      "assertions": [
+        {
+          "text": "A LabelCaptureBasicOverlayListener object is created and assigned to overlay.listener"
+        },
+        {
+          "text": "brushForFieldOfLabel is implemented and returns a per-field Brush (e.g. switching on field.name for Barcode vs Expiry Date)"
+        },
+        {
+          "text": "brushForLabel is implemented on the listener"
+        },
+        {
+          "text": "new Brush( is constructed with Color (e.g. Color.fromRGBA( or Color.fromHex() ) for the field highlights"
+        },
+        {
+          "text": "Brush and Color are imported from scandit-react-native-datacapture-core"
+        }
+      ],
+      "tags": [
+        "basic-overlay-customization"
+      ]
+    },
+    {
+      "id": 9,
+      "prompt": "In my React Native Label Capture app I want to draw a custom 'expires soon' warning view anchored below the expiry date field, as a live AR overlay on the camera feed. How do I do that?",
+      "expected_output": "The skill uses LabelCaptureAdvancedOverlay with a listener implementing viewForCapturedLabelField (returning a React Native view or null), plus anchor/offset callbacks (anchorForCapturedLabelField, offsetForCapturedLabelField). It assigns the listener to the overlay.",
+      "files": [],
+      "assertions": [
+        {
+          "text": "LabelCaptureAdvancedOverlay is used for the live AR / custom-view overlay"
+        },
+        {
+          "text": "A listener implementing viewForCapturedLabelField is provided to return the custom view (or null for fields that should not be decorated)"
+        },
+        {
+          "text": "anchorForCapturedLabelField returns an Anchor (e.g. Anchor.BottomCenter) to position the view relative to the field"
+        },
+        {
+          "text": "offsetForCapturedLabelField returns a PointWithUnit offset for the view"
+        },
+        {
+          "text": "The listener is assigned to the overlay (overlay.listener = ...)"
+        }
+      ],
+      "tags": [
+        "advanced-overlay"
+      ]
+    },
+    {
+      "id": 10,
+      "prompt": "My customer's React Native Label Capture app struggles with worn, low-contrast shipping labels and the on-device OCR keeps missing fields. Can the cloud help, and how do I turn it on?",
+      "expected_output": "The skill explains the Adaptive Recognition Engine (cloud fallback) and enables it by setting label.adaptiveRecognitionMode = AdaptiveRecognitionMode.Auto on the LabelDefinition. It flags that ARE is a beta API and that production access requires contacting support@scandit.com.",
+      "files": [],
+      "assertions": [
+        {
+          "text": "The response identifies the Adaptive Recognition Engine (ARE) / cloud fallback as the mechanism"
+        },
+        {
+          "text": "label.adaptiveRecognitionMode = AdaptiveRecognitionMode.Auto is set on the LabelDefinition to enable it"
+        },
+        {
+          "text": "AdaptiveRecognitionMode is imported from scandit-react-native-datacapture-label"
+        },
+        {
+          "text": "The response flags that the Adaptive Recognition Engine is a BETA API that may change in future SDK versions"
+        },
+        {
+          "text": "The response states production use requires contacting support@scandit.com to enable ARE on the subscription"
+        }
+      ],
+      "tags": [
+        "adaptive-recognition-cloud"
+      ]
+    },
+    {
+      "id": 11,
+      "prompt": "I want to scan full grocery receipts in my React Native app and get structured data (store name, line items, total). Is that possible with Label Capture, and how?",
+      "expected_output": "The skill explains receipt scanning is available via the Adaptive Recognition Engine using LabelCaptureAdaptiveRecognitionOverlay + LabelCaptureAdaptiveRecognitionListener (onRecognized returns a ReceiptScanningResult). It flags that this is a beta feature requiring support@scandit.com to enable, and that it uses a different overlay than standard label capture.",
+      "files": [],
+      "assertions": [
+        {
+          "text": "LabelCaptureAdaptiveRecognitionOverlay is used as the receipt-scanning overlay (a different overlay than the standard Basic/Validation Flow overlays)"
+        },
+        {
+          "text": "A LabelCaptureAdaptiveRecognitionListener is used with an onRecognized callback that receives a ReceiptScanningResult"
+        },
+        {
+          "text": "The response references ReceiptScanningResult fields (e.g. storeName, lineItems, paymentTotal)"
+        },
+        {
+          "text": "The response flags that Receipt Scanning / the Adaptive Recognition Engine is a BETA feature that may change in future SDK versions"
+        },
+        {
+          "text": "The response states enabling it requires contacting support@scandit.com"
+        }
+      ],
+      "tags": [
+        "receipt-scanning"
+      ]
+    },
+    {
+      "id": 12,
+      "prompt": "On React Native my Smart Label Capture preview is black on Android, and on iOS where the preview works the expiry-date and total-price fields never get populated although the barcode scans fine. How do I fix it?",
+      "expected_output": "The skill diagnoses the black preview as the runtime CAMERA permission not being granted (via PermissionsAndroid) / NSCameraUsageDescription missing or the camera never being switched on, and the empty text fields as the ScanditLabelCaptureText / ScanditPriceLabel modules not being bundled (scandit-react-native-datacapture-label missing or pods not re-installed). It does not invent new APIs.",
+      "files": [
+        "fixtures/empty-app.tsx"
+      ],
+      "assertions": [
+        {
+          "text": "The black/blank preview is attributed to the camera permission not being granted (Android runtime CAMERA via PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.CAMERA) / iOS NSCameraUsageDescription in Info.plist) and/or camera.switchToDesiredState(FrameSourceState.On) never being called"
+        },
+        {
+          "text": "The empty expiry-date and total-price text fields are attributed to the missing on-device text models — the ScanditLabelCaptureText model (arbitrary/date text) and ScanditPriceLabel model (price fields), which ship as separate optional packages (scandit-react-native-datacapture-label-text and scandit-react-native-datacapture-price-label); the fix is to install the needed package(s) and re-install the iOS pods (cd ios && pod install)"
+        },
+        {
+          "text": "The response notes the barcode field works without the text models because barcode-only fields do not require them"
+        },
+        {
+          "text": "The response does NOT invent new diagnostic APIs or configuration flags that are not in the Scandit references"
+        }
+      ],
+      "tags": [
+        "error-troubleshooting"
       ]
     }
   ]

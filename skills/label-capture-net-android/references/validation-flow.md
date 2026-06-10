@@ -6,7 +6,7 @@ This guide builds on the integration guide — the `DataCaptureContext`, label d
 
 > **Single label definition only.** The Validation Flow overlay works with exactly **one** `LabelDefinition` (that definition can contain many fields). If the settings contain multiple definitions, use the basic overlay instead.
 
-> **PriceCapture and VIN pre-made labels are not VF-compatible.** `LabelDefinition.PriceCaptureDefinitionWithName(name)` and `LabelDefinition.VinLabelDefinitionWithName(name)` are **explicitly documented as incompatible with the Validation Flow** — using them inside VF "may result in incorrect data being captured." For price labels or VIN scanning, either build a custom definition out of custom barcode and text fields to use with VF, or keep the pre-made label but use the basic overlay path instead.
+> **PriceCapture and VIN pre-made labels are not VF-compatible.** `LabelDefinition.CreatePriceCaptureDefinition(name)` and `LabelDefinition.CreateVinLabelDefinition(name)` are **explicitly documented as incompatible with the Validation Flow** — using them inside VF "may result in incorrect data being captured." For price labels or VIN scanning, either build a custom definition out of custom barcode and text fields to use with VF, or keep the pre-made label but use the basic overlay path instead.
 
 ## Differences from the basic flow
 

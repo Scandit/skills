@@ -40,6 +40,7 @@ Based on the user's request, load the appropriate reference file before respondi
 
 - **Integrating Label Capture from scratch, defining the label (fields, symbologies, regexes, optional vs required), creating the mode, hosting the `DataCaptureView` + `LabelCaptureBasicOverlay`, wiring the camera lifecycle, handling captured labels, customizing feedback or brushes, or using prebuilt definitions (VIN / price label / 7-segment)** (e.g. "add Smart Label Capture to my .NET iOS app", "scan a barcode and an expiry date from a price tag in C#", "read the total price field", "use the recommended camera settings") → read `references/integration.md` and follow it.
 - **Enabling or customizing the Validation Flow** (e.g. "add the guided validation flow so users can review and correct fields", "let the user type a field that didn't scan", "customize the validation-flow hint text / button labels") → read `references/validation-flow.md` and follow it.
+- **Customizing overlay appearance (per-field / per-label brushes, tap handling), adding an advanced overlay with custom native views over labels (AR), enabling Adaptive Recognition cloud fallback (beta), or Receipt Scanning (beta)** (e.g. "tint the barcode highlight a different color than the expiry date", "show a warning view under expiry dates close to expiring", "add cloud fallback / ARE", "scan receipts") → read `references/advanced-overlays.md` and follow it. Adaptive Recognition and Receipt Scanning are **beta** and subscription-gated — always flag this.
 
 ## API Usage Policy
 

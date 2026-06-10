@@ -66,7 +66,7 @@ Before writing any code, walk the user through their label. Ask one question at 
 | Seven-segment digital display (scales, meters, glucose monitors) | `LabelDefinition.sevenSegmentDisplayLabelDefinitionWithName('<name>')` |
 | Full receipt (store name, line items, total) | Use `LabelCaptureAdaptiveRecognitionOverlay` — different product path, requires ARE. See `references/adaptive-recognition.md`. |
 
-**Pre-made labels are sealed.** Do NOT call `.addField(...)` or otherwise mutate the returned `LabelDefinition`. The schema is fixed native-side; mixing in custom fields is not supported. If the customer needs a hybrid (e.g. "VIN plus an inventory barcode"), build the whole definition manually with custom fields — do not modify a pre-made one.
+**Pre-made label definitions are sealed.** The three pre-built definitions — `priceCaptureDefinitionWithName(...)`, `vinLabelDefinitionWithName(...)`, and `sevenSegmentDisplayLabelDefinitionWithName(...)` — return a fixed `LabelDefinition` whose schema is baked in native-side. They expose **no** `addField`/`addCustomBarcode`/`addX` methods and cannot be extended with custom fields; do NOT try to mutate the returned object. If the customer needs a **hybrid** (e.g. "VIN plus an inventory barcode"), build the whole definition from scratch with `LabelDefinitionBuilder().addX(...)` using custom + pre-built *fields* — do not modify a pre-made definition.
 
 If a pre-made label fits, **stop here** — skip Questions A/B/C and just instantiate the pre-made definition. Only proceed with the field-by-field interactive flow below when no pre-made label matches.
 
@@ -80,10 +80,10 @@ If a pre-made label fits, **stop here** — skip Questions A/B/C and just instan
 
 **Question B — For each selected field:**
 - Required or optional? (required = label is not considered captured until this field matches.)
-- Does the user need at least N instances of the same field matched before the label is considered captured? If so, call `.setNumberOfMandatoryInstances(N)` on the field builder. Leave unset (default `null`) for one-instance behavior.
+- `LabelField.numberOfMandatoryInstances` is a **read-only** property on Flutter (there is no builder setter for it — do not invent `setNumberOfMandatoryInstances`). Express required/optional purely via `.isOptional(false)` / `.isOptional(true)`.
 - For `CustomBarcode`: which **symbologies**? Mention to the user that enabling only the symbologies they actually need improves scanning performance and accuracy.
-- For `CustomText` and date/text presets: what **value regex(es)** should the text match? Set via `.setValueRegex('<pattern>')` (or `.setValueRegexes(['<p1>', '<p2>'])` for multiple). `setValueRegex` **appends** — to replace the full set, use `setValueRegexes`.
-- Optionally, **anchor regex(es)** — context words near the value that help the SDK locate the field (e.g. `EXP:`, `Best before`, `LOT`). Set via `.setAnchorRegex('<pattern>')` / `.setAnchorRegexes([...])` on the builder. To clear after the field is built, the only way is to rebuild the field — there is no public setter on the field instance. The presets ship with default anchor regexes — override only if the default doesn't match the customer's labels.
+- For `CustomText` and date/text presets: what **value regex(es)** should the text match? Set via `.setValueRegexes(['<p1>', '<p2>'])` — on Flutter the value setter is the **list** form (`setValueRegexes`); there is no singular `setValueRegex` String setter. Calling it **overrides** the preset's default value patterns.
+- Optionally, **anchor regex(es)** — context words near the value that help the SDK locate the field (e.g. `EXP:`, `Best before`, `LOT`). Set via `.setAnchorRegexes(['<keyword>', ...])` (list of strings) or `.setAnchorRegex(Regex('<pattern>'))` (a single Dart `Regex`). Use `.resetAnchorRegexes()` to clear the preset's default anchors and rely on the value regex alone. The presets ship with default anchor regexes — override only if the default doesn't match the customer's labels.
 
 **Question C — Which file should the integration code go in?** Then write the code directly into that file.
 
@@ -151,9 +151,46 @@ final labelDefinition = LabelDefinitionBuilder()
 | `PartNumberBarcode` / `SerialNumberBarcode` | `SerialNumberBarcodeBuilder().setSymbologies({...}).build(name)` |
 | `ExpiryDateText` / `PackingDateText` / `DateText` | `ExpiryDateTextBuilder().isOptional(...).build(name)` |
 | `WeightText` / `UnitPriceText` / `TotalPriceText` | `TotalPriceTextBuilder().isOptional(...).build(name)` |
-| `CustomText` | `CustomTextBuilder().setValueRegex('<pattern>').build(name)` |
+| `CustomText` | `CustomTextBuilder().setValueRegexes(['<pattern>']).build(name)` |
 
 `LabelDefinitionBuilder` exposes one `addX` method per field type (`addCustomBarcode`, `addExpiryDateText`, `addTotalPriceText`, …). Call `.build('<label name>')` to produce the `LabelDefinition`.
+
+### Value regexes vs. anchor regexes
+
+Two distinct regex roles control text-field recognition:
+
+- **`valueRegexes`** — match the actual field **value** (the date, price, lot code, …). Set with `.setValueRegexes(['<pattern>', ...])` (list form; there is no singular `setValueRegex` String setter on Flutter). Required for `CustomText`; preset fields ship with sensible defaults that calling this **overrides**. Keep these patterns standard — the SDK regex engine does **not** support lookahead/lookbehind (`(?=…)`, `(?<=…)`) or backreferences (see the note below).
+- **`anchorRegexes`** — match the **contextual keyword** printed near the value (e.g. `EXP`, `BBE`, `Best before`, `LOT`). They disambiguate when several fields share the same value format (e.g. an expiry date and a packaging date both `dd/mm/yyyy`). Set with `.setAnchorRegexes(['<keyword>', ...])` (list of strings) or `.setAnchorRegex(Regex('<pattern>'))` (single Dart `Regex`).
+
+When the customer's label has **no keyword** next to the value, clear the preset's default anchors with `.resetAnchorRegexes()` and let the value regex do the work:
+
+```dart
+final expiry = ExpiryDateTextBuilder()
+    .resetAnchorRegexes()                 // no 'EXP'/'BBE' keyword on this label
+    .setValueRegexes([r'\d{2}/\d{2}/\d{4}'])
+    .isOptional(false)
+    .build('Expiry Date');
+```
+
+To pin a specific keyword instead (e.g. a label that prints `BBE` and also a packaging date):
+
+```dart
+final bestBefore = ExpiryDateTextBuilder()
+    .setAnchorRegexes(['BBE', 'Best before'])
+    .build('Best Before');
+```
+
+`CustomText` is the last-resort builder — use it only when no preset field type fits. It requires both `valueRegexes` and (optionally) `anchorRegexes`:
+
+```dart
+final lot = CustomTextBuilder()
+    .setAnchorRegexes(['LOT'])
+    .setValueRegexes([r'[A-Z0-9]{6,}'])
+    .isOptional(true)
+    .build('Lot Number');
+```
+
+> **Regex engine limits.** The SDK's regex engine supports standard character classes, quantifiers, alternation, and groups only. It does **not** support lookahead/lookbehind assertions (`(?=…)`, `(?<=…)`), backreferences, or Unicode property escapes. Keep patterns simple.
 
 ## Step 3 — Build LabelCaptureSettings
 
@@ -175,11 +212,14 @@ final labelCapture = LabelCapture.forContext(context, settings);
 ## Step 5 — Configure the recommended camera
 
 ```dart
-final camera = Camera.atPosition(CameraPosition.worldFacing);
-camera?.applySettings(LabelCapture.recommendedCameraSettings);
+final camera = Camera.defaultCamera;
+if (camera == null) throw StateError('Failed to initialize camera!');
+camera.applySettings(LabelCapture.createRecommendedCameraSettings());
 context.setFrameSource(camera);
-await camera?.switchToDesiredState(FrameSourceState.on);
+await camera.switchToDesiredState(FrameSourceState.on);
 ```
+
+`Camera.defaultCamera` is the documented accessor for the default (world-facing) camera and is **nullable** — guard it before use. `LabelCapture.createRecommendedCameraSettings()` is a **method** on Flutter (there is no `recommendedCameraSettings` property — that form is iOS/Android-only). Switch the camera on with `switchToDesiredState(FrameSourceState.on)` and off with `FrameSourceState.off`.
 
 ## Step 6 — Embed the `DataCaptureView` widget
 
@@ -342,8 +382,8 @@ class _ScanScreenState extends State<ScanScreen>
     WidgetsBinding.instance.addObserver(this);
     _context = DataCaptureContext.sharedInstance;
 
-    _camera = Camera.atPosition(CameraPosition.worldFacing);
-    _camera?.applySettings(LabelCapture.recommendedCameraSettings);
+    _camera = Camera.defaultCamera;
+    _camera?.applySettings(LabelCapture.createRecommendedCameraSettings());
     _context.setFrameSource(_camera);
 
     final barcode = CustomBarcodeBuilder()
@@ -435,6 +475,20 @@ class _ScanScreenState extends State<ScanScreen>
 - **Singleton context.** Always `DataCaptureContext.initialize(licenseKey)` once and access via `DataCaptureContext.sharedInstance`. Never `dispose()` it.
 - **Lifecycle via `WidgetsBindingObserver`.** Pause/resume the camera in `didChangeAppLifecycleState`; clear listeners in `dispose()`.
 - **License key in source is a placeholder** (`'-- ENTER YOUR SCANDIT LICENSE KEY HERE --'`). Replace it before shipping.
+
+## Troubleshooting common failures
+
+When the user reports a problem, map the symptom to its cause before suggesting code changes. The most common failures are environmental, not API misuse.
+
+- **Black / blank camera preview, no error** — almost always the camera permission was never granted, or the camera was never switched on. Check that (1) on iOS `NSCameraUsageDescription` is in `ios/Runner/Info.plist` and the OS prompt was accepted; on Android the runtime `CAMERA` permission is requested and granted with `permission_handler` (or equivalent) **before** the scan screen is pushed; (2) `camera.switchToDesiredState(FrameSourceState.on)` runs after permission is granted; and (3) `Camera.defaultCamera` did not return `null` (it is nullable — guard it) and `context.setFrameSource(camera)` was called.
+
+- **Camera preview shows but nothing is ever captured** — verify the `LabelCaptureBasicOverlay` (or a Validation Flow overlay) was attached to the `DataCaptureView`, that `labelCapture.isEnabled` is `true`, and that the mode was not left disabled after a previous capture (re-enable with `labelCapture.isEnabled = true`). Confirm the `LabelDefinitionBuilder().addX(...).build(name)` chain actually added fields (a definition with no fields never captures) and that the barcode field enables the symbologies actually printed on the label.
+
+- **Text / OCR fields never match (expiry date, total price, custom text, etc.) but the barcode reads fine** — the barcode reading correctly is the tell: **barcode-only fields (e.g. `CustomBarcode`, `SerialNumberBarcode`) do NOT need the on-device text models**, so a working barcode plus empty text fields points squarely at a missing text-models module. Text, price, and date/semantic *text* fields **do** require them: `ScanditLabelCaptureText` is needed for arbitrary text/date fields and `ScanditPriceLabel` for price fields (unit price / total price). Both ship with the `scandit_flutter_datacapture_label` package, so confirm it is in `pubspec.yaml` and `flutter pub get` was re-run, and that `await ScanditFlutterDataCaptureLabel.initialize();` ran before `DataCaptureContext.initialize(licenseKey)`.
+
+- **A field never matches even though the text is on the label** — the value regex or anchor regex is too strict. Prefer the preset builder field (its regexes are tuned) over a hand-written custom-text field. If the label has no keyword near the value, clear the anchors (pass an empty anchor-regex list) and rely on the value regex alone. Keep regexes simple — lookahead/lookbehind are not supported and silently fail to match.
+
+- **Handwritten or non-Latin text is never read** — expected. Label Capture reads **printed text** in the supported Latin character set only (see Recognition Limits above). Use the Validation Flow's manual-entry sheet so the user can type the value when it cannot be scanned.
 
 ## Where to Go Next
 

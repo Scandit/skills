@@ -41,7 +41,7 @@ While ARE is processing inside the Validation Flow, the placeholder shown in the
 Today only `AdaptiveRecognitionResultType.receipt` is supported (8.2+ on Flutter).
 
 ```dart
-final settings = LabelCaptureAdaptiveRecognitionSettings.create(
+final settings = LabelCaptureAdaptiveRecognitionSettings(
   AdaptiveRecognitionResultType.receipt,
 );
 settings.processingHintText = 'Reading receipt…';
@@ -50,7 +50,7 @@ final overlay = LabelCaptureAdaptiveRecognitionOverlay(labelCapture);
 
 class _ReceiptListener implements LabelCaptureAdaptiveRecognitionListener {
   @override
-  void didRecognize(AdaptiveRecognitionResult result) {
+  void onRecognized(AdaptiveRecognitionResult result) {
     if (result is ReceiptScanningResult) {
       // result.storeName, result.storeAddress, result.date,
       // result.lineItems, result.paymentTotal, result.paymentTax, …
@@ -58,7 +58,7 @@ class _ReceiptListener implements LabelCaptureAdaptiveRecognitionListener {
   }
 
   @override
-  void didFail() {
+  void onFailure() {
     // Cloud call failed or no receipt was recognized.
   }
 }
@@ -66,6 +66,8 @@ class _ReceiptListener implements LabelCaptureAdaptiveRecognitionListener {
 overlay.listener = _ReceiptListener();
 await overlay.applySettings(settings);
 ```
+
+> **Listener method names.** On Flutter the `LabelCaptureAdaptiveRecognitionListener` callbacks are `onRecognized(AdaptiveRecognitionResult)` and `onFailure()` — not `didRecognize` / `didFail`.
 
 Use Path 2 only when the customer's goal is **receipts specifically**. For general "scan this label, improve accuracy with the cloud", use Path 1.
 

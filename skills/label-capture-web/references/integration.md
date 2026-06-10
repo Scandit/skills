@@ -79,7 +79,7 @@ Before writing any code, walk the user through their label. Ask one question at 
 
 Default to recommending Validation Flow unless the user explicitly says they do not want a confirmation step or need a fully custom AR experience.
 
-> **VIN and price label use cases with Validation Flow:** For VIN scanning or price label capture, use custom field builders (e.g. `CustomBarcodeBuilder` + `CustomTextBuilder`) rather than pre-made definitions. This ensures full compatibility with the Validation Flow overlay. The web SDK builder API provides all the flexibility needed to define these labels precisely.
+> **VIN and price label use cases with the Validation Flow:** The web SDK ships ready-made `LabelDefinition.createVinLabelDefinition(name)` and `LabelDefinition.createPriceCaptureDefinition(name)` definitions (see **Pre-built Label Definitions** below). These pre-made definitions are **not compatible with the Validation Flow overlay** — use them only with the Basic Overlay. If the user specifically wants VIN or price capture *inside the Validation Flow*, build the label by hand with custom field builders (`CustomBarcodeBuilder` + `CustomTextBuilder`) instead; the builder API gives full control over the fields the Validation Flow can render.
 
 **Question D — Which file should the integration code go in?** Then write the code directly into that file. Do not just show it in chat.
 
@@ -341,10 +341,13 @@ basicOverlay.listener = {
     // Return a Brush for the whole label bounding box, or null to use the default
     return null;
   },
+  onLabelTapped: (overlay, label) => {
+    // Handle user tap gestures on a highlighted label.
+  },
 };
 ```
 
-`Brush` takes a fill color, stroke color, and stroke width. Import `Brush` and `Color` from `@scandit/web-datacapture-core`. Return `null` from either method to keep the default highlight for that element.
+`Brush` takes a fill color, stroke color, and stroke width. Import `Brush` and `Color` from `@scandit/web-datacapture-core`. Return `null` from either method to keep the default highlight for that element. Use brush colors with transparency (alpha &lt; 1) so they do not occlude the captured barcode or text. `Brush.transparent` hides a highlight entirely. `onLabelTapped` fires when the user taps a highlighted label.
 
 For the full list of styling options, fetch the [Advanced Configurations](https://docs.scandit.com/sdks/web/label-capture/advanced/) page.
 
@@ -438,6 +441,110 @@ const labelDef = await new LabelDefinitionBuilder()
 With `Auto`, the SDK decides when to invoke the cloud fallback. Results arrive through the same Validation Flow callbacks — no additional handling is needed.
 
 Mention ARE only if the user asks about improving OCR accuracy or mentions difficulty reading certain labels. Do not enable it by default.
+
+## Semantic Barcode Fields (IMEI / serial number / part number)
+
+For barcodes that carry a known semantic meaning, prefer the pre-built barcode field builders over `CustomBarcodeBuilder` — they ship with tuned symbology defaults for that field type. Each has a matching `addXxxBarcode` method on `LabelDefinitionBuilder`:
+
+- `ImeiOneBarcodeBuilder` → `addImeiOneBarcode(...)` — IMEI 1 (e.g. smartphone boxes).
+- `ImeiTwoBarcodeBuilder` → `addImeiTwoBarcode(...)` — IMEI 2.
+- `SerialNumberBarcodeBuilder` → `addSerialNumberBarcode(...)` — serial number.
+- `PartNumberBarcodeBuilder` → `addPartNumberBarcode(...)` — part number.
+
+Like every field builder they support `.setSymbologies([...])` / `.setSymbology(...)` and `.isOptional(true)`, and `.build(name)` returns a `Promise`, so `await` each one:
+
+```typescript
+import { Symbology } from "@scandit/web-datacapture-barcode";
+import {
+  ImeiOneBarcodeBuilder,
+  ImeiTwoBarcodeBuilder,
+  LabelCaptureSettingsBuilder,
+  LabelDefinitionBuilder,
+  PartNumberBarcodeBuilder,
+  SerialNumberBarcodeBuilder,
+} from "@scandit/web-datacapture-label";
+
+const settings = await new LabelCaptureSettingsBuilder()
+  .addLabel(
+    await new LabelDefinitionBuilder()
+      .addImeiOneBarcode(await new ImeiOneBarcodeBuilder().build("IMEI 1"))
+      .addImeiTwoBarcode(await new ImeiTwoBarcodeBuilder().isOptional(true).build("IMEI 2"))
+      .addSerialNumberBarcode(
+        await new SerialNumberBarcodeBuilder().setSymbologies([Symbology.Code128]).build("Serial Number")
+      )
+      .addPartNumberBarcode(await new PartNumberBarcodeBuilder().build("Part Number"))
+      .build("Device Box")
+  )
+  .build();
+```
+
+## Pre-built Label Definitions
+
+For the two most common whole-label use cases the web SDK ships ready-made definitions, so you do not have to declare each field by hand. Both are `async` static factories on `LabelDefinition` that return a `Promise<LabelDefinition>` — `await` them and pass the result to `LabelCaptureSettingsBuilder.addLabel(...)`:
+
+- `LabelDefinition.createPriceCaptureDefinition(name)` — retail price labels (price, unit price, weight).
+- `LabelDefinition.createVinLabelDefinition(name)` — Vehicle Identification Number labels.
+
+```typescript
+import {
+  LabelCapture,
+  LabelCaptureBasicOverlay,
+  LabelCaptureSettingsBuilder,
+  LabelDefinition,
+  labelCaptureLoader,
+} from "@scandit/web-datacapture-label";
+
+const settings = await new LabelCaptureSettingsBuilder()
+  .addLabel(await LabelDefinition.createPriceCaptureDefinition("price-label"))
+  .build();
+
+const mode = await LabelCapture.forContext(context, settings);
+await LabelCaptureBasicOverlay.withLabelCaptureForView(mode, view);
+```
+
+Swap `createPriceCaptureDefinition` for `createVinLabelDefinition` for VIN labels.
+
+> **Pre-built definitions are Basic-Overlay only.** `createPriceCaptureDefinition` and `createVinLabelDefinition` are **not compatible with the Validation Flow overlay** — pair them with `LabelCaptureBasicOverlay`. Do not mutate the returned definition (do not add extra fields to it). If the user needs VIN or price capture inside the Validation Flow, hand-build the label with `CustomBarcodeBuilder` / `CustomTextBuilder` instead.
+
+Both factories accept an optional second `AdaptiveRecognitionMode` argument (see **ARE** below).
+
+## Receipt Scanning (Beta)
+
+> **Beta.** Receipt Scanning is built on the Adaptive Recognition Engine and is still in Beta — it may change in future SDK versions. It requires a subscription with the feature enabled; tell the user to contact <support@scandit.com> to enable it. Do not suggest it by default.
+
+Receipt Scanning extracts structured data from a whole receipt (store details, payment totals, line items) in the cloud. It uses a **different integration pattern** from standard label capture — a dedicated overlay and listener rather than the Basic / Validation Flow overlays:
+
+- `LabelCaptureAdaptiveRecognitionOverlay.withLabelCaptureForView(mode, view)` — the receipt-scanning overlay (shows the processing animation).
+- `overlay.listener` implementing `onRecognized(result)` — `result` is a `ReceiptScanningResult`.
+
+```typescript
+import {
+  LabelCaptureAdaptiveRecognitionOverlay,
+  LabelCaptureAdaptiveRecognitionSettings,
+  type LabelCaptureAdaptiveRecognitionListener,
+  type ReceiptScanningResult,
+} from "@scandit/web-datacapture-label";
+
+const overlay = await LabelCaptureAdaptiveRecognitionOverlay.withLabelCaptureForView(mode, view);
+
+const settings = await LabelCaptureAdaptiveRecognitionSettings.create();
+await settings.setProcessingHintText("Scanning receipt…");
+await overlay.applySettings(settings);
+
+overlay.listener = {
+  onRecognized: (result: ReceiptScanningResult) => {
+    console.log(result.storeName, result.paymentTotal);
+    for (const item of result.lineItems) {
+      console.log(item.name, item.quantity, item.totalPrice);
+    }
+  },
+  onFailure: () => {
+    // Cloud processing failed for this receipt.
+  },
+} satisfies LabelCaptureAdaptiveRecognitionListener;
+```
+
+`ReceiptScanningResult` exposes `storeName`, `storeAddress`, `storeCity`, `date`, `time`, `paymentPreTaxTotal`, `paymentTax`, `paymentTotal`, `loyaltyNumber` (each nullable) and `lineItems` (each with `name`, `unitPrice`, `discount`, `quantity`, `totalPrice`).
 
 ## Where to Go Next
 

@@ -1,0 +1,53 @@
+# Committed source registry for skill-auditor. Every external URL/repo the auditor
+# touches is declared here — the model must never invent or guess a source location.
+# Machine-specific paths (checkouts) go in sources.local.yaml (gitignored); see
+# sources.local.yaml.example. Local entries override same-named entries here.
+#
+# Four source classes feed the audits, in evidence order:
+#   public_docs   -> feature taxonomy seeding, doc-section mining, link validation
+#   samples       -> blessed workflows, expected-output references for new evals
+#   sdk_source    -> API surface diffs, platform exclusions, deprecations, error paths
+#   internal_docs -> real-world edge cases (RST corpus)
+#
+# Resolution order per repo:
+#   1. sources.local.yaml `path:`        -> existing checkout (read-only; record SHA,
+#                                           warn if dirty or not on default branch)
+#   2. public repo                       -> shallow clone cached under
+#                                           ~/.cache/scandit-skill-auditor/<repo>@<sha>
+#   3. private repo with no local path   -> ask the user once, write sources.local.yaml;
+#                                           never auto-clone. CI: skip the mode, visibly.
+
+public_docs: # Docusaurus site source (Scandit/data-capture-documentation)
+  repo: https://github.com/Scandit/data-capture-documentation
+  raw_base: https://raw.githubusercontent.com/Scandit/data-capture-documentation/main
+  published_base: https://docs.scandit.com
+  feeds: # small files — fetch at runtime, no clone needed
+    products: src/data/products.json
+    features: src/data/features.json
+    symbologies: docs/partials/_barcode-symbologies.mdx
+    system_requirements: docs/partials/_system-requirements.mdx
+    ai_features: docs/partials/_ai-powered-barcode-scanning.mdx
+  sections_glob: docs/sdks/{platform}/{mode}/** # bulk mining — use cached clone
+  used_by: [taxonomy-mining, link-validation, coverage-evidence]
+
+samples: # per-platform sample-app repos — bulk mining via cached clone or local checkout
+  ios: https://github.com/Scandit/datacapture-ios-samples
+  android: https://github.com/Scandit/datacapture-android-samples
+  web: https://github.com/Scandit/datacapture-web-samples
+  react-native: https://github.com/Scandit/datacapture-react-native-samples
+  flutter: https://github.com/Scandit/datacapture-flutter-samples
+  dotnet: https://github.com/Scandit/datacapture-dotnet-samples
+  capacitor: https://github.com/Scandit/datacapture-capacitor-samples
+  cordova: https://github.com/Scandit/datacapture-cordova-samples
+  used_by: [taxonomy-mining, eval-drafting, sample-path-validation]
+
+sdk_source: # private (GitLab) — resolved only via sources.local.yaml
+  private: true
+  used_by: [api-surface-audit, platform-exclusion-check, deprecation-check]
+
+internal_docs: # private RST corpus — resolved only via sources.local.yaml
+  private: true
+  format: rst
+  # glob relative to the configured path; override in sources.local.yaml if layout differs
+  rst_glob: "**/*.rst"
+  used_by: [taxonomy-mining, edge-case-mining]

@@ -9,21 +9,51 @@
         "fixtures/EmptyPage.dart"
       ],
       "assertions": [
-        {"text": "Setup checklist is shown (mentions scandit_flutter_datacapture_barcode and flutter pub get)"},
-        {"text": "Setup checklist mentions iOS NSCameraUsageDescription in ios/Runner/Info.plist"},
-        {"text": "Setup checklist mentions Android runtime camera permission (via permission_handler)"},
-        {"text": "await ScanditFlutterDataCaptureBarcode.initialize() is present in main() before runApp"},
-        {"text": "WidgetsFlutterBinding.ensureInitialized() is called before the await"},
-        {"text": "DataCaptureContext.forLicenseKey( OR DataCaptureContext.initialize( is present"},
-        {"text": "License key placeholder (e.g. YOUR_LICENSE_KEY or similar) is present"},
-        {"text": "SparkScan(settings: ...) is used (v8 constructor form, not SparkScan.withSettings or SparkScan.forSettings)"},
-        {"text": "Symbology.ean13Upca is enabled"},
-        {"text": "Symbology.code128 is enabled"},
-        {"text": "No symbologies except ean13Upca and code128 are enabled"},
-        {"text": "SparkScanView.forContext( is used to create the view"},
-        {"text": "sparkScan.addListener( is called to register the scan listener"},
-        {"text": "A class implements SparkScanListener with didScan and didUpdateSession overrides"},
-        {"text": "Imports come from scandit_flutter_datacapture_core (DataCaptureContext) and scandit_flutter_datacapture_barcode (SparkScan, SparkScanView, SparkScanSettings, Symbology)"}
+        {
+          "text": "Setup checklist is shown (mentions scandit_flutter_datacapture_barcode and flutter pub get)"
+        },
+        {
+          "text": "Setup checklist mentions iOS NSCameraUsageDescription in ios/Runner/Info.plist"
+        },
+        {
+          "text": "Setup checklist mentions Android runtime camera permission (via permission_handler)"
+        },
+        {
+          "text": "await ScanditFlutterDataCaptureBarcode.initialize() is present in main() before runApp"
+        },
+        {
+          "text": "WidgetsFlutterBinding.ensureInitialized() is called before the await"
+        },
+        {
+          "text": "DataCaptureContext.forLicenseKey( OR DataCaptureContext.initialize( is present"
+        },
+        {
+          "text": "License key placeholder (e.g. YOUR_LICENSE_KEY or similar) is present"
+        },
+        {
+          "text": "SparkScan(settings: ...) is used (v8 constructor form, not SparkScan.withSettings or SparkScan.forSettings)"
+        },
+        {
+          "text": "Symbology.ean13Upca is enabled"
+        },
+        {
+          "text": "Symbology.code128 is enabled"
+        },
+        {
+          "text": "No symbologies except ean13Upca and code128 are enabled"
+        },
+        {
+          "text": "SparkScanView.forContext( is used to create the view"
+        },
+        {
+          "text": "sparkScan.addListener( is called to register the scan listener"
+        },
+        {
+          "text": "A class implements SparkScanListener with didScan and didUpdateSession overrides"
+        },
+        {
+          "text": "Imports come from scandit_flutter_datacapture_core (DataCaptureContext) and scandit_flutter_datacapture_barcode (SparkScan, SparkScanView, SparkScanSettings, Symbology)"
+        }
       ]
     },
     {
@@ -34,16 +64,36 @@
         "fixtures/ProductListBloc.dart"
       ],
       "assertions": [
-        {"text": "The BLoC implements SparkScanListener"},
-        {"text": "DataCaptureContext.forLicenseKey( OR DataCaptureContext.initialize( is present"},
-        {"text": "SparkScan(settings: ...) is used"},
-        {"text": "SparkScanView.forContext( or reference to it is present (the BLoC exposes sparkScan/context for the page to build the view)"},
-        {"text": "sparkScan.addListener(this) is called"},
-        {"text": "didScan override is present"},
-        {"text": "didScan appends to the existing scannedItems list"},
-        {"text": "Existing scannedItems list is preserved"},
-        {"text": "Existing stream controller (_scannedItemsController) or equivalent is preserved and emits on new scans"},
-        {"text": "Existing clear() method is preserved"}
+        {
+          "text": "The BLoC implements SparkScanListener"
+        },
+        {
+          "text": "DataCaptureContext.forLicenseKey( OR DataCaptureContext.initialize( is present"
+        },
+        {
+          "text": "SparkScan(settings: ...) is used"
+        },
+        {
+          "text": "SparkScanView.forContext( or reference to it is present (the BLoC exposes sparkScan/context for the page to build the view)"
+        },
+        {
+          "text": "sparkScan.addListener(this) is called"
+        },
+        {
+          "text": "didScan override is present"
+        },
+        {
+          "text": "didScan appends to the existing scannedItems list"
+        },
+        {
+          "text": "Existing scannedItems list is preserved"
+        },
+        {
+          "text": "Existing stream controller (_scannedItemsController) or equivalent is preserved and emits on new scans"
+        },
+        {
+          "text": "Existing clear() method is preserved"
+        }
       ]
     },
     {
@@ -54,14 +104,30 @@
         "fixtures/IntegratedBloc.dart"
       ],
       "assertions": [
-        {"text": "The BLoC implements SparkScanFeedbackDelegate"},
-        {"text": "feedbackForBarcode override is present"},
-        {"text": "SparkScanBarcodeErrorFeedback( or SparkScanBarcodeErrorFeedback.fromMessage( is returned for rejected barcodes"},
-        {"text": "Duration(seconds: 30) (or equivalent) is passed as the resumeCapturingDelay"},
-        {"text": "SparkScanBarcodeSuccessFeedback() is returned for valid barcodes"},
-        {"text": "The rejection condition checks barcode.data == '123456789' or equivalent"},
-        {"text": "sparkScanView.feedbackDelegate is assigned (either in the page build or on creation)"},
-        {"text": "Existing integration code (context, sparkScan, sparkScanView, listener) is preserved"}
+        {
+          "text": "The BLoC implements SparkScanFeedbackDelegate"
+        },
+        {
+          "text": "feedbackForBarcode override is present"
+        },
+        {
+          "text": "SparkScanBarcodeErrorFeedback( or SparkScanBarcodeErrorFeedback.fromMessage( is returned for rejected barcodes"
+        },
+        {
+          "text": "Duration(seconds: 30) (or equivalent) is passed as the resumeCapturingDelay"
+        },
+        {
+          "text": "SparkScanBarcodeSuccessFeedback() is returned for valid barcodes"
+        },
+        {
+          "text": "The rejection condition checks barcode.data == '123456789' or equivalent"
+        },
+        {
+          "text": "sparkScanView.feedbackDelegate is assigned (either in the page build or on creation)"
+        },
+        {
+          "text": "Existing integration code (context, sparkScan, sparkScanView, listener) is preserved"
+        }
       ]
     },
     {
@@ -72,12 +138,24 @@
         "fixtures/IntegratedBloc.dart"
       ],
       "assertions": [
-        {"text": "triggerButtonVisible = false is set on the SparkScanView (either via constructor named param or property assignment)"},
-        {"text": "A FloatingActionButton (or equivalent Flutter button) is added to the page"},
-        {"text": "onPressed handler is wired to the FAB"},
-        {"text": "sparkScanView.startScanning() is called inside the handler"},
-        {"text": "sparkScanView.pauseScanning() is called for the pause branch"},
-        {"text": "Existing integration code (context, sparkScan, sparkScanView, listener) is preserved"}
+        {
+          "text": "triggerButtonVisible = false is set on the SparkScanView (either via constructor named param or property assignment)"
+        },
+        {
+          "text": "A FloatingActionButton (or equivalent Flutter button) is added to the page"
+        },
+        {
+          "text": "onPressed handler is wired to the FAB"
+        },
+        {
+          "text": "sparkScanView.startScanning() is called inside the handler"
+        },
+        {
+          "text": "sparkScanView.pauseScanning() is called for the pause branch"
+        },
+        {
+          "text": "Existing integration code (context, sparkScan, sparkScanView, listener) is preserved"
+        }
       ]
     },
     {
@@ -88,11 +166,21 @@
         "fixtures/IntegratedBloc.dart"
       ],
       "assertions": [
-        {"text": "cameraSwitchButtonVisible = false is set"},
-        {"text": "zoomSwitchControlVisible = false is set"},
-        {"text": "triggerButtonTintColor is assigned a Color value (Colors.white or Color(0xFFFFFFFF))"},
-        {"text": "Existing integration code (context, sparkScan, sparkScanView, listener) is preserved"},
-        {"text": "Old v6 property names (captureButtonTintColor, torchButtonVisible) are NOT present"}
+        {
+          "text": "cameraSwitchButtonVisible = false is set"
+        },
+        {
+          "text": "zoomSwitchControlVisible = false is set"
+        },
+        {
+          "text": "triggerButtonTintColor is assigned a Color value (Colors.white or Color(0xFFFFFFFF))"
+        },
+        {
+          "text": "Existing integration code (context, sparkScan, sparkScanView, listener) is preserved"
+        },
+        {
+          "text": "Old v6 property names (captureButtonTintColor, torchButtonVisible) are NOT present"
+        }
       ]
     },
     {
@@ -103,11 +191,21 @@
         "fixtures/IntegratedBloc.dart"
       ],
       "assertions": [
-        {"text": "A class implements SparkScanViewUiListener (may be the State class itself)"},
-        {"text": "didTapBarcodeCountButton is overridden"},
-        {"text": "Navigator.of(context).push / pushNamed (or equivalent Flutter navigation) is invoked inside the handler"},
-        {"text": "The listener is assigned to the view (sparkScanView.setListener(...) or .uiListener)"},
-        {"text": "Existing integration code (context, sparkScan, sparkScanView, listener) is preserved"}
+        {
+          "text": "A class implements SparkScanViewUiListener (may be the State class itself)"
+        },
+        {
+          "text": "didTapBarcodeCountButton is overridden"
+        },
+        {
+          "text": "Navigator.of(context).push / pushNamed (or equivalent Flutter navigation) is invoked inside the handler"
+        },
+        {
+          "text": "The listener is assigned to the view (sparkScanView.setListener(...) or .uiListener)"
+        },
+        {
+          "text": "Existing integration code (context, sparkScan, sparkScanView, listener) is preserved"
+        }
       ]
     },
     {
@@ -118,11 +216,21 @@
         "fixtures/IntegratedBloc.dart"
       ],
       "assertions": [
-        {"text": "A dispose() method exists on the BLoC / controller"},
-        {"text": "sparkScan.removeListener(this) is called inside dispose()"},
-        {"text": "The StreamController (scan events) is closed inside dispose()"},
-        {"text": "The page State.dispose() invokes the BLoC's dispose()"},
-        {"text": "Existing integration code (context, sparkScan, sparkScanView, listener) is preserved"}
+        {
+          "text": "A dispose() method exists on the BLoC / controller"
+        },
+        {
+          "text": "sparkScan.removeListener(this) is called inside dispose()"
+        },
+        {
+          "text": "The StreamController (scan events) is closed inside dispose()"
+        },
+        {
+          "text": "The page State.dispose() invokes the BLoC's dispose()"
+        },
+        {
+          "text": "Existing integration code (context, sparkScan, sparkScanView, listener) is preserved"
+        }
       ]
     },
     {
@@ -133,9 +241,50 @@
         "fixtures/IntegratedBloc.dart"
       ],
       "assertions": [
-        {"text": "settings.codeDuplicateFilter is set to Duration(milliseconds: 500) (or equivalent in the API units)"},
-        {"text": "codeDuplicateFilter is set BEFORE SparkScan(settings: settings) is constructed"},
-        {"text": "Existing integration code (context, sparkScan, sparkScanView, listener) is preserved"}
+        {
+          "text": "settings.codeDuplicateFilter is set to Duration(milliseconds: 500) (or equivalent in the API units)"
+        },
+        {
+          "text": "codeDuplicateFilter is set BEFORE SparkScan(settings: settings) is constructed"
+        },
+        {
+          "text": "Existing integration code (context, sparkScan, sparkScanView, listener) is preserved"
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "prompt": "I'm building a high-volume warehouse scanning app where we need rapid, continuous barcode scanning without pausing between items. My app already has SparkScan integrated: IntegratedBloc.dart. Reconfigure it with CONTINUOUS scanning behavior and PERSISTENT preview so the camera stays visible the whole time.",
+      "expected_output": "The skill configures SparkScanViewSettings with defaultScanningMode set to SparkScanScanningModeDefault.fromPreviewBehavior(SparkScanScanningBehavior.continuous, SparkScanPreviewBehavior.persistent), keeping the scanner active and camera always visible, and passes the settings to SparkScanView.",
+      "files": [
+        "fixtures/IntegratedBloc.dart"
+      ],
+      "tags": [
+        "continuous-scanning",
+        "preview-behavior"
+      ],
+      "assertions": [
+        {
+          "text": "SparkScanViewSettings is created or configured"
+        },
+        {
+          "text": "defaultScanningMode is set on SparkScanViewSettings"
+        },
+        {
+          "text": "SparkScanScanningModeDefault.fromPreviewBehavior( is used"
+        },
+        {
+          "text": "SparkScanScanningBehavior.continuous is used (not single)"
+        },
+        {
+          "text": "SparkScanPreviewBehavior.persistent is used (not defaultBehaviour)"
+        },
+        {
+          "text": "The configured SparkScanViewSettings is passed to the SparkScanView widget"
+        },
+        {
+          "text": "Existing integration code (context, sparkScan mode, listener, BLoC structure) is preserved"
+        }
       ]
     }
   ]

@@ -4,33 +4,80 @@
     {
       "id": 1,
       "prompt": "I want to add Scandit Label Capture to my iOS app. Here's my main view controller: ScanViewController.swift. The label is a perishable-product sticker with an EAN-13 barcode and an expiry date (both required) and a total price (optional).",
-      "expected_output": "The user has answered Questions A and B (fields + required/optional + symbology) but is silent on the overlay choice. Per the skill's overlay-default policy, the agent should NOT ask Question C upfront — it should write a Validation Flow integration into ScanViewController.swift, show the setup checklist, and end with a short offer to swap in Basic Overlay or Advanced Overlay if the user has a specific need.",
+      "expected_output": "The user has answered Questions A and B (fields + required/optional + symbology) but is silent on the overlay choice. Per the skill's overlay-default policy, the agent should NOT ask Question C upfront \u2014 it should write a Validation Flow integration into ScanViewController.swift, show the setup checklist, and end with a short offer to swap in Basic Overlay or Advanced Overlay if the user has a specific need.",
       "files": [
         "fixtures/ScanViewController.swift"
       ],
       "assertions": [
-        { "text": "Setup checklist is shown and mentions the SPM package https://github.com/Scandit/datacapture-spm and the three products ScanditLabelCapture, ScanditBarcodeCapture, ScanditCaptureCore" },
-        { "text": "Setup checklist mentions NSCameraUsageDescription in Info.plist" },
-        { "text": "DataCaptureContext.initialize(licenseKey: is present (NOT DataCaptureContext.forLicenseKey, which is the Android/Web shape)" },
-        { "text": "License key placeholder (e.g. ENTER YOUR SCANDIT LICENSE KEY or similar) is present" },
-        { "text": "LabelCaptureSettings { LabelDefinition(\"...\") { ... } } result-builder DSL is used (no .addLabel(...).buildFluent(...) chain, no LabelCaptureSettingsBuilder())" },
-        { "text": "CustomBarcode(name: ..., symbologies: [...]) is present inside the LabelDefinition closure" },
-        { "text": "Symbology .ean13UPCA is present in camelCase form (NOT the Android underscore form .EAN13_UPCA or .ean13_UPCA)" },
-        { "text": "ExpiryDateText(name: \"...\") is present inside the LabelDefinition closure" },
-        { "text": "TotalPriceText(name: \"...\") is present with .optional(true) chained on it" },
-        { "text": "LabelCapture(context: context, settings: ...) is present" },
-        { "text": "LabelCaptureValidationFlowOverlay(labelCapture: ..., view: ...) is used as the capture overlay (VF is the default when the user is silent on overlay choice)" },
-        { "text": "The view controller adopts LabelCaptureValidationFlowDelegate and implements labelCaptureValidationFlowOverlay(_:didCaptureLabelWith:); validationFlowOverlay.delegate is assigned" },
-        { "text": "DataCaptureView(context: ..., frame: ...) is present" },
-        { "text": "Camera.default is accessed and context.setFrameSource(camera, completionHandler:) is called" },
-        { "text": "camera?.apply(LabelCapture.recommendedCameraSettings) is called" },
-        { "text": "camera?.switch(toDesiredState: .on) is called in viewWillAppear" },
-        { "text": "camera?.switch(toDesiredState: .off) is called in viewWillDisappear" },
-        { "text": "labelCapture.isEnabled = true / false toggles are NOT present in viewWillAppear / viewWillDisappear — the Validation Flow overlay manages capture lifecycle internally" },
-        { "text": "A standalone LabelCaptureListener with labelCapture(_:didUpdate:frameData:) is NOT used as the primary capture handler — the Validation Flow delegate is. (A brushes-only LabelCaptureBasicOverlay coexisting alongside the VF overlay is acceptable as long as no LabelCaptureListener is attached to drive captures.)" },
-        { "text": "No renamed-away regex methods: setPattern, setPatterns, setDataTypePattern, setDataTypePatterns are absent from the generated code" },
-        { "text": "The response offers Basic Overlay and/or Advanced Overlay as alternatives the user can swap in if they need fully automated scanning with live AR or fully custom AR — i.e. the agent surfaces the alternatives instead of silently committing to VF without acknowledging the trade-off" },
-        { "text": "The response does NOT block the user with a Question C-style 'which overlay do you want?' prompt before writing code — Q&A on overlay choice is reserved for when the user has explicitly asked about overlays (eval-int-07's intent), not the default integration path" }
+        {
+          "text": "Setup checklist is shown and mentions the SPM package https://github.com/Scandit/datacapture-spm and the three products ScanditLabelCapture, ScanditBarcodeCapture, ScanditCaptureCore"
+        },
+        {
+          "text": "Setup checklist mentions NSCameraUsageDescription in Info.plist"
+        },
+        {
+          "text": "DataCaptureContext.initialize(licenseKey: is present (NOT DataCaptureContext.forLicenseKey, which is the Android/Web shape)"
+        },
+        {
+          "text": "A license key placeholder string is present (semantic)"
+        },
+        {
+          "text": "LabelCaptureSettings { LabelDefinition(\"...\") { ... } } result-builder DSL is used (no .addLabel(...).buildFluent(...) chain, no LabelCaptureSettingsBuilder())"
+        },
+        {
+          "text": "CustomBarcode(name: ..., symbologies: [...]) is present inside the LabelDefinition closure"
+        },
+        {
+          "text": "ean13UPCA is present"
+        },
+        {
+          "text": "ExpiryDateText(name: \"...\") is present inside the LabelDefinition closure"
+        },
+        {
+          "text": "TotalPriceText(name: \"...\") is present with .optional(true) chained on it"
+        },
+        {
+          "text": "LabelCapture(context: is present"
+        },
+        {
+          "text": "LabelCaptureValidationFlowOverlay(labelCapture: ..., view: ...) is used as the capture overlay (VF is the default when the user is silent on overlay choice)"
+        },
+        {
+          "text": "The view controller adopts LabelCaptureValidationFlowDelegate and implements labelCaptureValidationFlowOverlay(_:didCaptureLabelWith:); validationFlowOverlay.delegate is assigned"
+        },
+        {
+          "text": "DataCaptureView(context: is present"
+        },
+        {
+          "text": "Camera.default is present"
+        },
+        {
+          "text": "context.setFrameSource(camera, completionHandler: is present"
+        },
+        {
+          "text": "LabelCapture.recommendedCameraSettings is present"
+        },
+        {
+          "text": "camera?.switch(toDesiredState: .on) is called in viewWillAppear"
+        },
+        {
+          "text": "camera?.switch(toDesiredState: .off) is called in viewWillDisappear"
+        },
+        {
+          "text": "labelCapture.isEnabled = true / false toggles are NOT present in viewWillAppear / viewWillDisappear \u2014 the Validation Flow overlay manages capture lifecycle internally"
+        },
+        {
+          "text": "A standalone LabelCaptureListener with labelCapture(_:didUpdate:frameData:) is NOT used as the primary capture handler \u2014 the Validation Flow delegate is. (A brushes-only LabelCaptureBasicOverlay coexisting alongside the VF overlay is acceptable as long as no LabelCaptureListener is attached to drive captures.)"
+        },
+        {
+          "text": "No renamed-away regex methods: setPattern, setPatterns, setDataTypePattern, setDataTypePatterns are absent from the generated code"
+        },
+        {
+          "text": "The response offers Basic Overlay and/or Advanced Overlay as alternatives the user can swap in if they need fully automated scanning with live AR or fully custom AR \u2014 i.e. the agent surfaces the alternatives instead of silently committing to VF without acknowledging the trade-off"
+        },
+        {
+          "text": "The response does NOT block the user with a Question C-style 'which overlay do you want?' prompt before writing code \u2014 Q&A on overlay choice is reserved for when the user has explicitly asked about overlays (eval-int-07's intent), not the default integration path"
+        }
       ]
     },
     {
@@ -41,58 +88,110 @@
         "fixtures/ScanViewController.swift"
       ],
       "assertions": [
-        { "text": "LabelCaptureValidationFlowOverlay(labelCapture: ..., view: ...) is used instead of LabelCaptureBasicOverlay as the primary capture overlay" },
-        { "text": "LabelCaptureValidationFlowSettings() is instantiated" },
-        { "text": "setPlaceholderText(_:forLabelDefinition:) is called on the settings with the expiry date field name and a placeholder string" },
-        { "text": "validationFlowOverlay.apply( is called with the settings" },
-        { "text": "validationFlowOverlay.delegate is assigned, and the view controller adopts LabelCaptureValidationFlowDelegate with labelCaptureValidationFlowOverlay(_:didCaptureLabelWith:) implemented" },
-        { "text": "Symbology .ean13UPCA is present (camelCase, not underscore)" },
-        { "text": "DataCaptureContext.initialize(licenseKey: is present" },
-        { "text": "A separate LabelCaptureListener with labelCapture(_:didUpdate:frameData:) is NOT registered as the primary capture handler — the Validation Flow overlay manages capture lifecycle" }
+        {
+          "text": "LabelCaptureValidationFlowOverlay(labelCapture: ..., view: ...) is used instead of LabelCaptureBasicOverlay as the primary capture overlay"
+        },
+        {
+          "text": "LabelCaptureValidationFlowSettings() is instantiated"
+        },
+        {
+          "text": "setPlaceholderText(_:forLabelDefinition:) is called on the settings with the expiry date field name and a placeholder string"
+        },
+        {
+          "text": "validationFlowOverlay.apply( is called with the settings"
+        },
+        {
+          "text": "validationFlowOverlay.delegate is assigned, and the view controller adopts LabelCaptureValidationFlowDelegate with labelCaptureValidationFlowOverlay(_:didCaptureLabelWith:) implemented"
+        },
+        {
+          "text": "ean13UPCA is present"
+        },
+        {
+          "text": "DataCaptureContext.initialize(licenseKey: is present"
+        },
+        {
+          "text": "A separate LabelCaptureListener with labelCapture(_:didUpdate:frameData:) is NOT registered as the primary capture handler \u2014 the Validation Flow overlay manages capture lifecycle"
+        }
       ]
     },
     {
       "id": 3,
       "prompt": "I want to add Scandit Label Capture to my iOS app.",
-      "expected_output": "The skill asks what fields are on the label (Question A) and presents the supported field type checklist, prioritising pre-built builders. It does NOT generate integration code yet — it correctly waits for the user to describe their label before writing anything.",
+      "expected_output": "The skill asks what fields are on the label (Question A) and presents the supported field type checklist, prioritising pre-built builders. It does NOT generate integration code yet \u2014 it correctly waits for the user to describe their label before writing anything.",
       "files": [],
       "assertions": [
-        { "text": "The response asks what fields or data are on the label — it does not generate code without knowing the label structure" },
-        { "text": "The supported pre-built field types are listed, including at minimum: CustomBarcode (or Custom barcode), ExpiryDateText (or Expiry date), TotalPriceText (or Total price)" },
-        { "text": "The response prefers / promotes the pre-built field builders before suggesting CustomText as a custom catch-all — pre-built builders are listed first or explicitly flagged as the recommended starting point" },
-        { "text": "No LabelCaptureSettings { LabelDefinition(...) {} } code block is included — the skill waits for the user to answer before writing any integration code" },
-        { "text": "All clarifying questions are asked BEFORE any integration code is produced — the response explicitly states it will write the code after the user answers, not before" }
+        {
+          "text": "The response asks what fields or data are on the label \u2014 it does not generate code without knowing the label structure"
+        },
+        {
+          "text": "The supported pre-built field types are listed, including at minimum: CustomBarcode (or Custom barcode), ExpiryDateText (or Expiry date), TotalPriceText (or Total price)"
+        },
+        {
+          "text": "The response prefers / promotes the pre-built field builders before suggesting CustomText as a custom catch-all \u2014 pre-built builders are listed first or explicitly flagged as the recommended starting point"
+        },
+        {
+          "text": "No LabelCaptureSettings { LabelDefinition(...) {} } code block is included \u2014 the skill waits for the user to answer before writing any integration code"
+        },
+        {
+          "text": "All clarifying questions are asked BEFORE any integration code is produced \u2014 the response explicitly states it will write the code after the user answers, not before"
+        }
       ]
     },
     {
       "id": 4,
-      "prompt": "SIMULATE A TWO-TURN CONVERSATION:\nTurn 1 — send this message first: 'I want to add Scandit Label Capture to my iOS app.'\nTurn 2 — after the skill responds with clarifying questions, send this follow-up: 'The label is a perishable-product sticker with an EAN-13 barcode (required), an expiry date (required), and a total price (optional). Here is my view controller: ScanViewController.swift. Please write the integration code.'",
-      "expected_output": "After the two-turn exchange the skill produces complete Label Capture integration code — equivalent to eval 1 — written into ScanViewController.swift with the setup checklist. The user did not specify an overlay, so the skill should default to the Validation Flow per the overlay-default policy and offer Basic / Advanced as swap-in alternatives.",
+      "prompt": "SIMULATE A TWO-TURN CONVERSATION:\nTurn 1 \u2014 send this message first: 'I want to add Scandit Label Capture to my iOS app.'\nTurn 2 \u2014 after the skill responds with clarifying questions, send this follow-up: 'The label is a perishable-product sticker with an EAN-13 barcode (required), an expiry date (required), and a total price (optional). Here is my view controller: ScanViewController.swift. Please write the integration code.'",
+      "expected_output": "After the two-turn exchange the skill produces complete Label Capture integration code \u2014 equivalent to eval 1 \u2014 written into ScanViewController.swift with the setup checklist. The user did not specify an overlay, so the skill should default to the Validation Flow per the overlay-default policy and offer Basic / Advanced as swap-in alternatives.",
       "files": [
         "fixtures/ScanViewController.swift"
       ],
       "assertions": [
-        { "text": "LabelCaptureSettings { LabelDefinition(\"...\") { ... } } result-builder DSL is used in the final generated code" },
-        { "text": "CustomBarcode(name: ..., symbologies: [...]) is present" },
-        { "text": "Symbology .ean13UPCA is present (camelCase)" },
-        { "text": "ExpiryDateText(name: \"...\") is present" },
-        { "text": "TotalPriceText(name: \"...\") is present with .optional(true) chained on it" },
-        { "text": "LabelCapture(context: context, settings: ...) is present" },
-        { "text": "camera?.apply(LabelCapture.recommendedCameraSettings) is called" },
-        { "text": "LabelCaptureValidationFlowOverlay(labelCapture: ..., view: ...) is used as the capture overlay (VF is the default when the user is silent on overlay choice) and the view controller adopts LabelCaptureValidationFlowDelegate with labelCaptureValidationFlowOverlay(_:didCaptureLabelWith:) implemented" },
-        { "text": "The response offers Basic Overlay / Advanced Overlay as alternatives the user can swap in if they need fully automated scanning or fully custom AR" }
+        {
+          "text": "LabelCaptureSettings { LabelDefinition(\"...\") { ... } } result-builder DSL is used in the final generated code"
+        },
+        {
+          "text": "CustomBarcode( is present"
+        },
+        {
+          "text": "ean13UPCA is present"
+        },
+        {
+          "text": "ExpiryDateText(name: is present"
+        },
+        {
+          "text": "TotalPriceText(name: \"...\") is present with .optional(true) chained on it"
+        },
+        {
+          "text": "LabelCapture(context: is present"
+        },
+        {
+          "text": "LabelCapture.recommendedCameraSettings is present"
+        },
+        {
+          "text": "LabelCaptureValidationFlowOverlay(labelCapture: ..., view: ...) is used as the capture overlay (VF is the default when the user is silent on overlay choice) and the view controller adopts LabelCaptureValidationFlowDelegate with labelCaptureValidationFlowOverlay(_:didCaptureLabelWith:) implemented"
+        },
+        {
+          "text": "The response offers Basic Overlay / Advanced Overlay as alternatives the user can swap in if they need fully automated scanning or fully custom AR"
+        }
       ]
     },
     {
       "id": 5,
-      "prompt": "I want to scan an expiry date and a total price from a grocery label on iOS. I was going to use CustomText for both with my own regex — can you write that code for me?",
+      "prompt": "I want to scan an expiry date and a total price from a grocery label on iOS. I was going to use CustomText for both with my own regex \u2014 can you write that code for me?",
       "expected_output": "The skill pushes back on using CustomText for fields that have a pre-built recogniser. It directs the user to ExpiryDateText and TotalPriceText instead, explaining that pre-built builders ship with tuned regex/anchor defaults and that CustomText should be reserved for cases not covered by the pre-built set. The integration code uses the pre-built builders.",
       "files": [],
       "assertions": [
-        { "text": "The response explicitly recommends ExpiryDateText and TotalPriceText over CustomText for these two fields" },
-        { "text": "The response explains why pre-built builders are preferred (tuned defaults, tested anchor regex, language coverage, less maintenance) — not just that they exist" },
-        { "text": "If any integration code is shown, it uses ExpiryDateText(name: ...) and TotalPriceText(name: ...) — NOT CustomText for the expiry date or the total price" },
-        { "text": "CustomText is either absent from the generated code, or only used for a field that has no pre-built equivalent — and in that case its use is justified" }
+        {
+          "text": "The response explicitly recommends ExpiryDateText and TotalPriceText over CustomText for these two fields"
+        },
+        {
+          "text": "The response explains why pre-built builders are preferred (tuned defaults, tested anchor regex, language coverage, less maintenance) \u2014 not just that they exist"
+        },
+        {
+          "text": "If any integration code is shown, it uses ExpiryDateText(name: ...) and TotalPriceText(name: ...) \u2014 NOT CustomText for the expiry date or the total price"
+        },
+        {
+          "text": "CustomText is either absent from the generated code, or only used for a field that has no pre-built equivalent \u2014 and in that case its use is justified"
+        }
       ]
     },
     {
@@ -101,10 +200,18 @@
       "expected_output": "The skill answers no: Label Capture (on-device OCR and ARE) reads printed text only. It suggests the Validation Flow's manual-entry fallback as the workaround so users can type the value when the printed scan fails.",
       "files": [],
       "assertions": [
-        { "text": "The response states clearly that handwritten text is NOT supported by Label Capture (neither the on-device OCR engine nor ARE recognises handwriting)" },
-        { "text": "The response recommends the Validation Flow's manual-entry input as the fallback for handwritten values (or another explicit manual-entry workaround)" },
-        { "text": "The response does NOT claim ARE solves handwriting — it correctly notes ARE improves accuracy on printed text in adverse conditions only" },
-        { "text": "The response describes which characters Label Capture DOES read (printed Latin characters: A–Z, 0–9, common punctuation) rather than vaguely saying 'most characters'" }
+        {
+          "text": "The response states clearly that handwritten text is NOT supported by Label Capture (neither the on-device OCR engine nor ARE recognises handwriting)"
+        },
+        {
+          "text": "The response recommends the Validation Flow's manual-entry input as the fallback for handwritten values (or another explicit manual-entry workaround)"
+        },
+        {
+          "text": "The response does NOT claim ARE solves handwriting \u2014 it correctly notes ARE improves accuracy on printed text in adverse conditions only"
+        },
+        {
+          "text": "The response describes which characters Label Capture DOES read (printed Latin characters: A\u2013Z, 0\u20139, common punctuation) rather than vaguely saying 'most characters'"
+        }
       ]
     },
     {
@@ -113,11 +220,21 @@
       "expected_output": "The skill recommends the Validation Flow as the default for production integrations, explains the Basic Overlay trade-off, and proactively surfaces the Advanced Overlay as the third option even though the user only named two. The user must come away aware that all three exist.",
       "files": [],
       "assertions": [
-        { "text": "The response recommends the Validation Flow as the default choice for most production integrations" },
-        { "text": "The response explains when to choose Basic Overlay instead (fully automated, no confirmation step, no manual entry needed) — i.e. it does not just say 'use Validation Flow' without justification" },
-        { "text": "The response surfaces the Advanced Overlay by name as a third option for fully custom AR / UI control, even though the user only named two overlays. The mention must use the term 'Advanced Overlay' (or 'LabelCaptureAdvancedOverlay'); a vague reference to 'a custom UI on top of Basic Overlay' does not satisfy this — the user's takeaway must be that all three overlays exist." },
-        { "text": "The Advanced Overlay mention flags its significant implementation cost (e.g. 'much more code', 'significant implementation cost', 'only reach for it when VF/Basic aren't visually flexible enough') so the user knows it's not a free upgrade" },
-        { "text": "The response does not claim Basic Overlay supports manual entry or confirmation — it correctly notes that manual entry / confirmation is a Validation Flow feature" }
+        {
+          "text": "The response recommends the Validation Flow as the default choice for most production integrations"
+        },
+        {
+          "text": "The response explains when to choose Basic Overlay instead (fully automated, no confirmation step, no manual entry needed) \u2014 i.e. it does not just say 'use Validation Flow' without justification"
+        },
+        {
+          "text": "The response surfaces the Advanced Overlay by name as a third option for fully custom AR / UI control, even though the user only named two overlays. The mention must use the term 'Advanced Overlay' (or 'LabelCaptureAdvancedOverlay'); a vague reference to 'a custom UI on top of Basic Overlay' does not satisfy this \u2014 the user's takeaway must be that all three overlays exist."
+        },
+        {
+          "text": "The Advanced Overlay mention flags its significant implementation cost (e.g. 'much more code', 'significant implementation cost', 'only reach for it when VF/Basic aren't visually flexible enough') so the user knows it's not a free upgrade"
+        },
+        {
+          "text": "The response does not claim Basic Overlay supports manual entry or confirmation \u2014 it correctly notes that manual entry / confirmation is a Validation Flow feature"
+        }
       ]
     },
     {
@@ -126,10 +243,18 @@
       "expected_output": "The skill explains: which texts and per-field placeholders are customizable via LabelCaptureValidationFlowSettings (restartButtonText, pauseButtonText, finishButtonText, standbyHintText, validationHintText, validationErrorText, scanningText, adaptiveScanningText, setPlaceholderText(_:forLabelDefinition:)); what is NOT customizable (colors, layout, fonts, branding); and the product reasoning behind the managed-UI design (consistency, support cost, empirical UX wins).",
       "files": [],
       "assertions": [
-        { "text": "The response lists the customizable text properties on LabelCaptureValidationFlowSettings, including at minimum: restartButtonText, validationHintText (or validationErrorText), and setPlaceholderText(_:forLabelDefinition:)" },
-        { "text": "The response explicitly states that colors, button styles, layout, fonts, and branding are NOT customizable in the Validation Flow" },
-        { "text": "The response gives a product reason for the managed design — e.g. consistency, accessibility, lower support cost, empirically better scan completion rates, or in-field UX testing — not just 'because the SDK says so'" },
-        { "text": "The response mentions that customers who need full visual control should look at the Advanced Overlay, and acknowledges that comes with significant implementation cost" }
+        {
+          "text": "The response lists the customizable text properties on LabelCaptureValidationFlowSettings, including at minimum: restartButtonText, validationHintText (or validationErrorText), and setPlaceholderText(_:forLabelDefinition:)"
+        },
+        {
+          "text": "The response explicitly states that colors, button styles, layout, fonts, and branding are NOT customizable in the Validation Flow"
+        },
+        {
+          "text": "The response gives a product reason for the managed design \u2014 e.g. consistency, accessibility, lower support cost, empirically better scan completion rates, or in-field UX testing \u2014 not just 'because the SDK says so'"
+        },
+        {
+          "text": "The response mentions that customers who need full visual control should look at the Advanced Overlay, and acknowledges that comes with significant implementation cost"
+        }
       ]
     },
     {
@@ -138,12 +263,24 @@
       "expected_output": "The skill explains ARE is the Adaptive Recognition Engine, a cloud-based OCR fallback. It enumerates the constraints: works ONLY with the Validation Flow, requires a license key with the ARE feature flag, is in Beta, trial keys are available for evaluation, and production keys require contacting support@scandit.com. It shows the enabling API .adaptiveRecognition(.auto) on the LabelDefinition.",
       "files": [],
       "assertions": [
-        { "text": "The response defines ARE as Adaptive Recognition Engine and describes it as Scandit's cloud-based OCR fallback (or similar wording)" },
-        { "text": "The response states ARE works ONLY with the Validation Flow overlay — not with Basic Overlay or Advanced Overlay" },
-        { "text": "The response states ARE requires a license key with the ARE feature flag enabled" },
-        { "text": "The response states ARE is in Beta and that trial keys can be issued for evaluation" },
-        { "text": "The response states that for production use the customer must contact support@scandit.com to enable ARE on their production key" },
-        { "text": "The response shows the enabling API — .adaptiveRecognition(.auto) (or AdaptiveRecognitionMode.auto) — on the LabelDefinition" }
+        {
+          "text": "The response defines ARE as Adaptive Recognition Engine and describes it as Scandit's cloud-based OCR fallback (or similar wording)"
+        },
+        {
+          "text": "The response states ARE works ONLY with the Validation Flow overlay \u2014 not with Basic Overlay or Advanced Overlay"
+        },
+        {
+          "text": "The response states ARE requires a license key with the ARE feature flag enabled"
+        },
+        {
+          "text": "The response states ARE is in Beta and that trial keys can be issued for evaluation"
+        },
+        {
+          "text": "The response states that for production use the customer must contact support@scandit.com to enable ARE on their production key"
+        },
+        {
+          "text": "The response shows the enabling API \u2014 .adaptiveRecognition(.auto) (or AdaptiveRecognitionMode.auto) \u2014 on the LabelDefinition"
+        }
       ]
     },
     {
@@ -152,9 +289,15 @@
       "expected_output": "The skill recommends starting from the official iOS LabelCaptureSimpleSample and provides the GitHub URL. It only falls back to manual integration steps if the user already has a project.",
       "files": [],
       "assertions": [
-        { "text": "The response recommends starting from the official Scandit iOS sample app rather than building from scratch" },
-        { "text": "The response includes the GitHub link to the LabelCaptureSimpleSample for iOS — under the datacapture-ios-samples repo, in the 03_Advanced_Batch_Scanning_Samples/05_Smart_Label_Capture path" },
-        { "text": "The response describes the first three steps after cloning the sample: replace the license key placeholder, adjust the label definition, build/run on a real device" }
+        {
+          "text": "The response recommends starting from the official Scandit iOS sample app rather than building from scratch"
+        },
+        {
+          "text": "The response includes the GitHub link to the LabelCaptureSimpleSample for iOS \u2014 under the datacapture-ios-samples repo, in the 03_Advanced_Batch_Scanning_Samples/05_Smart_Label_Capture path"
+        },
+        {
+          "text": "The response describes the first three steps after cloning the sample: replace the license key placeholder, adjust the label definition, build/run on a real device"
+        }
       ]
     },
     {
@@ -163,9 +306,15 @@
       "expected_output": "The skill warns the user that the Validation Flow must be implemented full screen and will not work correctly inside a card, popover, sheet, or partial-screen container. It recommends pushing the scan view controller onto the navigation stack, presenting it modally full-screen, or otherwise dedicating the whole screen to the scan flow.",
       "files": [],
       "assertions": [
-        { "text": "The response explicitly says the Validation Flow must be used full screen and will not work correctly inside a card / popover / partial-screen container" },
-        { "text": "The response recommends an alternative — e.g. push the scan view controller, present modally full-screen, or otherwise give the scan flow the whole viewport" },
-        { "text": "The response does NOT generate working Validation Flow code embedded inside a card or partial-screen widget as the recommended approach" }
+        {
+          "text": "The response explicitly says the Validation Flow must be used full screen and will not work correctly inside a card / popover / partial-screen container"
+        },
+        {
+          "text": "The response recommends an alternative \u2014 e.g. push the scan view controller, present modally full-screen, or otherwise give the scan flow the whole viewport"
+        },
+        {
+          "text": "The response does NOT generate working Validation Flow code embedded inside a card or partial-screen widget as the recommended approach"
+        }
       ]
     },
     {
@@ -174,22 +323,38 @@
       "expected_output": "The skill explains the underlying capture-mode meaning (required = listener fires only when matched; optional = absence doesn't block) and the Validation Flow meaning (required = user cannot tap Finish until scanned or manually entered; optional = absence doesn't block Finish, shown in checklist but skippable). It shows .optional(true) as the chained API.",
       "files": [],
       "assertions": [
-        { "text": "The response distinguishes the meaning of required/optional in the underlying capture mode (Basic Overlay / listener) — required blocks the didUpdate result, optional does not" },
-        { "text": "The response distinguishes the meaning of required/optional in the Validation Flow — required blocks Finish until scanned OR manually typed, optional does not" },
-        { "text": "The response shows the API: .optional(true) chained on the field builder (e.g. TotalPriceText(name: ...).optional(true))" },
-        { "text": "The response notes that required is the default (i.e. omitting .optional(true) makes the field required)" }
+        {
+          "text": "The response distinguishes the meaning of required/optional in the underlying capture mode (Basic Overlay / listener) \u2014 required blocks the didUpdate result, optional does not"
+        },
+        {
+          "text": "The response distinguishes the meaning of required/optional in the Validation Flow \u2014 required blocks Finish until scanned OR manually typed, optional does not"
+        },
+        {
+          "text": "The response shows the API: .optional(true) chained on the field builder (e.g. TotalPriceText(name: ...).optional(true))"
+        },
+        {
+          "text": "The response notes that required is the default (i.e. omitting .optional(true) makes the field required)"
+        }
       ]
     },
     {
       "id": 13,
-      "prompt": "What's the difference between anchorRegex and valueRegex in iOS Smart Label Capture? My customer's label has the expiry date but no 'EXP' keyword printed next to it — how do I make it match?",
+      "prompt": "What's the difference between anchorRegex and valueRegex in iOS Smart Label Capture? My customer's label has the expiry date but no 'EXP' keyword printed next to it \u2014 how do I make it match?",
       "expected_output": "The skill explains anchorRegex identifies the context/keyword near the value, valueRegex validates the value content. To handle a label with no anchor keyword, call .anchorRegexes([]) on the pre-built builder to clear the defaults and let valueRegex do the work. It also notes the regex-engine limitations (no lookahead/lookbehind, no backreferences).",
       "files": [],
       "assertions": [
-        { "text": "The response defines anchorRegex as matching the keyword/context near the field (e.g. 'EXP', 'BBE', 'Best Before') and valueRegex as matching the actual field value" },
-        { "text": "The response explains how to handle a missing anchor keyword: call .anchorRegexes([]) on the pre-built field builder to clear default anchor patterns" },
-        { "text": "The response notes that the SDK regex engine does NOT support lookahead/lookbehind assertions (and ideally also notes it doesn't support backreferences or unicode property escapes), or otherwise tells the user to keep regexes simple — standard character classes, quantifiers, alternation, groups" },
-        { "text": "If example regex is shown, it uses the supported subset only — no (?= ...) or (?<= ...) constructs" }
+        {
+          "text": "The response defines anchorRegex as matching the keyword/context near the field (e.g. 'EXP', 'BBE', 'Best Before') and valueRegex as matching the actual field value"
+        },
+        {
+          "text": "The response explains how to handle a missing anchor keyword: call .anchorRegexes([]) on the pre-built field builder to clear default anchor patterns"
+        },
+        {
+          "text": "The response notes that the SDK regex engine does NOT support lookahead/lookbehind assertions (and ideally also notes it doesn't support backreferences or unicode property escapes), or otherwise tells the user to keep regexes simple \u2014 standard character classes, quantifiers, alternation, groups"
+        },
+        {
+          "text": "If example regex is shown, it uses the supported subset only \u2014 no (?= ...) or (?<= ...) constructs"
+        }
       ]
     },
     {
@@ -198,9 +363,15 @@
       "expected_output": "The skill recognises this is a question about a different Scandit product (SparkScan) and hands off to the data-capture-sdk skill rather than answering from memory.",
       "files": [],
       "assertions": [
-        { "text": "The response defers to the data-capture-sdk skill (or sparkscan-ios skill) rather than generating SparkScan integration code from memory" },
-        { "text": "The response does NOT produce a complete SparkScan integration code block — that would require the dedicated skill's references" },
-        { "text": "The response explicitly notes that SparkScan is a different Scandit product/scanning mode handled by a different skill, and routes the user there" }
+        {
+          "text": "The response defers to the data-capture-sdk skill (or sparkscan-ios skill) rather than generating SparkScan integration code from memory"
+        },
+        {
+          "text": "The response does NOT produce a complete SparkScan integration code block \u2014 that would require the dedicated skill's references"
+        },
+        {
+          "text": "The response explicitly notes that SparkScan is a different Scandit product/scanning mode handled by a different skill, and routes the user there"
+        }
       ]
     },
     {
@@ -209,11 +380,21 @@
       "expected_output": "The skill shows how to access FrameData inside labelCapture(_:didUpdate:frameData:): convert frameData.imageBuffers.first?.image to a UIImage and then to JPEG data via .jpegData(compressionQuality:). It guards on session.capturedLabels being non-empty and disables the mode before reading the buffer so the encoding doesn't run on every frame.",
       "files": [],
       "assertions": [
-        { "text": "The response uses labelCapture(_:didUpdate:frameData:) (the LabelCaptureListener method) to access FrameData" },
-        { "text": "The response converts the FrameData to an image via frameData.imageBuffers.first?.image (or equivalent ImageBuffer.image property)" },
-        { "text": "The response converts the UIImage to JPEG data with .jpegData(compressionQuality:) and notes that JPEG is the fastest option" },
-        { "text": "The response guards on session.capturedLabels being non-empty before encoding — does NOT call jpegData unconditionally on every frame" },
-        { "text": "The response disables the LabelCapture mode (labelCapture.isEnabled = false) before reading/encoding the frame, so scanning stops while the JPEG is produced" }
+        {
+          "text": "The response uses labelCapture(_:didUpdate:frameData:) (the LabelCaptureListener method) to access FrameData"
+        },
+        {
+          "text": "The response converts the FrameData to an image via frameData.imageBuffers.first?.image (or equivalent ImageBuffer.image property)"
+        },
+        {
+          "text": "The response converts the UIImage to JPEG data with .jpegData(compressionQuality:) and notes that JPEG is the fastest option"
+        },
+        {
+          "text": "The response guards on session.capturedLabels being non-empty before encoding \u2014 does NOT call jpegData unconditionally on every frame"
+        },
+        {
+          "text": "The response disables the LabelCapture mode (labelCapture.isEnabled = false) before reading/encoding the frame, so scanning stops while the JPEG is produced"
+        }
       ]
     },
     {
@@ -222,93 +403,167 @@
       "expected_output": "The skill explains the LabelCaptureBasicOverlay: it draws a label box (labelBrush) and per-field boxes (capturedFieldBrush, predictedFieldBrush). It shows how to override the brushes globally and per-field/per-label via the LabelCaptureBasicOverlayDelegate (brushFor field:of:, brushFor label:).",
       "files": [],
       "assertions": [
-        { "text": "The response describes how the Basic Overlay draws the label bounding box (via labelBrush) and the field bounding boxes (via capturedFieldBrush and predictedFieldBrush)" },
-        { "text": "The response distinguishes capturedFieldBrush (matched this frame) from predictedFieldBrush (predicted/in-progress)" },
-        { "text": "The response shows how to set the brushes globally on the LabelCaptureBasicOverlay instance (basicOverlay.labelBrush = ..., basicOverlay.capturedFieldBrush = ..., basicOverlay.predictedFieldBrush = ...)" },
-        { "text": "The response shows how to customise per-field/per-label via the LabelCaptureBasicOverlayDelegate methods labelCaptureBasicOverlay(_:brushFor:of:) and labelCaptureBasicOverlay(_:brushFor:) returning Brush? (or nil for default)" },
-        { "text": "The response uses Brush(fill:stroke:strokeWidth:) from ScanditCaptureCore in any code shown" }
+        {
+          "text": "The response describes how the Basic Overlay draws the label bounding box (via labelBrush) and the field bounding boxes (via capturedFieldBrush and predictedFieldBrush)"
+        },
+        {
+          "text": "The response distinguishes capturedFieldBrush (matched this frame) from predictedFieldBrush (predicted/in-progress)"
+        },
+        {
+          "text": "The response shows how to set the brushes globally on the LabelCaptureBasicOverlay instance (basicOverlay.labelBrush = ..., basicOverlay.capturedFieldBrush = ..., basicOverlay.predictedFieldBrush = ...)"
+        },
+        {
+          "text": "The response shows how to customise per-field/per-label via the LabelCaptureBasicOverlayDelegate methods labelCaptureBasicOverlay(_:brushFor:of:) and labelCaptureBasicOverlay(_:brushFor:) returning Brush? (or nil for default)"
+        },
+        {
+          "text": "The response uses Brush(fill:stroke:strokeWidth:) from ScanditCaptureCore in any code shown"
+        }
       ]
     },
     {
       "id": 17,
-      "prompt": "My customer's labels are in Italian — the expiry date keyword on the label is 'Scadenza' instead of 'EXP'. I'm using ExpiryDateText. Will Smart Label Capture on iOS read them out of the box?",
+      "prompt": "My customer's labels are in Italian \u2014 the expiry date keyword on the label is 'Scadenza' instead of 'EXP'. I'm using ExpiryDateText. Will Smart Label Capture on iOS read them out of the box?",
       "expected_output": "The skill explains that predefined text field builders ship with hardcoded anchor keywords in English, French, and German only. For Italian, either override the anchors with .anchorRegexes([\"Scadenza\"]) on ExpiryDateText, clear them with .anchorRegexes([]) and rely on valueRegex alone, or use CustomText with a custom anchorRegex matching the Italian keyword.",
       "files": [],
       "assertions": [
-        { "text": "The response states that predefined text field builders ship with hardcoded anchorRegex keywords in English, French, and German only" },
-        { "text": "The response gives the user workable options on ExpiryDateText: (a) override the anchors with .anchorRegexes([\"Scadenza\"]) to match the Italian keyword, OR (b) clear them with .anchorRegexes([]) to rely solely on valueRegex, OR (c) use CustomText with a custom anchorRegex matching 'Scadenza'" },
-        { "text": "The response notes that the valueRegex defaults are language-independent (they validate value format, not the keyword) — i.e. overriding or clearing only the anchor is usually enough; you don't have to abandon the pre-built builder entirely" }
+        {
+          "text": "The response states that predefined text field builders ship with hardcoded anchorRegex keywords in English, French, and German only"
+        },
+        {
+          "text": "The response gives the user workable options on ExpiryDateText: (a) override the anchors with .anchorRegexes([\"Scadenza\"]) to match the Italian keyword, OR (b) clear them with .anchorRegexes([]) to rely solely on valueRegex, OR (c) use CustomText with a custom anchorRegex matching 'Scadenza'"
+        },
+        {
+          "text": "The response notes that the valueRegex defaults are language-independent (they validate value format, not the keyword) \u2014 i.e. overriding or clearing only the anchor is usually enough; you don't have to abandon the pre-built builder entirely"
+        }
       ]
     },
     {
       "id": 18,
       "prompt": "Add Label Capture with the Validation Flow to my ScanViewController.swift. The label is a perishable-product sticker with an EAN-13 barcode (required) and an expiry date (required). My Package.resolved pins datacapture-spm to 8.3.1.",
-      "expected_output": "The skill detects the SDK version from Package.resolved (>= 8.2) and uses the latest Validation Flow API: LabelCaptureValidationFlowOverlay, setPlaceholderText(_:forLabelDefinition:), and demonstrates v8.2+ awareness of the optional didSubmitManualInputFor:replacingValue:withValue: (v8.1+) and didUpdateResult:asyncId:fields:frameData: (v8.2+) delegate methods — either by implementing them or by explicitly surfacing them as available options.",
+      "expected_output": "The skill detects the SDK version from Package.resolved (>= 8.2) and uses the latest Validation Flow API: LabelCaptureValidationFlowOverlay, setPlaceholderText(_:forLabelDefinition:), and demonstrates v8.2+ awareness of the optional didSubmitManualInputFor:replacingValue:withValue: (v8.1+) and didUpdateResult:asyncId:fields:frameData: (v8.2+) delegate methods \u2014 either by implementing them or by explicitly surfacing them as available options.",
       "files": [
         "fixtures/ScanViewController.swift",
         "fixtures/Package_v8_3.resolved"
       ],
       "assertions": [
-        { "text": "Minimal integration (context, view, camera, settings, mode) is present" },
-        { "text": "LabelCaptureValidationFlowOverlay(labelCapture:view:) is used as the capture overlay" },
-        { "text": "LabelCaptureValidationFlowSettings() is instantiated and setPlaceholderText(_:forLabelDefinition:) is called at least once (v8.2+ API used since Package.resolved is 8.3.1)" },
-        { "text": "validationFlowOverlay.apply( is called with the settings" },
-        { "text": "The view controller adopts LabelCaptureValidationFlowDelegate with labelCaptureValidationFlowOverlay(_:didCaptureLabelWith:) implemented" },
-        { "text": "The response demonstrates v8.1+ awareness of the optional didSubmitManualInputFor:replacingValue:withValue: method: EITHER (a) the method is implemented in the delegate with the correct signature (field: LabelField, replacingValue oldValue: String?, withValue newValue: String), OR (b) the response explicitly mentions this method is available in v8.1+ and shows its signature so the user can opt in. A bare omission with no mention fails." },
-        { "text": "The response demonstrates v8.2+ awareness of the optional didUpdateResult:asyncId:fields:frameData: method: EITHER (a) the method is implemented in the delegate with the correct signature (type: LabelResultUpdateType, asyncId: Int, fields: [LabelField], frameData: FrameData?), OR (b) the response explicitly mentions this method is available in v8.2+ and shows its signature so the user can opt in. A bare omission with no mention fails." },
-        { "text": "Symbology .ean13UPCA is enabled (camelCase form)" }
+        {
+          "text": "A minimal integration with context, view, camera, settings, and mode is present (semantic)"
+        },
+        {
+          "text": "LabelCaptureValidationFlowOverlay(labelCapture:view:) is used as the capture overlay"
+        },
+        {
+          "text": "LabelCaptureValidationFlowSettings() is instantiated and setPlaceholderText(_:forLabelDefinition:) is called at least once (v8.2+ API used since Package.resolved is 8.3.1)"
+        },
+        {
+          "text": "validationFlowOverlay.apply( is called with the settings"
+        },
+        {
+          "text": "The view controller adopts LabelCaptureValidationFlowDelegate with labelCaptureValidationFlowOverlay(_:didCaptureLabelWith:) implemented"
+        },
+        {
+          "text": "The response demonstrates v8.1+ awareness of the optional didSubmitManualInputFor:replacingValue:withValue: method: EITHER (a) the method is implemented in the delegate with the correct signature (field: LabelField, replacingValue oldValue: String?, withValue newValue: String), OR (b) the response explicitly mentions this method is available in v8.1+ and shows its signature so the user can opt in. A bare omission with no mention fails."
+        },
+        {
+          "text": "The response demonstrates v8.2+ awareness of the optional didUpdateResult:asyncId:fields:frameData: method: EITHER (a) the method is implemented in the delegate with the correct signature (type: LabelResultUpdateType, asyncId: Int, fields: [LabelField], frameData: FrameData?), OR (b) the response explicitly mentions this method is available in v8.2+ and shows its signature so the user can opt in. A bare omission with no mention fails."
+        },
+        {
+          "text": "ean13UPCA is present"
+        }
       ]
     },
     {
       "id": 19,
       "prompt": "Add Label Capture with the Validation Flow to my ScanViewController.swift. The label is a perishable-product sticker with an EAN-13 barcode (required) and an expiry date (required). My Package.resolved pins datacapture-spm to 8.0.0.",
-      "expected_output": "The skill detects the older SDK version (8.0) and uses the minimal Validation Flow API: only the required labelCaptureValidationFlowOverlay(_:didCaptureLabelWith:) delegate method. The optional methods (didSubmitManualInputFor — added in 8.1, didUpdateResult — added in 8.2) and the setPlaceholderText API (added in 8.2) are NOT used.",
+      "expected_output": "The skill detects the older SDK version (8.0) and uses the minimal Validation Flow API: only the required labelCaptureValidationFlowOverlay(_:didCaptureLabelWith:) delegate method. The optional methods (didSubmitManualInputFor \u2014 added in 8.1, didUpdateResult \u2014 added in 8.2) and the setPlaceholderText API (added in 8.2) are NOT used.",
       "files": [
         "fixtures/ScanViewController.swift",
         "fixtures/Package_v8_0.resolved"
       ],
       "assertions": [
-        { "text": "LabelCaptureValidationFlowOverlay(labelCapture:view:) is used" },
-        { "text": "The view controller adopts LabelCaptureValidationFlowDelegate with labelCaptureValidationFlowOverlay(_:didCaptureLabelWith:) implemented" },
-        { "text": "The optional method labelCaptureValidationFlowOverlay(_:didSubmitManualInputFor:replacingValue:withValue:) is NOT in the delegate implementation (added in 8.1, not available in 8.0)" },
-        { "text": "The optional method labelCaptureValidationFlowOverlay(_:didUpdateResult:asyncId:fields:frameData:) is NOT in the delegate implementation (added in 8.2, not available in 8.0)" },
-        { "text": "setPlaceholderText(_:forLabelDefinition:) is NOT called on LabelCaptureValidationFlowSettings (added in 8.2, not available in 8.0)" },
-        { "text": "Symbology .ean13UPCA is enabled (camelCase form)" },
-        { "text": "Settings are built with the array initializer LabelCaptureSettings(labelDefinitions: [LabelDefinition(name:fields:)]) — the result-builder DSL (LabelCaptureSettings { LabelDefinition(\"...\") { ... } }) is NOT used because it was only introduced in v8.1" }
+        {
+          "text": "LabelCaptureValidationFlowOverlay(labelCapture:view:) is used"
+        },
+        {
+          "text": "The view controller adopts LabelCaptureValidationFlowDelegate with labelCaptureValidationFlowOverlay(_:didCaptureLabelWith:) implemented"
+        },
+        {
+          "text": "The optional method labelCaptureValidationFlowOverlay(_:didSubmitManualInputFor:replacingValue:withValue:) is NOT in the delegate implementation (added in 8.1, not available in 8.0)"
+        },
+        {
+          "text": "The optional method labelCaptureValidationFlowOverlay(_:didUpdateResult:asyncId:fields:frameData:) is NOT in the delegate implementation (added in 8.2, not available in 8.0)"
+        },
+        {
+          "text": "setPlaceholderText(_:forLabelDefinition:) is NOT called on LabelCaptureValidationFlowSettings (added in 8.2, not available in 8.0)"
+        },
+        {
+          "text": "ean13UPCA is present"
+        },
+        {
+          "text": "Settings are built with the array initializer LabelCaptureSettings(labelDefinitions: [LabelDefinition(name:fields:)]) \u2014 the result-builder DSL (LabelCaptureSettings { LabelDefinition(\"...\") { ... } }) is NOT used because it was only introduced in v8.1"
+        }
       ]
     },
     {
       "id": 20,
-      "prompt": "I'm using Smart Label Capture on iOS to scan an expiry date from a perishable label. After the capture, I want to display the date formatted with DateFormatter (e.g. .medium style). Show me the listener or delegate code that does this correctly — assume the field is named 'Expiry Date' and was declared with ExpiryDateText. My Package.resolved pins datacapture-spm to 8.4.0.",
-      "expected_output": "The skill explains that LabelField.asDate() returns LabelDateResult? — NOT a Foundation.Date — and shows how to convert it. Because Package.resolved is 8.4.0, the agent uses the v8.4+ shape: day/month/year are Int?, unwrapped via `guard let` / `if let`, then composed into DateComponents and resolved to a Date via Calendar.current.date(from:). The display-only shortcut is to use dayString/monthString/yearString. Code does not use .map / force-unwrap / nested Int?.map chains.",
+      "prompt": "I'm using Smart Label Capture on iOS to scan an expiry date from a perishable label. After the capture, I want to display the date formatted with DateFormatter (e.g. .medium style). Show me the listener or delegate code that does this correctly \u2014 assume the field is named 'Expiry Date' and was declared with ExpiryDateText. My Package.resolved pins datacapture-spm to 8.4.0.",
+      "expected_output": "The skill explains that LabelField.asDate() returns LabelDateResult? \u2014 NOT a Foundation.Date \u2014 and shows how to convert it. Because Package.resolved is 8.4.0, the agent uses the v8.4+ shape: day/month/year are Int?, unwrapped via `guard let` / `if let`, then composed into DateComponents and resolved to a Date via Calendar.current.date(from:). The display-only shortcut is to use dayString/monthString/yearString. Code does not use .map / force-unwrap / nested Int?.map chains.",
       "files": [
         "fixtures/Package_v8_4.resolved"
       ],
       "assertions": [
-        { "text": "The response explicitly states that LabelField.asDate() returns LabelDateResult? (or LabelDateResult), NOT a Foundation.Date — either as a sentence in the prose, a typed variable annotation, or a comment in the code" },
-        { "text": "The generated code does NOT pass the result of asDate() directly into DateFormatter.localizedString(from:), DateFormatter.string(from:), or any other API that expects a Date — this is the bug being prevented" },
-        { "text": "Because the Package.resolved is 8.4.0 (>= 8.4), the response uses the v8.4+ shape of LabelDateResult: day / month / year are treated as Int? and unwrapped via `if let` / `guard let`. The pre-v8.4 `-1` sentinel check is NOT used." },
-        { "text": "The conversion builds a DateComponents from the (unwrapped) day / month / year and resolves to a Date via Calendar.current.date(from:) — OR the response uses the dayString / monthString / yearString fields directly for display purposes" },
-        { "text": "If the response constructs a Date and uses DateFormatter, the date is formatted only after a successful nil-check, not unconditionally" },
-        { "text": "The generated code does NOT call `.map` on the unwrapped Int components — after `guard let day = result.day, ...`, `day` is Int (non-optional) and `.map(...)` would fail compilation with \"Value of type 'Int' has no member 'map'\"" },
-        { "text": "The generated code does NOT force-unwrap (`!`) any of LabelDateResult.day / .month / .year before composing the DateComponents — partial-date captures legitimately leave components nil and force-unwrap would crash" }
+        {
+          "text": "The response explicitly states that LabelField.asDate() returns LabelDateResult? (or LabelDateResult), NOT a Foundation.Date \u2014 either as a sentence in the prose, a typed variable annotation, or a comment in the code"
+        },
+        {
+          "text": "The generated code does NOT pass the result of asDate() directly into DateFormatter.localizedString(from:), DateFormatter.string(from:), or any other API that expects a Date \u2014 this is the bug being prevented"
+        },
+        {
+          "text": "Because the Package.resolved is 8.4.0 (>= 8.4), the response uses the v8.4+ shape of LabelDateResult: day / month / year are treated as Int? and unwrapped via `if let` / `guard let`. The pre-v8.4 `-1` sentinel check is NOT used."
+        },
+        {
+          "text": "The conversion builds a DateComponents from the (unwrapped) day / month / year and resolves to a Date via Calendar.current.date(from:) \u2014 OR the response uses the dayString / monthString / yearString fields directly for display purposes"
+        },
+        {
+          "text": "If the response constructs a Date and uses DateFormatter, the date is formatted only after a successful nil-check, not unconditionally"
+        },
+        {
+          "text": "The generated code does NOT call `.map` on the unwrapped Int components \u2014 after `guard let day = result.day, ...`, `day` is Int (non-optional) and `.map(...)` would fail compilation with \"Value of type 'Int' has no member 'map'\""
+        },
+        {
+          "text": "The generated code does NOT force-unwrap (`!`) any of LabelDateResult.day / .month / .year before composing the DateComponents \u2014 partial-date captures legitimately leave components nil and force-unwrap would crash"
+        }
       ]
     },
     {
       "id": 21,
-      "prompt": "I'm using Smart Label Capture on iOS to scan an expiry date from a perishable label, and I want to display the date formatted with DateFormatter (e.g. .medium style). Show me the listener or delegate code that does this correctly — assume the field is named 'Expiry Date' and was declared with ExpiryDateText. My Package.resolved pins datacapture-spm to 8.3.1.",
+      "prompt": "I'm using Smart Label Capture on iOS to scan an expiry date from a perishable label, and I want to display the date formatted with DateFormatter (e.g. .medium style). Show me the listener or delegate code that does this correctly \u2014 assume the field is named 'Expiry Date' and was declared with ExpiryDateText. My Package.resolved pins datacapture-spm to 8.3.1.",
       "expected_output": "Same shape as eval 20, but because Package.resolved is 8.3.1 (pre-v8.4), the agent must use the pre-v8.4 LabelDateResult shape: day/month/year are NON-optional Int with -1 as the 'not parsed' sentinel. The agent must NOT use `if let` / `guard let` on them (compile error), must NOT call `.map(...)` on them (also compile error), and must NOT pass them through unchecked (Calendar.date(from:) with -1 components yields a misleading result). The correct pattern is a `value != -1` sentinel check before composing DateComponents.",
       "files": [
         "fixtures/Package_v8_3.resolved"
       ],
       "assertions": [
-        { "text": "The response explicitly states that LabelField.asDate() returns LabelDateResult? (or LabelDateResult), NOT a Foundation.Date" },
-        { "text": "The generated code does NOT pass the result of asDate() directly into DateFormatter.localizedString(from:) / DateFormatter.string(from:) or any other API expecting a Date" },
-        { "text": "Because the Package.resolved is 8.3.1 (< 8.4), the response uses the pre-v8.4 shape: day / month / year are treated as non-optional Int. The agent does NOT use `if let day = result.day, ...` / `guard let day, ...` — that would fail compilation on this version" },
-        { "text": "The agent checks for the `-1` sentinel before constructing the DateComponents (e.g. `guard day != -1, month != -1, year != -1 else { return nil }`) — OR uses dayString / monthString / yearString directly for display purposes without constructing a Date" },
-        { "text": "If the response constructs a Date and uses DateFormatter, the date is formatted only after the sentinel check returns valid components" },
-        { "text": "The generated code does NOT call `.map(...)` on result.day / result.month / result.year — those properties are Int on pre-v8.4 and `.map` only exists on Optional, so this would fail with \"Value of type 'Int' has no member 'map'\"" },
-        { "text": "The generated code does NOT force-unwrap result.day / result.month / result.year — they are non-optional Int on pre-v8.4, so `!` is a compile error" }
+        {
+          "text": "The response explicitly states that LabelField.asDate() returns LabelDateResult? (or LabelDateResult), NOT a Foundation.Date"
+        },
+        {
+          "text": "The generated code does NOT pass the result of asDate() directly into DateFormatter.localizedString(from:) / DateFormatter.string(from:) or any other API expecting a Date"
+        },
+        {
+          "text": "Because the Package.resolved is 8.3.1 (< 8.4), the response uses the pre-v8.4 shape: day / month / year are treated as non-optional Int. The agent does NOT use `if let day = result.day, ...` / `guard let day, ...` \u2014 that would fail compilation on this version"
+        },
+        {
+          "text": "The agent checks for the `-1` sentinel before constructing the DateComponents (e.g. `guard day != -1, month != -1, year != -1 else { return nil }`) \u2014 OR uses dayString / monthString / yearString directly for display purposes without constructing a Date"
+        },
+        {
+          "text": "If the response constructs a Date and uses DateFormatter, the date is formatted only after the sentinel check returns valid components"
+        },
+        {
+          "text": "The generated code does NOT call `.map(...)` on result.day / result.month / result.year \u2014 those properties are Int on pre-v8.4 and `.map` only exists on Optional, so this would fail with \"Value of type 'Int' has no member 'map'\""
+        },
+        {
+          "text": "The generated code does NOT force-unwrap result.day / result.month / result.year \u2014 they are non-optional Int on pre-v8.4, so `!` is a compile error"
+        }
       ]
     },
     {
@@ -319,29 +574,161 @@
         "fixtures/ScanViewController.swift"
       ],
       "assertions": [
-        { "text": "The setup checklist explicitly names `ScanditCaptureCore`, `ScanditBarcodeCapture`, and `ScanditLabelCapture` as always-required SPM products" },
-        { "text": "The setup checklist explicitly names `ScanditLabelCaptureText` as required because the label has text fields (expiry date and/or total price). The product must be named by its exact identifier, not just described as 'a text product'." },
-        { "text": "The setup checklist explicitly names `ScanditPriceLabel` as required because the label has a price field (TotalPriceText). The product must be named by its exact identifier, not described as 'a price product' or omitted." },
-        { "text": "The response makes clear that ScanditPriceLabel is required IN ADDITION TO ScanditLabelCaptureText, not as a replacement — when a price field is used, both products must be linked" },
-        { "text": "The integration code itself uses the v8.1+ result-builder DSL with CustomBarcode + ExpiryDateText + TotalPriceText(.optional(true)) and the Validation Flow overlay (the default), confirming the framework guidance ships alongside a correct code integration" }
+        {
+          "text": "The setup checklist explicitly names `ScanditCaptureCore`, `ScanditBarcodeCapture`, and `ScanditLabelCapture` as always-required SPM products"
+        },
+        {
+          "text": "The setup checklist explicitly names `ScanditLabelCaptureText` as required because the label has text fields (expiry date and/or total price). The product must be named by its exact identifier, not just described as 'a text product'."
+        },
+        {
+          "text": "The setup checklist explicitly names `ScanditPriceLabel` as required because the label has a price field (TotalPriceText). The product must be named by its exact identifier, not described as 'a price product' or omitted."
+        },
+        {
+          "text": "The response makes clear that ScanditPriceLabel is required IN ADDITION TO ScanditLabelCaptureText, not as a replacement \u2014 when a price field is used, both products must be linked"
+        },
+        {
+          "text": "The integration code itself uses the v8.1+ result-builder DSL with CustomBarcode + ExpiryDateText + TotalPriceText(.optional(true)) and the Validation Flow overlay (the default), confirming the framework guidance ships alongside a correct code integration"
+        }
       ]
     },
     {
       "id": 23,
       "prompt": "Add Smart Label Capture to my iOS app. The label is a warehouse-asset sticker with a serial number printed as a Code 128 barcode (required) and an expiry date next to it (required). Write the integration code into ScanViewController.swift.",
-      "expected_output": "The user's request would naively map to SerialNumberBarcode + ExpiryDateText — a combination that the SDK rejects at LabelCaptureSettings construction time with 'Unsupported use of data type patterns for both text and barcode fields.' The skill must avoid that crash: either replace the data-typed barcode with CustomBarcode(name: \"Serial Number\", symbologies: [.code128]) so the data-type pattern only exists on the text side, OR keep SerialNumberBarcode and call .anchorRegexes([]) on ExpiryDateText so the text-side data-type pattern is cleared. It must NOT co-emit unmodified SerialNumberBarcode + ExpiryDateText.",
+      "expected_output": "The user's request would naively map to SerialNumberBarcode + ExpiryDateText \u2014 a combination that the SDK rejects at LabelCaptureSettings construction time with 'Unsupported use of data type patterns for both text and barcode fields.' The skill must avoid that crash: either replace the data-typed barcode with CustomBarcode(name: \"Serial Number\", symbologies: [.code128]) so the data-type pattern only exists on the text side, OR keep SerialNumberBarcode and call .anchorRegexes([]) on ExpiryDateText so the text-side data-type pattern is cleared. It must NOT co-emit unmodified SerialNumberBarcode + ExpiryDateText.",
       "files": [
         "fixtures/ScanViewController.swift"
       ],
       "assertions": [
-        { "text": "The generated code does NOT contain both an unmodified `SerialNumberBarcode(name:` and an unmodified `ExpiryDateText(name:` in the same LabelDefinition — that exact combination crashes at LabelCaptureSettings construction with `SDCLabelCaptureSettingsErrorDomain` code 0" },
-        { "text": "The response applies exactly one of the two documented workarounds: (a) replace the data-typed barcode with `CustomBarcode(name: \"Serial Number\", symbologies: [.code128])` and keep `ExpiryDateText(name: ...)` with default anchor regexes; OR (b) keep `SerialNumberBarcode(name: ...)` and chain `.anchorRegexes([])` on the `ExpiryDateText(name: ...)` to clear its data-type pattern" },
-        { "text": "The response explains the data-typed-barcode-vs-data-typed-text exclusion to the user (either inline in the explanation or in a comment) so they understand why the obvious SerialNumberBarcode + ExpiryDateText combo wasn't used, and which workaround was applied" },
-        { "text": "Code 128 symbology is expressed in iOS camelCase form `.code128` (NOT `.CODE_128`, `.code_128`, or any other underscore form)" },
-        { "text": "LabelCaptureValidationFlowOverlay(labelCapture: ..., view: ...) is used as the capture overlay (VF is the default when the user is silent on overlay choice)" },
-        { "text": "The view controller adopts LabelCaptureValidationFlowDelegate and implements labelCaptureValidationFlowOverlay(_:didCaptureLabelWith:); validationFlowOverlay.delegate is assigned" },
-        { "text": "DataCaptureContext.initialize(licenseKey: is present (NOT DataCaptureContext.forLicenseKey)" },
-        { "text": "LabelCaptureSettings { LabelDefinition(\"...\") { ... } } result-builder DSL is used (no .addLabel(...).buildFluent(...) chain, no LabelCaptureSettingsBuilder())" }
+        {
+          "text": "The generated code does NOT contain both an unmodified `SerialNumberBarcode(name:` and an unmodified `ExpiryDateText(name:` in the same LabelDefinition \u2014 that exact combination crashes at LabelCaptureSettings construction with `SDCLabelCaptureSettingsErrorDomain` code 0"
+        },
+        {
+          "text": "The response applies exactly one of the two documented workarounds: (a) replace the data-typed barcode with `CustomBarcode(name: \"Serial Number\", symbologies: [.code128])` and keep `ExpiryDateText(name: ...)` with default anchor regexes; OR (b) keep `SerialNumberBarcode(name: ...)` and chain `.anchorRegexes([])` on the `ExpiryDateText(name: ...)` to clear its data-type pattern"
+        },
+        {
+          "text": "The response explains the data-typed-barcode-vs-data-typed-text exclusion to the user (either inline in the explanation or in a comment) so they understand why the obvious SerialNumberBarcode + ExpiryDateText combo wasn't used, and which workaround was applied"
+        },
+        {
+          "text": "Code 128 symbology is expressed in iOS camelCase form `.code128` (NOT `.CODE_128`, `.code_128`, or any other underscore form)"
+        },
+        {
+          "text": "LabelCaptureValidationFlowOverlay(labelCapture: ..., view: ...) is used as the capture overlay (VF is the default when the user is silent on overlay choice)"
+        },
+        {
+          "text": "The view controller adopts LabelCaptureValidationFlowDelegate and implements labelCaptureValidationFlowOverlay(_:didCaptureLabelWith:); validationFlowOverlay.delegate is assigned"
+        },
+        {
+          "text": "DataCaptureContext.initialize(licenseKey: is present (NOT DataCaptureContext.forLicenseKey)"
+        },
+        {
+          "text": "LabelCaptureSettings { LabelDefinition(\"...\") { ... } } result-builder DSL is used (no .addLabel(...).buildFluent(...) chain, no LabelCaptureSettingsBuilder())"
+        }
+      ]
+    },
+    {
+      "id": 24,
+      "prompt": "I'm building an iOS price-checker app. I want to scan retail shelf / price labels \u2014 the barcode plus the printed price \u2014 with Smart Label Capture. Write the integration into ScanViewController.swift.",
+      "expected_output": "The skill recognises this as the price/shelf-label scenario covered by the pre-built whole-label factory and uses LabelDefinition.priceCapture(withName:) instead of hand-assembling the label from CustomBarcode + TotalPriceText/UnitPriceText. It reads the factory's fixed field names (SKU, priceText) generically rather than guessing, links the ScanditPriceLabel SPM product, and does NOT use the Validation Flow overlay (the pre-built price definition is not VF-compatible).",
+      "files": [
+        "fixtures/ScanViewController.swift"
+      ],
+      "assertions": [
+        {
+          "text": "LabelDefinition.priceCapture(withName: \"...\") is used to define the price/shelf label (camelCase Swift form, NOT the Android LabelDefinition.createPriceCaptureDefinition form)"
+        },
+        {
+          "text": "The label is NOT hand-assembled from individual CustomBarcode(...) + TotalPriceText(...)/UnitPriceText(...) builders when the pre-built price-capture factory covers the scenario"
+        },
+        {
+          "text": "The captured fields are read by the factory's fixed field names SKU (barcode) and priceText (price text) \u2014 e.g. iterating capturedLabel.fields and switching on field.name \u2014 rather than guessing arbitrary field names"
+        },
+        {
+          "text": "The setup checklist names ScanditPriceLabel as a required SPM product (in addition to ScanditCaptureCore, ScanditBarcodeCapture, ScanditLabelCapture, and ScanditLabelCaptureText) because the price field uses the specialised price recogniser"
+        },
+        {
+          "text": "LabelCaptureValidationFlowOverlay is NOT used for this pre-built price definition \u2014 the response uses LabelCaptureBasicOverlay (or Advanced Overlay) and explains that the pre-built price/VIN/seven-segment definitions are not Validation-Flow compatible"
+        },
+        {
+          "text": "DataCaptureContext.initialize(licenseKey: is present (NOT DataCaptureContext.forLicenseKey) with a license-key placeholder such as -- ENTER YOUR SCANDIT LICENSE KEY HERE --"
+        }
+      ],
+      "tags": [
+        "prebuilt-label-definitions"
+      ]
+    },
+    {
+      "id": 25,
+      "prompt": "On iOS I need to scan a VIN (vehicle identification number) off a car \u2014 it can be printed text or a barcode. Does Smart Label Capture have something pre-built for that, or do I have to write my own 17-character regex?",
+      "expected_output": "The skill directs the user to the pre-built VIN whole-label factory LabelDefinition.vinLabelDefinition(withName:) rather than writing a custom [A-Z0-9]{17} field, explains it ships an optional text field and an optional barcode field both tuned for the 17-character VIN, and notes it is not Validation-Flow compatible.",
+      "files": [],
+      "assertions": [
+        {
+          "text": "The response uses / recommends LabelDefinition.vinLabelDefinition(withName: \"...\") (camelCase Swift form) for the VIN label"
+        },
+        {
+          "text": "The response steers the user away from hand-writing a custom [A-Z0-9]{17} CustomText/CustomBarcode regex, because the pre-built VIN factory already ships tuned text and barcode fields"
+        },
+        {
+          "text": "The response notes the pre-built VIN definition is NOT intended for use with the Validation Flow (use the Basic / Advanced Overlay path), or that pre-built whole-label definitions in general are not VF-compatible"
+        }
+      ],
+      "tags": [
+        "prebuilt-label-definitions"
+      ]
+    },
+    {
+      "id": 26,
+      "prompt": "I'm scanning the numeric readout off a digital scale / seven-segment LED display on iOS with Smart Label Capture. Is there a pre-built way to do this? Write the setup into ScanViewController.swift.",
+      "expected_output": "The skill uses the pre-built seven-segment whole-label factory LabelDefinition.sevenSegmentDisplay(withName:) rather than a hand-written CustomText regex, notes it returns a single weight text field tuned for 7-segment glyph confusions (O/0, Q/0, B/8), and does NOT use the Validation Flow overlay (the pre-built definition is not VF-compatible).",
+      "files": [
+        "fixtures/ScanViewController.swift"
+      ],
+      "assertions": [
+        {
+          "text": "LabelDefinition.sevenSegmentDisplay(withName: \"...\") is used (camelCase Swift form, NOT sevenSegmentDisplayLabelDefinition and NOT the Android createSevenSegmentDisplayLabelDefinition form)"
+        },
+        {
+          "text": "The label is NOT hand-assembled from a CustomText(name:) with a guessed seven-segment regex when the pre-built factory covers it"
+        },
+        {
+          "text": "The response notes the factory returns a single tuned text field (named weight) for the display value, or otherwise reads the captured field generically rather than guessing an arbitrary field name"
+        },
+        {
+          "text": "LabelCaptureValidationFlowOverlay is NOT used for this pre-built definition \u2014 the response uses LabelCaptureBasicOverlay (or Advanced Overlay) and flags that pre-built whole-label definitions are not Validation-Flow compatible"
+        },
+        {
+          "text": "DataCaptureContext.initialize(licenseKey: is present (NOT DataCaptureContext.forLicenseKey)"
+        }
+      ],
+      "tags": [
+        "prebuilt-label-definitions",
+        "seven-segment-display"
+      ]
+    },
+    {
+      "id": 27,
+      "prompt": "My customer wants to scan whole grocery receipts on iOS with Scandit \u2014 pull out the store name, the total, and the individual line items. Can Smart Label Capture do that?",
+      "expected_output": "The skill identifies this as the Receipt Scanning feature (ARE-powered, available on iOS since 7.6.0), flags clearly that it is Beta and requires a license key with the Adaptive Recognition Engine enabled (contact support@scandit.com), and describes the distinct integration pattern: LabelCaptureAdaptiveRecognitionOverlay + LabelCaptureAdaptiveRecognitionListener delivering a ReceiptScanningResult (store fields, payment totals, lineItems). It does NOT fabricate the exact delegate selector and points the user at the Advanced Configurations / API page to confirm it.",
+      "files": [],
+      "assertions": [
+        {
+          "text": "The response identifies the feature as Receipt Scanning and states it is in Beta"
+        },
+        {
+          "text": "The response states Receipt Scanning requires a license key with the Adaptive Recognition Engine (ARE) enabled, and directs the user to contact support@scandit.com to enable it"
+        },
+        {
+          "text": "The response names LabelCaptureAdaptiveRecognitionOverlay as the overlay used (instead of the standard Basic / Validation Flow overlays) and LabelCaptureAdaptiveRecognitionListener as the listener"
+        },
+        {
+          "text": "The response names ReceiptScanningResult as the result type and describes its content \u2014 store fields (e.g. storeName), payment totals (e.g. paymentTotal), and a lineItems collection (each with name, unitPrice, quantity, totalPrice)"
+        },
+        {
+          "text": "The response does NOT fabricate an exact delegate-method selector for the receipt callback \u2014 it either omits the precise signature or explicitly tells the user to confirm it against the Advanced Configurations page / the LabelCaptureAdaptiveRecognitionListener API reference"
+        }
+      ],
+      "tags": [
+        "receipt-scanning"
       ]
     }
   ]

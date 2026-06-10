@@ -11,7 +11,7 @@
       "assertions": [
         { "text": "Setup checklist is shown and mentions the four Gradle dependencies: com.scandit.datacapture:core, :barcode, :label, and :label-text-models; no Scandit Maven repository is referenced" },
         { "text": "DataCaptureContext.forLicenseKey( is present" },
-        { "text": "License key placeholder (e.g. ENTER YOUR SCANDIT LICENSE KEY or similar) is present" },
+        { "text": "A license key placeholder string is present (semantic)" },
         { "text": "LabelCaptureSettings.builder() is used" },
         { "text": ".addLabel() is called on the builder and terminated with .buildFluent(\"...\") followed by .build()" },
         { "text": ".addCustomBarcode() is chained on the label builder and terminated with .buildFluent(\"...\")" },
@@ -26,7 +26,10 @@
         { "text": "Camera.getDefaultCamera(LabelCapture.createRecommendedCameraSettings()) is called" },
         { "text": "camera.switchToDesiredState(FrameSourceState.ON) is called in onResume" },
         { "text": "camera.switchToDesiredState(FrameSourceState.OFF) is called in onPause" },
-        { "text": "No renamed-away regex methods: setPattern, setPatterns, setDataTypePattern, setDataTypePatterns are absent from the generated code" },
+        { "text": "setPattern is NOT present in the generated code" },
+        { "text": "setPatterns is NOT present in the generated code" },
+        { "text": "setDataTypePattern is NOT present in the generated code" },
+        { "text": "setDataTypePatterns is NOT present in the generated code" },
         { "text": "LabelCaptureValidationFlowOverlay is NOT used (the user did not ask for Validation Flow)" }
       ]
     },
@@ -121,6 +124,88 @@
         { "text": "The response recommends adding the barcode as a field within the Label Capture label definition (addCustomBarcode() or a pre-built barcode field) as the supported approach" },
         { "text": "The response does NOT provide code that creates and enables both BarcodeCapture.forDataCaptureContext(...) and LabelCapture.forDataCaptureContext(...) as concurrently active modes" }
       ]
+    },
+    {
+      "id": 8,
+      "prompt": "I'm using Smart Label Capture on Android with the Basic Overlay. I want to customize how detected fields are highlighted in the camera feed — make the barcode box cyan, the expiry-date box green, and hide the box around the whole label. Show me how.",
+      "expected_output": "The skill explains the LabelCaptureBasicOverlay draws a label box and per-field boxes, and shows how to customize them per-field/per-label via LabelCaptureBasicOverlayListener (brushForField / brushForLabel returning Brush? or null for default), using the Android Brush(fill, stroke, strokeWidth) constructor. It may also mention the global setLabelBrush/setCapturedFieldBrush shortcut.",
+      "files": [],
+      "assertions": [
+        { "text": "LabelCaptureBasicOverlayListener is implemented and assigned to overlay.listener" },
+        { "text": "brushForField( is overridden and returns a Brush for the barcode and expiry-date field names (and null/default for others)" },
+        { "text": "brushForLabel( is overridden and returns a transparent/null brush to hide the whole-label box" },
+        { "text": "Brush( from com.scandit.datacapture.core.ui.style.Brush is used with the (fill, stroke, strokeWidth) arguments, e.g. Brush(Color.CYAN, Color.CYAN, 1f)" },
+        { "text": "The response notes that returning null from brushForField/brushForLabel keeps the default brush" }
+      ],
+      "tags": ["basic-overlay-customization"]
+    },
+    {
+      "id": 9,
+      "prompt": "On Android Smart Label Capture I want a fully custom AR experience: draw my own warning TextView below any expiry-date field on the camera feed. How do I set up the Advanced Overlay?",
+      "expected_output": "The skill uses LabelCaptureAdvancedOverlay with LabelCaptureAdvancedOverlayListener, returning a custom Android View from viewForCapturedLabelField for expiry-date fields and an Anchor + PointWithUnit offset, and flags the higher implementation cost of the Advanced Overlay versus the Basic Overlay / Validation Flow.",
+      "files": [],
+      "assertions": [
+        { "text": "LabelCaptureAdvancedOverlay.newInstance( is used to create the overlay" },
+        { "text": "LabelCaptureAdvancedOverlayListener is implemented and assigned to the overlay's listener" },
+        { "text": "viewForCapturedLabelField( is overridden and returns a custom Android View (e.g. a TextView) for expiry-date fields and null for others" },
+        { "text": "anchorForCapturedLabelField( returns an Anchor (e.g. Anchor.BOTTOM_CENTER) and offsetForCapturedLabelField( returns a PointWithUnit" },
+        { "text": "The response flags that the Advanced Overlay is more work than the Basic Overlay / Validation Flow and should be used only when full custom AR control is needed" }
+      ],
+      "tags": ["advanced-overlay"]
+    },
+    {
+      "id": 10,
+      "prompt": "My Android Smart Label Capture app crashes on launch the moment the label definition is built, and on another device the camera preview is just black with no error. The label scans a serial number and an expiry date. What's going wrong?",
+      "expected_output": "The skill diagnoses the launch crash as a missing label-text-models Gradle artifact (the pre-built serial-number barcode field and the expiry-date text field load an on-device model) and the black preview as a missing/ungranted CAMERA runtime permission or the camera never being switched on. It does not invent new APIs.",
+      "files": [],
+      "assertions": [
+        { "text": "The launch crash is attributed to the missing com.scandit.datacapture:label-text-models Gradle dependency, required because the label uses pre-built fields (serial-number barcode and/or expiry-date text)" },
+        { "text": "The black/blank preview is attributed to the CAMERA runtime permission not being granted before the camera starts, and/or camera.switchToDesiredState(FrameSourceState.ON) not being called" },
+        { "text": "The response mentions adding <uses-permission android:name=\"android.permission.CAMERA\" /> to AndroidManifest.xml and requesting it at runtime before starting the camera" },
+        { "text": "The response does NOT invent non-existent Scandit APIs; note the com.scandit.datacapture:label-text-models Gradle artifact IS real and allowed (semantic)" }
+      ],
+      "tags": ["error-troubleshooting"]
+    },
+    {
+      "id": 11,
+      "prompt": "I need to read a seven-segment LED display (a meter readout) with Smart Label Capture on Android. Write the label-definition setup into MainActivity.kt.",
+      "expected_output": "The skill uses the pre-built whole-label factory LabelDefinition.createSevenSegmentDisplayLabelDefinition(...) rather than hand-assembling a custom digit field with a guessed regex, passes it to addLabel(...), and includes the label-text-models Gradle dependency.",
+      "files": [
+        "fixtures/MainActivity.kt"
+      ],
+      "assertions": [
+        { "text": "LabelDefinition.createSevenSegmentDisplayLabelDefinition( is used to define the seven-segment display label" },
+        { "text": "The pre-built definition is passed to .addLabel(...) on LabelCaptureSettings.builder() — the label is NOT hand-assembled from addCustomText()/addCustomBarcode() with a hand-written digit regex" },
+        { "text": "The com.scandit.datacapture:label-text-models Gradle dependency is included" },
+        { "text": "LabelCapture.forDataCaptureContext( and DataCaptureContext.forLicenseKey( are present" }
+      ],
+      "tags": ["seven-segment-display"]
+    },
+    {
+      "id": 12,
+      "prompt": "My customer's Android Smart Label Capture app misses OCR on worn, low-contrast shipping labels and users keep having to type values manually. Can Scandit fall back to a more powerful cloud model? How do I enable it?",
+      "expected_output": "The skill explains the Adaptive Recognition Engine (cloud fallback), shows how to enable it with adaptiveRecognition(adaptiveRecognitionMode = AdaptiveRecognitionMode.AUTO) on the label definition, and clearly flags that it is in BETA, requires the ARE feature flag on the license key, and that production use requires contacting support@scandit.com.",
+      "files": [],
+      "assertions": [
+        { "text": "The response describes the Adaptive Recognition Engine as a cloud-based OCR fallback that triggers when the on-device model fails" },
+        { "text": "The enabling API is shown: adaptiveRecognition(adaptiveRecognitionMode = AdaptiveRecognitionMode.AUTO) (AdaptiveRecognitionMode.AUTO) on the label definition" },
+        { "text": "The response flags that the Adaptive Recognition API is in BETA" },
+        { "text": "The response states it requires a license key with the ARE feature flag and that enabling it for production requires contacting support@scandit.com" }
+      ],
+      "tags": ["adaptive-recognition-cloud"]
+    },
+    {
+      "id": 13,
+      "prompt": "Does Scandit Smart Label Capture on Android support scanning full receipts — store name, totals, and line items — into structured data? How would I wire it up?",
+      "expected_output": "The skill explains Receipt Scanning uses the Adaptive Recognition Engine with a different integration pattern: LabelCaptureAdaptiveRecognitionOverlay plus a LabelCaptureAdaptiveRecognitionListener whose onRecognized callback returns a ReceiptScanningResult (storeName, paymentTotal, lineItems, etc.). It clearly flags that this is in BETA and requires contacting support@scandit.com.",
+      "files": [],
+      "assertions": [
+        { "text": "The response states Receipt Scanning uses the LabelCaptureAdaptiveRecognitionOverlay instead of the standard Basic/Validation Flow overlay" },
+        { "text": "The response uses a LabelCaptureAdaptiveRecognitionListener with an onRecognized callback that returns a ReceiptScanningResult" },
+        { "text": "The response names ReceiptScanningResult fields such as storeName, paymentTotal, and lineItems" },
+        { "text": "The response flags that Receipt Scanning / the Adaptive Recognition Engine is in BETA and requires contacting support@scandit.com to enable" }
+      ],
+      "tags": ["receipt-scanning"]
     }
   ]
 }

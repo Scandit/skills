@@ -4,7 +4,7 @@
     {
       "id": 1,
       "prompt": "I want to add Scandit Label Capture to my web app. Here's my main file: empty-app.ts. The label is a perishable-product sticker with an EAN-13 barcode and an expiry date (required) and a total price (optional).",
-      "expected_output": "The skill reads integration.md, walks through the interactive label-definition questions, writes complete Label Capture integration code into empty-app.ts, and shows the setup checklist.",
+      "expected_output": "The user has answered Questions A and B (fields + required/optional + symbology) but is silent on the overlay choice. Per the skill's recommended-default policy, the agent writes a Validation Flow integration into empty-app.ts, shows the setup checklist, and ends with a brief offer to swap to the Basic Overlay if the user wants no confirmation step.",
       "files": [
         "eval-fixtures/empty-app.ts"
       ],
@@ -12,23 +12,27 @@
         { "text": "Setup checklist is shown and mentions @scandit/web-datacapture-core, @scandit/web-datacapture-barcode, and @scandit/web-datacapture-label npm packages" },
         { "text": "DataCaptureContext.forLicenseKey( is present with libraryLocation and moduleLoaders" },
         { "text": "labelCaptureLoader() is present in moduleLoaders" },
-        { "text": "License key placeholder (e.g. ENTER YOUR SCANDIT LICENSE KEY or similar) is present" },
+        { "text": "A license key placeholder string is present (semantic)" },
         { "text": "new LabelCaptureSettingsBuilder() is used with .addLabel(...).build()" },
-        { "text": "new LabelDefinitionBuilder() is used and .build(\"Perishable Product\") or a similar label name is called" },
+        { "text": "new LabelDefinitionBuilder( is present" },
+        { "text": ".build( is present" },
         { "text": "new CustomBarcodeBuilder() is used, with setSymbology(Symbology.EAN13UPCA) or setSymbologies including EAN13UPCA, and .build(\"Barcode\") or a similar field name" },
         { "text": "Symbology.EAN13UPCA is enabled" },
         { "text": "new ExpiryDateTextBuilder() is used with .build(\"Expiry Date\") or similar field name" },
         { "text": "new TotalPriceTextBuilder() is used with .build(\"Total Price\") or similar field name, and is marked as optional (isOptional(true))" },
         { "text": "LabelCapture.forContext( is present" },
-        { "text": "LabelCaptureBasicOverlay.withLabelCaptureForView( is present" },
-        { "text": "addListener with didUpdateSession callback is present" },
-        { "text": "session.capturedLabels is accessed inside didUpdateSession" },
+        { "text": "LabelCaptureValidationFlowOverlay.withLabelCaptureForView( is present (the Validation Flow overlay is used by default per the skill's recommended-default policy)" },
+        { "text": "onValidationFlowLabelCaptured is present" },
+        { "text": "The captured label fields are read from the Validation Flow callback (semantic)" },
         { "text": "Camera.pickBestGuess() is called" },
         { "text": "camera.applySettings(LabelCapture.createRecommendedCameraSettings()) is called" },
         { "text": "camera.switchToDesiredState(FrameSourceState.On) is called" },
-        { "text": "No renamed-away regex properties: pattern, patterns, dataTypePattern, dataTypePatterns are absent from the generated code" },
+        { "text": "setPattern is NOT present" },
+        { "text": "setPatterns is NOT present" },
+        { "text": "setDataTypePattern is NOT present" },
+        { "text": "setDataTypePatterns is NOT present" },
         { "text": "No v8.5-only factory functions: labelCaptureSettings(, label(, customBarcode(, expiryDateText(, totalPriceText( are absent" },
-        { "text": "LabelCaptureValidationFlowOverlay is NOT used (the user did not ask for Validation Flow)" }
+        { "text": "The response offers the Basic Overlay as an alternative the user can swap in if they want fully automated scanning with no confirmation step (semantic)" }
       ]
     },
     {
@@ -40,7 +44,7 @@
         "eval-fixtures/package-8.2.json"
       ],
       "assertions": [
-        { "text": "Minimal integration (context, view, camera, settings, mode) is present" },
+        { "text": "A minimal integration with context, view, camera, settings, and mode is present (semantic)" },
         { "text": "LabelCaptureValidationFlowOverlay.withLabelCaptureForView( is used instead of (or in addition to) LabelCaptureBasicOverlay" },
         { "text": "LabelCaptureValidationFlowSettings.create() is called" },
         { "text": "setPlaceholderTextForLabelDefinition is called on the validation-flow settings at least once" },
@@ -66,6 +70,84 @@
         { "text": "overlay.listener is assigned with only onValidationFlowLabelCaptured — onManualInput is NOT in the listener object (it was added in v8.2)" },
         { "text": "Symbology.EAN13UPCA is enabled" }
       ]
+    },
+    {
+      "id": 4,
+      "prompt": "I'm scanning a smart-device box label on web (empty-app.ts). It has two IMEI barcodes, a serial number barcode, and a part number barcode. Use the pre-built semantic barcode field types rather than plain custom barcodes so I get the tuned defaults.",
+      "expected_output": "The skill uses the semantic pre-built barcode field builders ImeiOneBarcodeBuilder, ImeiTwoBarcodeBuilder, SerialNumberBarcodeBuilder, and PartNumberBarcodeBuilder (each awaited and built with .build(name)) instead of CustomBarcodeBuilder, and adds them to the LabelDefinitionBuilder with the matching addXxxBarcode methods.",
+      "files": [
+        "eval-fixtures/empty-app.ts"
+      ],
+      "assertions": [
+        { "text": "new ImeiOneBarcodeBuilder() is used and added via .addImeiOneBarcode(...) for the first IMEI field" },
+        { "text": "new ImeiTwoBarcodeBuilder() is used and added via .addImeiTwoBarcode(...) for the second IMEI field" },
+        { "text": "new SerialNumberBarcodeBuilder() is used and added via .addSerialNumberBarcode(...) for the serial number field" },
+        { "text": "new PartNumberBarcodeBuilder() is used and added via .addPartNumberBarcode(...) for the part number field" },
+        { "text": "Each builder is awaited and built with .build(\"...\") returning a Promise (e.g. await new ImeiOneBarcodeBuilder().build(\"IMEI 1\"))" },
+        { "text": "These pre-built barcode field builders are imported from @scandit/web-datacapture-label" },
+        { "text": "CustomBarcodeBuilder is NOT used for the IMEI, serial number, or part number fields" },
+        { "text": "new LabelCaptureSettingsBuilder() is used with .addLabel(...).build()" }
+      ],
+      "tags": ["barcode-semantic-fields"]
+    },
+    {
+      "id": 5,
+      "prompt": "I want to scan a retail price tag (price, unit price, weight) on web. Is there a ready-made label for this so I don't have to define each field myself? Write the setup into empty-app.ts.",
+      "expected_output": "The skill uses the pre-built LabelDefinition.createPriceCaptureDefinition(name) (awaited) instead of hand-defining fields, and warns that the PriceCapture pre-made definition is NOT compatible with the Validation Flow (so the Basic Overlay path must be used).",
+      "files": [
+        "eval-fixtures/empty-app.ts"
+      ],
+      "assertions": [
+        { "text": "await LabelDefinition.createPriceCaptureDefinition( is used to create the price label definition" },
+        { "text": "The pre-made definition is passed to new LabelCaptureSettingsBuilder().addLabel(...) without mutating it (no extra fields added to the returned definition)" },
+        { "text": "The response warns that the PriceCapture pre-made definition is NOT compatible with the Validation Flow overlay and uses / recommends the LabelCaptureBasicOverlay path instead" },
+        { "text": "LabelDefinition is imported from @scandit/web-datacapture-label" },
+        { "text": "LabelCaptureValidationFlowOverlay is NOT used with the pre-built price definition" }
+      ],
+      "tags": ["prebuilt-label-definitions"]
+    },
+    {
+      "id": 6,
+      "prompt": "I'm using Smart Label Capture on web with the Basic Overlay (no Validation Flow). I want to highlight the barcode field in cyan and the expiry date field in orange in the camera preview, and react when the user taps a label. Show me how to customize the field brushes.",
+      "expected_output": "The skill assigns a LabelCaptureBasicOverlay listener implementing brushForField that returns a per-field Brush keyed off field.name, constructed with Brush and Color.fromRGBA from @scandit/web-datacapture-core, and implements onLabelTapped.",
+      "files": [],
+      "assertions": [
+        { "text": "A LabelCaptureBasicOverlay is created (LabelCaptureBasicOverlay.withLabelCaptureForView) and its listener implements brushForField (called per field to decide the brush)" },
+        { "text": "The brushForField implementation switches on field.name and returns a different Brush for the barcode field vs the expiry date field" },
+        { "text": "Brush and Color are imported from @scandit/web-datacapture-core and a new Brush(...) is constructed (or Brush.transparent is used)" },
+        { "text": "The brush color uses transparency (alpha < 1, e.g. Color.fromRGBA(0, 255, 255, 0.5)) so the captured content is not occluded" },
+        { "text": "onLabelTapped is implemented on the basic overlay listener to react to taps on a label" },
+        { "text": "LabelCaptureValidationFlowOverlay is NOT used — the Basic Overlay path is used" }
+      ],
+      "tags": ["basic-overlay-customization"]
+    },
+    {
+      "id": 7,
+      "prompt": "My customer's shipping labels are worn and the on-device OCR misses fields. Can I use a cloud fallback on web to improve accuracy? Add it to my existing label definition.",
+      "expected_output": "The skill enables the Adaptive Recognition Engine by calling .adaptiveRecognitionMode(AdaptiveRecognitionMode.Auto) on the LabelDefinitionBuilder, flags that ARE is a Beta feature, notes it works only with the Validation Flow overlay, and that production use requires contacting Scandit Support (support@scandit.com).",
+      "files": [],
+      "assertions": [
+        { "text": "AdaptiveRecognitionMode.Auto is applied to the label definition via .adaptiveRecognitionMode(AdaptiveRecognitionMode.Auto) on the LabelDefinitionBuilder" },
+        { "text": "AdaptiveRecognitionMode is imported from @scandit/web-datacapture-label" },
+        { "text": "The response flags that the Adaptive Recognition Engine is a Beta feature that may change in future SDK versions" },
+        { "text": "The response states that ARE works ONLY with the Validation Flow overlay (LabelCaptureValidationFlowOverlay), not the Basic or Advanced overlay" },
+        { "text": "The response states that enabling ARE requires a license key with the ARE feature flag and that production use requires contacting Scandit Support at support@scandit.com" }
+      ],
+      "tags": ["adaptive-recognition-cloud", "beta"]
+    },
+    {
+      "id": 8,
+      "prompt": "I want to scan whole receipts on web and get back the store name, total, and line items. How do I set that up with Scandit?",
+      "expected_output": "The skill uses the LabelCaptureAdaptiveRecognitionOverlay with a listener whose onRecognized callback receives a ReceiptScanningResult (storeName, paymentTotal, lineItems, etc.), and flags that Receipt Scanning is a Beta feature built on the Adaptive Recognition Engine that requires Scandit Support (support@scandit.com) to enable.",
+      "files": [],
+      "assertions": [
+        { "text": "LabelCaptureAdaptiveRecognitionOverlay.withLabelCaptureForView( is used (the separate receipt-scanning overlay, NOT the standard Basic or Validation Flow overlay)" },
+        { "text": "The overlay listener implements onRecognized and reads fields off the ReceiptScanningResult (e.g. result.storeName, result.paymentTotal, result.lineItems)" },
+        { "text": "LabelCaptureAdaptiveRecognitionOverlay (and ReceiptScanningResult) are imported from @scandit/web-datacapture-label" },
+        { "text": "The response flags that Receipt Scanning is a Beta feature built on the Adaptive Recognition Engine and may change in future SDK versions" },
+        { "text": "The response states that enabling it requires contacting Scandit Support at support@scandit.com" }
+      ],
+      "tags": ["receipt-scanning", "beta"]
     }
   ]
 }

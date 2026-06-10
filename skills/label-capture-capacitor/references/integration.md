@@ -374,6 +374,20 @@ runApp();
 - **Singleton context.** `DataCaptureContext.initialize(licenseKey)` once. Never `dispose()` it.
 - **License key in source is a placeholder** (`'-- ENTER YOUR SCANDIT LICENSE KEY HERE --'`).
 
+## Troubleshooting common failures
+
+When the user reports a problem, map the symptom to its cause before suggesting code changes. The most common failures are environmental, not API misuse.
+
+- **Black / blank camera preview, no error** — almost always the camera permission was never granted, or the camera was never switched on. Check that (1) on iOS `NSCameraUsageDescription` is in `ios/App/App/Info.plist` and the OS prompt was accepted; on Android the runtime `CAMERA` permission is requested and granted **before** the camera starts; (2) `camera.switchToDesiredState(FrameSourceState.On)` runs after permission is granted; and (3) `context.setFrameSource(camera)` was called and `view.connectToElement(...)` points at a sized host `<div>`. If you show a DOM modal over the scan view, remember `view.webViewContentOnTop = false` while scanning or the native preview stays hidden behind the WebView.
+
+- **Camera preview shows but nothing is ever captured** — verify the `LabelCaptureBasicOverlay` (or `LabelCaptureValidationFlowOverlay`) was added with `await view.addOverlay(...)`, that `labelCapture.isEnabled` is `true`, and that the mode was not left disabled after a previous capture (re-enable with `labelCapture.isEnabled = true`). Confirm the `LabelDefinition.fields` array is not empty and that `CustomBarcode` enables the symbologies actually printed on the label.
+
+- **Text / OCR fields never match (`ExpiryDateText`, `TotalPriceText`, `CustomText`, etc.)** — the on-device text models must be bundled. The `ScanditLabelCaptureText` module is required for arbitrary text fields and `ScanditPriceLabel` for price fields (`UnitPriceText` / `TotalPriceText`); both ship inside `scandit-capacitor-datacapture-label`, so confirm that package is installed and `npx cap sync` was re-run. Barcode-only labels do not need them.
+
+- **A field never matches even though the text is on the label** — the field's `valueRegexes` or `anchorRegexes` is too strict. Prefer the preset field (its regexes are tuned) over a hand-written `CustomText`. If the label has no keyword near the value, clear the anchors with `field.anchorRegexes = []` and rely on the value regex alone. Keep regexes simple — lookahead/lookbehind are not supported and silently fail to match.
+
+- **Handwritten or non-Latin text is never read** — expected. Label Capture reads **printed text** in the supported Latin character set only (see Recognition Limits above). Use the Validation Flow's manual-entry sheet so the user can type the value when it cannot be scanned.
+
 ## Where to Go Next
 
 - [Label Definitions](https://docs.scandit.com/sdks/capacitor/label-capture/label-definitions/)

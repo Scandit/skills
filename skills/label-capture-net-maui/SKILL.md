@@ -38,7 +38,7 @@ The facts most often gotten wrong by pattern-matching from the native SDK, the p
 
 Based on the user's request, load the appropriate reference file before responding:
 
-- **Integrating Label Capture from scratch, defining the label (fields, symbologies, regexes, optional vs required), creating the mode, wiring `MauiProgram.cs`, hosting the `<scandit:DataCaptureView>` + `LabelCaptureBasicOverlay`, managing the camera lifecycle, handling captured labels, customizing feedback or brushes, or using prebuilt definitions (VIN / price label / 7-segment)** (e.g. "add Smart Label Capture to my MAUI app", "scan a barcode and an expiry date from a price tag in MAUI", "read the total price field", "my MAUI preview is black after adding Label Capture") → read `references/integration.md` and follow it.
+- **Integrating Label Capture from scratch, defining the label (fields, symbologies, regexes, optional vs required), creating the mode, wiring `MauiProgram.cs`, hosting the `<scandit:DataCaptureView>` + `LabelCaptureBasicOverlay`, managing the camera lifecycle, handling captured labels, customizing feedback or brushes, using prebuilt definitions (VIN / price label / 7-segment), using semantic barcode fields (serial / part number / IMEI), adding an advanced (AR / custom-view) overlay, or enabling the BETA cloud Adaptive Recognition fallback / Receipt Scanning** (e.g. "add Smart Label Capture to my MAUI app", "scan a barcode and an expiry date from a price tag in MAUI", "read the total price field", "read the serial and part number off a drive label", "scan an IMEI", "use the ready-made price/VIN/seven-segment label", "draw an AR badge over the expiry date", "turn on the cloud fallback when a field fails on-device", "scan whole receipts", "my MAUI preview is black after adding Label Capture") → read `references/integration.md` and follow it.
 - **Enabling or customizing the Validation Flow** (e.g. "add the guided validation flow so users can review and correct fields", "let the user type a field that didn't scan", "customize the validation-flow hint text / button labels", "the keyboard covers the input field on iOS") → read `references/validation-flow.md` and follow it.
 
 ## API Usage Policy
@@ -88,12 +88,13 @@ All classes documented with `:available: dotnet.android` and/or `:available: dot
 - **`AdaptiveRecognitionMode`** enum — controls cloud-backed recognition for a definition (`Off` default).
 - **MAUI-specific glue**: `ScanditLabelCapture.Initialize()`, `MauiAppBuilder.UseScanditCore(configure => configure.AddDataCaptureView())`, `builder.Services.AddDataCaptureContext(licenseKey)`, `builder.Services.AddCamera(configure => …)`, `<scandit:DataCaptureView>` XAML control, `dataCaptureView.HandlerChanged`, `dataCaptureView.AddOverlay(overlay)`, MAUI `Permissions.Camera`, `MainThread.BeginInvokeOnMainThread`.
 
-### Advanced topics (available but intentionally deferred to the docs)
+### Advanced topics (covered concisely in `references/integration.md` — fetch the Advanced Configurations page for full shapes)
 
-These are real symbols but out of scope for a first integration — don't invent their shapes; fetch the Advanced Configurations page if the user asks:
+These are real symbols. `references/integration.md` now has short sections for them; don't invent signatures beyond what's documented there — fetch the Advanced Configurations page for the per-platform / beta detail:
 
-- **Adaptive Recognition (cloud backup):** `LabelCaptureAdaptiveRecognitionOverlay`, `LabelCaptureAdaptiveRecognitionSettings`, `ILabelCaptureAdaptiveRecognitionListener`, result types `AdaptiveRecognitionResult` / `AdaptiveRecognitionResultType` / `ReceiptScanningResult` / `ReceiptScanningLineItem`. Enabled per-definition via `AdaptiveRecognitionMode`.
-- **Advanced overlay (arbitrary native views over labels):** `LabelCaptureAdvancedOverlay`, `ILabelCaptureAdvancedOverlayListener`. In MAUI this returns a **native** view (`Android.Views.View` / `UIKit.UIView`), so it needs the `partial`-class split + `ToPlatform(...)` pattern (same as MatrixScan AR overlays in MAUI).
+- **Advanced overlay (arbitrary native views over labels):** `LabelCaptureAdvancedOverlay`, `ILabelCaptureAdvancedOverlayListener`. In MAUI the listener returns a **native** view (`Android.Views.View` / `UIKit.UIView`), so it needs the `partial`-class split + `ToPlatform(...)` pattern (same as MatrixScan AR overlays in MAUI). See `references/integration.md` → *Advanced overlay*.
+- **Adaptive Recognition — cloud fallback (BETA):** enabled per-definition via `LabelDefinition.AdaptiveRecognitionMode = AdaptiveRecognitionMode.Auto` (default `Off`). Beta; must be enabled on the subscription. See `references/integration.md` → *Adaptive Recognition*.
+- **Receipt Scanning (BETA):** different pattern — `LabelCaptureAdaptiveRecognitionOverlay`, `ILabelCaptureAdaptiveRecognitionListener`, result types `ReceiptScanningResult` / `ReceiptScanningLineItem`. Beta; cloud-only; confirm exact .NET method/property names against the API reference before writing code. See `references/integration.md` → *Receipt Scanning*.
 - **`LabelFieldLocation` / `LabelFieldLocationType`** — used with `SetLocation(...)` on custom field builders.
 
 ### MAUI vs per-platform / barcode-MAUI differences (do not cross-pollinate)

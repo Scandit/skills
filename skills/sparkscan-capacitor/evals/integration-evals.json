@@ -9,22 +9,54 @@
         "fixtures/EmptyApp.js"
       ],
       "assertions": [
-        {"text": "Setup checklist is shown (mentions scandit-capacitor-datacapture-core, scandit-capacitor-datacapture-barcode, and npx cap sync)"},
-        {"text": "Setup checklist mentions iOS Info.plist NSCameraUsageDescription"},
-        {"text": "Setup checklist mentions Android runtime camera permission"},
-        {"text": "await ScanditCaptureCorePlugin.initializePlugins() is present and awaited before any other Scandit call"},
-        {"text": "DataCaptureContext.initialize( is present (v8 API used)"},
-        {"text": "DataCaptureContext.forLicenseKey( is NOT present"},
-        {"text": "License key placeholder (e.g. YOUR_LICENSE_KEY or similar) is present"},
-        {"text": "new SparkScan(settings) is present (v8 constructor used, not SparkScan.forSettings)"},
-        {"text": "SparkScan.forSettings( is NOT present"},
-        {"text": "Symbology.EAN13UPCA is enabled"},
-        {"text": "Symbology.Code128 is enabled"},
-        {"text": "No symbologies except EAN13UPCA and Code128 are enabled"},
-        {"text": "SparkScanView.forContext( is present"},
-        {"text": "sparkScan.addListener( is called to register the scan listener"},
-        {"text": "Listener object has a didScan callback"},
-        {"text": "Imports come from scandit-capacitor-datacapture-core (DataCaptureContext, ScanditCaptureCorePlugin) and scandit-capacitor-datacapture-barcode (SparkScan, SparkScanView, SparkScanSettings, Symbology)"}
+        {
+          "text": "Setup checklist is shown (mentions scandit-capacitor-datacapture-core, scandit-capacitor-datacapture-barcode, and npx cap sync)"
+        },
+        {
+          "text": "Setup checklist mentions iOS Info.plist NSCameraUsageDescription"
+        },
+        {
+          "text": "Setup checklist mentions Android runtime camera permission"
+        },
+        {
+          "text": "await ScanditCaptureCorePlugin.initializePlugins() is present and awaited before any other Scandit call"
+        },
+        {
+          "text": "DataCaptureContext.initialize( is present (v8 API used)"
+        },
+        {
+          "text": "DataCaptureContext.forLicenseKey( is NOT present"
+        },
+        {
+          "text": "License key placeholder (e.g. YOUR_LICENSE_KEY or similar) is present"
+        },
+        {
+          "text": "new SparkScan(settings) is present (v8 constructor used, not SparkScan.forSettings)"
+        },
+        {
+          "text": "SparkScan.forSettings( is NOT present"
+        },
+        {
+          "text": "Symbology.EAN13UPCA is enabled"
+        },
+        {
+          "text": "Symbology.Code128 is enabled"
+        },
+        {
+          "text": "No symbologies except EAN13UPCA and Code128 are enabled"
+        },
+        {
+          "text": "SparkScanView.forContext( is present"
+        },
+        {
+          "text": "sparkScan.addListener( is called to register the scan listener"
+        },
+        {
+          "text": "Listener object has a didScan callback"
+        },
+        {
+          "text": "Imports come from scandit-capacitor-datacapture-core (DataCaptureContext, ScanditCaptureCorePlugin) and scandit-capacitor-datacapture-barcode (SparkScan, SparkScanView, SparkScanSettings, Symbology)"
+        }
       ]
     },
     {
@@ -35,18 +67,42 @@
         "fixtures/ProductListApp.js"
       ],
       "assertions": [
-        {"text": "await ScanditCaptureCorePlugin.initializePlugins() is present"},
-        {"text": "DataCaptureContext.initialize( is present (v8 API)"},
-        {"text": "DataCaptureContext.forLicenseKey( is NOT present"},
-        {"text": "new SparkScan(settings) is present"},
-        {"text": "SparkScanView.forContext( is present"},
-        {"text": "sparkScan.addListener( is present"},
-        {"text": "didScan callback is present"},
-        {"text": "didScan callback pushes / appends to scannedProducts"},
-        {"text": "Existing scannedProducts array is preserved"},
-        {"text": "Existing renderProductList function is preserved and called after each scan"},
-        {"text": "Existing totalLabel / total DOM update logic is preserved"},
-        {"text": "Existing clearButton click handler is preserved"}
+        {
+          "text": "await ScanditCaptureCorePlugin.initializePlugins() is present"
+        },
+        {
+          "text": "DataCaptureContext.initialize( is present (v8 API)"
+        },
+        {
+          "text": "DataCaptureContext.forLicenseKey( is NOT present"
+        },
+        {
+          "text": "new SparkScan(settings) is present"
+        },
+        {
+          "text": "SparkScanView.forContext( is present"
+        },
+        {
+          "text": "sparkScan.addListener( is present"
+        },
+        {
+          "text": "didScan callback is present"
+        },
+        {
+          "text": "didScan callback pushes / appends to scannedProducts"
+        },
+        {
+          "text": "Existing scannedProducts array is preserved"
+        },
+        {
+          "text": "Existing renderProductList function is preserved and called after each scan"
+        },
+        {
+          "text": "Existing totalLabel / total DOM update logic is preserved"
+        },
+        {
+          "text": "Existing clearButton click handler is preserved"
+        }
       ]
     },
     {
@@ -57,14 +113,30 @@
         "fixtures/IntegratedApp.js"
       ],
       "assertions": [
-        {"text": "sparkScanView.feedbackDelegate is assigned"},
-        {"text": "feedbackForBarcode is a method on the feedback delegate object"},
-        {"text": "new SparkScanBarcodeErrorFeedback( is returned for rejected barcodes"},
-        {"text": "resumeCapturingDelay of 30 is passed to the error feedback (in seconds or ms per the API)"},
-        {"text": "new SparkScanBarcodeSuccessFeedback() or SparkScanBarcodeSuccessFeedback.fromVisualFeedbackColor is returned for valid barcodes"},
-        {"text": "The rejection condition checks barcode.data === '123456789' or equivalent"},
-        {"text": "Existing integration code (context, sparkScan, sparkScanView, listener) is preserved"},
-        {"text": "Imports for SparkScanBarcodeErrorFeedback and SparkScanBarcodeSuccessFeedback are added"}
+        {
+          "text": "sparkScanView.feedbackDelegate is assigned"
+        },
+        {
+          "text": "feedbackForBarcode is a method on the feedback delegate object"
+        },
+        {
+          "text": "new SparkScanBarcodeErrorFeedback( is returned for rejected barcodes"
+        },
+        {
+          "text": "resumeCapturingDelay of 30 is passed to the error feedback (in seconds or ms per the API)"
+        },
+        {
+          "text": "new SparkScanBarcodeSuccessFeedback() or SparkScanBarcodeSuccessFeedback.fromVisualFeedbackColor is returned for valid barcodes"
+        },
+        {
+          "text": "The rejection condition checks barcode.data === '123456789' or equivalent"
+        },
+        {
+          "text": "Existing integration code (context, sparkScan, sparkScanView, listener) is preserved"
+        },
+        {
+          "text": "Imports for SparkScanBarcodeErrorFeedback and SparkScanBarcodeSuccessFeedback are added"
+        }
       ]
     },
     {
@@ -75,12 +147,24 @@
         "fixtures/IntegratedApp.js"
       ],
       "assertions": [
-        {"text": "sparkScanView.triggerButtonVisible = false is set"},
-        {"text": "A custom HTML button is referenced (document.getElementById / document.querySelector)"},
-        {"text": "addEventListener('click', is used to connect the button to a handler"},
-        {"text": "sparkScanView.startScanning() is called in the click handler"},
-        {"text": "sparkScanView.pauseScanning() is called for the pause branch"},
-        {"text": "Existing integration code (context, sparkScan, sparkScanView, listener) is preserved"}
+        {
+          "text": "sparkScanView.triggerButtonVisible = false is set"
+        },
+        {
+          "text": "A custom HTML button is referenced (document.getElementById / document.querySelector)"
+        },
+        {
+          "text": "addEventListener('click', is used to connect the button to a handler"
+        },
+        {
+          "text": "sparkScanView.startScanning() is called in the click handler"
+        },
+        {
+          "text": "sparkScanView.pauseScanning() is called for the pause branch"
+        },
+        {
+          "text": "Existing integration code (context, sparkScan, sparkScanView, listener) is preserved"
+        }
       ]
     },
     {
@@ -91,12 +175,24 @@
         "fixtures/IntegratedApp.js"
       ],
       "assertions": [
-        {"text": "sparkScanView.cameraSwitchButtonVisible = false OR sparkScanView.cameraSwitchControlVisible = false is set"},
-        {"text": "sparkScanView.zoomSwitchControlVisible = false is set"},
-        {"text": "sparkScanView.triggerButtonTintColor is assigned a Color value (Color.fromHex('#FFFFFF') or equivalent)"},
-        {"text": "Color is imported from scandit-capacitor-datacapture-core"},
-        {"text": "Existing integration code (context, sparkScan, sparkScanView, listener) is preserved"},
-        {"text": "Old v6 property names (captureButtonTintColor, torchButtonVisible) are NOT present"}
+        {
+          "text": "sparkScanView.cameraSwitchButtonVisible = false OR sparkScanView.cameraSwitchControlVisible = false is set"
+        },
+        {
+          "text": "sparkScanView.zoomSwitchControlVisible = false is set"
+        },
+        {
+          "text": "sparkScanView.triggerButtonTintColor is assigned a Color value (Color.fromHex('#FFFFFF') or equivalent)"
+        },
+        {
+          "text": "Color is imported from scandit-capacitor-datacapture-core"
+        },
+        {
+          "text": "Existing integration code (context, sparkScan, sparkScanView, listener) is preserved"
+        },
+        {
+          "text": "Old v6 property names (captureButtonTintColor, torchButtonVisible) are NOT present"
+        }
       ]
     },
     {
@@ -107,10 +203,18 @@
         "fixtures/IntegratedApp.js"
       ],
       "assertions": [
-        {"text": "sparkScanView.uiListener is assigned an object"},
-        {"text": "The uiListener object has a didTapBarcodeCountButton method"},
-        {"text": "Navigation logic (e.g. location.hash change, router.push, or similar) is invoked inside the handler"},
-        {"text": "Existing integration code (context, sparkScan, sparkScanView, listener) is preserved"}
+        {
+          "text": "sparkScanView.uiListener is assigned an object"
+        },
+        {
+          "text": "The uiListener object has a didTapBarcodeCountButton method"
+        },
+        {
+          "text": "Navigation logic (e.g. location.hash change, router.push, or similar) is invoked inside the handler"
+        },
+        {
+          "text": "Existing integration code (context, sparkScan, sparkScanView, listener) is preserved"
+        }
       ]
     },
     {
@@ -121,9 +225,15 @@
         "fixtures/IntegratedApp.js"
       ],
       "assertions": [
-        {"text": "sparkScanView.dispose() is called"},
-        {"text": "The dispose() call is awaited (await sparkScanView.dispose()) OR used as a promise (.then / .catch)"},
-        {"text": "Existing integration code (context, sparkScan, sparkScanView, listener) is preserved"}
+        {
+          "text": "sparkScanView.dispose() is called"
+        },
+        {
+          "text": "The dispose() call is awaited (await sparkScanView.dispose()) OR used as a promise (.then / .catch)"
+        },
+        {
+          "text": "Existing integration code (context, sparkScan, sparkScanView, listener) is preserved"
+        }
       ]
     },
     {
@@ -134,9 +244,53 @@
         "fixtures/IntegratedApp.js"
       ],
       "assertions": [
-        {"text": "settings.codeDuplicateFilter = 500 is set (or equivalent in the API units)"},
-        {"text": "codeDuplicateFilter is set BEFORE new SparkScan(settings) is called"},
-        {"text": "Existing integration code (context, sparkScan, sparkScanView, listener) is preserved"}
+        {
+          "text": "settings.codeDuplicateFilter = 500 is set (or equivalent in the API units)"
+        },
+        {
+          "text": "codeDuplicateFilter is set BEFORE new SparkScan(settings) is called"
+        },
+        {
+          "text": "Existing integration code (context, sparkScan, sparkScanView, listener) is preserved"
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "prompt": "I'm building a high-volume warehouse scanning app where we need rapid, continuous barcode scanning without pausing between items. My app already has SparkScan integrated: IntegratedApp.js. Reconfigure it with CONTINUOUS scanning behavior and PERSISTENT preview so the camera stays visible the whole time.",
+      "expected_output": "The skill configures SparkScanViewSettings with defaultScanningMode set to new SparkScanScanningModeDefault(SparkScanScanningBehavior.Continuous, SparkScanPreviewBehavior.Persistent) and passes the settings as the third argument when creating the SparkScanView.",
+      "files": [
+        "fixtures/IntegratedApp.js"
+      ],
+      "tags": [
+        "continuous-scanning",
+        "preview-behavior"
+      ],
+      "assertions": [
+        {
+          "text": "SparkScanViewSettings is created (new SparkScanViewSettings())"
+        },
+        {
+          "text": "defaultScanningMode is set on the view settings"
+        },
+        {
+          "text": "new SparkScanScanningModeDefault( is used with TWO arguments (scanning behavior AND preview behavior)"
+        },
+        {
+          "text": "SparkScanScanningBehavior.Continuous is used (not Single)"
+        },
+        {
+          "text": "SparkScanPreviewBehavior.Persistent is used (not Default)"
+        },
+        {
+          "text": "The deprecated one-argument SparkScanScanningModeDefault(scanningBehavior) form is NOT used in code"
+        },
+        {
+          "text": "The configured settings are passed to the SparkScanView creation call"
+        },
+        {
+          "text": "Existing integration code (context, sparkScan mode, listener, lifecycle) is preserved"
+        }
       ]
     }
   ]

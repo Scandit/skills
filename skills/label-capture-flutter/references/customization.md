@@ -54,7 +54,9 @@ await overlay.setBrushForLabel(brush, label);
 
 ## Advanced overlay — render arbitrary Flutter widgets on each captured label
 
-Use `LabelCaptureAdvancedOverlay` for live AR overlays (a tag next to each detected field, an action button anchored to the label, a highlight ribbon, etc.). This is the recommended path when the customer's UI cannot be expressed with the Validation Flow.
+Use `LabelCaptureAdvancedOverlay` for live AR overlays (a tag next to each detected field, an action button anchored to the label, a highlight ribbon, etc.).
+
+> **When to use it (and the cost).** The Advanced Overlay is the right path for **fully custom AR** UI that the fixed-layout Validation Flow cannot express. It is also the **highest-effort** option: you build every widget, anchor, and offset yourself and own the entire validation/correction UX — none of the guided checklist, manual-entry sheet, or result callback that the Validation Flow ships for free. Reach for it only when the Validation Flow's UI genuinely doesn't fit; otherwise prefer the Validation Flow (or `LabelCaptureBasicOverlay` brushes for simple highlighting).
 
 ```dart
 final overlay = LabelCaptureAdvancedOverlay.withLabelCaptureForView(labelCapture, view);

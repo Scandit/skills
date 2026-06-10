@@ -1,0 +1,65 @@
+# SparkScan feature taxonomy — pilot seed (hand-derived from product catalog + docs sections).
+# `match` patterns are case-insensitive regexes applied to eval prompt + expected_output +
+# assertion texts. They are a bootstrap heuristic until evals carry explicit `tags`;
+# an eval matching any pattern counts as covering the feature. Patterns are phrasing-
+# sensitive by nature — once suites are tagged (Phase 1c), tags become the source of
+# truth and these only catch new untagged evals.
+# `evidence` is not yet consumed by scripts; it will drive gap ranking (docs ∧ sample ∧
+# support ≫ single-source) per the plan. Kept here so mining provenance lands in one place.
+product: sparkscan
+skill_prefix: sparkscan-
+features:
+  - id: basic-integration
+    required: true
+    evidence: [docs, sample]
+    # "fresh add" only — generic "integration"/"sparkscanview" matched nearly every eval
+    match: ["add sparkscan to", "integrate sparkscan", "set.?up sparkscan", "new (ios|android|web|flutter|react.?native|capacitor|cordova|maui|\\.net) (app|project)"]
+  - id: license-init-v7
+    required: true
+    evidence: [docs]
+    match: ["datacapturecontext\\.initialize", "license key", "licensekey"]
+  - id: symbology-config
+    required: true
+    evidence: [docs, sample]
+    match: ["symbolog", "ean.?13", "code.?128", "qr", "upc"]
+  - id: scan-feedback
+    required: true
+    evidence: [docs]
+    match: ["feedback", "vibrat", "sound", "beep", "haptic"]
+  - id: continuous-scanning
+    required: true
+    evidence: [docs, sample]
+    match: ["continuous", "scanningmode", "scanning mode"]
+  - id: target-selection-mode
+    required: false
+    evidence: [docs]
+    match: ["target mode", "targetmode", "aim", "selection mode"]
+  - id: ui-customization
+    required: true
+    evidence: [docs]
+    # "color" alone matched feedback-color assertions; require UI-element context
+    match: ["customiz.*(ui|view|button|appearance)", "trigger button", "toolbar", "torch", "theme", "(button|view|trigger).*color", "color.*(button|trigger)"]
+  - id: preview-behavior
+    required: false
+    evidence: [docs]
+    match: ["preview", "mini.?preview", "previewbehavior"]
+  - id: lifecycle-handling
+    required: true
+    evidence: [docs, sample]
+    match: ["preparescanning", "stopscanning", "onpause", "onresume", "viewwillappear", "viewwilldisappear", "lifecycle", "dispose"]
+  - id: scan-result-handling
+    required: true
+    evidence: [docs, sample]
+    match: ["didscan", "onbarcodescanned", "listener", "scan result", "barcode data"]
+  - id: v6-v7-migration
+    required: true
+    evidence: [docs]
+    match: ["v6", "migrat.*(v7|version)", "upgrade", "6\\.x", "7\\.x"]
+  - id: third-party-migration
+    required: true
+    evidence: [docs]
+    match: ["third.?party", "mlkit", "ml kit", "zxing", "avfoundation", "vision", "replace.*(scanner|scanning library)"]
+  - id: error-troubleshooting
+    required: false
+    evidence: [support]
+    match: ["error", "crash", "not working", "troubleshoot", "blank", "black screen", "permission denied"]

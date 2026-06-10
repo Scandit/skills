@@ -47,6 +47,49 @@ Before writing any code, walk the user through their label. Ask one question at 
 
 > **Do not show code as part of the Q&A round for Questions A and B (the field-definition questions).** That includes "preview" snippets, illustrative DSL examples, sample `LabelCaptureSettings { … }` blocks, or skeleton view-controller code. The Minimal Integration section below is reference material for **after** the user answers A and B — not for quoting during the field-definition questions. Showing code up front pre-supposes field choices the user hasn't made and turns the questions into rhetorical prompts. Ask the field questions first; then write the code. (The overlay decision below is *not* a blocking question — see Question C.)
 
+**Step 0 — Is the *whole label* a pre-built definition?** Before composing fields one by one, check whether the user's label matches one of the pre-built *whole-label* factory definitions. When it does, use the factory — it ships its own fixed field set with anchor/value regexes already tuned, and out-performs anything you hand-assemble from individual builders.
+
+| User's label | iOS factory (Swift) | Since |
+|---|---|---|
+| "retail **price label**", "shelf label", "price tag", "price check" (barcode + price text) | `LabelDefinition.priceCapture(withName: "price-label")` | 7.4.0 |
+| "**VIN**", "vehicle identification number" label | `LabelDefinition.vinLabelDefinition(withName: "vehicle-vin")` | 7.4.0 |
+| "**seven-segment** display", LCD/LED meter/scale readout, digital gauge | `LabelDefinition.sevenSegmentDisplay(withName: "display")` | 7.5.0 |
+
+These factory methods live on `LabelDefinition` and slot straight into either initializer form:
+
+```swift
+// v8.1+ result-builder DSL
+let settings = try LabelCaptureSettings {
+    LabelDefinition.priceCapture(withName: "price-label")
+}
+
+// v8.0 array initializer
+let settings = try LabelCaptureSettings(
+    labelDefinitions: [LabelDefinition.priceCapture(withName: "price-label")]
+)
+```
+
+**Don't guess the field names of a pre-built definition.** A factory ships its own fixed field set — the name you pass in (`"price-label"`) is just the *label's* name, not the field names. Hardcoding a guessed field name silently returns nothing. The field names are fixed by the SDK:
+
+- `priceCapture(withName:)` → `"SKU"` (barcode field, `.ean13UPCA` + `.code128`) and `"priceText"` (price text field). Read them by name or iterate `label.fields`:
+
+  ```swift
+  for field in capturedLabel.fields {
+      switch field.name {
+      case "SKU":       let barcode = field.barcode?.data
+      case "priceText": let price = field.text
+      default: break
+      }
+  }
+  ```
+
+- `vinLabelDefinition(withName:)` → an optional `text` field and an optional `barcode` field, both matching `[A-Z0-9]{17}`.
+- `sevenSegmentDisplay(withName:)` → a single `weight` text field tuned for 7-segment glyphs (it tolerates the common `O`/`0`, `Q`/`0`, `B`/`8` confusions).
+
+> **Pre-built whole-label definitions are NOT Validation-Flow compatible.** `LabelDefinition.priceCapture(withName:)`, `vinLabelDefinition(withName:)`, and `sevenSegmentDisplay(withName:)` are documented as not intended for use with the Validation Flow — using them inside the VF "may result in incorrect data being captured." For these factories, use the **Basic Overlay** (or Advanced Overlay) path, not `LabelCaptureValidationFlowOverlay`. If the user needs the VF guided experience for a price/VIN/seven-segment use case, build an equivalent custom `LabelDefinition` from `CustomBarcode` + the relevant pre-built text fields instead. `priceCapture` additionally requires the **`ScanditPriceLabel`** SPM product (its `priceText` field uses the specialised price recogniser), in addition to `ScanditLabelCaptureText`.
+
+If no whole-label factory fits, build the label from individual fields below — preferring the pre-built field builders.
+
 **Question A — What's on your label?** Present this checklist of supported field types and ask the user to pick everything that applies.
 
 > **Always prefer pre-built field builders over custom ones.** If the user's use case matches a pre-built type (e.g. expiry date, weight, price, IMEI, serial number, part number), use that builder — it ships with tuned regex patterns and anchor text optimised for that field type. Only reach for `CustomText` when no pre-built type covers the field, and only use `CustomBarcode` when none of the pre-built barcode types (`IMEIOneBarcode`, `PartNumberBarcode`, etc.) apply. Do not propose a custom regex up front if a pre-built builder exists for the field type — that's a customer-facing regression in accuracy and a needless maintenance burden.
@@ -91,6 +134,8 @@ Before writing any code, walk the user through their label. Ask one question at 
 > - **Alternative — call `.anchorRegexes([])` on the data-typed text builder.** This clears the text-side anchor pattern (the language-specific keyword like `EXP`, `BBE`, …) while keeping the `valueRegex` defaults intact, so the conflict goes away. Use this only when the user explicitly wants to keep the data-typed barcode builder and the label's value format is reliable enough on its own. Tell the user it relaxes anchor matching.
 >
 > Both workarounds are surfaced in the SDK's own unit test for this constraint; the second is what the SDK team uses to assert the build now succeeds after the conflict is cleared.
+>
+> *Version note:* this exclusion is present on all currently shipped SDKs (through 8.4.x). It is lifted in 8.5.0+ (the engine now allows data-type patterns on both a barcode and a text field in the same label). Apply the workarounds for any release the user is actually on today; only skip them if the project is pinned to 8.5.0 or later.
 
 **Question B — For each selected field:**
 
@@ -99,6 +144,8 @@ Before writing any code, walk the user through their label. Ask one question at 
   - **Optional** (call `.optional(true)` on the builder): the field is captured if found, but its absence does not block capture or the Validation Flow submission. The user can complete the flow without it.
 - For `CustomBarcode`: which **symbologies**? Mention to the user that enabling only the symbologies they actually need improves scanning performance and accuracy. iOS symbology enum values use camelCase: `.ean13UPCA`, `.code128`, `.gs1DatabarExpanded`, `.qr`, `.dataMatrix`, etc. — never the Android-style underscore form `.EAN13_UPCA`.
 - For `CustomText`: what **regex pattern** should the text match? See the regex notes below.
+
+> **Regex engine limits — keep patterns simple.** The SDK's value/anchor regex engine is built on the standard library `std::regex` (ECMAScript grammar), **not** PCRE/PCRE2. It supports standard character classes (`\d`, `[A-Z]`), quantifiers (`{2}`, `+`, `*`, `?`), alternation (`a|b`), and capture/non-capture groups. It does **not** support **lookbehind** (`(?<= …)` / `(?<! …)`), **named groups** (`(?<name> …)`), or **Unicode property escapes** (`\p{L}`, `\p{Nd}`) — those throw at pattern compilation and the field will silently never match. Lookahead (`(?= …)`) and backreferences (`\1`) happen to compile, but prefer to avoid them too: keep value/anchor regexes to the simple subset above. If a user pastes a complex regex from another engine (Python, PCRE, .NET), rewrite it without those constructs.
 - For `ExpiryDateText` / `PackingDateText`: does the user need a specific date format? If so, pass `.labelDateFormat(LabelDateFormat(componentFormat: .MDY, acceptPartialDates: false))` (substitute the component order and partial-date flag for the user's case). Optional — these builders ship with a sensible default.
 - For `DateText`: a `LabelDateFormat` is **required** at construction. Pass it directly to the initializer: `DateText(name: "Date", labelDateFormat: LabelDateFormat(componentFormat: .MDY, acceptPartialDates: false))`.
 
@@ -456,7 +503,7 @@ WeightText(name: "Weight")
 
 This works on every pre-built text builder (`ExpiryDateText`, `PackingDateText`, `WeightText`, `UnitPriceText`, `TotalPriceText`) and is the recommended pattern.
 
-**Keep regexes simple.** The SDK regex engine supports standard character classes (`\d`, `[A-Z]`), quantifiers (`{2}`, `+`, `*`), alternation (`a|b`), and groups (`(...)`). **Lookahead and lookbehind assertions are not supported** and will cause the pattern to fail to match. Backreferences and Unicode property escapes (`\p{...}`) are also unsupported. If a user pastes a complex regex from a different engine, rewrite it without those constructs.
+**Keep regexes simple.** The SDK regex engine is the standard library `std::regex` (ECMAScript grammar), **not** PCRE/PCRE2. It supports standard character classes (`\d`, `[A-Z]`), quantifiers (`{2}`, `+`, `*`, `?`), alternation (`a|b`), and groups (`(...)`). **Lookbehind assertions (`(?<= ...)` / `(?<! ...)`), named groups (`(?<name> ...)`), and Unicode property escapes (`\p{...}`) are not supported** — they throw at pattern compilation, so the field silently never matches. Lookahead (`(?= ...)`) and backreferences (`\1`) do compile, but prefer to avoid them — stick to the simple subset above. If a user pastes a complex regex from a different engine (Python, PCRE, .NET), rewrite it without those constructs.
 
 ## Supported characters
 
@@ -483,10 +530,30 @@ let validationFlowOverlay = LabelCaptureValidationFlowOverlay(
     labelCapture: labelCapture,
     view: captureView
 )
+
+// v8.2+: per-field placeholder hint shown in the manual-entry input.
+let validationFlowSettings = LabelCaptureValidationFlowSettings()
+validationFlowSettings.setPlaceholderText("MM/DD/YYYY", forLabelDefinition: "Expiry Date")
+validationFlowOverlay.apply(validationFlowSettings)
+
 validationFlowOverlay.delegate = self
 ```
 
-…and adopt `LabelCaptureValidationFlowDelegate` instead of `LabelCaptureListener`. **Also drop the `labelCapture.isEnabled = true/false` toggles from `viewWillAppear` / `viewWillDisappear`** — the Validation Flow overlay manages the capture lifecycle internally, and leaving the toggles in place fights the overlay. Keep the `camera?.switch(toDesiredState:)` lifecycle calls (the overlay does not control the camera). Then go to `validation-flow.md` for everything else.
+…and adopt `LabelCaptureValidationFlowDelegate` instead of `LabelCaptureListener`. The only **required** delegate method is `labelCaptureValidationFlowOverlay(_:didCaptureLabelWith:)`. On v8.1+/v8.2+ there are two **optional** methods worth surfacing to the user even if you don't implement them — show their signatures so the user can opt in:
+
+```swift
+// Optional (v8.1+) — user manually submitted/corrected a value through the VF UI
+func labelCaptureValidationFlowOverlay(_ overlay: LabelCaptureValidationFlowOverlay,
+    didSubmitManualInputFor field: LabelField,
+    replacingValue oldValue: String?, withValue newValue: String) { }
+
+// Optional (v8.2+) — progressive result update during the flow; carries FrameData?
+func labelCaptureValidationFlowOverlay(_ overlay: LabelCaptureValidationFlowOverlay,
+    didUpdateResult type: LabelResultUpdateType, asyncId: Int,
+    fields: [LabelField], frameData: FrameData?) { }
+```
+
+See `references/validation-flow.md` for full version-aware guidance. **Also drop the `labelCapture.isEnabled = true/false` toggles from `viewWillAppear` / `viewWillDisappear`** — the Validation Flow overlay manages the capture lifecycle internally, and leaving the toggles in place fights the overlay. Keep the `camera?.switch(toDesiredState:)` lifecycle calls (the overlay does not control the camera). Then go to `validation-flow.md` for everything else.
 
 ### Basic Overlay
 
@@ -578,11 +645,15 @@ extension ScanViewController: LabelCaptureListener {
         didUpdate session: LabelCaptureSession,
         frameData: FrameData
     ) {
-        guard let capturedLabel = session.capturedLabels.first else { return }
+        // `didUpdate` fires on EVERY frame (~30 fps). Guard on a non-empty
+        // capturedLabels FIRST so we never encode a JPEG on empty frames.
+        guard !session.capturedLabels.isEmpty else { return }
+        let capturedLabel = session.capturedLabels.first!
 
-        // Disable the mode first so scanning stops before we read the frame
+        // Disable the mode so scanning stops before we read the frame
         labelCapture.isEnabled = false
 
+        // Only reached after the guard above — jpegData is never called per-frame unconditionally.
         let image = frameData.imageBuffers.first?.image
         let jpeg = image?.jpegData(compressionQuality: 0.3)
 
@@ -633,6 +704,32 @@ let settings = try LabelCaptureSettings {
 With `.auto`, the SDK decides when to invoke the cloud fallback. Results arrive through the same Validation Flow callback — no additional handling is needed.
 
 Mention ARE only if the user asks about improving OCR accuracy or mentions difficulty reading certain labels. Do not enable it by default.
+
+## Receipt Scanning (Beta — built on ARE)
+
+If the user wants to extract structured data from a **whole receipt** (store, totals, line items) rather than a few fields off a printed label, that's **Receipt Scanning** — a separate ARE-powered feature available on iOS since SDK 7.6.0. It is **Beta** and, like ARE generally, requires a license key with the Adaptive Recognition Engine enabled. Flag this up front and direct the user to <support@scandit.com> to get it enabled on their subscription before they try to use it. Do not present it as generally available.
+
+Receipt Scanning does **not** use the standard label-capture overlays or a `LabelDefinition`. It uses a different integration pattern:
+
+- The overlay is **`LabelCaptureAdaptiveRecognitionOverlay`** (instead of `LabelCaptureBasicOverlay` / `LabelCaptureValidationFlowOverlay`).
+- Results arrive through a **`LabelCaptureAdaptiveRecognitionListener`**, whose recognition callback delivers a **`ReceiptScanningResult`**.
+
+`ReceiptScanningResult` carries the parsed receipt — all fields are optional because not every receipt prints every value:
+
+| Field | Type | Description |
+|---|---|---|
+| `storeName` | `String?` | Store / merchant name |
+| `storeAddress` | `String?` | Full store address |
+| `storeCity` | `String?` | City |
+| `date` | `String?` | Transaction date |
+| `time` | `String?` | Transaction time |
+| `paymentPreTaxTotal` | `Float?` | Balance before taxes |
+| `paymentTax` | `Float?` | Total tax |
+| `paymentTotal` | `Float?` | Total paid |
+| `loyaltyNumber` | `Int?` | Loyalty program identifier |
+| `lineItems` | list | Each item carries `name`, `unitPrice`, `discount`, `quantity`, `totalPrice` |
+
+> **Verify the exact delegate selector before writing the listener.** The Receipt Scanning overlay and listener are Beta, and the receipt callback's precise Swift signature is not pinned in the integration references here. Fetch the [Advanced Configurations](https://docs.scandit.com/sdks/ios/label-capture/advanced/) page (Receipt Scanning section) and the linked API page for `LabelCaptureAdaptiveRecognitionListener` before emitting the delegate method — don't guess the selector. The overlay type (`LabelCaptureAdaptiveRecognitionOverlay`), the listener type (`LabelCaptureAdaptiveRecognitionListener`), and the result type (`ReceiptScanningResult`) above are confirmed; the delegate method name is not, so look it up.
 
 ## Setup Checklist
 

@@ -221,15 +221,45 @@ LabelCaptureSettings settings =
 - For a custom text value pattern use `.SetValueRegex("<pattern>")` (or `.SetValueRegexes(new List<string>{...})`). Do **not** use `setPattern` / `setDataTypePattern` — those are old native names that don't exist in .NET.
 - An equivalent way to assemble fields is `LabelDefinitionBuilder` (`new LabelDefinitionBuilder().AddCustomBarcode(barcode).AddExpiryDateText(expiry).Build(name)`), but the direct `LabelDefinition.Create(name, fields)` shown above is simplest.
 
-### Prebuilt label definitions
+### Pre-built barcode fields (serial number, part number, IMEI)
 
-For common documents, skip manual field building and use a prebuilt definition:
+For smart-device and electronics labels you rarely need to hand-write symbologies and regexes — the SDK ships **pre-built barcode field types** whose `Symbologies`, `ValueRegexes`, and `AnchorRegexes` are already configured. Build them exactly like `CustomBarcode`: a static `Builder()` then `.Build("name")`. The shared builder members (`IsOptional`, `SetValueRegex(es)`, `SetNumberOfMandatoryInstances`) still apply and **override** the pre-built defaults.
+
+```csharp
+using Scandit.DataCapture.Label.Data;
+
+var fields = new List<LabelFieldDefinition>();
+
+// Hard-disk-drive label: serial number + part number.
+fields.Add(SerialNumberBarcode.Builder().Build("Serial Number"));
+fields.Add(PartNumberBarcode.Builder().Build("Part Number"));
+
+// Smart-device label: IMEI1 and IMEI2.
+fields.Add(ImeiOneBarcode.Builder().Build("IMEI1"));
+fields.Add(ImeiTwoBarcode.Builder().Build("IMEI2"));
+
+LabelDefinition definition = LabelDefinition.Create("Device Label", fields);
+LabelCaptureSettings settings =
+    LabelCaptureSettings.Create(new List<LabelDefinition> { definition });
+```
+
+> On .NET, the native init factories `SerialNumberBarcode.FieldWithName(...)`, `ImeiOneBarcode.InitWithName(...)`, etc. are **not** available — always use `Type.Builder()...Build("name")`. These are barcode fields, so read their values via `field.Barcode?.Data` matching the declared name. `IsOptional`, `ValueRegexes`, and `NumberOfMandatoryInstances` are inherited from the shared field builder (they are not declared on the `ImeiOneBarcode`/`ImeiTwoBarcode` class itself, but are callable on the builder).
+
+### Prebuilt label definitions (VIN, price label, 7-segment)
+
+For whole common documents, skip manual field building and use a prebuilt **definition** factory — each returns a ready-to-use `LabelDefinition`:
 
 ```csharp
 LabelDefinition vin   = LabelDefinition.CreateVinLabelDefinition("VIN");
 LabelDefinition price = LabelDefinition.CreatePriceCaptureDefinition("Price Tag");
 LabelDefinition seg   = LabelDefinition.CreateSevenSegmentDisplayLabelDefinition("Meter");
+
+// Use it like any other definition:
+LabelCaptureSettings settings =
+    LabelCaptureSettings.Create(new List<LabelDefinition> { price });
 ```
+
+> `CreatePriceCaptureDefinition` is for retail price labels, `CreateVinLabelDefinition` for vehicle VIN plates, and `CreateSevenSegmentDisplayLabelDefinition` for numeric 7-segment displays (digital scales, meters). Read their fields the same way — match by `Name` and use `Barcode?.Data` / `Text` / `Date`.
 
 ## Step 3 — Create the LabelCapture mode
 
@@ -387,6 +417,23 @@ this.labelCapture.AddListener(new LabelCaptureRepository());
 | `field.Date` | `LabelDate?` | structured date — `Year` / `Month` / `Day` (`int?`) and `DayString` / `MonthString` / `YearString` |
 
 A convenient pattern for "barcode value, falling back to text" (also used by the official iOS sample) is `field.Barcode?.Data ?? field.Text`.
+
+When you don't want to hard-code field names — e.g. a prebuilt definition (`CreateVinLabelDefinition`, `CreatePriceCaptureDefinition`) whose internal field names you shouldn't guess — iterate `label.Fields` and switch on `field.Type` to pick the right accessor:
+
+```csharp
+foreach (LabelField field in label.Fields)
+{
+    string? value = field.Type switch
+    {
+        LabelFieldType.Barcode => field.Barcode?.Data,
+        LabelFieldType.Text => field.Text,
+        _ => null,
+    };
+    // field.Name identifies which field this is; value holds its captured content.
+}
+```
+
+> Read captured values by the field's **`Type`** (or by the `Name` you passed to `.Build("...")`), never by guessing internal field-name strings — `field.Text` returns the captured numeric/text value after matching the field.
 
 Other `LabelField` members: `Name`, `Type` (`LabelFieldType.Barcode`/`Text`/`Unknown`), **`ValueType` (`LabelFieldValueType.Date`/`Price`/`Weight`/`Text`/`Numeric`, iOS-only)**, `State` (`LabelFieldState.Captured`/`Predicted`/`Unknown`), `Required` (`bool`), `PredictedLocation` (`Quadrilateral`). `CapturedLabel` exposes `Fields`, `Name`, `Complete` (all required fields captured), and `TrackingId`.
 
@@ -613,4 +660,5 @@ public class ScanViewController : UIViewController
 ## Where to go next
 
 - [Label Definitions](https://docs.scandit.com/sdks/net/ios/label-capture/label-definitions/) — full catalogue of pre-built field types and how to tune their value/anchor regexes.
+- `references/advanced-overlays.md` — overlay brush customization, the advanced overlay for arbitrary native views, Adaptive Recognition cloud fallback (beta), and Receipt Scanning (beta).
 - [Advanced Configurations](https://docs.scandit.com/sdks/net/ios/label-capture/advanced/) — Validation Flow (see `references/validation-flow.md`), adaptive recognition, advanced overlay for arbitrary native views.

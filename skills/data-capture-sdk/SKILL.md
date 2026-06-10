@@ -93,7 +93,7 @@ Rules for the handoff:
 
 ### Step 3 — Fallback when no skill exists for that combo
 
-For product + platform combinations not in the table (e.g., MatrixScan Count on Android, Barcode Capture on iOS, ID Capture on Web), the implementation skill doesn't exist yet. In that case, fall back to the sample app as the reference implementation and offer to adapt it:
+For product + platform combinations not in the table (e.g., MatrixScan Count on Android, ID Capture on Web), the implementation skill doesn't exist yet. In that case, fall back to the sample app as the reference implementation and offer to adapt it:
 
 > "There's no dedicated skill for MatrixScan Count on Android yet, but the `MatrixScanCountSimpleSample` ([link]) is a complete working reference. I can walk through it and help you adapt it to your project — want me to start there?"
 

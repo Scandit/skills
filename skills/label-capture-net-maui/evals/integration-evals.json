@@ -54,13 +54,149 @@
       ],
       "assertions": [
         {"text": "A CustomText field is created via CustomText.Builder()...Build(\"<name>\")"},
-        {"text": "The value pattern is set with SetValueRegex(\"LOT-[0-9]{6}\") (or SetValueRegexes with that pattern)"},
+        {"text": "A value regex matching the LOT-NNNNNN format is set via SetValueRegex or SetValueRegexes (semantic)"},
         {"text": "The old native names setPattern / setDataTypePattern / setPatterns are NOT used"},
         {"text": "The new field is added to the existing List<LabelFieldDefinition> in the label capture settings (it is NOT marked optional, since it is required)"},
         {"text": "The lot number value is read from the captured label via field.Text matching its declared name"},
         {"text": "Existing MAUI integration (DataCaptureView binding, HandlerChanged overlay, SessionUpdated handler, existing barcode and expiry fields, ResumeAsync/SleepAsync lifecycle) is preserved"},
         {"text": "No iOS-only or Android-only APIs (DispatchQueue.MainQueue, UIApplication.InvokeOnMainThread, RunOnUiThread, NSObject listener base, container.AddView, DataCaptureView.Create(context, CGRect)) are introduced"}
       ]
+    },
+    {
+      "id": 3,
+      "prompt": "I'm adding Smart Label Capture to my .NET MAUI app (here's my empty page MainPage.xaml + MainPage.xaml.cs and MauiProgram.cs). My labels are hard-disk-drive stickers: they always carry a serial number barcode and a part number barcode. I'd rather not figure out the symbologies and regexes myself — these are standard identifiers. Read both values in one scan.",
+      "expected_output": "The skill recognizes these are semantic/preset barcode fields and uses the dedicated field types instead of a CustomBarcode with hand-written symbologies: SerialNumberBarcode.Builder().Build(\"<name>\") and PartNumberBarcode.Builder().Build(\"<name>\"), added to the List<LabelFieldDefinition>, assembled with LabelDefinition.Create(name, fields) and LabelCaptureSettings.Create(new List<LabelDefinition>{def}), the mode created with LabelCapture.Create(context, settings). Reads each value via field.Barcode?.Data matching the declared Name. Wires the standard MAUI integration (ScanditLabelCapture.Initialize() + .UseScanditCore(c => c.AddDataCaptureView()), <scandit:DataCaptureView> with DataCaptureContext binding, overlay in HandlerChanged, MainThread.BeginInvokeOnMainThread, camera lifecycle). It does NOT reinvent serial/part numbers as a CustomBarcode with manual SetSymbologies/SetValueRegex unless the user asks to narrow them.",
+      "files": [
+        "fixtures/EmptyMainPage.xaml",
+        "fixtures/EmptyMainPage.xaml.cs",
+        "fixtures/EmptyMauiProgram.cs"
+      ],
+      "assertions": [
+        {"text": "A serial number field is built with SerialNumberBarcode.Builder()...Build(\"<name>\") (the preset type, NOT a CustomBarcode)"},
+        {"text": "A part number field is built with PartNumberBarcode.Builder()...Build(\"<name>\") (the preset type, NOT a CustomBarcode)"},
+        {"text": "The fields are assembled via LabelDefinition.Create(name, fields) and LabelCaptureSettings.Create(new List<LabelDefinition>{...}) (NOT a settings builder chain)"},
+        {"text": "LabelCapture.Create(context, settings) is used as the factory"},
+        {"text": "Each value is read from the captured label via field.Barcode?.Data matching the declared Name"},
+        {"text": "It does NOT hand-write SetSymbologies/SetValueRegex for the serial/part fields (the presets are used as-is unless narrowing is requested)"},
+        {"text": "The standard MAUI integration is present: ScanditLabelCapture.Initialize(), .UseScanditCore(configure => configure.AddDataCaptureView()), <scandit:DataCaptureView> with DataCaptureContext=\"{Binding DataCaptureContext}\", overlay created in HandlerChanged, MainThread.BeginInvokeOnMainThread"},
+        {"text": "A license key placeholder string is present (e.g. -- ENTER YOUR SCANDIT LICENSE KEY HERE --)"}
+      ],
+      "tags": ["barcode-semantic-fields"]
+    },
+    {
+      "id": 4,
+      "prompt": "I'm building a .NET MAUI app that scans the IMEI off mobile-phone retail boxes. Some boxes are dual-SIM and print two IMEIs. Here's my empty page (MainPage.xaml + MainPage.xaml.cs) and MauiProgram.cs. Set up Smart Label Capture to read the IMEI (and the second IMEI when present) in one scan.",
+      "expected_output": "The skill uses the dedicated IMEI barcode field types: ImeiOneBarcode.Builder().Build(\"<name>\") for the primary IMEI and ImeiTwoBarcode.Builder().Build(\"<name>\") for the second (dual-SIM) IMEI, marking ImeiTwoBarcode .IsOptional(true) since not every box has it. They are added to the List<LabelFieldDefinition>, wrapped in LabelDefinition.Create, and the settings via LabelCaptureSettings.Create(new List<LabelDefinition>{def}); the mode via LabelCapture.Create(context, settings). Values read via field.Barcode?.Data by Name. Standard MAUI integration preserved (initialize, DataCaptureView binding, overlay in HandlerChanged, MainThread dispatch, camera lifecycle).",
+      "files": [
+        "fixtures/EmptyMainPage.xaml",
+        "fixtures/EmptyMainPage.xaml.cs",
+        "fixtures/EmptyMauiProgram.cs"
+      ],
+      "assertions": [
+        {"text": "The primary IMEI is built with ImeiOneBarcode.Builder()...Build(\"<name>\")"},
+        {"text": "The second IMEI is built with ImeiTwoBarcode.Builder()...Build(\"<name>\")"},
+        {"text": "The second IMEI field is marked optional with .IsOptional(true) (not every box is dual-SIM)"},
+        {"text": "The fields are assembled via LabelDefinition.Create(name, fields) and LabelCaptureSettings.Create(new List<LabelDefinition>{...})"},
+        {"text": "IMEI values are read from the captured label via field.Barcode?.Data matching the declared Name"},
+        {"text": "ScanditLabelCapture.Initialize() and .UseScanditCore(configure => configure.AddDataCaptureView()) are present and the <scandit:DataCaptureView> has DataCaptureContext=\"{Binding DataCaptureContext}\""}
+      ],
+      "tags": ["barcode-semantic-fields"]
+    },
+    {
+      "id": 5,
+      "prompt": "I need to read US retail price tags in my .NET MAUI app — product barcode plus the price. I don't want to enumerate every field and regex myself; isn't there a ready-made price label config? Here's my empty MainPage.xaml + MainPage.xaml.cs and MauiProgram.cs.",
+      "expected_output": "The skill uses the prebuilt price-capture definition rather than hand-building fields: LabelDefinition.CreatePriceCaptureDefinition(\"<name>\"), passed directly into LabelCaptureSettings.Create(new List<LabelDefinition>{priceLabel}), and LabelCapture.Create(context, settings). It reads the captured fields by iterating label.Fields and switching on field.Type (Barcode -> field.Barcode?.Data, Text -> field.Text) rather than guessing exact field names. Mentions the prebuilt factory is available on .NET (android 8.1 / ios 8.2). Standard MAUI integration (initialize, DataCaptureView binding, overlay in HandlerChanged, MainThread dispatch, camera lifecycle) is present. It does NOT manually build CustomBarcode + TotalPriceText when the prebuilt definition is what the user asked for.",
+      "files": [
+        "fixtures/EmptyMainPage.xaml",
+        "fixtures/EmptyMainPage.xaml.cs",
+        "fixtures/EmptyMauiProgram.cs"
+      ],
+      "assertions": [
+        {"text": "LabelDefinition.CreatePriceCaptureDefinition(\"<name>\") is used as the prebuilt definition"},
+        {"text": "The prebuilt definition is passed into LabelCaptureSettings.Create(new List<LabelDefinition>{...}) and LabelCapture.Create(context, settings)"},
+        {"text": "Captured fields are read by iterating label.Fields and switching on field.Type (LabelFieldType.Barcode -> field.Barcode?.Data, LabelFieldType.Text -> field.Text), not by guessing internal field names"},
+        {"text": "The native fluent settings builder / addLabel chain is NOT used"},
+        {"text": "Standard MAUI integration is present: ScanditLabelCapture.Initialize(), .UseScanditCore(configure => configure.AddDataCaptureView()), <scandit:DataCaptureView> with DataCaptureContext binding, overlay in HandlerChanged, MainThread.BeginInvokeOnMainThread"},
+        {"text": "It does NOT hand-build a CustomBarcode + TotalPriceText label when the prebuilt CreatePriceCaptureDefinition is requested"}
+      ],
+      "tags": ["prebuilt-label-definitions"]
+    },
+    {
+      "id": 6,
+      "prompt": "In my .NET MAUI app I read utility-meter readouts — the value is shown on a seven-segment digital display, not a barcode. Here's my empty MainPage.xaml + MainPage.xaml.cs and MauiProgram.cs. Set up Smart Label Capture for that.",
+      "expected_output": "The skill uses the prebuilt seven-segment definition: LabelDefinition.CreateSevenSegmentDisplayLabelDefinition(\"<name>\"), passed into LabelCaptureSettings.Create(new List<LabelDefinition>{def}) and LabelCapture.Create(context, settings). It reads the readout via field.Text (the value comes back as text), iterating label.Fields. Standard MAUI integration present. Notes the factory is available on .NET android 8.1 / ios 8.2.",
+      "files": [
+        "fixtures/EmptyMainPage.xaml",
+        "fixtures/EmptyMainPage.xaml.cs",
+        "fixtures/EmptyMauiProgram.cs"
+      ],
+      "assertions": [
+        {"text": "LabelDefinition.CreateSevenSegmentDisplayLabelDefinition(\"<name>\") is used as the prebuilt definition"},
+        {"text": "It is passed into LabelCaptureSettings.Create(new List<LabelDefinition>{...}) and LabelCapture.Create(context, settings)"},
+        {"text": "The readout value is read via field.Text from the captured label"},
+        {"text": "Standard MAUI integration is present: ScanditLabelCapture.Initialize(), .UseScanditCore(configure => configure.AddDataCaptureView()), <scandit:DataCaptureView> with DataCaptureContext binding, overlay in HandlerChanged, MainThread.BeginInvokeOnMainThread"}
+      ],
+      "tags": ["seven-segment-display", "prebuilt-label-definitions"]
+    },
+    {
+      "id": 7,
+      "prompt": "I already have Smart Label Capture working in my .NET MAUI app (see IntegratedMainPage.xaml, IntegratedMainPage.xaml.cs, IntegratedMainPageViewModel.cs, IntegratedLabelCaptureService.cs). In poor lighting the expiry date often fails on-device. I heard there's a cloud fallback (Adaptive Recognition) — can you turn it on so the SDK retries hard cases in the cloud instead of making the user type?",
+      "expected_output": "The skill enables Adaptive Recognition per label definition by setting labelDefinition.AdaptiveRecognitionMode = AdaptiveRecognitionMode.Auto on the existing LabelDefinition before LabelCaptureSettings.Create, preserving the rest of the integration. It does NOT add a new package or overlay for this. It clearly flags that Adaptive Recognition is in BETA and must be enabled on the Scandit subscription (contact support@scandit.com), and that the default mode is Off. No fabricated method names beyond AdaptiveRecognitionMode on LabelDefinition.",
+      "files": [
+        "fixtures/IntegratedMainPage.xaml",
+        "fixtures/IntegratedMainPage.xaml.cs",
+        "fixtures/IntegratedMainPageViewModel.cs",
+        "fixtures/IntegratedLabelCaptureService.cs",
+        "fixtures/ILabelCaptureService.cs",
+        "fixtures/ICameraService.cs"
+      ],
+      "assertions": [
+        {"text": "labelDefinition.AdaptiveRecognitionMode is set to AdaptiveRecognitionMode.Auto on the existing LabelDefinition before LabelCaptureSettings.Create"},
+        {"text": "It is enabled per-definition via the AdaptiveRecognitionMode property (NOT via a new package, a new overlay, or a fabricated settings method)"},
+        {"text": "The response flags that Adaptive Recognition is in BETA and must be enabled on the subscription (contact support@scandit.com)"},
+        {"text": "The existing label definition, fields, DataCaptureView binding, HandlerChanged overlay, and camera/lifecycle setup are preserved"},
+        {"text": "No iOS-only or Android-only main-thread APIs are introduced (uses MainThread.BeginInvokeOnMainThread if dispatching)"}
+      ],
+      "tags": ["adaptive-recognition-cloud"]
+    },
+    {
+      "id": 8,
+      "prompt": "I want to scan whole shopping receipts in my .NET MAUI app and pull out the store name, total, and the individual line items — not just a barcode. Is that possible with Smart Label Capture? Here's my empty MainPage.xaml + MainPage.xaml.cs and MauiProgram.cs.",
+      "expected_output": "The skill identifies this as Receipt Scanning, which is a BETA capability built on the Adaptive Recognition Engine and must be enabled on the subscription (contact support@scandit.com). It explains the pattern differs from standard label capture: a LabelCaptureAdaptiveRecognitionOverlay (not the basic overlay) attached in HandlerChanged, and an ILabelCaptureAdaptiveRecognitionListener whose recognized callback returns a ReceiptScanningResult (store name/address, totals, ReceiptScanningLineItem list). It directs the user to fetch the Advanced Configurations page to confirm the exact .NET listener method name and ReceiptScanningResult property casing rather than fabricating signatures. It does NOT invent precise method signatures or property names beyond the documented type names, and clearly flags the beta status.",
+      "files": [
+        "fixtures/EmptyMainPage.xaml",
+        "fixtures/EmptyMainPage.xaml.cs",
+        "fixtures/EmptyMauiProgram.cs"
+      ],
+      "assertions": [
+        {"text": "The response identifies Receipt Scanning as a BETA capability requiring the Adaptive Recognition Engine, enabled on the subscription (contact support@scandit.com)"},
+        {"text": "It names the Receipt Scanning integration pieces: LabelCaptureAdaptiveRecognitionOverlay (instead of the basic overlay) and an ILabelCaptureAdaptiveRecognitionListener returning a ReceiptScanningResult (with line items / ReceiptScanningLineItem)"},
+        {"text": "The overlay is attached via dataCaptureView.AddOverlay in HandlerChanged (MAUI hosting pattern), not via a native AddSubview/AddView"},
+        {"text": "It directs the user to fetch the Advanced Configurations reference to confirm exact .NET method/property names instead of fabricating signatures"}
+      ],
+      "tags": ["receipt-scanning"]
+    },
+    {
+      "id": 9,
+      "prompt": "I already have Smart Label Capture working in my .NET MAUI app (see IntegratedMainPage.xaml, IntegratedMainPage.xaml.cs, IntegratedMainPageViewModel.cs, IntegratedLabelCaptureService.cs). When an expiry date is within 3 days I want to draw a red 'Expires soon!' badge anchored below the date field, right on the camera preview — an AR-style overlay, not just a highlight color.",
+      "expected_output": "The skill uses LabelCaptureAdvancedOverlay (LabelCaptureAdvancedOverlay.Create(labelCapture)) created in HandlerChanged and attached via dataCaptureView.AddOverlay, with an ILabelCaptureAdvancedOverlayListener. Crucially it flags the MAUI caveat: the listener's ViewForCapturedLabel / ViewForCapturedLabelField return a NATIVE platform view (Android.Views.View / UIKit.UIView), not a MAUI View, so it needs a per-platform partial-class split (or ToPlatform(...) to convert a MAUI view), the same way MatrixScan AR overlays work in MAUI. It uses Anchor / OffsetForCapturedLabelField for positioning. It preserves the existing integration and does NOT claim the listener returns a plain MAUI View. It points the user to fetch the Advanced Configurations page for the per-platform view construction details rather than fabricating native UI code.",
+      "files": [
+        "fixtures/IntegratedMainPage.xaml",
+        "fixtures/IntegratedMainPage.xaml.cs",
+        "fixtures/IntegratedMainPageViewModel.cs",
+        "fixtures/IntegratedLabelCaptureService.cs",
+        "fixtures/ILabelCaptureService.cs",
+        "fixtures/ICameraService.cs"
+      ],
+      "assertions": [
+        {"text": "LabelCaptureAdvancedOverlay.Create(labelCapture) is used (NOT only the basic overlay)"},
+        {"text": "The advanced overlay is attached via dataCaptureView.AddOverlay inside HandlerChanged (MAUI pattern), and an ILabelCaptureAdvancedOverlayListener is set as its Listener"},
+        {"text": "The response flags that the advanced-overlay listener returns a NATIVE platform view (Android.Views.View / UIKit.UIView), NOT a MAUI View, requiring a per-platform partial-class split or ToPlatform(...) conversion"},
+        {"text": "Positioning uses the listener's Anchor and Offset callbacks (e.g. AnchorForCapturedLabelField / OffsetForCapturedLabelField)"},
+        {"text": "The existing label definition, DataCaptureView binding, and camera/lifecycle setup are preserved"},
+        {"text": "It does NOT claim the listener returns a plain cross-platform MAUI View, and points to the Advanced Configurations reference for the native view construction"}
+      ],
+      "tags": ["advanced-overlay"]
     }
   ]
 }

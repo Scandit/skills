@@ -21,7 +21,8 @@
         {"text": "The native fluent LabelCaptureSettings.builder()/addLabel()/buildFluent(...) chain is NOT used"},
         {"text": "CustomBarcode.Builder().SetSymbologies(...) is given an IList<Symbology> (e.g. new List<Symbology>{...}), not a vararg"},
         {"text": "Symbology.Ean13Upca and Symbology.Code128 are enabled for the barcode field"},
-        {"text": "Swift-style symbology names (Symbology.ean13UPCA, .code128) are NOT used"},
+        {"text": "Symbology.ean13UPCA is NOT present"},
+        {"text": "Symbology.code128 is NOT present"},
         {"text": "An ExpiryDateText field is created via ExpiryDateText.Builder()"},
         {"text": "The total price field is created via TotalPriceText.Builder() and marked optional with .IsOptional(true)"},
         {"text": "LabelDefinition.Create(name, fields) is used to assemble the fields into a definition"},
@@ -58,6 +59,125 @@
         {"text": "Existing integration code (camera, LabelCapture.Create, DataCaptureView.Create with CGRect, overlay, SessionUpdated handler, existing barcode and expiry fields) is preserved"},
         {"text": "No Android APIs (RunOnUiThread, container.AddView, single-arg DataCaptureView.Create) are introduced"}
       ]
+    },
+    {
+      "id": 4,
+      "prompt": "I have Smart Label Capture working in my .NET iOS app (see IntegratedViewController.cs) with the Basic Overlay. I want to highlight the barcode field in teal and the expiry date field in red, hide the whole-label outline, and open a detail screen when the user taps a label. Show me how.",
+      "expected_output": "The skill customizes the LabelCaptureBasicOverlay appearance per field/label by implementing ILabelCaptureBasicOverlayListener: BrushForField returns a teal Brush for the barcode field name and a red Brush for the expiry date field name (matching by field.Name), BrushForLabel returns Brush.TransparentBrush to hide the label outline, and OnLabelTapped handles the tap. The listener is assigned via overlay.Listener. Brushes are constructed with new Brush(fillColor, strokeColor, strokeWidth) using UIColor. The existing label definition, camera, mode, and SessionUpdated handler are preserved. No Android APIs are introduced.",
+      "files": [
+        "fixtures/IntegratedViewController.cs"
+      ],
+      "assertions": [
+        {"text": "A class implementing ILabelCaptureBasicOverlayListener is created"},
+        {"text": "BrushForField(LabelCaptureBasicOverlay, LabelField, CapturedLabel) is implemented and returns different brushes based on field.Name (e.g. the barcode field name vs the expiry date field name)"},
+        {"text": "BrushForLabel(LabelCaptureBasicOverlay, CapturedLabel) is implemented and returns Brush.TransparentBrush to hide the label outline"},
+        {"text": "OnLabelTapped(LabelCaptureBasicOverlay, CapturedLabel) is implemented to handle the tap"},
+        {"text": "Brushes are constructed with new Brush(...) using UIColor for the fill/stroke colors (not an Android-style brush)"},
+        {"text": "The listener is assigned to the overlay via overlay.Listener = ..."},
+        {"text": "The existing label definition, camera setup, LabelCapture mode, and SessionUpdated/listener handler are preserved"},
+        {"text": "No Android APIs (RunOnUiThread, Java.Lang.Object listener base, container.AddView, single-arg DataCaptureView.Create) are introduced"}
+      ],
+      "tags": ["basic-overlay-customization"]
+    },
+    {
+      "id": 5,
+      "prompt": "I have Smart Label Capture working in my .NET iOS app (see IntegratedViewController.cs). When a captured expiry date is within 3 days of today, I want to draw a custom 'Expires soon!' warning view anchored just below the expiry date field in the camera feed. How do I add that kind of AR-style overlay?",
+      "expected_output": "The skill adds a LabelCaptureAdvancedOverlay via LabelCaptureAdvancedOverlay.Create(labelCapture), attaches it with dataCaptureView.AddOverlay(advancedOverlay), and sets advancedOverlay.Listener to a class implementing ILabelCaptureAdvancedOverlayListener. ViewForCapturedLabelField returns a custom UIView (e.g. a UILabel) for the expiry date field (matching by Name and LabelFieldType.Text) and null otherwise, ViewForCapturedLabel returns null, with AnchorForCapturedLabelField returning Anchor.BottomCenter and OffsetForCapturedLabelField returning a PointWithUnit. It uses Create (not the native NewInstance) and preserves the existing setup.",
+      "files": [
+        "fixtures/IntegratedViewController.cs"
+      ],
+      "assertions": [
+        {"text": "LabelCaptureAdvancedOverlay.Create(labelCapture) is used to create the advanced overlay"},
+        {"text": "The advanced overlay is attached via dataCaptureView.AddOverlay(...)"},
+        {"text": "A class implementing ILabelCaptureAdvancedOverlayListener is created and set as advancedOverlay.Listener"},
+        {"text": "ViewForCapturedLabelField(LabelCaptureAdvancedOverlay, LabelField) returns a custom UIView (e.g. a UILabel) for the expiry date field and null for other fields"},
+        {"text": "The expiry date field is matched by field.Name and (optionally) field.Type == LabelFieldType.Text"},
+        {"text": "AnchorForCapturedLabelField returns an Anchor value and OffsetForCapturedLabelField returns a PointWithUnit"},
+        {"text": "The native init factory LabelCaptureAdvancedOverlay.NewInstance(...) is NOT used (Create is used instead)"},
+        {"text": "The existing label definition, camera, mode, and result handler are preserved"}
+      ],
+      "tags": ["advanced-overlay"]
+    },
+    {
+      "id": 6,
+      "prompt": "I'm building a .NET iOS app to scan hard-disk-drive labels and smart-device labels. The HDD labels have a serial number and a part number (both barcodes), and the device labels carry IMEI1 and IMEI2. I'd rather not hand-write the symbologies and regexes. Here's my empty view controller: EmptyViewController.cs.",
+      "expected_output": "The skill uses the pre-built barcode field types instead of CustomBarcode with manual regexes: SerialNumberBarcode.Builder().Build(name), PartNumberBarcode.Builder().Build(name), ImeiOneBarcode.Builder().Build(name), ImeiTwoBarcode.Builder().Build(name). They are collected into a List<LabelFieldDefinition>, assembled via LabelDefinition.Create(name, fields) and LabelCaptureSettings.Create(...). Values are read via field.Barcode?.Data matching by Name. It does NOT use the native init factories (FieldWithName / InitWithName) and provides the full integration (context, camera, view, overlay, handler, checklist).",
+      "files": [
+        "fixtures/EmptyViewController.cs"
+      ],
+      "assertions": [
+        {"text": "A serial number field is built via SerialNumberBarcode.Builder()...Build(\"<name>\")"},
+        {"text": "A part number field is built via PartNumberBarcode.Builder()...Build(\"<name>\")"},
+        {"text": "An IMEI1 field is built via ImeiOneBarcode.Builder()...Build(\"<name>\")"},
+        {"text": "An IMEI2 field is built via ImeiTwoBarcode.Builder()...Build(\"<name>\")"},
+        {"text": "The native init factories (SerialNumberBarcode.FieldWithName / ImeiOneBarcode.InitWithName / FieldWithName) are NOT used"},
+        {"text": "The fields are assembled via LabelDefinition.Create(name, fields) and LabelCaptureSettings.Create(new List<LabelDefinition>{...})"},
+        {"text": "Each pre-built barcode field value is read via field.Barcode?.Data matching by its declared Name"},
+        {"text": "A license key placeholder string is present and LabelCapture.Create(context, settings) is used"}
+      ],
+      "tags": ["barcode-semantic-fields"]
+    },
+    {
+      "id": 7,
+      "prompt": "I want to scan retail price tags in my .NET iOS app and I don't want to define the individual fields myself. Is there a ready-made label definition for price labels? Show me how to use it. Here's my view controller: EmptyViewController.cs.",
+      "expected_output": "The skill uses the pre-built price-capture label definition LabelDefinition.CreatePriceCaptureDefinition(\"<name>\") rather than building Custom/TotalPrice fields by hand, passes it to LabelCaptureSettings.Create(new List<LabelDefinition>{ priceLabel }), and wires the rest of the integration (LabelCapture.Create, camera, DataCaptureView with CGRect + LabelCaptureBasicOverlay, SessionUpdated handler reading Text/Barcode?.Data). It may mention the other prebuilt definitions (CreateVinLabelDefinition, CreateSevenSegmentDisplayLabelDefinition).",
+      "files": [
+        "fixtures/EmptyViewController.cs"
+      ],
+      "assertions": [
+        {"text": "LabelDefinition.CreatePriceCaptureDefinition(\"<name>\") is used to create the price-label definition"},
+        {"text": "The prebuilt definition is passed to LabelCaptureSettings.Create(new List<LabelDefinition>{...})"},
+        {"text": "LabelCapture.Create(context, settings) is used as the factory"},
+        {"text": "The DataCaptureView is created with a CGRect frame and a LabelCaptureBasicOverlay is added"},
+        {"text": "Captured field values are read via field.Text and/or field.Barcode?.Data"},
+        {"text": "Fields are NOT hand-built with TotalPriceText.Builder()/CustomBarcode.Builder() for this prebuilt-definition request"}
+      ],
+      "tags": ["prebuilt-label-definitions"]
+    },
+    {
+      "id": 8,
+      "prompt": "My .NET iOS app needs to read the numeric value off a digital scale's 7-segment display. Is that supported, and how do I configure Label Capture for it? Here's my view controller: EmptyViewController.cs.",
+      "expected_output": "The skill confirms 7-segment display capture is supported on .NET iOS and uses the prebuilt definition LabelDefinition.CreateSevenSegmentDisplayLabelDefinition(\"<name>\"), passes it to LabelCaptureSettings.Create(new List<LabelDefinition>{...}), creates the mode via LabelCapture.Create(context, settings), and reads the captured value via field.Text. The rest of the integration (camera, DataCaptureView with CGRect, overlay, handler) is wired.",
+      "files": [
+        "fixtures/EmptyViewController.cs"
+      ],
+      "assertions": [
+        {"text": "LabelDefinition.CreateSevenSegmentDisplayLabelDefinition(\"<name>\") is used"},
+        {"text": "The definition is passed to LabelCaptureSettings.Create(new List<LabelDefinition>{...})"},
+        {"text": "LabelCapture.Create(context, settings) is used as the factory"},
+        {"text": "The captured numeric value is read via field.Text matching by Name"},
+        {"text": "The DataCaptureView is created with a CGRect frame and a LabelCaptureBasicOverlay is added"}
+      ],
+      "tags": ["seven-segment-display"]
+    },
+    {
+      "id": 9,
+      "prompt": "My customers' shipping labels are worn and the on-device model sometimes misses fields. I heard Scandit has a cloud fallback (Adaptive Recognition / ARE). Can I use it on .NET iOS, and how do I turn it on for my existing label (see IntegratedViewController.cs)?",
+      "expected_output": "The skill explains Adaptive Recognition is a cloud fallback enabled per label definition by setting labelDefinition.AdaptiveRecognitionMode = AdaptiveRecognitionMode.Auto (a single extra line on the existing definition), and flags that it is BETA and must be enabled on the Scandit subscription (contact support). It preserves the existing field definition and integration and does NOT fabricate an overlay/listener API for the basic cloud fallback.",
+      "files": [
+        "fixtures/IntegratedViewController.cs"
+      ],
+      "assertions": [
+        {"text": "labelDefinition.AdaptiveRecognitionMode is set to AdaptiveRecognitionMode.Auto on the existing label definition"},
+        {"text": "The response flags that Adaptive Recognition (the Adaptive Recognition Engine) is BETA / may change and must be enabled on the Scandit subscription"},
+        {"text": "The existing label definition fields and the rest of the integration are preserved (only the AdaptiveRecognitionMode line is added)"},
+        {"text": "No fabricated method signatures are introduced for the basic cloud fallback (it is a single property on LabelDefinition, not a new overlay)"}
+      ],
+      "tags": ["adaptive-recognition-cloud", "beta"]
+    },
+    {
+      "id": 10,
+      "prompt": "Can I scan store receipts and pull out the line items, totals, and store name in my .NET iOS app using Label Capture? How would I integrate it?",
+      "expected_output": "The skill confirms Receipt Scanning is available on .NET iOS but is BETA (requires the Adaptive Recognition Engine, subscription-gated, contact support) and uses a DIFFERENT integration pattern from standard label capture: the LabelCaptureAdaptiveRecognitionOverlay instead of the basic overlay and a LabelCaptureAdaptiveRecognitionListener that returns a ReceiptScanningResult (store fields, payment totals, and LineItems of ReceiptScanningLineItem with Name/UnitPrice/Discount/Quantity/TotalPrice). It flags beta and recommends fetching the Advanced Configurations docs for the exact wiring rather than guessing signatures.",
+      "files": [],
+      "assertions": [
+        {"text": "The response flags that Receipt Scanning is BETA and requires the Adaptive Recognition Engine enabled on the subscription (contact support)"},
+        {"text": "It states Receipt Scanning uses LabelCaptureAdaptiveRecognitionOverlay instead of the standard/basic overlay"},
+        {"text": "It uses LabelCaptureAdaptiveRecognitionListener to receive results"},
+        {"text": "The result type is ReceiptScanningResult, containing line items (ReceiptScanningLineItem) and store/payment fields"},
+        {"text": "It does NOT fabricate exact method signatures and points the user to the Advanced Configurations documentation for the precise wiring"}
+      ],
+      "tags": ["receipt-scanning", "beta"]
     },
     {
       "id": 3,
