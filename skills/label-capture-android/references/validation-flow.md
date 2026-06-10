@@ -47,6 +47,8 @@ validationFlowOverlay.listener = object : LabelCaptureValidationFlowListener {
 
 Do NOT also add a `LabelCaptureListener` — the Validation Flow overlay manages capture lifecycle internally.
 
+**You can keep a `LabelCaptureBasicOverlay` alongside the Validation Flow overlay for field highlighting.** The VF overlay draws its checklist/manual-entry UI but no field outlines; the official `LabelCaptureSimpleSample` attaches both to the same `DataCaptureView` — the basic overlay with a brush listener for the visuals, the VF overlay for the flow. The basic overlay is then purely visual: results still come only through `onValidationFlowLabelCaptured`. (An advanced overlay can also be added, but only driven via its listener callbacks — the imperative push needs a `LabelCaptureListener`, which VF setups must not add; see `advanced.md`.)
+
 ## Lifecycle
 
 The overlay must be paused and resumed alongside the host Fragment or Activity:

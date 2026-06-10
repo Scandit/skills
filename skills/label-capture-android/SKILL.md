@@ -1,10 +1,10 @@
 ---
 name: label-capture-android
-description: Use when Label Capture (Smart Label Capture) is involved in an Android project — whether the user mentions Label Capture directly, or the codebase already uses it and something needs to be added, changed, fixed, or customized. This includes adding Label Capture to a new Android app, defining label structures (barcode fields + text fields with regex patterns), handling captured sessions, enabling the Validation Flow, or migrating between SDK versions. If the project is an Android project and Label Capture is in play, use this skill.
+description: Use when Label Capture (Smart Label Capture) is involved in an Android project — whether the user mentions Label Capture directly, or the codebase already uses it and something needs to be added, changed, fixed, or customized. This includes adding Label Capture to a new Android app, defining label structures (barcode fields + text fields with regex patterns), using pre-built whole-label definitions like price capture, handling captured sessions, customizing overlays (coloring fields with brushes, floating badges/icons via the advanced overlay), enabling the Validation Flow, or migrating between SDK versions. If the project is an Android project and Label Capture is in play, use this skill.
 license: MIT
 metadata:
   author: scandit
-  version: "1.1.0"
+  version: "1.2.0"
 ---
 
 # Label Capture Android Skill
@@ -25,7 +25,7 @@ Label Capture ships a rich catalogue of **pre-built fields** and **whole pre-bui
 
 1. **Reach for a pre-built field or pre-built label before composing anything custom.** When the user names a recognisable thing to scan — "serial number", "IMEI", "expiry date", "price/shelf label", "VIN" — there is almost always a dedicated builder or a whole-label factory tuned for it, with anchor/value regexes already dialled in. Use it. Inventing a custom barcode/text field with a hand-written regex for something that has a pre-built builder is the single biggest source of bad integrations: the regex you guess will not match real labels as well as the tuned one, and it signals you didn't know the pre-built existed. Only fall back to `addCustomBarcode()`/`addCustomText()` when nothing pre-built fits. The full catalogue and the routing rules live in `references/integration.md` — consult it rather than relying on memory.
 
-2. **Bundle `label-text-models` whenever any pre-built field is used — including barcode-semantic ones.** It is *not* only for text fields. Serial number, IMEI, and part-number fields are "barcode" fields but still load a model at runtime; a label using them without the artifact crashes on launch. `references/integration.md` has the exact rule.
+2. **Bundle the right model artifacts whenever any pre-built field or definition is used — getting this wrong is the #1 runtime failure.** `label-text-models` is *not* only for text fields: serial number, IMEI, and part-number fields are "barcode" fields but still load a model at runtime. And `label-text-models` alone is **not enough** for the pre-built whole-label factories — `createPriceCaptureDefinition` additionally needs **`com.scandit.datacapture:price-label`**. Miss it and the app compiles and launches but never scans. `references/integration.md` has the per-field and per-factory artifact rules; map every pre-built thing you use to its artifact(s) before writing the Gradle block.
 
 ## Constraint: Label Capture cannot run alongside Barcode Capture
 
@@ -37,7 +37,7 @@ Based on the user's request, load the appropriate reference file before respondi
 
 - **Integrating Label Capture from scratch** (e.g. "add Label Capture to my Android app", "scan a price tag with barcode and expiry date", "scan serial numbers / IMEI off a phone box", "read a VIN", "how do I use Smart Label Capture") → read `references/integration.md` and follow the instructions there. It contains the full pre-built field catalogue and the pre-built whole-label definitions — consult it before composing any custom field or regex.
 - **Enabling or customizing the Validation Flow** (e.g. "how do I enable the Validation Flow", "add the validation flow overlay", "customize the placeholder text / button labels in the validation flow", "how do I handle the result from the validation flow") → read `references/validation-flow.md` and follow the instructions there.
-- **Customizing overlays, adding custom AR views, troubleshooting, or cloud Adaptive Recognition** (e.g. "customize the field highlight brushes / labelBrush", "use LabelCaptureBasicOverlayListener / brushForField / brushForLabel", "add a custom AR view over a field with the Advanced Overlay", "scan a seven-segment display", "camera preview is black", "app crashes on launch building the label", "enable the cloud fallback / Adaptive Recognition Engine / ARE", "scan receipts") → read `references/advanced.md` (overlay customization, Advanced Overlay, seven-segment, Adaptive Recognition and Receipt Scanning beta). Troubleshooting symptoms are covered at the end of `references/integration.md`.
+- **Customizing overlays, adding custom AR views, troubleshooting, or cloud Adaptive Recognition** (e.g. "customize the field highlight brushes / labelBrush", "color the price field green when it's correct", "outline the captured label", "show a checkmark / badge / icon above a field", "use LabelCaptureBasicOverlayListener / brushForField / brushForLabel", "add a custom AR view over a field with the Advanced Overlay", "viewForCapturedLabel(Field)", "scan a seven-segment display", "camera preview is black", "app crashes on launch building the label", "enable the cloud fallback / Adaptive Recognition Engine / ARE", "scan receipts") → read `references/advanced.md` (overlay customization and composition, Advanced Overlay — including the per-field-listener-has-no-label-context trap — seven-segment, Adaptive Recognition and Receipt Scanning beta). Troubleshooting symptoms are covered at the end of `references/integration.md`.
 - **Migrating or upgrading an existing Label Capture integration** (e.g. "upgrade my Label Capture to the latest SDK", "migrate from v7 to v8", "what changed between SDK versions for Label Capture", "keyboard covers the input in Validation Flow after upgrading", "migrate Validation Flow to 2.0") → read `references/migration.md` and follow the instructions there.
 
 ## API Usage Policy
@@ -59,5 +59,5 @@ Direct users to the right resource based on their question:
 |---|---|
 | Basic integration | [Get Started](https://docs.scandit.com/sdks/android/label-capture/get-started/) · [Sample (LabelCaptureSimpleSample)](https://github.com/Scandit/datacapture-android-samples/tree/master/03_Advanced_Batch_Scanning_Samples/05_Smart_Label_Capture/LabelCaptureSimpleSample) |
 | Label Definitions (fields, regex, presets) | [Label Definitions](https://docs.scandit.com/sdks/android/label-capture/label-definitions/) |
-| Advanced topics (overlay customization, Advanced Overlay AR, seven-segment, Adaptive Recognition / Receipt Scanning beta) | `references/advanced.md` · [Advanced Configurations](https://docs.scandit.com/sdks/android/label-capture/advanced/) |
+| Advanced topics (overlay customization — brushes, floating AR views — seven-segment, Adaptive Recognition / Receipt Scanning beta) | `references/advanced.md` · [Advanced Configurations](https://docs.scandit.com/sdks/android/label-capture/advanced/) |
 | Full API reference | [Label Capture API](https://docs.scandit.com/data-capture-sdk/android/label-capture/api.html) |

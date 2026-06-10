@@ -26,8 +26,10 @@ dependencies {
     implementation("com.scandit.datacapture:core:<version>")
     implementation("com.scandit.datacapture:barcode:<version>")
     implementation("com.scandit.datacapture:label:<version>")
-    // See the rule below for when label-text-models is required.
+    // See the rules below for when label-text-models and/or price-label are required.
     implementation("com.scandit.datacapture:label-text-models:<version>")
+    // Required IN ADDITION when using createPriceCaptureDefinition — see the model-artifact rule below.
+    implementation("com.scandit.datacapture:price-label:<version>")
 }
 ```
 
@@ -41,6 +43,20 @@ Practical rule, and the safe default:
 
 - **Include `label-text-models`** whenever the label uses *any* pre-built field — every `add*Text()` field **and** every pre-built barcode field (serial number, part number, IMEI 1/2) — or any pre-built whole-label definition (see below). The official sample bundles it unconditionally for exactly this reason.
 - **You can omit it only** for a label whose fields are *exclusively* `addCustomBarcode()` (a raw symbology read with no semantic extraction). If in doubt, include it — a barcode-only label still works with the artifact present; a semantic label crashes without it.
+
+#### Pre-built whole-label definitions need their OWN model artifact too (another launch-time crash)
+
+`label-text-models` is necessary but **not sufficient** for the pre-built whole-label factories. Each factory is backed by its own ML model set shipped in a *separate* artifact, and the definition does not work without it — the code compiles and the app launches, but recognition silently never fires (or it crashes), because the model the definition expects isn't on the device. This is a real, easy-to-miss trap: following the field rule above gets you `label-text-models` but still leaves a price label that doesn't run.
+
+Map each whole-label factory to the artifact(s) it requires, and add **all** of them:
+
+| Factory | Model artifact(s) required (in addition to `label-text-models`) |
+|---|---|
+| `LabelDefinition.createPriceCaptureDefinition(...)` | `com.scandit.datacapture:price-label:<version>` (Price Label Verification models) |
+| `LabelDefinition.createVinLabelDefinition(...)` | none beyond `label-text-models` |
+| `LabelDefinition.createSevenSegmentDisplayLabelDefinition(...)` | none beyond `label-text-models` |
+
+The SDK's own packaging confirms `price-label` (`ScanditPriceLabel`) is a distinct, required library alongside `label`/`label-text-models`. If you generate price-capture code, the Gradle snippet **must** include `com.scandit.datacapture:price-label` and the setup checklist must call it out — otherwise you ship an app that builds but does not scan.
 
 ### Camera permission
 
@@ -59,11 +75,11 @@ Label Capture has a tuned builder for most things people scan. When the user's r
 
 Before composing fields one by one, check whether the entire label is one Scandit already ships as a factory on `LabelDefinition`. These return a complete, tuned definition that you pass straight into `addLabel(...)` — no manual field assembly, no guessed regex:
 
-| User says… | Use this factory |
-|---|---|
-| "retail **price label**", "shelf label", "price tag" (price + barcode + unit/total price) | `LabelDefinition.createPriceCaptureDefinition("price-label")` |
-| "**VIN**", "vehicle identification number" label | `LabelDefinition.createVinLabelDefinition("vehicle-vin")` |
-| "**seven-segment** display", LCD/LED meter readout | `LabelDefinition.createSevenSegmentDisplayLabelDefinition("display")` |
+| User says… | Use this factory | Emits | Extra model artifact |
+|---|---|---|---|
+| "retail **price label**", "shelf label", "price tag" (price + barcode + unit/total price) | `LabelDefinition.createPriceCaptureDefinition("price-label")` | 2 fields: one `BARCODE` (the product SKU), one `TEXT` (the price) | **`com.scandit.datacapture:price-label`** (required — see Gradle rule) |
+| "**VIN**", "vehicle identification number" label | `LabelDefinition.createVinLabelDefinition("vehicle-vin")` | VIN field(s) | none beyond `label-text-models` |
+| "**seven-segment** display", LCD/LED meter readout | `LabelDefinition.createSevenSegmentDisplayLabelDefinition("display")` | display readout field(s) | none beyond `label-text-models` |
 
 ```kotlin
 import com.scandit.datacapture.label.capture.LabelDefinition   // verified against SDK 8.4.0
@@ -75,23 +91,28 @@ val settings = LabelCaptureSettings.builder()
 
 `LabelDefinition` lives in `com.scandit.datacapture.label.capture` (the same package as `LabelCaptureSettings`) — not `com.scandit.datacapture.label` and not `...label.data`. Both wrong guesses fail to compile, so use the verified import above. Reach for `createPriceCaptureDefinition` for a price/shelf label rather than hand-assembling `addTotalPriceText()` — the factory is purpose-built for that scenario, the single fields are not.
 
-**Reading fields from a pre-built definition — don't guess the field names.** A factory definition ships with its own fixed set of fields, and their names are decided by the SDK, not by you (the label name you pass in is just the label's name, not the field names). Hardcoding a guessed name like `"SKU"` or `"priceText"` silently returns `null` if you guess wrong. Instead, iterate the captured fields and read them generically:
+**Reading fields from a pre-built definition — prefer field *type* over field *name*.** A factory definition ships with its own fixed set of fields, and their names are decided by the SDK, not by you (the label name you pass in is just the label's name, not the field names). Hardcoding a guessed name like `"SKU"` or `"priceText"` silently returns `null` if you guess wrong. The robust read is by `field.type` (`LabelFieldType.BARCODE` / `LabelFieldType.TEXT`), which both avoids hardcoding *and* disambiguates the two fields a price label emits:
 
 ```kotlin
+import com.scandit.datacapture.label.data.LabelFieldType
+
 val capturedLabel = session.capturedLabels.firstOrNull() ?: return
-for (field in capturedLabel.fields) {
-    val value = field.barcode?.data ?: field.text   // barcode fields expose .barcode?.data; text fields, .text
-    // field.name tells you which field this is — log them once to learn the exact names
-}
+val barcode = capturedLabel.fields.firstOrNull { it.type == LabelFieldType.BARCODE }?.barcode?.data
+val price   = capturedLabel.fields.firstOrNull { it.type == LabelFieldType.TEXT }?.text
+// field.name is also available if you need to branch further — log the names once to learn them.
 ```
 
-If the user needs to branch on specific fields, confirm the exact field names for that factory from the [Label Definitions](https://docs.scandit.com/sdks/android/label-capture/label-definitions/) page or the sample before hardcoding them.
+`createPriceCaptureDefinition` emits exactly two fields — one `BARCODE` (the product SKU) and one `TEXT` (the price) — so the type-based read above is unambiguous. For factories that emit several fields of the same type, fall back to `field.name` and confirm the exact names from the [Label Definitions](https://docs.scandit.com/sdks/android/label-capture/label-definitions/) page or the sample before hardcoding them.
+
+**Reading the price value.** There is **no typed/numeric accessor** for the price — the price is a `TEXT` field and its value comes back only as the `.text` string, which you must parse yourself (e.g. handle a decimal comma and strip any currency symbol before converting). Don't assume a guaranteed numeric format for the string, and don't invent a numeric price API; if exact comparison matters (e.g. validating against a reference price), parse defensively and compare on your own normalized representation.
 
 If no whole-label factory fits, build the label from fields — preferring pre-built fields per the catalogue below.
 
 ## Interactive Label Definition
 
 Before writing any code, walk the user through their label. Ask one question at a time.
+
+Until the user has described their label, don't include any integration code in your reply — not even a clearly-labeled "illustrative" or "preview" snippet. A preview written before you know the fields anchors the user on placeholder field names, invites copy-pasting code that was never meant to run, and buries the questions that actually unblock you. Ask the questions, say the code will follow their answers, and stop there.
 
 **Question A — What's on your label?** Present this checklist and ask the user to pick everything that applies. As they answer, map each item to its **pre-built** builder first. The full set of supported field builders on `addLabel()`:
 
@@ -251,10 +272,14 @@ Notes when generating this code:
 
 After writing the integration code, show this checklist:
 
-1. Add the Gradle dependencies to `app/build.gradle.kts` (see Prerequisites). Use the same version for all. Include `label-text-models` unless the label uses only `addCustomBarcode()`.
+1. Add the Gradle dependencies to `app/build.gradle.kts` (see Prerequisites). Use the same version for all. Include `label-text-models` unless the label uses only `addCustomBarcode()`. If the label uses `createPriceCaptureDefinition`, also add `com.scandit.datacapture:price-label` — without it the app builds but never scans.
 2. Replace `-- ENTER YOUR SCANDIT LICENSE KEY HERE --` with your key from <https://ssl.scandit.com>.
 3. Add the `CAMERA` permission to `AndroidManifest.xml` and request it at runtime before starting the camera.
 4. Add a `FrameLayout` (or other container) with the id `data_capture_container` to your layout XML.
+
+## Optional: Highlighting fields and floating views (overlays)
+
+The minimal integration above attaches a plain `LabelCaptureBasicOverlay` that draws the default scanning highlight. If the user wants to **color a specific field** by some state (e.g. a price field green/red), **outline the label**, or **float an Android view** (badge, icon, corrected value, button) on a label or field, that's the overlay layer — and it's a common ask for any "show the result on the label" UX. The brush APIs, the advanced overlay, and one non-obvious trap (the advanced overlay's per-field listener has no label context, so state-dependent per-field views must be pushed imperatively from `onSessionUpdated`) are all covered in `references/advanced.md`. Read it before writing field-highlighting or floating-view code.
 
 ## Optional: Validation Flow
 
@@ -340,5 +365,6 @@ For OCR accuracy problems on worn or low-contrast printed labels, the cloud-base
 After the core integration is running, point the user at the right resource for follow-ups:
 
 - [Label Definitions](https://docs.scandit.com/sdks/android/label-capture/label-definitions/) — full catalogue of pre-built text/barcode field types, the pre-built whole-label definitions, and how to tune their regex anchors and value patterns.
+- `references/advanced.md` — field/label brushes on the basic overlay, floating Android views via the advanced overlay (with the per-field-listener trap spelled out), seven-segment, and the Adaptive Recognition / Receipt Scanning betas.
 - [Advanced Configurations](https://docs.scandit.com/sdks/android/label-capture/advanced/) — Validation Flow customisation, adaptive recognition, custom overlays.
 - [LabelCaptureSimpleSample](https://github.com/Scandit/datacapture-android-samples/tree/master/03_Advanced_Batch_Scanning_Samples/05_Smart_Label_Capture/LabelCaptureSimpleSample) — working reference sample (includes a commented-out IMEI / serial-number label definition).
