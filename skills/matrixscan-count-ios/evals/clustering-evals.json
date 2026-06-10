@@ -1,0 +1,92 @@
+{
+  "skill_name": "matrixscan-count-ios",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Turn on automatic clustering in my MatrixScan Count app so barcodes that belong together get grouped automatically. File: IntegratedBarcodeCountViewController.swift",
+      "expected_output": "The skill sets settings.clusteringMode = .auto on the existing BarcodeCountSettings, before the BarcodeCount mode is constructed. The rest of the integration (context, camera, symbologies, mode, view, listener, uiDelegate, lifecycle) is unchanged.",
+      "files": ["fixtures/IntegratedBarcodeCountViewController.swift"],
+      "assertions": [
+        {"text": "settings.clusteringMode is set to ClusteringMode.auto (the .auto case)"},
+        {"text": "It is set on the BarcodeCountSettings BEFORE BarcodeCount(context:settings:) is constructed"},
+        {"text": "No invented API is used (clusteringMode is a real BarcodeCountSettings property; no guessed enable flag)"},
+        {"text": "The rest of the integration is unchanged"}
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "In my MatrixScan Count app, let the user group barcodes manually, and tell the SDK to expect 4 barcodes per cluster. File: IntegratedBarcodeCountViewController.swift",
+      "expected_output": "The skill sets settings.clusteringMode = .manual and settings.expectedNumberOfBarcodesPerCluster = 4 on the BarcodeCountSettings before constructing the mode. expectedNumberOfBarcodesPerCluster is assigned a plain Int (it is Int? in Swift). The rest of the integration is unchanged.",
+      "files": ["fixtures/IntegratedBarcodeCountViewController.swift"],
+      "assertions": [
+        {"text": "settings.clusteringMode is set to ClusteringMode.manual"},
+        {"text": "settings.expectedNumberOfBarcodesPerCluster is set to 4 (assigned a plain Int, since it is Int? in Swift — not an NSNumber)"},
+        {"text": "Both are set on BarcodeCountSettings before BarcodeCount(context:settings:)"},
+        {"text": "The rest of the integration is unchanged"}
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "In my MatrixScan Count app with clustering enabled, when a scan phase completes, read the recognized clusters and log, for each, how many barcodes it contains and whether it matches the expected count. File: IntegratedBarcodeCountViewController.swift",
+      "expected_output": "Inside the BarcodeCountListener callback, the skill reads session.recognizedClusters, and for each Cluster uses cluster.barcodes.count and cluster.expectationStatus (.matches / .deviates / .notEvaluated). It copies the clusters out of the session and dispatches to the main queue before touching UI (the session is only valid inside the callback). The rest of the integration is unchanged.",
+      "files": ["fixtures/IntegratedBarcodeCountViewController.swift"],
+      "assertions": [
+        {"text": "It reads session.recognizedClusters inside barcodeCount(_:didScanIn:frameData:)"},
+        {"text": "For each Cluster it uses cluster.barcodes (e.g. .count) and cluster.expectationStatus (a ClusterExpectationStatus: .matches / .deviates / .notEvaluated)"},
+        {"text": "The clusters are copied out of the session and work is dispatched to the main queue (the session is only valid inside the callback)"},
+        {"text": "No invented API (recognizedClusters / barcodes / expectationStatus are the real names); the rest of the integration is unchanged"}
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "Color the cluster highlights in my MatrixScan Count app based on whether each cluster matches the expected barcode count: green if it matches, red if it deviates, gray if not evaluated. File: IntegratedBarcodeCountViewController.swift",
+      "expected_output": "The skill sets barcodeCountView.delegate and implements barcodeCountView(_:brushForCluster:), switching on cluster.expectationStatus to return a Brush with a green fill for .matches, red for .deviates, gray for .notEvaluated. For clusters only the fill color is applied (the SDK supplies the transparency/border), so a solid fill color is enough. This works in the default Icon style — no switch to the Dot style is needed. Brushes use Brush(fill:stroke:strokeWidth:). The rest of the integration is unchanged.",
+      "files": ["fixtures/IntegratedBarcodeCountViewController.swift"],
+      "assertions": [
+        {"text": "barcodeCountView.delegate is set and the controller implements barcodeCountView(_:brushForCluster:) returning Brush?"},
+        {"text": "It switches on cluster.expectationStatus and returns a Brush with a green fill for .matches, red for .deviates, gray for .notEvaluated"},
+        {"text": "Brushes are constructed with Brush(fill:stroke:strokeWidth:) — not fillColor:/strokeColor: (a solid fill color is fine; for clusters only the fill color is applied)"},
+        {"text": "It does NOT switch the view to the Dot style just to color clusters (the cluster highlight is colored via brushForCluster in the default Icon style)"},
+        {"text": "It does NOT use a non-existent iconForCluster callback; the rest of the integration is unchanged"}
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "In my MatrixScan Count app, programmatically group the scanned barcodes into three clusters by their data: barcodes whose data is an even number in one cluster, odd numbers in another, and barcodes whose data isn't a number in a third. File: IntegratedBarcodeCountViewController.swift",
+      "expected_output": "The skill enables clustering in .manual (so its own grouping isn't competing with automatic clustering), then from the scan-phase listener (where the session is valid) partitions session.recognizedBarcodes into three [Barcode] arrays — even, odd, and non-numeric — by unwrapping the optional barcode.data (String?) and parsing it as an Int. It gets a BarcodeClusterEditor via barcodeCount.beginClusterEditing(), calls editor.formCluster(_:) once for each non-empty group, and finishes with editor.endEditing(). The editor is optional (nullable). The rest of the integration is unchanged.",
+      "files": ["fixtures/IntegratedBarcodeCountViewController.swift"],
+      "assertions": [
+        {"text": "Clustering is enabled in .manual (forming clusters yourself; beginClusterEditing() returns nil in .disabled and .auto — only .manual / .autoWithManualCorrection yield an editor)"},
+        {"text": "session.recognizedBarcodes is partitioned into three [Barcode] groups by parsing barcode.data, which is UNWRAPPED first (it is String?): even number, odd number, and not-a-number"},
+        {"text": "It obtains the editor via barcodeCount.beginClusterEditing() (handling that it is optional/nullable)"},
+        {"text": "editor.formCluster(...) is called once per group (each call with the [Barcode] for that group), and editing finishes with editor.endEditing()"},
+        {"text": "Real API names only (beginClusterEditing / formCluster / endEditing); barcode.data parsing handles the optional; the rest of the integration is unchanged"}
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "What clustering modes does MatrixScan Count support on iOS, and what does each do?",
+      "expected_output": "The skill explains ClusteringMode has four cases: .disabled (no clustering, the default), .manual (user groups barcodes via the on-screen UI), .auto (automatic, not manually changeable), and .autoWithManualCorrection (automatic, but the user can also form/dissolve clusters). It sets the mode via BarcodeCountSettings.clusteringMode.",
+      "files": [],
+      "assertions": [
+        {"text": "It names the four ClusteringMode cases: .disabled, .manual, .auto, .autoWithManualCorrection"},
+        {"text": "It correctly describes each: disabled = off (default); manual = user groups via UI; auto = automatic, not tunable; autoWithManualCorrection = automatic plus manual form/dissolve"},
+        {"text": "It states the mode is set via BarcodeCountSettings.clusteringMode (before constructing the mode)"},
+        {"text": "It does not invent modes or APIs"}
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "In my MatrixScan Count app, color each cluster's highlight based on how many barcodes it contains: a cluster with 2 barcodes red, with 3 barcodes orange, and with 4 or more green. File: IntegratedBarcodeCountViewController.swift",
+      "expected_output": "The skill enables clustering (e.g. .auto) so clusters form, sets barcodeCountView.delegate, and implements barcodeCountView(_:brushForCluster:) returning a Brush whose fill color is chosen by cluster.barcodes.count: red for 2, orange for 3, green for 4 or more (and nil for other counts to keep the default). Because for clusters only the fill color is applied, a solid fill color is enough and it stays on the default Icon style (no Dot switch). The rest of the integration is unchanged.",
+      "files": ["fixtures/IntegratedBarcodeCountViewController.swift"],
+      "assertions": [
+        {"text": "barcodeCountView.delegate is set and the controller implements barcodeCountView(_:brushForCluster:) returning Brush?"},
+        {"text": "The fill color is selected by cluster.barcodes.count: red for 2, orange for 3, green for 4 or more (counts that don't match may return nil for the default)"},
+        {"text": "It uses cluster.barcodes.count (the real property) — not expectationStatus or an invented count API"},
+        {"text": "Brush is constructed with Brush(fill:stroke:strokeWidth:) and a solid fill color (only the fill color applies for clusters); it does NOT switch to the Dot style"},
+        {"text": "Clustering is enabled so clusters exist; it does NOT use a non-existent iconForCluster; the rest of the integration is unchanged"}
+      ]
+    }
+  ]
+}

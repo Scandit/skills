@@ -172,6 +172,8 @@ What this code does **not** do:
   a known list" use case. → see **`list-scanning.md`**.
 - It does not customize the **highlight appearance** (icon per barcode, or Dot-style brush colors) — the
   default highlights are used. → see **`highlights.md`**.
+- It does not enable **clustering** (grouping barcodes that belong together) — `clusteringMode` is off.
+  → see **`clustering.md`**.
 - It does not customize the status mode or the toolbar — defaults are used.
 
 ## Step 1 — Data Capture Context
@@ -321,7 +323,8 @@ extension CountViewController: BarcodeCountListener {
 
 `session.additionalBarcodes` holds barcodes added programmatically (via
 `barcodeCount.setAdditionalBarcodes(_:)` — useful for carrying a previous batch across a
-background/foreground cycle), and `session.recognizedClusters` exposes cluster grouping when enabled.
+background/foreground cycle), and `session.recognizedClusters` exposes cluster grouping when enabled
+(see `clustering.md`).
 
 ## Step 8 — List and Exit callbacks
 
@@ -401,6 +404,9 @@ API reference for exact signatures before writing code.
   is customizable via `barcodeCountView.setTextForTapToUncountHint(_:)`.)
 - **Highlight appearance (icons / brushes)**: customize the per-barcode icon (default Icon style) or the
   Dot-style color via the `BarcodeCountViewDelegate`. → **full guide: `highlights.md`**.
+- **Clustering** (group barcodes that belong together): enable it with
+  `BarcodeCountSettings.clusteringMode`, read `session.recognizedClusters`, edit clusters with
+  `BarcodeClusterEditor`, and color them via `brushForCluster`. → **full guide: `clustering.md`**.
 - **Reset the mode**: when a counting process is over and you want to start fresh, call
   `barcodeCount.reset()` to clear the scanned list and the AR overlays (e.g. from your Exit/summary
   flow). The minimal example above doesn't call it — add it where your app begins a new count.

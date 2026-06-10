@@ -23,7 +23,7 @@ This skill is scoped to the **MatrixScan Count counting workflow**: `DataCapture
 
 Also covered: **filtering** (count only some of the barcodes in the scene) and the **hardware trigger** (volume button) — see the Advanced configurations section of `integration.md`.
 
-Out of scope (covered elsewhere): **scan preview**, **clustering**, **status mode**, and **tote mapping (MS Map)** are separate features with their own skills/tickets. Mention these only as pointers.
+Out of scope (covered elsewhere): **scan preview**, **status mode**, and **tote mapping (MS Map)** are separate features with their own skills/tickets. Mention these only as pointers.
 
 ## Intent Routing
 
@@ -33,6 +33,7 @@ Based on the user's request, load the appropriate reference file before respondi
 - **Customizing the look of the AR highlights** (e.g. "change the highlight color", "use a custom icon/brush per barcode", "use the dot style with custom colors") → read `references/highlights.md`. This assumes the basic integration is already in place; it covers the Icon (default) vs Dot styles, customizing the **icon** per barcode (`BarcodeCountIcon` built with `ScanditIconBuilder`, via the `iconForRecognizedBarcode` delegate callback / `setIcon`), and customizing the **Dot-style color** via `Brush` (the `recognizedBrush` property, the `brushForRecognizedBarcode` callback, and `setBrush`). (Reacting to taps lives in `integration.md`, not here.)
 - **Scanning against a known list of expected barcodes** (e.g. "scan against a manifest / receiving order", "check scans against an expected list", "show a progress bar of how many were found", "let the user accept or reject items that aren't on the list") → read `references/list-scanning.md`. Covers `BarcodeCountCaptureList` + `TargetBarcode`, `setCaptureList`, the `BarcodeCountCaptureListListener` (correct / wrong / missing / accepted / rejected barcodes), `disableModeWhenCaptureListCompleted`, the progress bar, and the not-in-list accept/reject action.
 - **Advanced counting configurations** — **filtering** (count only some of the barcodes in the scene: `BarcodeFilterSettings` + `excludedSymbologies` / `excludedCodesRegex`), the **hardware trigger** (react to the volume button: `barcodeCountView.hardwareTriggerEnabled`), **expects-only-unique** (`BarcodeCountSettings.expectsOnlyUniqueBarcodes`), **carrying a previous batch across background** (`barcodeCount.setAdditionalBarcodes(_:)`), and **resetting** (`barcodeCount.reset()`) → read `references/integration.md` (the Advanced configurations / step 2 / step 7 / Beyond the basics sections).
+- **Grouping barcodes into clusters** (e.g. "group the barcodes on a multi-pack/pallet", "enable clustering", "let the user group scanned codes", "color or read the clusters") → read `references/clustering.md`. Covers `BarcodeCountSettings.clusteringMode` (`.disabled` / `.manual` / `.auto` / `.autoWithManualCorrection`) and `expectedNumberOfBarcodesPerCluster`, reading `session.recognizedClusters` (`Cluster.barcodes` / `expectationStatus`), programmatic editing via `BarcodeClusterEditor` (`beginClusterEditing` / `formCluster` / `dissolveCluster` / `endEditing`), and the `brushForCluster` / `didTap` (cluster) view-delegate callbacks.
 
 ## API Usage Policy
 
