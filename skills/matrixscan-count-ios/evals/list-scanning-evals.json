@@ -31,14 +31,14 @@
     },
     {
       "id": 3,
-      "prompt": "My MatrixScan Count app scans against a list. Change the highlight colors: not-in-list barcodes orange, accepted barcodes blue, rejected barcodes cyan. File: IntegratedBarcodeCountListScanningViewController.swift",
-      "expected_output": "Starting from an integration that already has a capture list, the skill sets the per-state brushes — barcodeCountView.notInListBrush to orange, acceptedBrush to blue, rejectedBrush to cyan, each via Brush(fill:stroke:strokeWidth:). Because brushes only render in the Dot style, the BarcodeCountView is created with style: .dot (or the response notes it). The existing capture list and the rest of the integration are unchanged.",
+      "prompt": "My MatrixScan Count app scans against a list and uses the default highlight style. Change the highlight colors of the list states: not-in-list barcodes orange, accepted barcodes blue, rejected barcodes cyan. File: IntegratedBarcodeCountListScanningViewController.swift",
+      "expected_output": "The fixture uses the default Icon style, so (keeping that style) the skill recolors each list state via the BarcodeCountViewDelegate icon callbacks: iconForRecognizedBarcodeNotInList returns a BarcodeCountIcon with an orange background, iconForAcceptedBarcode a blue one, and iconForRejectedBarcode a cyan one (built with ScanditIconBuilder().withBackgroundColor(...).build() wrapped in BarcodeCountIcon(defaultIcon:accessibleIcon:)). It does NOT switch to the Dot style or use brush properties. The existing capture list and the rest of the integration are unchanged.",
       "files": ["fixtures/IntegratedBarcodeCountListScanningViewController.swift"],
       "assertions": [
-        {"text": "barcodeCountView.notInListBrush is set to an orange Brush, acceptedBrush to a blue Brush, and rejectedBrush to a cyan Brush (or the equivalent brushForRecognizedBarcodeNotInList / brushForAcceptedBarcode / brushForRejectedBarcode delegate callbacks)"},
-        {"text": "Brushes are constructed with Brush(fill:stroke:strokeWidth:) — not fillColor:/strokeColor:"},
-        {"text": "It uses the correct state names (notInListBrush / acceptedBrush / rejectedBrush) — NOT the non-existent brushForUnrecognizedBarcode, and no icon API"},
-        {"text": "Because brushes only render in the Dot style, the BarcodeCountView is created with style: .dot OR the response notes that brush colors apply to the Dot style"},
+        {"text": "barcodeCountView.delegate is set and the controller conforms to BarcodeCountViewDelegate"},
+        {"text": "It implements iconForRecognizedBarcodeNotInList (orange background), iconForAcceptedBarcode (blue background), and iconForRejectedBarcode (cyan background), each returning a BarcodeCountIcon built via ScanditIconBuilder().withBackgroundColor(...).build() wrapped in BarcodeCountIcon(defaultIcon:accessibleIcon:)"},
+        {"text": "It KEEPS the default Icon style — it does NOT switch to .dot and does NOT set notInListBrush/acceptedBrush/rejectedBrush or any brush callback"},
+        {"text": "It uses the correct state callback names (iconForRecognizedBarcodeNotInList / iconForAcceptedBarcode / iconForRejectedBarcode) and a real ScanditIconType if any — no invented API, no recognizedIcon property"},
         {"text": "The existing capture list (target barcodes + setCaptureList + BarcodeCountCaptureListListener) and the rest of the integration are left unchanged"}
       ]
     }

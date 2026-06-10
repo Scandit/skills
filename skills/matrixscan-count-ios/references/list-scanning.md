@@ -100,10 +100,21 @@ The four barcode states map as follows:
 
 ## Highlight colors for the list states
 
-The **not-in-list**, **accepted**, and **rejected** barcodes have their own highlight brushes
-(`notInListBrush` / `acceptedBrush` / `rejectedBrush`, or the matching `brushForRecognizedBarcodeNotInList`
-/ `brushForAcceptedBarcode` / `brushForRejectedBarcode` delegate callbacks). Customizing those colors is
-covered in `highlights.md` — remember brushes only render in the **Dot** style.
+The **not-in-list**, **accepted**, and **rejected** barcodes each have their own highlight appearance,
+customizable the same way as the recognized state.
+
+> **Keep the style the app already uses — don't switch styles just to change colors.** The **Icon
+> style is the default and is generally preferred**. So:
+> - App on the **Icon style** (the default) → recolor each state by customizing its **icon** (e.g. its
+>   background color) via the `iconForRecognizedBarcodeNotInList` / `iconForAcceptedBarcode` /
+>   `iconForRejectedBarcode` delegate callbacks (returning a `BarcodeCountIcon`). **Do not switch to the
+>   Dot style just to change a color.**
+> - Use the **brush** properties (`notInListBrush` / `acceptedBrush` / `rejectedBrush`, or the
+>   `brushForRecognizedBarcodeNotInList` / `brushForAcceptedBarcode` / `brushForRejectedBarcode`
+>   callbacks) only if the app is **already** on the Dot style, or the user **explicitly** asks to
+>   switch to it. A brush set on an Icon-style view has **no effect** (it silently won't render).
+
+Both paths (icons and brushes) and the exact APIs are covered in `highlights.md`.
 
 ## After wiring up
 
