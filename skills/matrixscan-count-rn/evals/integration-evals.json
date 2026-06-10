@@ -167,6 +167,68 @@
         {"text": "A comment or note about RN 7.1+ requirement is present (semantic)"},
         {"text": "Existing BarcodeCount mode, camera lifecycle, and listeners are preserved (semantic)"}
       ]
+    },
+    {
+      "id": 10,
+      "prompt": "My labels carry PDF417 barcodes alongside the ones I want to count. Filter the PDF417 ones out of my MatrixScan Count app so they are not counted. Also exclude any barcode whose data starts with the digits 1234. File: IntegratedApp.tsx.",
+      "expected_output": "The skill accesses settings.filterSettings (the BarcodeFilterSettings getter on BarcodeCountSettings), sets excludedSymbologies to an array including Symbology.PDF417, and sets excludedCodesRegex to a pattern matching data starting with 1234. The existing integration is preserved.",
+      "files": [
+        "fixtures/IntegratedApp.tsx"
+      ],
+      "tags": ["filtering"],
+      "assertions": [
+        {"text": "settings.filterSettings is accessed as the BarcodeFilterSettings getter (semantic)"},
+        {"text": "filterSettings.excludedSymbologies is assigned an array including Symbology.PDF417"},
+        {"text": "filterSettings.excludedCodesRegex is set to a regex matching data starting with 1234 (semantic)"},
+        {"text": "A new BarcodeFilterSettings is NOT constructed and assigned back; the settings.filterSettings getter is mutated in place (semantic)"},
+        {"text": "Existing BarcodeCount mode, camera lifecycle, and listeners are preserved (semantic)"}
+      ]
+    },
+    {
+      "id": 11,
+      "prompt": "Every barcode in my batches is unique — no duplicates ever appear. Turn on the optimization for that in my MatrixScan Count app. File: IntegratedApp.tsx.",
+      "expected_output": "The skill sets settings.expectsOnlyUniqueBarcodes = true on the BarcodeCountSettings before the BarcodeCount mode is constructed. The existing integration is preserved.",
+      "files": [
+        "fixtures/IntegratedApp.tsx"
+      ],
+      "tags": ["expects-only-unique"],
+      "assertions": [
+        {"text": "settings.expectsOnlyUniqueBarcodes = true is present"},
+        {"text": "expectsOnlyUniqueBarcodes is set on the BarcodeCountSettings before BarcodeCount is constructed (semantic)"},
+        {"text": "Existing BarcodeCount mode, camera lifecycle, and listeners are preserved (semantic)"}
+      ]
+    },
+    {
+      "id": 12,
+      "prompt": "Enable automatic clustering in my MatrixScan Count app so neighbouring barcodes get grouped, but still let the operator manually form or break clusters on screen. File: IntegratedApp.tsx.",
+      "expected_output": "The skill sets settings.clusteringMode = ClusteringMode.AutoWithManualCorrection on the BarcodeCountSettings, imports ClusteringMode from scandit-react-native-datacapture-core, and notes the RN 8.3+ requirement. The existing integration is preserved.",
+      "files": [
+        "fixtures/IntegratedApp.tsx"
+      ],
+      "tags": ["clustering"],
+      "assertions": [
+        {"text": "settings.clusteringMode is assigned"},
+        {"text": "ClusteringMode.AutoWithManualCorrection is used"},
+        {"text": "ClusteringMode is imported from 'scandit-react-native-datacapture-core'"},
+        {"text": "A note or comment mentions clustering requires RN 8.3 or later (semantic)"},
+        {"text": "Existing BarcodeCount mode, camera lifecycle, and listeners are preserved (semantic)"}
+      ]
+    },
+    {
+      "id": 13,
+      "prompt": "I want to map scanned barcodes to a spatial grid of totes in my MatrixScan Count app and read back the grid after each scan. File: IntegratedApp.tsx.",
+      "expected_output": "The skill sets settings.mappingEnabled = true on the BarcodeCountSettings and reads the grid inside the BarcodeCountListener via session.getSpatialMap(), which resolves to a BarcodeSpatialGrid. The skill notes that the interactive BarcodeSpatialGridEditorView is not available on React Native. The existing integration is preserved.",
+      "files": [
+        "fixtures/IntegratedApp.tsx"
+      ],
+      "tags": ["tote-mapping"],
+      "assertions": [
+        {"text": "settings.mappingEnabled = true is present"},
+        {"text": "session.getSpatialMap( is called inside the BarcodeCountListener (semantic)"},
+        {"text": "BarcodeSpatialGrid is imported from 'scandit-react-native-datacapture-barcode'"},
+        {"text": "A note explains BarcodeSpatialGridEditorView is NOT available on React Native (semantic)"},
+        {"text": "Existing BarcodeCount mode, camera lifecycle, and listeners are preserved (semantic)"}
+      ]
     }
   ]
 }
