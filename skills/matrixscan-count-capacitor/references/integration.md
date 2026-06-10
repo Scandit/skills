@@ -110,7 +110,63 @@ settings.expectsOnlyUniqueBarcodes = true;
 | `enabledSymbologies` | Read-only array of currently enabled symbologies. |
 | `expectsOnlyUniqueBarcodes` | `boolean`. Set `true` if each barcode in a batch is unique — enables optimizations. Do not set if duplicates are expected. |
 | `filterSettings` | `BarcodeFilterSettings`. Access or modify barcode filtering at the settings level. |
+| `clusteringMode` | `ClusteringMode`. Controls barcode clustering. (Cap ≥8.3) |
 | `setProperty(name, value)` / `getProperty(name)` | Advanced property access by name. |
+
+### Filtering (Cap ≥6.18)
+
+If several barcode types appear on the same label or package, you can scan only the ones you want and filter the rest out. Filtering is configured on `BarcodeCountSettings.filterSettings` (a `BarcodeFilterSettings`) by symbology, by symbol count, or by a regex on the decoded data.
+
+Exclude specific symbologies — for example scan Code 128 but never PDF417:
+
+```javascript
+import {
+  BarcodeCountSettings,
+  Symbology,
+} from 'scandit-capacitor-datacapture-barcode';
+
+const settings = new BarcodeCountSettings();
+settings.enableSymbologies([Symbology.Code128, Symbology.PDF417]);
+
+const filterSettings = settings.filterSettings;
+filterSettings.excludedSymbologies = [Symbology.PDF417];
+```
+
+Exclude barcodes whose data matches a regex — for example all codes starting with `1234`:
+
+```javascript
+const filterSettings = settings.filterSettings;
+filterSettings.excludedCodesRegex = '^1234.*';
+```
+
+> **Note**: By default, filtered-out barcodes are highlighted transparently. Use `BarcodeFilterHighlightSettings` (assigned via `barcodeCountView.filterSettings`) to change the color and transparency of filtered highlights.
+
+| API | Available | Description |
+|-----|-----------|-------------|
+| `filterSettings.excludedSymbologies` | Cap ≥6.18 | `Symbology[]`. Symbologies to exclude from counting. |
+| `filterSettings.excludedCodesRegex` | Cap ≥6.18 | `string`. Regex; barcodes whose data matches are excluded. |
+| `filterSettings.setExcludedSymbolCounts(counts, symbology)` | Cap ≥6.18 | Exclude specific symbol counts for a symbology. |
+
+### Clustering (Cap ≥8.3)
+
+Clustering groups multiple barcodes together — either automatically by visual context or manually by the operator on screen. It is configured via `BarcodeCountSettings.clusteringMode`. Clustering is disabled by default.
+
+```javascript
+import { ClusteringMode } from 'scandit-capacitor-datacapture-core';
+import { BarcodeCountSettings } from 'scandit-capacitor-datacapture-barcode';
+
+const settings = new BarcodeCountSettings();
+settings.clusteringMode = ClusteringMode.AutoWithManualCorrection;
+```
+
+| `ClusteringMode` value | Description |
+|------------------------|-------------|
+| `ClusteringMode.Disabled` | No clustering is performed. Default. |
+| `ClusteringMode.Manual` | Operator selects which barcodes to cluster using the on-screen UI. |
+| `ClusteringMode.Auto` | Clustering is performed automatically and cannot be tuned manually. |
+| `ClusteringMode.AutoWithManualCorrection` | Clustering is automatic but clusters can be formed or dissolved manually. |
+
+> **Note**: When clustering is enabled, recognized clusters are exposed on the session. Set `textForClusteringGestureHint` to localize the on-screen clustering gesture hint.
 
 ## Step 4 — Create BarcodeCount Mode
 
