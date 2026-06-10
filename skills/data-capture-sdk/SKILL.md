@@ -158,6 +158,7 @@ Always include both the docs.scandit.com link and the platform-specific sample-a
 | MatrixScan Batch | .NET for Android | `matrixscan-batch-net-android` | "Ask me to integrate MatrixScan Batch into your .NET Android app" |
 | MatrixScan Batch | .NET for iOS | `matrixscan-batch-net-ios` | "Ask me to integrate MatrixScan Batch into your .NET iOS app" |
 | MatrixScan Batch | .NET MAUI | `matrixscan-batch-maui` | "Ask me to integrate MatrixScan Batch into your .NET MAUI app" |
+| MatrixScan Count | iOS | `matrixscan-count-ios` | "Ask me to integrate MatrixScan Count into your iOS app" |
 | MatrixScan Count | React Native | `matrixscan-count-rn` | "Ask me to integrate MatrixScan Count into your React Native app" |
 | MatrixScan Count | Flutter | `matrixscan-count-flutter` | "Ask me to integrate MatrixScan Count into your Flutter app" |
 | MatrixScan Count | Capacitor | `matrixscan-count-capacitor` | "Ask me to integrate MatrixScan Count into your Capacitor app" |
