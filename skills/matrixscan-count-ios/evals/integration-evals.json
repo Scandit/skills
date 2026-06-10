@@ -5,9 +5,7 @@
       "id": 1,
       "prompt": "Add MatrixScan Count to my app so I can count barcodes in bulk. Go with a reasonable default symbology set. File: NonScanditViewController.swift",
       "expected_output": "The skill adds the MatrixScan Count pipeline to the existing ScanViewController: imports ScanditBarcodeCapture, creates the DataCaptureContext, creates and configures the camera (Camera.default + BarcodeCount.recommendedCameraSettings) and sets it as the context frame source, builds BarcodeCountSettings with a default symbology set, creates the BarcodeCount mode, registers a BarcodeCountListener that copies session.recognizedBarcodes out on the main thread, constructs a BarcodeCountView and adds it to the view hierarchy, wires the BarcodeCountViewUIDelegate list/exit callbacks, and switches the camera on in viewWillAppear and off in viewDidDisappear. The response also shows the setup checklist (SPM, Info.plist, license key).",
-      "files": [
-        "fixtures/NonScanditViewController.swift"
-      ],
+      "files": ["fixtures/NonScanditViewController.swift"],
       "assertions": [
         {"text": "import ScanditBarcodeCapture is present"},
         {"text": "A DataCaptureContext is created with the placeholder '-- ENTER YOUR SCANDIT LICENSE KEY HERE --'"},
@@ -29,9 +27,7 @@
       "id": 2,
       "prompt": "Add MatrixScan Count to my SwiftUI app so I can count barcodes in bulk. File: NonScanditSwiftUIView.swift",
       "expected_output": "The skill adds a UIKit view controller with the full MatrixScan Count pipeline (DataCaptureContext, explicitly-managed camera, BarcodeCountSettings + symbologies, BarcodeCount mode, BarcodeCountListener, BarcodeCountView added with addSubview, camera on/off lifecycle, list/exit UI delegate), wraps it in a UIViewControllerRepresentable, and changes the existing SwiftUI ScanView body to use that representable. No Scandit API calls live on the SwiftUI side.",
-      "files": [
-        "fixtures/NonScanditSwiftUIView.swift"
-      ],
+      "files": ["fixtures/NonScanditSwiftUIView.swift"],
       "assertions": [
         {"text": "import ScanditBarcodeCapture is present"},
         {"text": "A UIViewController subclass is added with the full MatrixScan Count setup: DataCaptureContext (with the placeholder '-- ENTER YOUR SCANDIT LICENSE KEY HERE --'), camera (Camera.default + camera?.apply(BarcodeCount.recommendedCameraSettings) + context.setFrameSource(camera)), BarcodeCountSettings with at least two symbologies via set(symbology:enabled:), BarcodeCount(context:settings:), a BarcodeCountListener that copies session.recognizedBarcodes on the main thread, and BarcodeCountView(frame:context:barcodeCount:) added with addSubview"},
@@ -147,6 +143,18 @@
         {"text": "The tap handler reads from the tapped TrackedBarcode (e.g. trackedBarcode.barcode.data) rather than inventing an API"},
         {"text": "It does NOT use the non-existent didTapUnrecognizedBarcode / brushForUnrecognizedBarcode names"},
         {"text": "The existing uiDelegate (List/Exit) wiring and the rest of the integration are unchanged; no brush/icon customization is added unless needed"}
+      ]
+    },
+    {
+      "id": 12,
+      "prompt": "In my MatrixScan Count app, let the user remove a barcode after scanning it by tapping it. File: IntegratedBarcodeCountViewController.swift",
+      "expected_output": "The skill enables tap-to-uncount by setting barcodeCountView.tapToUncountEnabled = true. Tapping an already-counted barcode then removes it from the current scanned items. No custom tap/gesture handling is added; the rest of the integration is unchanged.",
+      "files": ["fixtures/IntegratedBarcodeCountViewController.swift"],
+      "assertions": [
+        {"text": "barcodeCountView.tapToUncountEnabled = true is set"},
+        {"text": "It uses the real property on the BarcodeCountView (tapToUncountEnabled) — NOT a settings flag or a guessed/invented API, and NOT a hand-rolled UITapGestureRecognizer"},
+        {"text": "No other behavior is added (e.g. no custom uncount logic) — enabling the built-in toggle is sufficient"},
+        {"text": "The context, mode, camera, settings, listener, uiDelegate and lifecycle are unchanged"}
       ]
     }
   ]

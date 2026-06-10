@@ -166,8 +166,10 @@ extension CountViewController: BarcodeCountViewUIDelegate {
 
 What this code does **not** do:
 - It does not implement an **expected/receiving list** (`BarcodeCountCaptureList`) — the "scan against
-  a known list" use case.
-- It does not customize **brushes, icons, the status mode, or the toolbar** — defaults are used.
+  a known list" use case. → see **`list-scanning.md`**.
+- It does not customize the **highlight appearance** (icon per barcode, or Dot-style brush colors) — the
+  default highlights are used. → see **`highlights.md`**.
+- It does not customize the status mode or the toolbar — defaults are used.
 
 ## Step 1 — Data Capture Context
 
@@ -384,18 +386,21 @@ API reference for exact signatures before writing code.
 - **Receiving / capture list** (scan against a known list): build a `BarcodeCountCaptureList` from
   `TargetBarcode`s and apply it with `barcodeCount.setCaptureList(_:)`. The view then distinguishes
   recognized / accepted / rejected / not-in-list barcodes, and the capture-list session reports
-  correct vs. wrong vs. missing.
+  correct vs. wrong vs. missing. → **full guide: `list-scanning.md`** (capture list, progress, auto-finish,
+  the accept/reject not-in-list action).
 - **Control visibility**: the view exposes many `shouldShow…` toggles (`shouldShowListButton`,
   `shouldShowExitButton`, `shouldShowShutterButton`, `shouldShowFloatingShutterButton`,
   `shouldShowSingleScanButton`, `shouldShowClearHighlightsButton`, `shouldShowStatusModeButton`,
   `shouldShowUserGuidanceView`, `shouldShowHints`, `shouldShowToolbar`, `shouldShowScanAreaGuides`,
-  `shouldShowListProgressBar`, `shouldShowTorchControl`), plus `tapToUncountEnabled` and
-  `torchControlPosition`.
-- **Brushes / icons**: per-state brushes (`recognizedBrush`, `notInListBrush`, `acceptedBrush`,
-  `rejectedBrush`) and per-barcode brushes/icons + tap callbacks via the `BarcodeCountViewDelegate`
-  (`barcodeCountView.delegate`).
-- **Status mode** (`setStatusProvider(_:)`) and the **not-in-list action**
-  (`barcodeNotInListActionSettings`) are advanced customizations.
+  `shouldShowListProgressBar`, `shouldShowTorchControl`), plus `torchControlPosition`.
+- **Tap to uncount**: if the user should be able to remove a barcode after scanning it, set
+  `barcodeCountView.tapToUncountEnabled = true`. Tapping an already-counted barcode then removes it from
+  the current scanned items. (Verify the property name against the API reference if unsure; the hint text
+  is customizable via `barcodeCountView.setTextForTapToUncountHint(_:)`.)
+- **Highlight appearance (icons / brushes)**: customize the per-barcode icon (default Icon style) or the
+  Dot-style color via the `BarcodeCountViewDelegate`. → **full guide: `highlights.md`**.
+- **Status mode** (`setStatusProvider(_:)`) is an advanced customization. (The **not-in-list action**,
+  `barcodeNotInListActionSettings`, is covered in `list-scanning.md`.)
 - **Feedback (sound / haptic)**: configured through `BarcodeCount.feedback` (a `BarcodeCountFeedback`),
   whose `success` / `failure` are `Feedback` objects. The default (`BarcodeCountFeedback.defaultFeedback`)
   beeps and vibrates; the plain initializer `BarcodeCountFeedback()` is **silent** (its channels default
