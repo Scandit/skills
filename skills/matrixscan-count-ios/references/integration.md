@@ -138,12 +138,15 @@ extension CountViewController: BarcodeCountListener {
 }
 
 // Step 9: the List / Exit button callbacks. "List" = show progress so far; "Exit" = counting finished.
+// The sessionSnapshot gives you the recognized barcodes at tap time (on the main thread).
 extension CountViewController: BarcodeCountViewUIDelegate {
-    func listButtonTapped(for view: BarcodeCountView) {
-        // Present a list of allRecognizedBarcodes (counting still in progress).
+    func listButtonTapped(for view: BarcodeCountView,
+                          sessionSnapshot: BarcodeCountSessionSnapshot) {
+        // Present a list, e.g. from sessionSnapshot.recognizedBarcodes (counting still in progress).
     }
 
-    func exitButtonTapped(for view: BarcodeCountView) {
+    func exitButtonTapped(for view: BarcodeCountView,
+                          sessionSnapshot: BarcodeCountSessionSnapshot) {
         // The user finished — present a summary / complete the scanning.
     }
 }
@@ -319,27 +322,30 @@ barcodeCount.reset()
 ## Step 9 — List and Exit callbacks
 
 The built-in UI surfaces buttons whose taps are delivered through `BarcodeCountViewUIDelegate`
-(`barcodeCountView.uiDelegate = self`):
+(`barcodeCountView.uiDelegate = self`). Each callback hands you a `BarcodeCountSessionSnapshot` — the
+recognized barcodes at tap time — so you can populate the List screen directly:
 
 ```swift
 extension CountViewController: BarcodeCountViewUIDelegate {
-    func listButtonTapped(for view: BarcodeCountView) {
-        // Show the current progress (counting not necessarily finished).
+    func listButtonTapped(for view: BarcodeCountView,
+                          sessionSnapshot: BarcodeCountSessionSnapshot) {
+        // Show the current progress, e.g. sessionSnapshot.recognizedBarcodes (not necessarily finished).
     }
 
-    func exitButtonTapped(for view: BarcodeCountView) {
+    func exitButtonTapped(for view: BarcodeCountView,
+                          sessionSnapshot: BarcodeCountSessionSnapshot) {
         // The user finished counting — present a summary.
     }
 }
 ```
 
-To read the recognized barcodes at tap time, use the `allRecognizedBarcodes` you collected in the
-`BarcodeCountListener` (step 7). `singleScanButtonTapped(for:)` is also available (optional).
+`BarcodeCountSessionSnapshot` exposes `recognizedBarcodes`, `additionalBarcodes`, `recognizedClusters`,
+and `frameSequenceId` — so you can read what's been counted at tap time without maintaining your own
+copy. `singleScanButtonTapped(for:)` is also available (optional).
 
-> A future SDK adds `listButtonTapped(for:sessionSnapshot:)` / `exitButtonTapped(for:sessionSnapshot:)`
-> overloads that hand you a `BarcodeCountSessionSnapshot` directly at tap time. **These are not in the
-> current released SDK (8.4.0) — do not use them yet** (`BarcodeCountSessionSnapshot` won't resolve).
-> Stick with the no-snapshot variants above until the snapshot API ships.
+> Older SDKs (pre-8.5) used the no-snapshot `listButtonTapped(for:)` / `exitButtonTapped(for:)`
+> overloads, now deprecated — you'll still see them in existing code. Prefer the `sessionSnapshot:`
+> variants above.
 
 ## Reacting to barcode taps (optional)
 

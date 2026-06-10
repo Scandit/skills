@@ -1,0 +1,46 @@
+{
+  "skill_name": "matrixscan-count-ios",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Set up my MatrixScan Count app to scan against a fixed list of expected barcodes with these quantities: 7610200010148 ×3, 7886459920525 ×1, 7617400031003 ×5, 7613312015513 ×2. File: IntegratedBarcodeCountViewController.swift",
+      "expected_output": "The skill builds a Set<TargetBarcode> with TargetBarcode(data:quantity:) for the four codes and their quantities, creates a BarcodeCountCaptureList(listener:targetBarcodes:), applies it with barcodeCount.setCaptureList(...), and makes the view controller conform to BarcodeCountCaptureListListener implementing captureList(_:didUpdate:) and captureList(_:didCompleteWith:). The existing integration (context, camera, settings, mode, view, listener, lifecycle) is otherwise unchanged.",
+      "files": ["fixtures/IntegratedBarcodeCountViewController.swift"],
+      "assertions": [
+        {"text": "A Set<TargetBarcode> is built using TargetBarcode(data:quantity:) for all four codes with the correct quantities: 7610200010148 quantity 3, 7886459920525 quantity 1, 7617400031003 quantity 5, 7613312015513 quantity 2"},
+        {"text": "A BarcodeCountCaptureList is created via BarcodeCountCaptureList(listener:targetBarcodes:) with the target-barcode set and a listener"},
+        {"text": "barcodeCount.setCaptureList(captureList) is called to apply the list"},
+        {"text": "The view controller conforms to BarcodeCountCaptureListListener and implements captureList(_:didUpdate:) and captureList(_:didCompleteWith:) — the Swift selectors are didUpdate / didCompleteWith, NOT didUpdateSession / didCompleteWithSession"},
+        {"text": "The session parameter type is BarcodeCountCaptureListSession (and if progress is read, it uses real properties like correctBarcodes / missingBarcodes — not invented ones)"},
+        {"text": "The existing integration is preserved: context, camera setup, BarcodeCountSettings/symbologies, BarcodeCount mode, BarcodeCountView, BarcodeCountListener, uiDelegate and lifecycle are unchanged"},
+        {"text": "No not-in-list accept/reject action or other extra features are added unless needed (basic list scanning only)"}
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "My MatrixScan Count app already scans against a fixed list. When a scanned barcode isn't on the list, let the user accept or reject it, and change the buttons so accept says \"Keep\" and reject says \"Discard\". File: IntegratedBarcodeCountListScanningViewController.swift",
+      "expected_output": "Starting from an integration that already has a capture list, the skill enables the not-in-list action by creating a BarcodeCountNotInListActionSettings, setting enabled = true and acceptButtonText = \"Keep\" / rejectButtonText = \"Discard\", and assigning it to barcodeCountView.barcodeNotInListActionSettings. The existing capture-list setup and the rest of the integration are unchanged.",
+      "files": ["fixtures/IntegratedBarcodeCountListScanningViewController.swift"],
+      "assertions": [
+        {"text": "A BarcodeCountNotInListActionSettings is created (BarcodeCountNotInListActionSettings()) and assigned to barcodeCountView.barcodeNotInListActionSettings"},
+        {"text": "Its enabled property is set to true (the default is false)"},
+        {"text": "acceptButtonText is set to \"Keep\" and rejectButtonText is set to \"Discard\""},
+        {"text": "It uses the real property names on BarcodeCountNotInListActionSettings (enabled / acceptButtonText / rejectButtonText) — no guessed/invented API"},
+        {"text": "The existing capture list (BarcodeCountCaptureList / setCaptureList / BarcodeCountCaptureListListener) and the rest of the integration (context, camera, settings, mode, view, listener, uiDelegate, lifecycle) are left unchanged; no unrelated features added"}
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "My MatrixScan Count app scans against a list. Change the highlight colors: not-in-list barcodes orange, accepted barcodes blue, rejected barcodes cyan. File: IntegratedBarcodeCountListScanningViewController.swift",
+      "expected_output": "Starting from an integration that already has a capture list, the skill sets the per-state brushes — barcodeCountView.notInListBrush to orange, acceptedBrush to blue, rejectedBrush to cyan, each via Brush(fill:stroke:strokeWidth:). Because brushes only render in the Dot style, the BarcodeCountView is created with style: .dot (or the response notes it). The existing capture list and the rest of the integration are unchanged.",
+      "files": ["fixtures/IntegratedBarcodeCountListScanningViewController.swift"],
+      "assertions": [
+        {"text": "barcodeCountView.notInListBrush is set to an orange Brush, acceptedBrush to a blue Brush, and rejectedBrush to a cyan Brush (or the equivalent brushForRecognizedBarcodeNotInList / brushForAcceptedBarcode / brushForRejectedBarcode delegate callbacks)"},
+        {"text": "Brushes are constructed with Brush(fill:stroke:strokeWidth:) — not fillColor:/strokeColor:"},
+        {"text": "It uses the correct state names (notInListBrush / acceptedBrush / rejectedBrush) — NOT the non-existent brushForUnrecognizedBarcode, and no icon API"},
+        {"text": "Because brushes only render in the Dot style, the BarcodeCountView is created with style: .dot OR the response notes that brush colors apply to the Dot style"},
+        {"text": "The existing capture list (target barcodes + setCaptureList + BarcodeCountCaptureListListener) and the rest of the integration are left unchanged"}
+      ]
+    }
+  ]
+}

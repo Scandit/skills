@@ -19,7 +19,7 @@
         {"text": "The view controller conforms to BarcodeCountListener and implements barcodeCount(_:didScanIn:frameData:), copying session.recognizedBarcodes out and dispatching to the main queue before touching app state"},
         {"text": "barcodeCount.addListener(self) is called"},
         {"text": "A BarcodeCountView is constructed with BarcodeCountView(frame:context:barcodeCount:) and added to the hierarchy with addSubview (the view does NOT add itself)"},
-        {"text": "The view controller conforms to BarcodeCountViewUIDelegate (implements at least listButtonTapped(for:) and exitButtonTapped(for:)); barcodeCountView.uiDelegate is set"},
+        {"text": "The view controller conforms to BarcodeCountViewUIDelegate (implements the List/Exit callbacks — the sessionSnapshot variants listButtonTapped(for:sessionSnapshot:) / exitButtonTapped(for:sessionSnapshot:), or the deprecated no-snapshot forms); barcodeCountView.uiDelegate is set"},
         {"text": "The existing ScanViewController class is preserved (not renamed or removed); the titleLabel IBOutlet or viewDidLoad title assignment is preserved or the user is told it was kept"},
         {"text": "The response includes the setup checklist: SPM URL (https://github.com/Scandit/datacapture-spm), NSCameraUsageDescription in Info.plist, replace the license key placeholder"},
         {"text": "No expected/receiving list (BarcodeCountCaptureList) or brush/status-mode customization is added (defaults are fine for the basic integration)"}
@@ -37,12 +37,12 @@
         {"text": "A UIViewController subclass is added with the full MatrixScan Count setup: DataCaptureContext (with the placeholder '-- ENTER YOUR SCANDIT LICENSE KEY HERE --'), camera (Camera.default + camera?.apply(BarcodeCount.recommendedCameraSettings) + context.setFrameSource(camera)), BarcodeCountSettings with at least two symbologies via set(symbology:enabled:), BarcodeCount(context:settings:), a BarcodeCountListener that copies session.recognizedBarcodes on the main thread, and BarcodeCountView(frame:context:barcodeCount:) added with addSubview"},
         {"text": "The camera is explicitly managed: Camera.default + recommended settings + context.setFrameSource, and camera?.switch(toDesiredState: .on) in viewWillAppear and .off (or .standby) in viewDidDisappear — the BarcodeCountView is NOT assumed to own the camera"},
         {"text": "barcodeCount.addListener(self) is called and the view controller conforms to BarcodeCountListener implementing barcodeCount(_:didScanIn:frameData:)"},
-        {"text": "The view controller conforms to BarcodeCountViewUIDelegate (implements at least listButtonTapped(for:) and exitButtonTapped(for:)); barcodeCountView.uiDelegate is set"},
+        {"text": "The view controller conforms to BarcodeCountViewUIDelegate (implements the List/Exit callbacks — the sessionSnapshot variants listButtonTapped(for:sessionSnapshot:) / exitButtonTapped(for:sessionSnapshot:), or the deprecated no-snapshot forms); barcodeCountView.uiDelegate is set"},
         {"text": "A UIViewControllerRepresentable-conforming struct is added that makes/updates the UIKit count view controller"},
         {"text": "The existing SwiftUI ScanView body uses the new representable (no longer the plain Text placeholder)"},
         {"text": "No Scandit API call (DataCaptureContext, BarcodeCount, BarcodeCountView, Camera, etc.) appears inside the SwiftUI View struct body"},
         {"text": "No Scandit API call appears inside makeUIViewController or updateUIViewController beyond constructing the UIKit view controller"},
-        {"text": "No hallucinated APIs (BarcodeCountViewSettings, barcodeCount.add(self) instead of addListener, [TrackedBarcode] for recognizedBarcodes, set(symbologies:), or the unreleased sessionSnapshot: delegate variants)"},
+        {"text": "No hallucinated APIs (BarcodeCountViewSettings, barcodeCount.add(self) instead of addListener, [TrackedBarcode] for recognizedBarcodes, set(symbologies:))"},
         {"text": "The response includes the setup checklist: SPM URL (https://github.com/Scandit/datacapture-spm), NSCameraUsageDescription in Info.plist, replace the license key placeholder"}
       ]
     },

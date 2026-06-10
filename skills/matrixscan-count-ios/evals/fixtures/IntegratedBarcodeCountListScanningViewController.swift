@@ -1,26 +1,7 @@
-import SwiftUI
+import UIKit
 import ScanditBarcodeCapture
 
-struct ScanView: View {
-    var body: some View {
-        CountViewControllerRepresentable()
-            .ignoresSafeArea()
-    }
-}
-
-// Bridges the UIKit CountViewController into SwiftUI. No Scandit code lives here.
-struct CountViewControllerRepresentable: UIViewControllerRepresentable {
-    func makeUIViewController(context: Context) -> CountViewController {
-        CountViewController()
-    }
-
-    func updateUIViewController(_ uiViewController: CountViewController, context: Context) {}
-}
-
-// The UIKit view controller that owns all MatrixScan Count (BarcodeCount) logic.
-// The view-controller lifecycle fires when SwiftUI presents/dismisses the representable,
-// so the camera on/off handling carries over unchanged.
-class CountViewController: UIViewController {
+class ScanViewController: UIViewController {
 
     // Step 1: the Data Capture Context, created with your license key.
     private lazy var context: DataCaptureContext = {
@@ -32,8 +13,8 @@ class CountViewController: UIViewController {
     private var barcodeCount: BarcodeCount!
     private var barcodeCountView: BarcodeCountView!
 
-    // The app's own running tally. The BarcodeCountSession is only valid inside the listener
-    // callback, so we copy the recognized barcodes out into this list (step 7).
+    // The app's own running tally. The BarcodeCountSession is only valid inside the
+    // listener callback, so we copy the recognized barcodes out into this list (step 7).
     private var allRecognizedBarcodes: [Barcode] = []
 
     override func viewDidLoad() {
@@ -41,8 +22,8 @@ class CountViewController: UIViewController {
         setupRecognition()
     }
 
-    // Step 6: the camera is NOT turned on automatically — switch it on when the view appears
-    // and off when it disappears.
+    // Step 6: the camera is NOT turned on automatically — switch it on when the view
+    // appears and off when it disappears.
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         camera?.switch(toDesiredState: .on)
@@ -61,8 +42,9 @@ class CountViewController: UIViewController {
         camera?.apply(cameraSettings)
         context.setFrameSource(camera)
 
-        // Step 2: configure the Barcode Count mode. Settings start with all symbologies disabled —
-        //         enable only the ones the app needs.
+        // Step 2: configure the Barcode Count mode. Settings start with all symbologies
+        //         disabled — enable only the ones the app needs. This is a reasonable
+        //         default set of common retail / 1D symbologies.
         let settings = BarcodeCountSettings()
         settings.set(symbology: .ean13UPCA, enabled: true)
         settings.set(symbology: .ean8, enabled: true)
@@ -75,8 +57,8 @@ class CountViewController: UIViewController {
         // Step 4: register a listener for completed scan phases.
         barcodeCount.addListener(self)
 
-        // Step 5: add the BarcodeCountView (the built-in AR counting UI). It is designed to be
-        //         displayed full screen and does NOT add itself to the hierarchy.
+        // Step 5: add the BarcodeCountView (the built-in AR counting UI). It is designed
+        //         to be displayed full screen and does NOT add itself to the hierarchy.
         barcodeCountView = BarcodeCountView(frame: view.bounds,
                                             context: context,
                                             barcodeCount: barcodeCount)
@@ -85,11 +67,21 @@ class CountViewController: UIViewController {
 
         // Step 9: handle the List / Exit buttons.
         barcodeCountView.uiDelegate = self
+
+        // Scanning against a fixed expected list.
+        let targetBarcodes: Set<TargetBarcode> = [
+            TargetBarcode(data: "7610200010148", quantity: 3),
+            TargetBarcode(data: "7886459920525", quantity: 1),
+            TargetBarcode(data: "7617400031003", quantity: 5),
+            TargetBarcode(data: "7613312015513", quantity: 2),
+        ]
+        let captureList = BarcodeCountCaptureList(listener: self, targetBarcodes: targetBarcodes)
+        barcodeCount.setCaptureList(captureList)
     }
 }
 
 // Step 7: collect recognized barcodes when a scan phase completes.
-extension CountViewController: BarcodeCountListener {
+extension ScanViewController: BarcodeCountListener {
     func barcodeCount(_ barcodeCount: BarcodeCount,
                       didScanIn session: BarcodeCountSession,
                       frameData: FrameData) {
@@ -102,9 +94,10 @@ extension CountViewController: BarcodeCountListener {
     }
 }
 
-// Step 9: the List / Exit button callbacks. "List" = show progress so far; "Exit" = counting finished.
-// The sessionSnapshot gives you the recognized barcodes at tap time (on the main thread).
-extension CountViewController: BarcodeCountViewUIDelegate {
+// Step 9: the List / Exit button callbacks. "List" = show progress so far;
+// "Exit" = counting finished. The sessionSnapshot gives you the recognized barcodes
+// at tap time (on the main thread).
+extension ScanViewController: BarcodeCountViewUIDelegate {
     func listButtonTapped(for view: BarcodeCountView,
                           sessionSnapshot: BarcodeCountSessionSnapshot) {
         // Present a list, e.g. from sessionSnapshot.recognizedBarcodes (counting still in progress).
@@ -113,5 +106,18 @@ extension CountViewController: BarcodeCountViewUIDelegate {
     func exitButtonTapped(for view: BarcodeCountView,
                           sessionSnapshot: BarcodeCountSessionSnapshot) {
         // The user finished — present a summary / complete the scanning.
+    }
+}
+
+// Observes progress against the expected list.
+extension ScanViewController: BarcodeCountCaptureListListener {
+    func captureList(_ captureList: BarcodeCountCaptureList,
+                     didUpdate session: BarcodeCountCaptureListSession) {
+        // Progress changed — read session.correctBarcodes / missingBarcodes, etc.
+    }
+
+    func captureList(_ captureList: BarcodeCountCaptureList,
+                     didCompleteWith session: BarcodeCountCaptureListSession) {
+        // Every expected barcode has been scanned.
     }
 }

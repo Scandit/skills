@@ -9,6 +9,19 @@ locate the existing `BarcodeCountView` and adjust only the highlight configurati
 > [BarcodeCountView API reference](https://docs.scandit.com/data-capture-sdk/ios/barcode-capture/api/ui/barcode-count-view.html)
 > before writing code.
 
+> **Keep the style the app already uses — don't switch styles just to change colors.** When the request
+> is about *appearance* (colors, per-barcode looks), customize *within* the style the integration
+> already has. The **Icon style is the default and is generally preferred** — it's the modern look and
+> (in current SDKs) is fully customizable per barcode, including its **background color**. So:
+> - App on the **Icon style** (the default) → recolor by customizing the **icon** (e.g. its background
+>   color) via `iconForRecognizedBarcode`. This covers "make recognized barcodes green", "color each
+>   barcode by its data", etc. **Do not switch to the Dot style just to change a color.**
+> - Use a **`Brush`** only if the app is **already** on the Dot style, or the user **explicitly** asks
+>   to switch to it. A brush set on an Icon-style view has **no effect** (it silently won't render).
+>
+> Older code/examples customized colors only with brushes (before per-barcode icon customization
+> existed) — prefer the icon path on the default Icon style.
+
 `BarcodeCountView` has two highlight styles, chosen via the `style:` initializer argument
 (`BarcodeCountViewStyle.icon` — the default — or `.dot`). `style` is read-only after construction, so
 pick it when creating the view:
@@ -26,8 +39,52 @@ The default style. Each recognized barcode is marked with a dot carrying an icon
 using Scandit's built-in icons. This is what you get from the basic integration when no `style:` is
 passed.
 
-Per-barcode customization of the icon appearance is **not available in the current released SDK**. If
-you need to customize the highlight color/appearance today, use the **Dot style** below.
+### Customizing the icon per barcode
+
+Set the view's `delegate` (`BarcodeCountViewDelegate`) and return a `BarcodeCountIcon` from
+`iconForRecognizedBarcode` for each barcode (return `nil` to keep the default). Unlike brushes, there is
+**no per-state icon property** (no `recognizedIcon` analogous to `recognizedBrush`) — to use one icon
+for *all* recognized barcodes, just return the same `BarcodeCountIcon` for every barcode from this
+callback. A `BarcodeCountIcon` wraps a `ScanditIcon`, built with `ScanditIconBuilder`:
+
+```swift
+barcodeCountView.delegate = self
+
+extension CountViewController: BarcodeCountViewDelegate {
+    func barcodeCountView(_ view: BarcodeCountView,
+                          iconForRecognizedBarcode trackedBarcode: TrackedBarcode) -> BarcodeCountIcon? {
+        let icon = ScanditIconBuilder()
+            .withIconColor(.white)
+            .withBackgroundColor(.systemGreen)
+            .withBackgroundShape(.circle)
+            .build()
+        return BarcodeCountIcon(defaultIcon: icon, accessibleIcon: nil)
+    }
+}
+```
+
+- `BarcodeCountIcon(defaultIcon:accessibleIcon:)` takes a default icon and an optional **accessible**
+  variant; the SDK picks between them based on the user's accessibility settings (pass `nil` to reuse
+  the default).
+- `ScanditIconBuilder` chains `.withIcon(_:)` (a built-in `ScanditIconType`), `.withIconColor(_:)`,
+  `.withBackgroundColor(_:)`, `.withBackgroundStrokeColor(_:)`, `.withBackgroundStrokeWidth(_:)`, and
+  `.withBackgroundShape(_:)` (`.circle` / `.square`), then `.build()`. It is a fixed icon set, **not** a
+  free-form image API. The `ScanditIconType` values (use these exact names — do not guess, e.g. it is
+  `.checkmark`, not `.check`): `.checkmark`, `.xMark`, `.questionMark`, `.exclamationMark`, `.toPick`,
+  `.wrongItem`, `.lowStock`, `.inspectItem`, `.expiredItem`, `.fragileItem`, `.starFilled`,
+  `.starHalfFilled`, `.starOutlined`, `.arrowRight`, `.arrowLeft`, `.arrowUp`, `.arrowDown`,
+  `.chevronRight`, `.chevronLeft`, `.chevronUp`, `.chevronDown`, `.delete`, `.print`, `.slash`, `.plus`,
+  `.minus`. (Omit `.withIcon` to keep the default icon and just recolor the background.)
+- The class properties `BarcodeCountView.defaultRecognizedIcon` (and `defaultNotInListIcon` /
+  `defaultAcceptedIcon` / `defaultRejectedIcon`) return the SDK defaults, so you can override only some
+  states.
+- To override one specific tracked barcode imperatively: `barcodeCountView.setIcon(_:forRecognizedBarcode:)`.
+
+The icon callbacks mirror the brush ones: `iconForRecognizedBarcode`, `iconForRecognizedBarcodeNotInList`,
+`iconForAcceptedBarcode`, `iconForRejectedBarcode` — the not-in-list / accepted / rejected ones only
+appear when scanning against a list (see `list-scanning.md`).
+
+To recolor the highlight as a plain colored **dot** instead of an icon, use the Dot style below.
 
 ## Dot style
 
