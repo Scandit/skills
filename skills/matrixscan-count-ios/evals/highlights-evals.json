@@ -1,0 +1,107 @@
+{
+  "skill_name": "matrixscan-count-ios",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Change the appearance of counted barcodes in my MatrixScan Count app: give recognized barcodes a green background and not-in-list barcodes an orange background. File: IntegratedBarcodeCountViewController.swift",
+      "expected_output": "Because the view uses the default Icon style, the skill customizes the icon background per state via the BarcodeCountViewDelegate: iconForRecognizedBarcode returns a BarcodeCountIcon with a green background and iconForRecognizedBarcodeNotInList an orange one (built with ScanditIconBuilder().withBackgroundColor(...).build()). It does NOT switch to the Dot style or use brush properties. The rest of the integration is unchanged.",
+      "files": ["fixtures/IntegratedBarcodeCountViewController.swift"],
+      "assertions": [
+        {"text": "barcodeCountView.delegate is set and the controller conforms to BarcodeCountViewDelegate"},
+        {"text": "iconForRecognizedBarcode returns a BarcodeCountIcon with a green background (ScanditIconBuilder().withBackgroundColor(green)...build() wrapped in BarcodeCountIcon(defaultIcon:accessibleIcon:))"},
+        {"text": "iconForRecognizedBarcodeNotInList returns a BarcodeCountIcon with an orange background"},
+        {"text": "It customizes the ICON (the default style is Icon) — it does NOT switch to .dot or set recognizedBrush/notInListBrush"},
+        {"text": "Any ScanditIconType used is a real case (e.g. .checkmark) — not guessed; the context, mode, camera, listener, uiDelegate and lifecycle are unchanged"}
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "In my MatrixScan Count app, change the background color of each counted barcode based on its data: purple if the data is an even number, green if odd, and blue if it can't be parsed as a number. File: IntegratedBarcodeCountViewController.swift",
+      "expected_output": "On the default Icon style, the skill implements BarcodeCountViewDelegate.iconForRecognizedBarcode, parsing trackedBarcode.barcode.data as an Int and returning a BarcodeCountIcon whose background is purple (even), green (odd), or blue (unparseable), built via ScanditIconBuilder().withBackgroundColor(...). The optional barcode.data is unwrapped before parsing. Style stays Icon.",
+      "files": ["fixtures/IntegratedBarcodeCountViewController.swift"],
+      "assertions": [
+        {"text": "barcodeCountView.delegate is set; the controller implements iconForRecognizedBarcode returning BarcodeCountIcon?"},
+        {"text": "trackedBarcode.barcode.data is UNWRAPPED (it is String?) before Int parsing (e.g. guard let / if let / Int(data ?? \"\"))"},
+        {"text": "Returns a BarcodeCountIcon with a purple background for even, green for odd, blue for nil/unparseable (ScanditIconBuilder().withBackgroundColor(...).build())"},
+        {"text": "It customizes icons (default Icon style) — does NOT switch to .dot or use brushes"},
+        {"text": "No icon API is mis-used (BarcodeCountIcon(defaultIcon:accessibleIcon:), real ScanditIconType if any); rest of integration unchanged"}
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "In my SwiftUI MatrixScan Count app, change the background color of each counted barcode based on its data: purple if even, green if odd, and blue if it can't be parsed as a number. File: IntegratedBarcodeCountSwiftUIView.swift",
+      "expected_output": "Same as eval 2 but inside the UIKit CountViewController hosted in the SwiftUI file: iconForRecognizedBarcode returns a BarcodeCountIcon with the even/odd/unparseable background color (Icon style). The SwiftUI ScanView struct and the representable stay free of Scandit code.",
+      "files": ["fixtures/IntegratedBarcodeCountSwiftUIView.swift"],
+      "assertions": [
+        {"text": "Inside the UIKit CountViewController, barcodeCountView.delegate is set and iconForRecognizedBarcode is implemented returning BarcodeCountIcon?"},
+        {"text": "barcode.data is unwrapped before Int parsing; returns BarcodeCountIcon with purple(even)/green(odd)/blue(unparseable) background via ScanditIconBuilder"},
+        {"text": "Customizes the icon (default Icon style); does NOT switch to .dot or use brushes"},
+        {"text": "The change is in the UIKit layer; the SwiftUI ScanView struct and the UIViewControllerRepresentable remain free of Scandit API calls"},
+        {"text": "Rest of the integration unchanged"}
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "Switch my MatrixScan Count view to the Dot style and make the counted-barcode dots green. File: IntegratedBarcodeCountViewController.swift",
+      "expected_output": "The skill creates the BarcodeCountView with style: .dot and sets the dot color via a Brush — barcodeCountView.recognizedBrush = Brush(fill: green, ...) (or the brushForRecognizedBarcode delegate). This is the explicit brush/Dot path. The rest of the integration is unchanged.",
+      "files": ["fixtures/IntegratedBarcodeCountViewController.swift"],
+      "assertions": [
+        {"text": "The BarcodeCountView is created with style: .dot (the style: initializer argument)"},
+        {"text": "The recognized dot color is set to green via a Brush — recognizedBrush = Brush(fill:stroke:strokeWidth:) (or brushForRecognizedBarcode returning such a Brush)"},
+        {"text": "Brush is constructed with fill:/stroke:/strokeWidth: (NOT fillColor:/strokeColor:)"},
+        {"text": "It uses the brush path (since the user explicitly asked for the Dot style) — not icon customization"},
+        {"text": "The context, mode, camera, listener, uiDelegate and lifecycle are unchanged"}
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "I set barcodeCountView.recognizedBrush to a custom color in my MatrixScan Count app, but the highlight color doesn't change. Why?",
+      "expected_output": "The skill explains that brushes only render in the Dot style; the default Icon style ignores recognizedBrush. Two fixes: either create the view with style: .dot to use brushes, OR (keeping the Icon style) customize the icon via iconForRecognizedBarcode (e.g. its background color).",
+      "files": [],
+      "assertions": [
+        {"text": "The answer explains brushes (recognizedBrush / brushForRecognizedBarcode) only take effect in the Dot style, and the default is the Icon style"},
+        {"text": "It gives the Dot fix: create the BarcodeCountView with style: .dot"},
+        {"text": "It also notes that on the Icon style you customize the icon instead (iconForRecognizedBarcode — e.g. background color), rather than a brush"},
+        {"text": "It does not invent APIs (no recognizedIcon property; real ScanditIconType names)"}
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "In MatrixScan Count, what are the ways to customize the appearance of a specific counted barcode?",
+      "expected_output": "The skill describes both mechanisms via the BarcodeCountViewDelegate: for the Icon style, iconForRecognizedBarcode (per barcode) and the imperative setIcon(_:forRecognizedBarcode:) returning a BarcodeCountIcon; for the Dot style, brushForRecognizedBarcode (per barcode) and setBrush(_:forRecognizedBarcode:) returning a Brush. It notes which applies to which style.",
+      "files": [],
+      "assertions": [
+        {"text": "It covers the ICON path (Icon style): iconForRecognizedBarcode delegate callback and/or setIcon(_:forRecognizedBarcode:) returning a BarcodeCountIcon"},
+        {"text": "It covers the BRUSH path (Dot style): brushForRecognizedBarcode delegate callback and/or setBrush(_:forRecognizedBarcode:) returning a Brush"},
+        {"text": "It correctly ties each to its style (icons → Icon/default, brushes → Dot)"},
+        {"text": "It does NOT use the non-existent brushForUnrecognizedBarcode name or a recognizedIcon property"}
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "In my MatrixScan Count app, keep the default look for counted barcodes but make the ones whose data starts with \"X\" stand out with a red background. File: IntegratedBarcodeCountViewController.swift",
+      "expected_output": "On the default Icon style, the skill implements iconForRecognizedBarcode, returning a BarcodeCountIcon with a red background when trackedBarcode.barcode.data starts with \"X\" and nil (keep the default icon) otherwise. The optional data is unwrapped. Style stays Icon.",
+      "files": ["fixtures/IntegratedBarcodeCountViewController.swift"],
+      "assertions": [
+        {"text": "barcodeCountView.delegate is set; iconForRecognizedBarcode is implemented returning BarcodeCountIcon?"},
+        {"text": "Returns a red-background BarcodeCountIcon (ScanditIconBuilder().withBackgroundColor(red)) when trackedBarcode.barcode.data unwraps and hasPrefix(\"X\")"},
+        {"text": "Returns nil (keep the SDK default icon) for all other recognized barcodes"},
+        {"text": "It customizes the icon (default Icon style); does NOT switch to .dot or use brushes"},
+        {"text": "barcode.data is unwrapped (String?); the rest of the integration is unchanged"}
+      ]
+    },
+    {
+      "id": 8,
+      "prompt": "In my MatrixScan Count app, show a custom icon on every counted barcode — a white check mark on a green circle. File: IntegratedBarcodeCountViewController.swift",
+      "expected_output": "The skill sets barcodeCountView.delegate and implements iconForRecognizedBarcode, returning the same BarcodeCountIcon for every barcode — built via ScanditIconBuilder().withIcon(.checkmark).withIconColor(.white).withBackgroundColor(green).withBackgroundShape(.circle).build() wrapped in BarcodeCountIcon(defaultIcon:accessibleIcon:). The default Icon style is kept. The rest of the integration is unchanged.",
+      "files": ["fixtures/IntegratedBarcodeCountViewController.swift"],
+      "assertions": [
+        {"text": "barcodeCountView.delegate is set; the controller implements iconForRecognizedBarcode returning BarcodeCountIcon?"},
+        {"text": "It returns the SAME icon for every recognized barcode (one icon for all — not per-barcode branching), since there is no per-state icon property"},
+        {"text": "The icon uses ScanditIconBuilder with the REAL check-mark case .checkmark (NOT .check), white icon color, green background, .circle background shape, wrapped in BarcodeCountIcon(defaultIcon:accessibleIcon:)"},
+        {"text": "It keeps the default Icon style (does not switch to .dot) and does not invent a per-state icon property"},
+        {"text": "The context, mode, camera, listener, uiDelegate and lifecycle are unchanged"}
+      ]
+    }
+  ]
+}
