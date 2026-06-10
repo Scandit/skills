@@ -155,18 +155,6 @@
       ]
     },
     {
-      "id": 11,
-      "prompt": "Can I run ID Capture and Barcode Capture at the same time on one DataCaptureContext in my Cordova app? My entry file is EmptyApp.js.",
-      "expected_output": "The skill explains that a DataCaptureContext runs only one mode at a time, so IdCapture cannot run simultaneously with BarcodeCapture; it attaches IdCapture via context.setMode and notes that switching modes uses context.removeMode + context.setMode rather than running both.",
-      "files": ["fixtures/EmptyApp.js"],
-      "tags": ["mode-exclusivity"],
-      "assertions": [
-        {"text": "the answer states a DataCaptureContext runs only one capture mode at a time, so IdCapture cannot run simultaneously with another mode like BarcodeCapture (semantic)"},
-        {"text": "the IdCapture mode is attached via context.setMode (semantic)"},
-        {"text": "switching to a different mode is described via context.removeMode followed by context.setMode, not by running two modes at once (semantic)"}
-      ]
-    },
-    {
       "id": 12,
       "prompt": "I need to scan mobile driver's licenses (mDL, ISO 18013-5) in my Cordova app and read the holder's name and date of birth. Set that up in EmptyApp.js.",
       "expected_output": "The skill configures settings.scanner = new Scandit.IdCaptureScanner(undefined, new Scandit.MobileDocumentScanner(true, false)) for mobile documents, and reads the mobile-document data via capturedId.mobileDocument (or the harmonized top-level fields). MobileDocumentScanner ships in the base plugin, with no add-on plugin.",

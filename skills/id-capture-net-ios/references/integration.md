@@ -156,8 +156,6 @@ var settings = new IdCaptureSettings
 this.idCapture = IdCapture.Create(this.dataCaptureContext, settings);
 ```
 
-> **IdCapture cannot run at the same time as another capture mode** (e.g. Barcode Capture). Attach only `IdCapture` to the `DataCaptureContext`; do not add a second mode to the same context. If your app needs another mode, give it its own context/screen and switch between them.
-
 ### IdCapture members
 
 | Member | Description |

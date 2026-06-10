@@ -189,34 +189,6 @@
           "text": "The existing integration (camera, IdCapture.Create, DataCaptureView, overlay, accepted documents, scanner, OnIdCaptured) is preserved"
         }
       ]
-    },
-    {
-      "id": 7,
-      "prompt": "In my .NET Android app I already have ID Capture working (see IntegratedActivity.cs). I now also want to scan regular product barcodes in the same screen by adding a BarcodeCapture mode to the same DataCaptureContext while ID Capture is running. Is that the right approach in C#?",
-      "expected_output": "The skill explains that running IdCapture simultaneously with another capture mode (such as BarcodeCapture) on the same DataCaptureContext is NOT supported. IdCapture must be the only mode on the context. It also points out that the PDF417 / AAMVA barcode on an ID is already read by IdCapture itself via the scanner zones, so a separate BarcodeCapture mode is not needed for that, and any plain-barcode scanning should be done in a separate, non-concurrent scanning surface. The existing ID Capture integration is preserved.",
-      "files": [
-        "fixtures/IntegratedActivity.cs"
-      ],
-      "tags": [
-        "mode-exclusivity"
-      ],
-      "assertions": [
-        {
-          "text": "It states that running IdCapture simultaneously with another capture mode (e.g. BarcodeCapture) on the same DataCaptureContext is not supported"
-        },
-        {
-          "text": "It does NOT add a BarcodeCapture mode to the same DataCaptureContext alongside IdCapture (semantic)"
-        },
-        {
-          "text": "It notes the PDF417 / AAMVA barcode on an ID is already read by IdCapture itself via the scanner zones"
-        },
-        {
-          "text": "Any plain-barcode scanning is directed to a separate, non-concurrent scanning surface"
-        },
-        {
-          "text": "The existing ID Capture integration (IdCapture.Create, DataCaptureView, overlay, accepted documents, scanner) is preserved"
-        }
-      ]
     }
   ]
 }

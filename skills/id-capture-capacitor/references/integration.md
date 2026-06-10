@@ -4,8 +4,6 @@ ID Capture reads identity documents — passports, driver's licenses, national I
 
 You declare **which documents to accept** and **which scanner to use**, attach a listener, and the SDK delivers a `CapturedId` per successful scan (or a `RejectionReason` when a document is seen but not accepted).
 
-> **One mode at a time.** ID Capture cannot run simultaneously with another capture mode (e.g. Barcode Capture) on the same `DataCaptureContext`. Only one capture mode should be active at a time — remove or deactivate the other mode (`await context.removeMode(otherMode)`) before activating `IdCapture`.
-
 ## Prerequisites
 
 - Scandit Capacitor packages in `package.json`:

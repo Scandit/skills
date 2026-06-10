@@ -149,19 +149,6 @@
       "tags": ["data-consistency-verification"]
     },
     {
-      "id": 11,
-      "prompt": "I already have ID Capture working on a screen. I now also want to scan barcodes with Barcode Capture at the same time on the same camera preview. Can I run both modes together? My screen is EmptyPage.dart.",
-      "expected_output": "The skill explains that IdCapture cannot run simultaneously with another capture mode on the same DataCaptureContext, advises against attaching a second mode to the same context, and recommends separate screens/contexts switched via setMode or removeMode. The ID Capture integration is preserved.",
-      "files": ["fixtures/EmptyPage.dart"],
-      "assertions": [
-        {"text": "It states that IdCapture cannot run at the same time as another capture mode such as Barcode Capture (semantic)"},
-        {"text": "It advises against attaching a second mode to the same DataCaptureContext (semantic)"},
-        {"text": "It recommends switching modes via context.setMode or context.removeMode rather than enabling both at once (semantic)"},
-        {"text": "context.setMode( is present"}
-      ],
-      "tags": ["mode-exclusivity"]
-    },
-    {
       "id": 12,
       "prompt": "I need to scan mobile driver's licenses (mDL, ISO 18013-5) in my Flutter app and read the holder's name and date of birth. Set that up in EmptyPage.dart.",
       "expected_output": "The skill configures settings.scanner = IdCaptureScanner(mobileDocumentScanner: MobileDocumentScanner(iso180135: true, ocr: false)) for mobile documents, and reads the mobile-document data via capturedId.mobileDocument (or the harmonized top-level fields). MobileDocumentScanner ships in the base scandit_flutter_datacapture_id module, with no add-on package.",

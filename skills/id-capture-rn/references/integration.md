@@ -141,8 +141,6 @@ await idCapture.addListener(idCaptureListener);
 await dataCaptureContext.setMode(idCapture);
 ```
 
-> **One mode at a time.** `IdCapture` cannot run simultaneously with another capture mode (e.g. `BarcodeCapture`, `SparkScan`, `BarcodeTracking`) on the same `DataCaptureContext`. Use `await context.setMode(idCapture)` — it replaces any currently-active mode (internally it removes all modes, then adds this one). Do **not** `await context.addMode(idCapture)` alongside another mode expecting both to run; only one mode is active at a time. To switch between products, call `setMode` with the other mode (or `removeMode(idCapture)` first), and re-enable as needed.
-
 A document is **rejected** when it's seen but not delivered — e.g. it's a valid document type not in `acceptedDocuments`, the format is wrong, capture timed out, or (with add-on capabilities) it's voided / expired / a forged AAMVA barcode. Map the reason to a user-facing message:
 
 ```tsx

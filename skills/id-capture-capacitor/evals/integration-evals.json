@@ -156,17 +156,6 @@
       "tags": ["data-consistency-verification"]
     },
     {
-      "id": 11,
-      "prompt": "My Capacitor app already runs Barcode Capture in one screen. Can I add ID Capture to the same DataCaptureContext and have both modes active at once? My entry file is EmptyApp.ts.",
-      "expected_output": "The skill explains that running ID Capture simultaneously with another capture mode (e.g. Barcode Capture) is not supported, and that only one mode should be active on the context at a time — remove or disable the other mode before activating IdCapture.",
-      "files": ["fixtures/EmptyApp.ts"],
-      "assertions": [
-        {"text": "the answer states that ID Capture cannot run at the same time as another capture mode such as Barcode Capture (semantic)"},
-        {"text": "the guidance is to run only one capture mode on the context at a time, removing or deactivating the other before using IdCapture (semantic)"}
-      ],
-      "tags": ["mode-exclusivity"]
-    },
-    {
       "id": 12,
       "prompt": "I need to scan mobile driver's licenses (mDL, ISO 18013-5) in my Capacitor app and read the holder's name and date of birth. Set that up in EmptyApp.ts.",
       "expected_output": "The skill configures settings.scanner = new IdCaptureScanner(undefined, new MobileDocumentScanner(true, false)) for mobile documents, and reads the mobile-document data via capturedId.mobileDocument (or the harmonized top-level fields). MobileDocumentScanner ships in the base package, with no add-on dependency.",

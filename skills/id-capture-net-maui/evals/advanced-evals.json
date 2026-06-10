@@ -235,34 +235,6 @@
       "tags": [
         "voided-detection"
       ]
-    },
-    {
-      "id": 9,
-      "prompt": "In my .NET MAUI app I already have ID Capture working (see IntegratedDataCaptureManager.cs, IntegratedMainPageViewModel.cs, IntegratedMainPage.xaml, IntegratedMainPage.xaml.cs). I now also want to scan plain QR codes in the same app by adding a BarcodeCapture mode alongside IdCapture on the same DataCaptureContext. Can I run both modes at the same time?",
-      "expected_output": "The skill explains that IdCapture cannot run simultaneously with another mode such as BarcodeCapture on the same DataCaptureContext \u2014 mode exclusivity. It does NOT add a BarcodeCapture mode alongside IdCapture; instead it recommends a separate flow, and notes the back-of-license PDF417/AAMVA reader is already bundled into IdCapture so no BarcodeCapture is needed for that. The existing MAUI ID Capture integration is preserved.",
-      "files": [
-        "fixtures/IntegratedDataCaptureManager.cs",
-        "fixtures/IntegratedMainPageViewModel.cs",
-        "fixtures/IntegratedMainPage.xaml",
-        "fixtures/IntegratedMainPage.xaml.cs"
-      ],
-      "assertions": [
-        {
-          "text": "It states that IdCapture cannot be used simultaneously with another mode such as BarcodeCapture on the same DataCaptureContext (semantic)"
-        },
-        {
-          "text": "It does not add a BarcodeCapture mode alongside the existing IdCapture mode (semantic)"
-        },
-        {
-          "text": "It recommends running IdCapture as the only mode and using a separate flow for plain barcode scanning (semantic)"
-        },
-        {
-          "text": "The existing MAUI ID Capture integration (DataCaptureContext, IdCapture.Create, camera, DataCaptureView binding, OnIdCaptured) is preserved"
-        }
-      ],
-      "tags": [
-        "mode-exclusivity"
-      ]
     }
   ]
 }

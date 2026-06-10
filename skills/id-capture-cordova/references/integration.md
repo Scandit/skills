@@ -130,8 +130,6 @@ idCapture.addListener(idCaptureListener);
 context.setMode(idCapture);
 ```
 
-> **One mode at a time.** `context.setMode(idCapture)` makes `IdCapture` the context's active mode and replaces any previously set mode. A `DataCaptureContext` runs a single capture mode at a time — `IdCapture` does **not** run simultaneously with `BarcodeCapture`, `SparkScan`, `BarcodeTracking`/`BarcodeBatch`, or any other mode. Do not call `context.addMode(barcodeCapture)` to layer another mode on top of `IdCapture`; if you need a different mode, swap it in with `context.removeMode(idCapture)` then `context.setMode(otherMode)` (or call `setMode`, which replaces the current one).
-
 A document is **rejected** when it's seen but not delivered. Map the reason to a user-facing message:
 
 ```js
@@ -258,7 +256,6 @@ if (capturedId.mrzResult) {
 - **Using Flutter-style lowercase enum values** (`IdCaptureRegion.us`, `IdSide.front`). On Cordova it's `Scandit.IdCaptureRegion.Us`, `Scandit.IdSide.Front`.
 - **Reading `capturedId.mrz` or `capturedId.viz`** — Flutter names. On Cordova it's `mrzResult` and `vizResult`.
 - **Treating `images.face` like a URI or file** — it's a base64 string. Use the `data:` URI form when rendering.
-- **Running `IdCapture` alongside another mode** — a context drives one mode at a time. Don't `context.addMode(...)` a second mode on top of `IdCapture`; use `context.setMode(idCapture)` (it replaces the current mode) and swap modes with `context.removeMode(...)` + `context.setMode(...)`.
 - **Not detaching the view / removing the mode** when navigating away → memory / overlay leak. Call `view.detachFromElement()` and `context.removeMode(idCapture)` on route teardown.
 
 ## Reference links

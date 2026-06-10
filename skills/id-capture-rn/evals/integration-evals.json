@@ -155,18 +155,6 @@
       ]
     },
     {
-      "id": 11,
-      "prompt": "Can I run ID Capture at the same time as Barcode Capture on one DataCaptureContext? Show me how to attach the IdCapture mode correctly in EmptyScreen.tsx.",
-      "expected_output": "The skill explains that only one capture mode is active at a time on a DataCaptureContext, attaches IdCapture via context.setMode(idCapture) (which replaces any active mode), and does not add IdCapture alongside another mode expecting both to run concurrently.",
-      "files": ["fixtures/EmptyScreen.tsx"],
-      "tags": ["mode-exclusivity"],
-      "assertions": [
-        {"text": "context.setMode is called with the IdCapture instance, awaited (semantic)"},
-        {"text": "the answer explains that IdCapture cannot run simultaneously with another capture mode on the same DataCaptureContext (semantic)"},
-        {"text": "new IdCapture( is present"}
-      ]
-    },
-    {
       "id": 12,
       "prompt": "I need to scan mobile driver's licenses (mDL, ISO 18013-5) in my RN app and read the holder's name and date of birth. Set that up in EmptyScreen.tsx.",
       "expected_output": "The skill configures settings.scanner = new IdCaptureScanner(undefined, new MobileDocumentScanner(true, false)) for mobile documents, and reads the mobile-document data via capturedId.mobileDocument (or the harmonized top-level fields). MobileDocumentScanner ships in the base package, with no add-on dependency.",

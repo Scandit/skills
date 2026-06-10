@@ -4,8 +4,6 @@ This builds on `references/integration.md` — the SDK init (platform entry poin
 
 Everything here is configured on `IdCaptureSettings` (property sets) and read off `CapturedId`. There is **no builder** and **no verifier class**. The API surface is identical to the per-platform .NET skills; the only MAUI-specific twists are the **main-thread dispatch helper** (`MainThread.BeginInvokeOnMainThread`) and the **platform-typed document images** (`Bitmap?` on Android, `UIImage?` on iOS).
 
-> **Mode exclusivity.** Using `IdCapture` at the same time as another mode (e.g. `BarcodeCapture`) on the same `DataCaptureContext` is **not supported**. Run `IdCapture` as the only mode; if you also need plain barcode scanning, use a separate flow rather than adding a second mode alongside `IdCapture`. The back-of-license PDF417 / AAMVA reader is bundled into `IdCapture` itself, so you do not add `BarcodeCapture` to read it.
-
 ## Scanner selection
 
 `IdCaptureSettings.Scanner` is an `IdCaptureScanner` wrapping a physical and/or mobile scanner:
@@ -273,7 +271,6 @@ this.dataCaptureView.AddOverlay(this.overlay);
 6. **Document images are platform-typed** (`Bitmap?` / `UIImage?`) — guard with `#if ANDROID` / `#if IOS`. Scalar fields need no guard.
 7. **No NFC / no deserializer / no `VisaDetails` / `PassportType` / `MobileDocumentDataElement`** on .NET; no standalone `AamvaBarcodeVerifier` / `DataConsistencyVerifier`.
 8. **European driving-license back decoding is not available on .NET** — the `DecodeBackOfEuropeanDrivingLicense` setting exists, but the decoded categories (`VizResult.DrivingLicenseDetails`) are not exposed on the .NET bindings; do not read them from the VIZ result.
-9. **Mode exclusivity** — run `IdCapture` as the only mode on the context; it cannot be combined with `BarcodeCapture` (or other modes) simultaneously.
 
 ## Where to go next
 

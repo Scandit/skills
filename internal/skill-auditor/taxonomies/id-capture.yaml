@@ -137,11 +137,6 @@ features:
     required: false
     evidence: [sample]
     match: ["mobiledocumentscanner", "mobiledocument", "iso18013", "iso 18013", "\\bmdl\\b", "mobile driving licen", "elementstoretain", "mobiledocumentdataelement"]
-  - id: mode-exclusivity
-    required: false
-    evidence: [docs]
-    # IdCapture cannot run simultaneously with another capture mode
-    match: ["at the same time as other modes", "barcode capture.*same time", "removeallmodes", "only one mode", "simultaneous"]
 
   # ---- Migration ----
   - id: migration-v7-to-v8

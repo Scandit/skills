@@ -112,31 +112,6 @@
       "tags": [
         "voided-detection"
       ]
-    },
-    {
-      "id": 5,
-      "prompt": "In my .NET iOS app I already have ID Capture working (see IntegratedViewController.cs). I now also want to scan barcodes with Barcode Capture in the same screen, running both at the same time on the same camera preview. Can I do that, and how should I structure it in C#?",
-      "expected_output": "The skill explains that IdCapture cannot run simultaneously with another capture mode (e.g. Barcode Capture) \u2014 you must not attach a second mode to the same DataCaptureContext. It recommends giving each mode its own context/screen and switching between them rather than enabling both at once. The existing ID Capture integration is preserved.",
-      "files": [
-        "fixtures/IntegratedViewController.cs"
-      ],
-      "assertions": [
-        {
-          "text": "It states that IdCapture cannot run at the same time as another capture mode such as Barcode Capture (semantic)"
-        },
-        {
-          "text": "It advises against attaching a second mode to the same DataCaptureContext (semantic)"
-        },
-        {
-          "text": "It recommends separating the modes into their own context or screen and switching between them (semantic)"
-        },
-        {
-          "text": "The existing ID Capture integration is preserved"
-        }
-      ],
-      "tags": [
-        "mode-exclusivity"
-      ]
     }
   ]
 }
