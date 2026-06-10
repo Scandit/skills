@@ -167,6 +167,42 @@ settings.EnableSymbologies(symbologies);
 settings.ExpectsOnlyUniqueBarcodes = true;
 ```
 
+`ExpectsOnlyUniqueBarcodes` (default `false`) tells the engine each barcode value appears at most once in the scene, so it can stop re-evaluating a value once counted. Leave it `false` if the same barcode can legitimately appear multiple times.
+
+### Filtering (count only some of the barcodes on a label)
+
+When a label carries several barcodes and you only want to count some of them, filter the rest out through `settings.FilterSettings` (a `BarcodeFilterSettings`, exposed read-only on `BarcodeCountSettings`). Filtering is by symbology, by symbol count, or by a regex on the barcode data. Filtered barcodes are still detected but are covered by a highlight and excluded from the count.
+
+```csharp
+using Scandit.DataCapture.Barcode.Data;
+
+BarcodeCountSettings settings = new BarcodeCountSettings();
+settings.EnableSymbologies(symbologies);
+
+// Exclude an entire symbology (e.g. count Code 128 but never PDF417):
+settings.FilterSettings.ExcludedSymbologies = new HashSet<Symbology> { Symbology.Pdf417 };
+
+// Or exclude by a regex matched against the barcode data (e.g. anything starting with 1234):
+settings.FilterSettings.ExcludedCodesRegex = "^1234.*";
+```
+
+| `BarcodeFilterSettings` member | Type | Description |
+|--------|------|-------------|
+| `ExcludedSymbologies` | `ISet<Symbology>` (get/set) | Symbologies to filter out. Has no effect on a symbology that isn't also enabled on the mode. |
+| `ExcludedCodesRegex` | `string` (get/set) | Regex matched against each barcode's data; matching barcodes are filtered out. |
+| `ExcludedSymbolCounts` | `IDictionary<Symbology, ISet<int>>` (get/set) | Filter by symbol count per symbology. |
+| `SetExcludedSymbolCounts(IList<short>, Symbology)` / `GetExcludedSymbolCountsForSymbology(Symbology)` | methods | Per-symbology symbol-count filtering. |
+
+By default the filtered barcodes are covered by a transparent layer. To change that highlight's color/transparency, set the **view's** `FilterSettings` property (distinct from `BarcodeCountSettings.FilterSettings`, which holds the filter *rules* above — this one holds the filter *highlight*). On .NET the highlight type is the **`IBarcodeFilterHighlightSettings` interface** (the cross-platform name `BarcodeFilterHighlightSettings` is exposed as this interface), implemented by `BarcodeFilterHighlightSettingsBrush`. The brush wrapper has **no public constructor** — build it with the static `BarcodeFilterHighlightSettingsBrush.Create(Brush)` factory:
+
+```csharp
+using Scandit.DataCapture.Barcode.Filter.UI;
+using Scandit.DataCapture.Core.UI.Style;
+
+this.barcodeCountView.FilterSettings =
+    BarcodeFilterHighlightSettingsBrush.Create(new Brush(fillColor, strokeColor, strokeWidth));
+```
+
 ### BarcodeCountSettings members
 
 | Member | Type | Description |

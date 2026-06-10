@@ -3,6 +3,7 @@
   "evals": [
     {
       "id": 1,
+      "tags": ["integration"],
       "prompt": "I want to add MatrixScan Count to my .NET for iOS app. Here's my empty view controller: EmptyViewController.cs. I need to count EAN-13 and Code 128 barcodes, show the built-in counting UI, and when the user taps the List button store the scanned barcodes so I can show them on a results screen.",
       "expected_output": "The skill reads integration.md, fetches the latest Scandit NuGet versions, writes complete BarcodeCount integration code into EmptyViewController.cs: DataCaptureContext.ForLicenseKey, a manually-managed Camera (Camera.GetDefaultCamera() + camera.ApplySettingsAsync(BarcodeCount.RecommendedCameraSettings) + dataCaptureContext.SetFrameSourceAsync), new BarcodeCountSettings() enabling only Ean13Upca and Code128, BarcodeCount.Create(context, settings), BarcodeCountView.Create(View.Bounds, context, barcodeCount[, style]) added via View.AddSubview, barcodeCount.Scanned event (or AddListener) that copies session.RecognizedBarcodes out via InvokeOnMainThread, ListButtonTapped handler storing the barcodes, camera SwitchToDesiredStateAsync On/Standby + barcodeCount.Enabled across ViewWillAppear/ViewWillDisappear. Shows the setup checklist (NuGet packages, Info.plist NSCameraUsageDescription, AppDelegate initialize for SDK 8.0+, SupportedOSPlatformVersion 15.0, license key).",
       "files": [
@@ -43,6 +44,7 @@
     },
     {
       "id": 2,
+      "tags": ["capture-list"],
       "prompt": "I'm building a receiving app with MatrixScan Count on .NET iOS. I already have it counting (see IntegratedViewController.cs). Now I want to check scanned barcodes against an expected list: 3x of 0123456789012 and 1x of 9876543210987, and react when everything on the list has been scanned.",
       "expected_output": "The skill adds a capture list: builds TargetBarcode.Create(data, quantity) entries, creates a BarcodeCountCaptureList.Create(listener, targets), implements IBarcodeCountCaptureListListener (OnObservationStarted/OnObservationStopped/OnCaptureListSessionUpdated/OnCaptureListCompleted), and applies it via barcodeCount.SetBarcodeCountCaptureList(list), preserving existing integration.",
       "files": [
@@ -60,6 +62,7 @@
     },
     {
       "id": 3,
+      "tags": ["feedback"],
       "prompt": "I want to suppress the default beep and vibration in my MatrixScan Count .NET iOS app — silent counting. Update the feedback in IntegratedViewController.cs.",
       "expected_output": "The skill sets barcodeCount.Feedback to a new BarcodeCountFeedback() (empty constructor = silent), imported from Scandit.DataCapture.Barcode.Count.Feedback, preserving the rest of the integration. It does NOT call DefaultFeedback as a method.",
       "files": [
@@ -70,6 +73,149 @@
         {"text": "BarcodeCountFeedback is imported from Scandit.DataCapture.Barcode.Count.Feedback"},
         {"text": "BarcodeCountFeedback.DefaultFeedback is NOT called as a method (with parentheses) — it is a static property"},
         {"text": "The feedback slots are referred to as Success / Failure if mentioned (NOT Scanned / Tapped, which are MatrixScan AR's)"},
+        {"text": "Existing integration code (camera, BarcodeCount.Create, BarcodeCountView, Scanned handler) is preserved"}
+      ]
+    },
+    {
+      "id": 4,
+      "tags": ["filtering"],
+      "prompt": "My labels in this MatrixScan Count .NET iOS app (IntegratedViewController.cs) carry both Code 128 and PDF417 barcodes, but I only want to count the Code 128 ones. Filter out PDF417 so it's never counted, and also exclude any barcode whose data starts with 1234.",
+      "expected_output": "The skill configures BarcodeCountSettings.FilterSettings: sets FilterSettings.ExcludedSymbologies to a set containing Symbology.Pdf417 and FilterSettings.ExcludedCodesRegex to a regex matching data starting with 1234, preserving the existing integration. FilterSettings is read-only on BarcodeCountSettings (mutate its members, do not reassign).",
+      "files": [
+        "fixtures/IntegratedViewController.cs"
+      ],
+      "assertions": [
+        {"text": "settings.FilterSettings.ExcludedSymbologies is set to a collection containing Symbology.Pdf417"},
+        {"text": "settings.FilterSettings.ExcludedCodesRegex is set to a regex string that matches barcode data starting with 1234"},
+        {"text": "The PascalCase symbology name Symbology.Pdf417 is used, NOT the native style Symbology.pdf417"},
+        {"text": "FilterSettings is accessed off the BarcodeCountSettings instance and its members are mutated, NOT reassigned (it is a read-only property)"},
+        {"text": "Existing integration code (camera, BarcodeCount.Create, BarcodeCountView, Scanned handler) is preserved"}
+      ]
+    },
+    {
+      "id": 5,
+      "tags": ["filtering", "highlight-customization"],
+      "prompt": "In my MatrixScan Count .NET iOS app (IntegratedViewController.cs) I'm filtering out some barcodes. The filtered barcodes are currently transparent — I want to highlight them with a visible colored brush instead of leaving them invisible.",
+      "expected_output": "The skill assigns barcodeCountView.FilterSettings to a BarcodeFilterHighlightSettingsBrush built with the static BarcodeFilterHighlightSettingsBrush.Create(Brush) factory wrapping a new Brush(...). It uses the view's FilterSettings (the highlight), distinct from the settings' FilterSettings (the rules), preserving the existing integration.",
+      "files": [
+        "fixtures/IntegratedViewController.cs"
+      ],
+      "assertions": [
+        {"text": "barcodeCountView.FilterSettings is assigned to control the filtered-barcode highlight"},
+        {"text": "BarcodeFilterHighlightSettingsBrush.Create( is used as the factory to build the highlight settings"},
+        {"text": "new BarcodeFilterHighlightSettingsBrush(...) is NOT used (semantic) (it has no public constructor on .NET)"},
+        {"text": "A Brush is constructed and passed to the BarcodeFilterHighlightSettingsBrush.Create factory"},
+        {"text": "Existing integration code (camera, BarcodeCount.Create, BarcodeCountView, Scanned handler) is preserved"}
+      ]
+    },
+    {
+      "id": 6,
+      "tags": ["expects-only-unique"],
+      "prompt": "In my MatrixScan Count .NET iOS app (IntegratedViewController.cs) every barcode value in the scene is guaranteed unique — no duplicates. Configure it to take advantage of that for faster scanning.",
+      "expected_output": "The skill sets settings.ExpectsOnlyUniqueBarcodes = true on the BarcodeCountSettings before creating the mode, preserving the existing integration.",
+      "files": [
+        "fixtures/IntegratedViewController.cs"
+      ],
+      "assertions": [
+        {"text": "settings.ExpectsOnlyUniqueBarcodes is set to true on the BarcodeCountSettings"},
+        {"text": "ExpectsOnlyUniqueBarcodes is set on the settings instance before BarcodeCount.Create is called"},
+        {"text": "Existing integration code (camera, BarcodeCount.Create, BarcodeCountView, Scanned handler) is preserved"}
+      ]
+    },
+    {
+      "id": 7,
+      "tags": ["additional-barcodes"],
+      "prompt": "In my MatrixScan Count .NET iOS app (IntegratedViewController.cs) I want the count to survive backgrounding: when the app goes to the background save the currently scanned barcodes as already-counted, and provide a way to clear them and start a brand-new counting process.",
+      "expected_output": "The skill calls barcodeCount.SetAdditionalBarcodes(IList<Barcode>) to seed the previously scanned barcodes as already-counted (e.g. on UIApplication.DidEnterBackgroundNotification), and uses barcodeCount.ClearAdditionalBarcodes() together with barcodeCount.Reset() to start fresh, preserving the existing integration.",
+      "files": [
+        "fixtures/IntegratedViewController.cs"
+      ],
+      "assertions": [
+        {"text": "barcodeCount.SetAdditionalBarcodes( is called to seed the already-counted barcodes"},
+        {"text": "barcodeCount.ClearAdditionalBarcodes() is called to clear the seeded barcodes"},
+        {"text": "barcodeCount.Reset() is called to start a brand-new counting process"},
+        {"text": "Existing integration code (camera, BarcodeCount.Create, BarcodeCountView, Scanned handler) is preserved"}
+      ]
+    },
+    {
+      "id": 8,
+      "tags": ["highlight-customization"],
+      "prompt": "In my MatrixScan Count .NET iOS app (IntegratedViewController.cs) I want to customize the AR overlay colors — color recognized barcodes with my own brush. I'm using the Dot style.",
+      "expected_output": "The skill assigns barcodeCountView.Listener to an IBarcodeCountViewListener implementation that returns custom Brush instances from BrushForRecognizedBarcode (and the other brush-for callbacks), implementing all nine iOS methods, preserving the existing integration. It does NOT use the Android-only OnCaptureListCompleted on the view listener.",
+      "files": [
+        "fixtures/IntegratedViewController.cs"
+      ],
+      "assertions": [
+        {"text": "barcodeCountView.Listener is assigned an IBarcodeCountViewListener implementation"},
+        {"text": "BrushForRecognizedBarcode returns a custom Brush to color recognized barcodes"},
+        {"text": "The view listener implements the brush-for callbacks BrushForRecognizedBarcodeNotInList, BrushForAcceptedBarcode, and BrushForRejectedBarcode"},
+        {"text": "The view listener implements the tap callbacks OnRecognizedBarcodeTapped, OnFilteredBarcodeTapped, OnRecognizedBarcodeNotInListTapped, OnAcceptedBarcodeTapped, and OnRejectedBarcodeTapped"},
+        {"text": "OnCaptureListCompleted is NOT implemented on the view listener (semantic) (that method is Android-only)"},
+        {"text": "Existing integration code (camera, BarcodeCount.Create, BarcodeCountView, Scanned handler) is preserved"}
+      ]
+    },
+    {
+      "id": 9,
+      "tags": ["not-in-list-action"],
+      "prompt": "My MatrixScan Count .NET iOS receiving app (IntegratedViewController.cs) already checks against an expected list. When the user scans a barcode that's NOT on the list, I want to prompt them to accept or reject it, with custom Accept and Reject button labels.",
+      "expected_output": "The skill enables the not-in-list action via barcodeCountView.BarcodeNotInListActionSettings: sets Enabled = true and customizes AcceptButtonText / RejectButtonText (and optionally the accepted/rejected hints), preserving the existing integration. BarcodeNotInListActionSettings is read off the view (mutate its members, do not construct it).",
+      "files": [
+        "fixtures/IntegratedViewController.cs"
+      ],
+      "assertions": [
+        {"text": "barcodeCountView.BarcodeNotInListActionSettings is accessed off the view"},
+        {"text": "The not-in-list action Enabled property is set to true"},
+        {"text": "AcceptButtonText and RejectButtonText are set to custom strings"},
+        {"text": "BarcodeNotInListActionSettings members are mutated, NOT a new BarcodeCountNotInListActionSettings(...) constructed (semantic) (it is read off the view)"},
+        {"text": "Existing integration code (camera, BarcodeCount.Create, BarcodeCountView, Scanned handler) is preserved"}
+      ]
+    },
+    {
+      "id": 10,
+      "tags": ["status-mode"],
+      "prompt": "In my MatrixScan Count .NET iOS app (IntegratedViewController.cs) I want to use Status Mode to annotate each counted barcode as low stock, and show the Status Mode button in the UI.",
+      "expected_output": "The skill implements IBarcodeCountStatusProvider (OnStatusRequested builds BarcodeCountStatusItem.Create(barcode, BarcodeCountStatus.LowStock) for each tracked barcode and calls callback.OnStatusReady with BarcodeCountStatusResultSuccess.Create(...)), registers it via barcodeCountView.SetStatusProvider(provider), and sets barcodeCountView.ShouldShowStatusModeButton = true, preserving the existing integration.",
+      "files": [
+        "fixtures/IntegratedViewController.cs"
+      ],
+      "assertions": [
+        {"text": "An IBarcodeCountStatusProvider is implemented with an OnStatusRequested method"},
+        {"text": "barcodeCountView.SetStatusProvider( is called to register the status provider"},
+        {"text": "barcodeCountView.ShouldShowStatusModeButton is set to true"},
+        {"text": "BarcodeCountStatus.LowStock is used as the per-barcode status"},
+        {"text": "BarcodeCountStatusItem.Create( is used to build each status item"},
+        {"text": "The provider callback delivers results via BarcodeCountStatusResultSuccess.Create("},
+        {"text": "Existing integration code (camera, BarcodeCount.Create, BarcodeCountView, Scanned handler) is preserved"}
+      ]
+    },
+    {
+      "id": 11,
+      "tags": ["ui-customization"],
+      "prompt": "In my MatrixScan Count .NET iOS app (IntegratedViewController.cs) I want a minimal UI: hide the List, Exit, and Shutter buttons, and turn off the user guidance view and hints.",
+      "expected_output": "The skill sets the BarcodeCountView ShouldShow* toggles: ShouldShowListButton = false, ShouldShowExitButton = false, ShouldShowShutterButton = false, ShouldShowUserGuidanceView = false, ShouldShowHints = false, preserving the existing integration.",
+      "files": [
+        "fixtures/IntegratedViewController.cs"
+      ],
+      "assertions": [
+        {"text": "barcodeCountView.ShouldShowListButton is set to false"},
+        {"text": "barcodeCountView.ShouldShowExitButton is set to false"},
+        {"text": "barcodeCountView.ShouldShowShutterButton is set to false"},
+        {"text": "barcodeCountView.ShouldShowUserGuidanceView is set to false"},
+        {"text": "barcodeCountView.ShouldShowHints is set to false"},
+        {"text": "Existing integration code (camera, BarcodeCount.Create, BarcodeCountView, Scanned handler) is preserved"}
+      ]
+    },
+    {
+      "id": 12,
+      "tags": ["reset-mode"],
+      "prompt": "In my MatrixScan Count .NET iOS app (IntegratedViewController.cs) I want a 'Start Over' action that clears all counted barcodes and AR overlays so the user can begin a fresh counting process.",
+      "expected_output": "The skill calls barcodeCount.Reset() to clear all counted barcodes and AR overlays for a fresh scanning process, preserving the existing integration. Reset() is called on the BarcodeCount mode, not on the session outside the callback.",
+      "files": [
+        "fixtures/IntegratedViewController.cs"
+      ],
+      "assertions": [
+        {"text": "barcodeCount.Reset() is called to clear counted barcodes and AR overlays"},
+        {"text": "Reset() is called on the BarcodeCount mode instance"},
         {"text": "Existing integration code (camera, BarcodeCount.Create, BarcodeCountView, Scanned handler) is preserved"}
       ]
     }
