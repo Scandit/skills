@@ -157,6 +157,53 @@ or the delegate callbacks `brushForRecognizedBarcodeNotInList`, `brushForAccepte
 behavior (when each one shows) is covered in the list-scanning guide (`list-scanning.md`); the brushes
 themselves are set exactly like `recognizedBrush` above.
 
+## Status mode (per-barcode status overlay)
+
+Status mode is a different kind of overlay: instead of the normal recognized highlights, it shows a
+**status indicator per barcode** (e.g. expired, low-stock, quality-check) so the user gets richer
+handling information. You supply the status for each scanned barcode through a
+`BarcodeCountStatusProvider`, which the view queries.
+
+Wire it up in three parts: enable the overlay on the view, set the provider, and implement the provider
+to return a status per barcode.
+
+```swift
+// On the BarcodeCountView, after the basic integration:
+barcodeCountView.shouldShowStatusIconsOnScan = true   // load status icons right after scanning
+barcodeCountView.setStatusProvider(self)
+```
+
+```swift
+extension CountViewController: BarcodeCountStatusProvider {
+    func statusRequested(for barcodes: [TrackedBarcode],
+                         callback: BarcodeCountStatusProviderCallback) {
+        // Build a BarcodeCountStatusItem per barcode (look up your own data here).
+        let items: [BarcodeCountStatusItem] = barcodes.map { tracked in
+            // BarcodeCountStatus cases: .none, .notAvailable, .expired, .fragile,
+            // .qualityCheck, .lowStock, .wrong, .expiringSoon
+            BarcodeCountStatusItem(barcode: tracked, status: .expired)
+        }
+        let result = BarcodeCountStatusSuccessResult(statusList: items,
+                                                     statusModeEnabledMessage: "Status on.",
+                                                     statusModeDisabledMessage: "Status off.")
+        callback.onStatusReady(result)
+    }
+}
+```
+
+- `shouldShowStatusIconsOnScan = true` is the recommended approach (status icons load immediately after
+  a scan). Alternatively, set `barcodeCountView.shouldShowStatusModeButton = true` to surface a button
+  the user taps to toggle status mode on demand — but `shouldShowStatusIconsOnScan`, when enabled,
+  takes precedence and the button is hidden.
+- The provider protocol is `BarcodeCountStatusProvider`; its one method is
+  `statusRequested(for:callback:)`. It is invoked on an internal thread, and you may answer
+  asynchronously — call `callback.onStatusReady(_:)` once the statuses are ready (e.g. after a network
+  fetch).
+- Each `BarcodeCountStatusItem` is built with `BarcodeCountStatusItem(barcode:status:)` where `status`
+  is a `BarcodeCountStatus` case. The success result is `BarcodeCountStatusSuccessResult(statusList:
+  statusModeEnabledMessage:statusModeDisabledMessage:)` (the error / abort variants are
+  `BarcodeCountStatusErrorResult` / `BarcodeCountStatusAbortResult`).
+
 ## After wiring up
 
 Build the project. If a delegate method isn't being called or a name doesn't resolve, fetch the
