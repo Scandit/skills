@@ -138,6 +138,95 @@
         {"text": "enableHardwareTrigger(null) or enableHardwareTrigger with null key code is called on the view (semantic)"},
         {"text": "Existing integration code (BarcodeCount, listeners) is preserved"}
       ]
+    },
+    {
+      "id": 9,
+      "prompt": "My labels have both a Code 128 and a PDF417 barcode, and I only want to count the Code 128 ones. File: IntegratedBloc.dart",
+      "expected_output": "The skill filters out PDF417 by reading settings.filterSettings on the BarcodeCountSettings and assigning excludedSymbologies to a set containing Symbology.pdf417, before the BarcodeCount mode is constructed. PDF417 is also enabled so it is decoded and then filtered out. The rest of the integration is unchanged.",
+      "files": [
+        "fixtures/IntegratedBloc.dart"
+      ],
+      "assertions": [
+        {"text": "settings.filterSettings is accessed on the BarcodeCountSettings"},
+        {"text": "excludedSymbologies is set to a set containing Symbology.pdf417"},
+        {"text": "Symbology.pdf417 is also enabled so it is decoded and then filtered out (semantic)"},
+        {"text": "The filter is configured before BarcodeCount( settings ) is constructed"},
+        {"text": "Existing integration code (BarcodeCount, BarcodeCountView, listeners) is preserved"}
+      ],
+      "tags": ["filtering"]
+    },
+    {
+      "id": 10,
+      "prompt": "I only want to count barcodes whose data does NOT start with four digits in my MatrixScan Count Flutter app. File: IntegratedBloc.dart",
+      "expected_output": "The skill sets settings.filterSettings.excludedCodesRegex to a regex that matches data starting with four digits, before the BarcodeCount mode is constructed. The rest of the integration is unchanged.",
+      "files": [
+        "fixtures/IntegratedBloc.dart"
+      ],
+      "assertions": [
+        {"text": "settings.filterSettings is accessed on the BarcodeCountSettings"},
+        {"text": "excludedCodesRegex is set to a regex matching data that starts with four digits (semantic)"},
+        {"text": "The filter is configured before BarcodeCount( settings ) is constructed"},
+        {"text": "Existing integration code (BarcodeCount, BarcodeCountView, listeners) is preserved"}
+      ],
+      "tags": ["filtering"]
+    },
+    {
+      "id": 11,
+      "prompt": "I'm sure every barcode in the scene is unique in my MatrixScan Count Flutter app — turn on whatever makes scanning faster for that. File: IntegratedBloc.dart",
+      "expected_output": "The skill sets settings.expectsOnlyUniqueBarcodes = true on the BarcodeCountSettings before constructing the BarcodeCount mode. The rest of the integration is unchanged.",
+      "files": [
+        "fixtures/IntegratedBloc.dart"
+      ],
+      "assertions": [
+        {"text": "expectsOnlyUniqueBarcodes = true is set on the BarcodeCountSettings"},
+        {"text": "It is set before BarcodeCount( settings ) is constructed"},
+        {"text": "Existing integration code (BarcodeCount, BarcodeCountView, listeners) is preserved"}
+      ],
+      "tags": ["expects-only-unique"]
+    },
+    {
+      "id": 12,
+      "prompt": "In my MatrixScan Count Flutter app, automatically group neighbouring barcodes into clusters, and let the user fix the grouping by hand. File: IntegratedBloc.dart",
+      "expected_output": "The skill enables clustering by setting settings.clusteringMode = ClusteringMode.autoWithManualCorrection on the BarcodeCountSettings before constructing the BarcodeCount mode. The rest of the integration is unchanged.",
+      "files": [
+        "fixtures/IntegratedBloc.dart"
+      ],
+      "assertions": [
+        {"text": "clusteringMode is set to ClusteringMode.autoWithManualCorrection on the BarcodeCountSettings"},
+        {"text": "It is set before BarcodeCount( settings ) is constructed"},
+        {"text": "Existing integration code (BarcodeCount, BarcodeCountView, listeners) is preserved"}
+      ],
+      "tags": ["clustering"]
+    },
+    {
+      "id": 13,
+      "prompt": "In my MatrixScan Count Flutter app, when the app goes to the background I want to clear the count, but when it comes back I want the previously scanned barcodes to still be shown as already counted. File: IntegratedBloc.dart",
+      "expected_output": "The skill stashes the recognized barcodes and calls barcodeCount.reset() when going to the background, then calls barcodeCount.setAdditionalBarcodes with the previously scanned barcodes when returning to the foreground so they are restored as already-counted. The core integration is otherwise unchanged.",
+      "files": [
+        "fixtures/IntegratedBloc.dart"
+      ],
+      "assertions": [
+        {"text": "On returning to the foreground, barcodeCount.setAdditionalBarcodes( is called with the previously scanned barcodes"},
+        {"text": "On going to the background, the previously scanned barcodes are stashed and barcodeCount.reset() is called to clear the current count (semantic)"},
+        {"text": "It uses the real APIs setAdditionalBarcodes and reset (semantic)"},
+        {"text": "Existing integration code (BarcodeCount, BarcodeCountView, listeners) is preserved"}
+      ],
+      "tags": ["additional-barcodes", "reset-mode"]
+    },
+    {
+      "id": 14,
+      "prompt": "Add a 'Start new count' action to my MatrixScan Count Flutter app that clears all the scanned barcodes and the on-screen highlights so the user can begin a fresh count. File: IntegratedBloc.dart",
+      "expected_output": "The skill adds an action that calls barcodeCount.reset() to clear the scanned list and the AR overlays, and clears the app's own running tally (scannedProducts). The rest of the integration is unchanged.",
+      "files": [
+        "fixtures/IntegratedBloc.dart"
+      ],
+      "assertions": [
+        {"text": "barcodeCount.reset() is called to clear the scanned barcodes and the AR overlays"},
+        {"text": "The app's own running tally (scannedProducts) is also cleared (semantic)"},
+        {"text": "It uses the real reset() method on BarcodeCount (semantic)"},
+        {"text": "Existing integration code (BarcodeCount, BarcodeCountView, listeners) is preserved"}
+      ],
+      "tags": ["reset-mode"]
     }
   ]
 }
