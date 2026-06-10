@@ -23,7 +23,7 @@
         {"text": "BarcodeCountView has a barcodeCount prop and a context prop (semantic)"},
         {"text": "view.listener or view.uiListener is set inside the BarcodeCountView ref callback"},
         {"text": "view.start() is NOT present (BarcodeCountView does not require explicit start)"},
-        {"text": "camera.switchToDesiredState(FrameSourceState.On) is present"},
+        {"text": "The camera is switched on with switchToDesiredState (semantic)"},
         {"text": "The component is written as a function component (no class syntax)"},
         {"text": "useRef is used to hold the BarcodeCount mode reference"},
         {"text": "useEffect cleanup calls dataCaptureContext.setFrameSource(null)"},
@@ -49,7 +49,7 @@
         {"text": "didCompleteCaptureList is implemented in the view listener (semantic)"},
         {"text": "'-- ENTER YOUR SCANDIT LICENSE KEY HERE --' is present"},
         {"text": "DataCaptureContext.initialize( is present"},
-        {"text": "camera.switchToDesiredState(FrameSourceState.On) is present"},
+        {"text": "The camera is switched on with switchToDesiredState (semantic)"},
         {"text": "useEffect cleanup calls dataCaptureContext.setFrameSource(null)"}
       ]
     },

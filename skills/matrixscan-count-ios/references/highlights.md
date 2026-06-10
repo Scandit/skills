@@ -203,6 +203,9 @@ extension CountViewController: BarcodeCountStatusProvider {
   is a `BarcodeCountStatus` case. The success result is `BarcodeCountStatusSuccessResult(statusList:
   statusModeEnabledMessage:statusModeDisabledMessage:)` (the error / abort variants are
   `BarcodeCountStatusErrorResult` / `BarcodeCountStatusAbortResult`).
+- `BarcodeCountStatus` has exactly these cases — use one of these and do **not** invent others:
+  `.none`, `.notAvailable`, `.expired`, `.fragile`, `.qualityCheck`, `.lowStock`, `.wrong`,
+  `.expiringSoon`. (For example, there is no `.recalled`, `.damaged`, or `.outOfStock` case.)
 
 ## After wiring up
 

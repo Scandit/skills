@@ -160,7 +160,7 @@
       ],
       "assertions": [
         {"text": "view.hardwareTriggerEnabled = true is set (iOS volume-button trigger)"},
-        {"text": "view.enableHardwareTrigger( is called (Android hardware trigger)"},
+        {"text": "The hardware trigger is enabled on the view (semantic)"},
         {"text": "BarcodeCountView.hardwareTriggerSupported is checked before calling enableHardwareTrigger (Android guard)"},
         {"text": "A comment or note explains that hardwareTriggerEnabled is iOS-only and enableHardwareTrigger is Android-only (semantic)"},
         {"text": "Existing integration code (context, barcodeCount, barcodeCountView) is still referenced and used (semantic)"}

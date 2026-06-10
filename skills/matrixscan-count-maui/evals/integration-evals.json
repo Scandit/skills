@@ -91,7 +91,7 @@
       "assertions": [
         {"text": "Filtering is configured through the FilterSettings property on the BarcodeCountSettings"},
         {"text": "ExcludedSymbologies is assigned a collection containing Symbology.Pdf417"},
-        {"text": "The FilterSettings property is mutated in place and is NOT reassigned to a new value (semantic)"},
+        {"text": "The filter exclusions are set via settings.FilterSettings (e.g. FilterSettings.ExcludedSymbologies) rather than reassigning the FilterSettings property itself (semantic)"},
         {"text": "BarcodeFilterSettings.Create() is NOT used (on .NET BarcodeFilterSettings is not created via a Create factory here)"},
         {"text": "Existing integration code (camera, BarcodeCount.Create, Scanned handler, ResumeAsync/SleepAsync) is preserved"}
       ]

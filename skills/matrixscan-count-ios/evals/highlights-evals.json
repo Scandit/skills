@@ -62,7 +62,7 @@
         {"text": "The answer explains brushes (recognizedBrush / brushForRecognizedBarcode) only take effect in the Dot style, and the default is the Icon style"},
         {"text": "It gives the Dot fix: create the BarcodeCountView with style: .dot"},
         {"text": "It also notes that on the Icon style you customize the icon instead (iconForRecognizedBarcode — e.g. background color), rather than a brush"},
-        {"text": "It does not invent APIs (no recognizedIcon property; real ScanditIconType names)"}
+        {"text": "It uses only real BarcodeCountView appearance APIs — recognizedBrush / the iconForRecognizedBarcode delegate are valid; it does not invent a recognizedIcon property (semantic)"}
       ]
     },
     {
@@ -114,7 +114,7 @@
         {"text": "The controller conforms to BarcodeCountStatusProvider and implements statusRequested(for:callback:) with a [TrackedBarcode] parameter and a BarcodeCountStatusProviderCallback"},
         {"text": "A BarcodeCountStatusItem is built per barcode via BarcodeCountStatusItem(barcode:status:) using a real BarcodeCountStatus case such as .expired"},
         {"text": "The statuses are returned via BarcodeCountStatusSuccessResult(statusList:statusModeEnabledMessage:statusModeDisabledMessage:) passed to callback.onStatusReady(_:)"},
-        {"text": "It does not invent APIs (no per-barcode status property on the view; real BarcodeCountStatus cases); the context, mode, camera, listener, uiDelegate and lifecycle are unchanged"}
+        {"text": "It uses only real BarcodeCountStatus cases (.none, .notAvailable, .expired, .fragile, .qualityCheck, .lowStock, .wrong, .expiringSoon) and does not invent status cases (semantic)"}
       ],
       "tags": ["status-mode"]
     }

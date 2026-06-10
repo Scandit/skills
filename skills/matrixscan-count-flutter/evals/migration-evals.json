@@ -11,7 +11,7 @@
       "assertions": [
         {"text": "BarcodeCount.forDataCaptureContext( is NOT present in the output"},
         {"text": "await BarcodeCount. is NOT present in the output"},
-        {"text": "BarcodeCount( settings ) is present (context-free constructor)"},
+        {"text": "BarcodeCount(settings) is present"},
         {"text": "dataCaptureContext.setMode( is present in the output"},
         {"text": "BarcodeCount.createRecommendedCameraSettings() is present in the output"},
         {"text": "didScan( is preserved in the output"},

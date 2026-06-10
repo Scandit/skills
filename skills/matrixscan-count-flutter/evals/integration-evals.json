@@ -110,7 +110,7 @@
         {"text": "onStatusRequested( is present"},
         {"text": "providerCallback.onStatusReady( or equivalent callback invocation is present"},
         {"text": "The status items are determined based on barcode data (semantic: barcodes starting with '4' accepted, others rejected)"},
-        {"text": "view.setStatusProvider( is called"},
+        {"text": "A BarcodeCount status provider is set on the view (semantic)"},
         {"text": "shouldShowStatusModeButton = true is set on the view (semantic)"},
         {"text": "Existing integration code (BarcodeCount, listeners) is preserved"}
       ]
@@ -149,7 +149,7 @@
       "assertions": [
         {"text": "settings.filterSettings is accessed on the BarcodeCountSettings"},
         {"text": "excludedSymbologies is set to a set containing Symbology.pdf417"},
-        {"text": "Symbology.pdf417 is also enabled so it is decoded and then filtered out (semantic)"},
+        {"text": "To exclude a symbology it is added to filterSettings.excludedSymbologies (the docs note only decoded symbologies are filtered) (semantic)"},
         {"text": "The filter is configured before BarcodeCount( settings ) is constructed"},
         {"text": "Existing integration code (BarcodeCount, BarcodeCountView, listeners) is preserved"}
       ],

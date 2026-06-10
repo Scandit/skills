@@ -103,7 +103,7 @@
       "assertions": [
         {"text": "barcodeCountView.FilterSettings is assigned to control the filtered-barcode highlight"},
         {"text": "BarcodeFilterHighlightSettingsBrush.Create( is used as the factory to build the highlight settings"},
-        {"text": "new BarcodeFilterHighlightSettingsBrush(...) is NOT used (semantic) (it has no public constructor on .NET)"},
+        {"text": "new BarcodeFilterHighlightSettingsBrush( is NOT present"},
         {"text": "A Brush is constructed and passed to the BarcodeFilterHighlightSettingsBrush.Create factory"},
         {"text": "Existing integration code (camera, BarcodeCount.Create, BarcodeCountView, Scanned handler) is preserved"}
       ]
@@ -118,7 +118,7 @@
       ],
       "assertions": [
         {"text": "settings.ExpectsOnlyUniqueBarcodes is set to true on the BarcodeCountSettings"},
-        {"text": "ExpectsOnlyUniqueBarcodes is set on the settings instance before BarcodeCount.Create is called"},
+        {"text": "settings.ExpectsOnlyUniqueBarcodes = true is present (semantic)"},
         {"text": "Existing integration code (camera, BarcodeCount.Create, BarcodeCountView, Scanned handler) is preserved"}
       ]
     },

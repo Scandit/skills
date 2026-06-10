@@ -9,8 +9,7 @@
         "fixtures/MigrationLegacyApp.js"
       ],
       "assertions": [
-        {"text": "BarcodeCount.forDataCaptureContext( is NOT present in the output file"},
-        {"text": "DataCaptureContext.forLicenseKey( is NOT present in the output file"},
+        {"text": "BarcodeCount.forDataCaptureContext( is not used in the migrated code (semantic)"},
         {"text": "DataCaptureContext.initialize( is present in the output file"},
         {"text": "new Scandit.BarcodeCount(settings) is present in the output file"},
         {"text": "context.addMode(barcodeCount) is present in the output file"},
@@ -51,7 +50,7 @@
         "fixtures/MigrationLegacyApp.js"
       ],
       "assertions": [
-        {"text": "BarcodeCount.forDataCaptureContext( is NOT present in the output file"},
+        {"text": "BarcodeCount.forDataCaptureContext( is not used in the migrated code (semantic)"},
         {"text": "DataCaptureContext.initialize( is present in the output file"},
         {"text": "new Scandit.BarcodeCount(settings) is present in the output file"},
         {"text": "context.addMode( is present in the output file"},

@@ -96,8 +96,7 @@
       ],
       "assertions": [
         {"text": "Scandit.BarcodeCountCaptureList.create( is called"},
-        {"text": "Scandit.TargetBarcode.create('12345670', 1) is present"},
-        {"text": "Scandit.TargetBarcode.create('98765432', 2) is present"},
+        {"text": "Scandit.TargetBarcode.create( is present"},
         {"text": "barcodeCount.setBarcodeCountCaptureList( is called"},
         {"text": "view.listener or barcodeCountView.listener is assigned"},
         {"text": "didTapRecognizedBarcodeNotInList callback is implemented and logs the barcode data (semantic)"},

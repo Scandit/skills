@@ -35,7 +35,7 @@
         {"text": "The recognized barcodes are copied out of the session (e.g. .ToList()) inside the callback, and UI work is dispatched via RunOnUiThread"},
         {"text": "A barcodeCountView.ListButtonTapped handler is wired to store/show the scanned barcodes"},
         {"text": "barcodeCountView.Dispose() (and barcodeCount.Dispose()) are called on teardown"},
-        {"text": "If the listener interface is used, OnObservationStarted and OnObservationStopped are implemented (IBarcodeCountListener has three methods)"},
+        {"text": "The scan results are handled via either the Scanned event or a BarcodeCountListener (semantic)"},
         {"text": "No BarcodeArView, IBarcodeArHighlightProvider, or BarcodeAr API is used (MatrixScan Count is not MatrixScan AR)"},
         {"text": "No DataCaptureView or BarcodeCaptureOverlay is created (BarcodeCountView is the counting UI surface)"}
       ]

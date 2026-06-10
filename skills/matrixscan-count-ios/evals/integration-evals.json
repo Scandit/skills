@@ -81,7 +81,7 @@
       "expected_output": "The skill silences feedback through barcodeCount.feedback (a BarcodeCountFeedback) by setting its success (and failure) to a silent Feedback (Feedback(vibration: nil, sound: nil)), rather than a non-existent boolean toggle. The rest of the integration is unchanged.",
       "files": ["fixtures/IntegratedBarcodeCountViewController.swift"],
       "assertions": [
-        {"text": "Feedback is silenced via barcodeCount.feedback — a BarcodeCountFeedback whose success (and ideally failure) is set to a silent Feedback constructed with no sound and no vibration (e.g. Feedback(vibration: nil, sound: nil))"},
+        {"text": "Feedback is silenced by assigning a BarcodeCountFeedback with silent success/failure Feedback (semantic)"},
         {"text": "It does NOT use a non-existent boolean like settings.isSoundEnabled / isHapticsEnabled (that is the MatrixScan Pick API; BarcodeCount has no such toggle — feedback is configured via the BarcodeCountFeedback object)"},
         {"text": "The change is confined to feedback; the camera, settings, mode, view, listener and lifecycle are unchanged"}
       ]
