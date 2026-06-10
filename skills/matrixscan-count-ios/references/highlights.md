@@ -91,10 +91,11 @@ To recolor the highlight as a plain colored **dot** instead of an icon, use the 
 Set `style: .dot` in the initializer (above). Each recognized barcode is marked with a colored dot,
 and you customize the color with a `Brush`. The brush APIs apply to the Dot style.
 
-### One brush for all recognized barcodes
+### One brush for all barcodes in the same state
 
-Set the brush on the view. A `Brush` is constructed with a fill color, a stroke color, and a stroke
-width:
+Each state has its own view-level brush property (`recognizedBrush`, and the `notInListBrush` /
+`acceptedBrush` / `rejectedBrush` covered below) — setting one applies that brush to every barcode in
+that state. A `Brush` is constructed with a fill color, a stroke color, and a stroke width:
 
 ```swift
 barcodeCountView.recognizedBrush = Brush(fill: UIColor.systemGreen.withAlphaComponent(0.3),

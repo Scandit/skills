@@ -1,6 +1,12 @@
 import SwiftUI
 import ScanditBarcodeCapture
 
+// MARK: - SwiftUI layer
+//
+// MatrixScan Count has no native SwiftUI view (`BarcodeCountView` is a UIView), so we bridge the
+// UIKit `CountViewController` into SwiftUI via `UIViewControllerRepresentable`. All `BarcodeCount*`
+// API calls live inside the UIKit layer; this SwiftUI struct contains no Scandit code.
+
 struct ScanView: View {
     var body: some View {
         CountViewControllerRepresentable()
@@ -8,7 +14,6 @@ struct ScanView: View {
     }
 }
 
-// Bridges the UIKit CountViewController into SwiftUI. No Scandit code lives here.
 struct CountViewControllerRepresentable: UIViewControllerRepresentable {
     func makeUIViewController(context: Context) -> CountViewController {
         CountViewController()
@@ -17,9 +22,8 @@ struct CountViewControllerRepresentable: UIViewControllerRepresentable {
     func updateUIViewController(_ uiViewController: CountViewController, context: Context) {}
 }
 
-// The UIKit view controller that owns all MatrixScan Count (BarcodeCount) logic.
-// The view-controller lifecycle fires when SwiftUI presents/dismisses the representable,
-// so the camera on/off handling carries over unchanged.
+// MARK: - UIKit layer (MatrixScan Count integration)
+
 class CountViewController: UIViewController {
 
     // Step 1: the Data Capture Context, created with your license key.
@@ -41,16 +45,20 @@ class CountViewController: UIViewController {
         setupRecognition()
     }
 
-    // Step 6: the camera is NOT turned on automatically — switch it on when the view appears
-    // and off when it disappears.
+    // Step 6: the camera is NOT turned on automatically. Re-arm the view and switch the camera
+    // on when it appears; switch off when it disappears, and tear the view down on the way out.
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        barcodeCountView.prepareScanning(with: context)
         camera?.switch(toDesiredState: .on)
     }
 
     override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
         camera?.switch(toDesiredState: .off)
+        if isMovingFromParent {
+            barcodeCountView.stopScanning()
+        }
     }
 
     private func setupRecognition() {
@@ -62,7 +70,8 @@ class CountViewController: UIViewController {
         context.setFrameSource(camera)
 
         // Step 2: configure the Barcode Count mode. Settings start with all symbologies disabled —
-        //         enable only the ones the app needs.
+        //         enable only the ones the app needs. (Adjust this list to your use case; fewer
+        //         enabled symbologies improves scanning performance and accuracy.)
         let settings = BarcodeCountSettings()
         settings.set(symbology: .ean13UPCA, enabled: true)
         settings.set(symbology: .ean8, enabled: true)
@@ -83,7 +92,7 @@ class CountViewController: UIViewController {
         barcodeCountView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         view.addSubview(barcodeCountView)
 
-        // Step 9: handle the List / Exit buttons.
+        // Step 8: handle the List / Exit buttons.
         barcodeCountView.uiDelegate = self
     }
 }
@@ -102,7 +111,7 @@ extension CountViewController: BarcodeCountListener {
     }
 }
 
-// Step 9: the List / Exit button callbacks. "List" = show progress so far; "Exit" = counting finished.
+// Step 8: the List / Exit button callbacks. "List" = show progress so far; "Exit" = counting finished.
 // The sessionSnapshot gives you the recognized barcodes at tap time (on the main thread).
 extension CountViewController: BarcodeCountViewUIDelegate {
     func listButtonTapped(for view: BarcodeCountView,

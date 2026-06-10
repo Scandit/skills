@@ -17,8 +17,7 @@ flow. Its general steps are:
 5. Set the capture view and AR overlays
 6. Configure the camera for the scanning view (lifecycle)
 7. Store and retrieve the scanned barcodes
-8. Reset the Barcode Count mode
-9. List and Exit callbacks
+8. List and Exit callbacks
 
 > **The camera is yours to manage.** **`BarcodeCountView` does NOT own or manage the camera.** You
 > create the `Camera`, apply `BarcodeCount.recommendedCameraSettings`, set it as the context's frame
@@ -76,16 +75,20 @@ class CountViewController: UIViewController {
         setupRecognition()
     }
 
-    // Step 6: the camera is NOT turned on automatically — switch it on when the view appears
-    // and off when it disappears.
+    // Step 6: the camera is NOT turned on automatically. Re-arm the view and switch the camera
+    // on when it appears; switch off when it disappears, and tear the view down on the way out.
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        barcodeCountView.prepareScanning(with: context)
         camera?.switch(toDesiredState: .on)
     }
 
     override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
         camera?.switch(toDesiredState: .off)
+        if isMovingFromParent {
+            barcodeCountView.stopScanning()
+        }
     }
 
     private func setupRecognition() {
@@ -118,7 +121,7 @@ class CountViewController: UIViewController {
         barcodeCountView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         view.addSubview(barcodeCountView)
 
-        // Step 9: handle the List / Exit buttons.
+        // Step 8: handle the List / Exit buttons.
         barcodeCountView.uiDelegate = self
     }
 }
@@ -137,7 +140,7 @@ extension CountViewController: BarcodeCountListener {
     }
 }
 
-// Step 9: the List / Exit button callbacks. "List" = show progress so far; "Exit" = counting finished.
+// Step 8: the List / Exit button callbacks. "List" = show progress so far; "Exit" = counting finished.
 // The sessionSnapshot gives you the recognized barcodes at tap time (on the main thread).
 extension CountViewController: BarcodeCountViewUIDelegate {
     func listButtonTapped(for view: BarcodeCountView,
@@ -197,6 +200,10 @@ settings.set(symbology: .ean13UPCA, enabled: true)
 let barcodeCount = BarcodeCount(context: context, settings: settings)
 ```
 
+Constructing `BarcodeCount(context:settings:)` attaches the mode to the context and **enables it** — you
+do not normally set `barcodeCount.isEnabled`. Only set `barcodeCount.isEnabled = true` to re-enable the
+mode after you've disabled it (e.g. after `stopScanning()` / `endScanningPhase()`).
+
 For the exact `Symbology` case to pass (e.g. QR is `.qr`, not `.qrCode`), consult the
 [Symbology API reference](https://docs.scandit.com/data-capture-sdk/ios/barcode-capture/api/symbology.html) —
 don't guess the case name. Per-symbology tuning (active symbol counts, color-inverted decoding,
@@ -250,8 +257,9 @@ barcodeCountView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
 view.addSubview(barcodeCountView)
 ```
 
-The view has two styles, chosen via the `style:` initializer argument
-(`BarcodeCountViewStyle.icon` — the default look — or `.dot`):
+The view has two styles, chosen via the `style:` initializer argument — `BarcodeCountViewStyle.icon`
+or `.dot`. **`.icon` is the default and the recommended style** (the modern look, fully customizable);
+prefer it unless you specifically want plain colored dots. To opt into the Dot style:
 
 ```swift
 let barcodeCountView = BarcodeCountView(frame: view.bounds, context: context, barcodeCount: barcodeCount, style: .dot)
@@ -259,30 +267,33 @@ let barcodeCountView = BarcodeCountView(frame: view.bounds, context: context, ba
 
 ## Step 6 — Configure the camera for the scanning view (lifecycle)
 
-The camera is not turned on automatically. Switch it on when the view is visible and off when it
-isn't. `BarcodeCount` follows the same on/off cadence as the view's visibility:
+The camera is not turned on automatically. Drive both the view's scanning lifecycle and the camera with
+the view-controller lifecycle: re-arm the view with `barcodeCountView.prepareScanning(with: context)`
+and switch the camera on when the view appears; switch it off when it disappears, and tear the view
+down with `barcodeCountView.stopScanning()` when the screen is actually being popped:
 
 ```swift
 override func viewWillAppear(_ animated: Bool) {
     super.viewWillAppear(animated)
+    barcodeCountView.prepareScanning(with: context)
     camera?.switch(toDesiredState: .on)
 }
 
 override func viewDidDisappear(_ animated: Bool) {
     super.viewDidDisappear(animated)
     camera?.switch(toDesiredState: .off)
+    if isMovingFromParent {
+        barcodeCountView.stopScanning()
+    }
 }
 ```
 
 The camera switch is asynchronous — pass a completion block to
 `switch(toDesiredState:completionHandler:)` if you need to know when it has finished.
 
-> **Recommended enhancement (from the official sample).** When you navigate *within* the app to
-> another screen and back (e.g. a List screen), use `FrameSourceState.standby` instead of `.off` on
-> the way out — it keeps the camera warm for a fast return — and re-arm the view on the way back with
-> `barcodeCountView.prepareScanning(with: context)` in `viewWillAppear`. Call
-> `barcodeCountView.stopScanning()` only when the screen is genuinely being popped
-> (`if isMovingFromParent`). Use `.off` when the app is truly leaving the scanning screen.
+> When you navigate to another screen *within* the app and back (e.g. a List screen) and want a faster
+> return, you can use `FrameSourceState.standby` instead of `.off` on the way out (keeps the camera
+> warm). Use `.off` when the app is genuinely leaving the scanning screen.
 
 > **Common mistake — do NOT assume the view turns the camera on.** `BarcodeCountView` does not own the
 > camera. You **must** create `Camera.default`, apply `BarcodeCount.recommendedCameraSettings`, call
@@ -312,16 +323,7 @@ extension CountViewController: BarcodeCountListener {
 `barcodeCount.setAdditionalBarcodes(_:)` — useful for carrying a previous batch across a
 background/foreground cycle), and `session.recognizedClusters` exposes cluster grouping when enabled.
 
-## Step 8 — Reset the mode
-
-When a counting process is over, reset the mode to clear the scanned list and the AR overlays so it's
-ready for the next process:
-
-```swift
-barcodeCount.reset()
-```
-
-## Step 9 — List and Exit callbacks
+## Step 8 — List and Exit callbacks
 
 The built-in UI surfaces buttons whose taps are delivered through `BarcodeCountViewUIDelegate`
 (`barcodeCountView.uiDelegate = self`). Each callback hands you a `BarcodeCountSessionSnapshot` — the
@@ -399,8 +401,9 @@ API reference for exact signatures before writing code.
   is customizable via `barcodeCountView.setTextForTapToUncountHint(_:)`.)
 - **Highlight appearance (icons / brushes)**: customize the per-barcode icon (default Icon style) or the
   Dot-style color via the `BarcodeCountViewDelegate`. → **full guide: `highlights.md`**.
-- **Status mode** (`setStatusProvider(_:)`) is an advanced customization. (The **not-in-list action**,
-  `barcodeNotInListActionSettings`, is covered in `list-scanning.md`.)
+- **Reset the mode**: when a counting process is over and you want to start fresh, call
+  `barcodeCount.reset()` to clear the scanned list and the AR overlays (e.g. from your Exit/summary
+  flow). The minimal example above doesn't call it — add it where your app begins a new count.
 - **Feedback (sound / haptic)**: configured through `BarcodeCount.feedback` (a `BarcodeCountFeedback`),
   whose `success` / `failure` are `Feedback` objects. The default (`BarcodeCountFeedback.defaultFeedback`)
   beeps and vibrates; the plain initializer `BarcodeCountFeedback()` is **silent** (its channels default
@@ -440,12 +443,12 @@ struct CountViewControllerRepresentable: UIViewControllerRepresentable {
 view-controller lifecycle (`viewWillAppear` / `viewDidDisappear`) still fires when SwiftUI presents
 and dismisses the representable, so the camera on/off code carries over unchanged.
 
-## ARKit / scan-preview variant
-
-There is an ARKit-style variant that uses the same API surface with one extra flag:
-`BarcodeCountSettings(scanPreviewEnabled:)`. It behaves slightly differently but the integration steps
-are otherwise the same. This base guide covers the standard flow; the scan-preview variant will be
-documented separately.
+Alternatively, the official SwiftUI guide also shows wrapping the `BarcodeCountView` directly in a
+`UIViewRepresentable` (instead of a view controller). Either bridge works — wrapping the view
+controller is usually simpler because it gives you the lifecycle hooks for free; if you wrap the view
+in a `UIViewRepresentable`, you drive `prepareScanning`/`stopScanning` and the camera state from the
+representable's coordinator / `makeUIView` / `dismantleUIView` instead. Keep all `BarcodeCount*` calls
+inside the wrapped UIKit layer either way.
 
 ## After wiring up
 

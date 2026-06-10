@@ -61,8 +61,7 @@ extension CountViewController: BarcodeCountCaptureListListener {
 ## Progress bar
 
 The progress bar appears automatically once a capture list is set. Toggle it with
-`barcodeCountView.shouldShowListProgressBar` (default `true`). While the progress bar is visible, the
-list-button badge count is hidden.
+`barcodeCountView.shouldShowListProgressBar` (default `true`).
 
 ## Auto-finish when the list is complete
 
@@ -89,6 +88,15 @@ Accepted barcodes then appear in `session.acceptedBarcodes` and rejected ones in
 `session.rejectedBarcodes`. The button/hint text is customizable on `BarcodeCountNotInListActionSettings`
 (`acceptButtonText`, `rejectButtonText`, `cancelButtonText`, `barcodeAcceptedHint`,
 `barcodeRejectedHint`).
+
+The four barcode states map as follows:
+
+| State | Meaning |
+|-------|---------|
+| **Recognized** | Scanned normally and was in the expected list. |
+| **Not in list** | Scanned but not in the expected list. |
+| **Accepted** | Was not in the list, but the user manually added it to the accepted list. |
+| **Rejected** | Was not in the list, and the user marked it as a rejected barcode. |
 
 ## Highlight colors for the list states
 
