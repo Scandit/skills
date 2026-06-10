@@ -196,7 +196,7 @@ settings.FilterSettings.ExcludedCodesRegex = "^1234.*";
 By default the filtered barcodes are covered by a transparent layer. To change that highlight's color/transparency, set the **view's** `FilterSettings` property (distinct from `BarcodeCountSettings.FilterSettings`, which holds the filter *rules* above — this one holds the filter *highlight*). On .NET the highlight type is the **`IBarcodeFilterHighlightSettings` interface** (the cross-platform name `BarcodeFilterHighlightSettings` is exposed as this interface), implemented by `BarcodeFilterHighlightSettingsBrush`. The brush wrapper has **no public constructor** — build it with the static `BarcodeFilterHighlightSettingsBrush.Create(Brush)` factory:
 
 ```csharp
-using Scandit.DataCapture.Barcode.Filter.UI;
+using Scandit.DataCapture.Barcode.Filter.UI.Overlay;  // BarcodeFilterHighlightSettingsBrush
 using Scandit.DataCapture.Core.UI.Style;
 
 this.barcodeCountView.FilterSettings =
