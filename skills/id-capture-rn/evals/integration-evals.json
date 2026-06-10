@@ -138,6 +138,47 @@
         {"text": "idCapture.isEnabled is set to false while the rejection message is shown (semantic)"},
         {"text": "RejectionReason.Timeout is present"}
       ]
+    },
+    {
+      "id": 10,
+      "prompt": "We want ID Capture to reject documents whose printed data doesn't match the barcode or MRZ — data-consistency verification. Enable it and show me how to read the consistency result. My screen is EmptyScreen.tsx.",
+      "expected_output": "The skill sets settings.rejectInconsistentData = true, handles RejectionReason.InconsistentData in didRejectId, and reads capturedId.verificationResult.dataConsistency (allChecksPassed / failedChecks / frontReviewImage). No standalone DataConsistencyVerifier class is used (it does not exist on RN).",
+      "files": ["fixtures/EmptyScreen.tsx"],
+      "tags": ["data-consistency-verification"],
+      "assertions": [
+        {"text": "settings.rejectInconsistentData is enabled"},
+        {"text": "RejectionReason.InconsistentData is present"},
+        {"text": "capturedId.verificationResult.dataConsistency is read (semantic)"},
+        {"text": "dataConsistency.allChecksPassed is read (semantic)"},
+        {"text": "didRejectId is present"},
+        {"text": "a standalone DataConsistencyVerifier class is NOT used in the code (semantic)"}
+      ]
+    },
+    {
+      "id": 11,
+      "prompt": "Can I run ID Capture at the same time as Barcode Capture on one DataCaptureContext? Show me how to attach the IdCapture mode correctly in EmptyScreen.tsx.",
+      "expected_output": "The skill explains that only one capture mode is active at a time on a DataCaptureContext, attaches IdCapture via context.setMode(idCapture) (which replaces any active mode), and does not add IdCapture alongside another mode expecting both to run concurrently.",
+      "files": ["fixtures/EmptyScreen.tsx"],
+      "tags": ["mode-exclusivity"],
+      "assertions": [
+        {"text": "context.setMode is called with the IdCapture instance, awaited (semantic)"},
+        {"text": "the answer explains that IdCapture cannot run simultaneously with another capture mode on the same DataCaptureContext (semantic)"},
+        {"text": "new IdCapture( is present"}
+      ]
+    },
+    {
+      "id": 12,
+      "prompt": "I need to scan mobile driver's licenses (mDL, ISO 18013-5) in my RN app and read the holder's name and date of birth. Set that up in EmptyScreen.tsx.",
+      "expected_output": "The skill configures settings.scanner = new IdCaptureScanner(undefined, new MobileDocumentScanner(true, false)) for mobile documents, and reads the mobile-document data via capturedId.mobileDocument (or the harmonized top-level fields). MobileDocumentScanner ships in the base package, with no add-on dependency.",
+      "files": ["fixtures/EmptyScreen.tsx"],
+      "tags": ["mobile-document-mdl"],
+      "assertions": [
+        {"text": "new MobileDocumentScanner( is present"},
+        {"text": "new IdCaptureScanner( is present"},
+        {"text": "the MobileDocumentScanner is passed as the second positional argument to IdCaptureScanner, i.e. IdCaptureScanner(undefined, new MobileDocumentScanner(...)) (semantic)"},
+        {"text": "capturedId.mobileDocument is read, or the harmonized top-level fields the mobile document populates are read (semantic)"},
+        {"text": "didCaptureId is present"}
+      ]
     }
   ]
 }

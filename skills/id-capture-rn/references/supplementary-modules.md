@@ -1,12 +1,14 @@
 # ID Capture Add-On Capabilities (React Native)
 
-Three ID Capture capabilities ship as **separate React Native packages** because they bundle additional native models. The pattern is the same for all three:
+Sections 1–3 below ship as **separate React Native packages** because they bundle additional native models. The pattern is the same for all three:
 
 1. **Add the package** to `package.json` (this is what unlocks the native models — and on iOS, the corresponding pod).
 2. **Set one flag** on `IdCaptureSettings` (the API lives in the base `scandit-react-native-datacapture-id` package — these add-on packages expose **no JavaScript API of their own**, only a native module bridge).
 3. **Read the result** off the `CapturedId`, or handle the corresponding `RejectionReason`.
 
-> There is **no standalone verifier or scanner class** for these on React Native (no `AamvaBarcodeVerifier`, no voided-detection object). Everything is driven by the settings flags below. Don't import classes from the add-on packages — they only register a `NativeModule`.
+Sections 4–5 (data-consistency verification, mobile documents) need **no extra package** — they live entirely in the base `scandit-react-native-datacapture-id` package.
+
+> The three add-on packages (sections 1–3) have **no standalone verifier or voided-detection class** on React Native (no `AamvaBarcodeVerifier`). Everything there is driven by the settings flags below — don't import classes from the add-on packages; they only register a `NativeModule`. (Mobile documents in section 5 are the one exception that uses a real class, `MobileDocumentScanner`, but that class ships in the **base** package, not an add-on.)
 
 You still initialize ID Capture exactly as in `references/integration.md`; these flags layer on top of an existing `IdCaptureSettings`. After adding any of these packages on iOS, run `pod install` from `ios/`.
 
@@ -140,6 +142,97 @@ settings.rejectForgedAamvaBarcodes = true;
 
 ---
 
+## 4. Data-consistency verification
+
+Cross-checks the human-readable data on a document against the data encoded in its barcode or MRZ (for a US driver's license — which has no MRZ — it compares the front VIZ against the back PDF417). A mismatch usually means a tampered or mis-read document. No add-on package is required — the flag and result live in the base `scandit-react-native-datacapture-id` package.
+
+**Enable** — set the flag on `IdCaptureSettings`:
+
+```tsx
+settings.rejectInconsistentData = true;
+```
+
+**Two ways to consume the result:**
+
+- **Rejection path** — when `rejectInconsistentData` is `true`, a document that fails the checks is rejected with `RejectionReason.InconsistentData`:
+
+  ```tsx
+  if (reason === RejectionReason.InconsistentData) {
+    // Tell the user the data on the document is inconsistent.
+  }
+  ```
+
+- **Inspect the consistency result** on the captured (or rejected) document via `verificationResult.dataConsistency`:
+
+  ```tsx
+  import { DataConsistencyCheck } from 'scandit-react-native-datacapture-id';
+
+  const consistency = capturedId.verificationResult.dataConsistency;
+  if (consistency) {
+    const passed: boolean = consistency.allChecksPassed;
+    const failed: DataConsistencyCheck[] = consistency.failedChecks;
+    // failedChecks members, e.g. DataConsistencyCheck.FullNameComparison,
+    // DataConsistencyCheck.DateOfBirthComparison, DataConsistencyCheck.DocumentNumberComparison.
+    const reviewImage: string | null = consistency.frontReviewImage; // base64 string on RN, render via the data: URI form
+  }
+}
+```
+
+`DataConsistencyResult` getters on React Native: `allChecksPassed` (`boolean`), `failedChecks` / `passedChecks` / `skippedChecks` (`DataConsistencyCheck[]`), `frontReviewImage` (`string | null` — a base64 string, **not** a native image object; render it with `<Image source={{ uri: 'data:image/png;base64,' + reviewImage }} />`).
+
+---
+
+## 5. Mobile documents (mobile driver's licenses / ISO 18013-5 mDL)
+
+Reads **mobile driver's licenses** (mDL) — both the offline ISO 18013-5 mdoc exchange and the OCR of the on-screen rendering. Mobile documents are read by a `MobileDocumentScanner`, passed as the **second** positional argument to `IdCaptureScanner` (the first is the physical-document scanner; pass `undefined` if you only want mobile documents). No add-on package is required — `MobileDocumentScanner` lives in the base `scandit-react-native-datacapture-id` package.
+
+**Configure the scanner** — `MobileDocumentScanner(iso180135, ocr, elementsToRetain?)`:
+
+```tsx
+import { IdCaptureScanner, MobileDocumentScanner } from 'scandit-react-native-datacapture-id';
+
+// Mobile documents only:
+settings.scanner = new IdCaptureScanner(undefined, new MobileDocumentScanner(true, false));
+
+// Physical + mobile documents in the same session:
+settings.scanner = new IdCaptureScanner(new FullDocumentScanner(), new MobileDocumentScanner(true, false));
+```
+
+`MobileDocumentScanner(true, false)` enables the ISO 18013-5 mdoc path and disables OCR; `MobileDocumentScanner(false, true)` reads only the OCR of the on-screen document. The optional third argument is a `Set<MobileDocumentDataElement>` declaring which fields the app intends to retain — this sets the `IntentToRetain` flag in the ISO 18013-5 request (required for data-protection compliance); an empty/omitted set means no elements are retained.
+
+```tsx
+import { MobileDocumentDataElement } from 'scandit-react-native-datacapture-id';
+
+const elementsToRetain = new Set([
+  MobileDocumentDataElement.FamilyName,
+  MobileDocumentDataElement.GivenName,
+  MobileDocumentDataElement.BirthDate,
+]);
+settings.scanner = new IdCaptureScanner(undefined, new MobileDocumentScanner(true, false, elementsToRetain));
+```
+
+**Read the result** — mobile-document data arrives in two source-specific getters on `CapturedId`:
+
+```tsx
+const listener = {
+  didCaptureId: (_: IdCapture, capturedId: CapturedId) => {
+    const mobile = capturedId.mobileDocument;       // MobileDocumentResult | null (ISO 18013-5 mdoc)
+    if (mobile) {
+      console.log(mobile.fullName, mobile.dateOfBirth, mobile.documentNumber);
+      // MobileDocumentResult also exposes portrait (base64 string | null), drivingLicenseCategories, issuingAuthority, etc.
+    }
+    const ocr = capturedId.mobileDocumentOcr;       // MobileDocumentOCRResult | null (on-screen OCR)
+    if (ocr) {
+      console.log(ocr.fullName, ocr.documentNumber, ocr.dateOfExpiry);
+    }
+  },
+};
+```
+
+> The harmonized top-level fields (`capturedId.fullName`, `dateOfBirth`, `documentNumber`, …) are still populated for mobile documents, so existing field-reading code keeps working; reach into `mobileDocument` / `mobileDocumentOcr` only when you need mobile-specific data.
+
+---
+
 ## Related rejection / verification flags (no add-on package required)
 
 These live in the base package and don't need a separate dependency, but they share the rejection model above:
@@ -148,7 +241,7 @@ These live in the base package and don't need a separate dependency, but they sh
 - `settings.rejectIdsExpiringIn = new Duration({ days: 30 })` → `RejectionReason.DocumentExpiresSoon`
 - `settings.rejectHolderBelowAge = 18` → `RejectionReason.HolderUnderage`
 - `settings.rejectNotRealIdCompliant = true` → `RejectionReason.NotRealIdCompliant`
-- `settings.rejectInconsistentData = true` → `RejectionReason.InconsistentData`; the detail is on `capturedId.verificationResult.dataConsistency`
+- `settings.rejectInconsistentData = true` → `RejectionReason.InconsistentData`; the detail is on `capturedId.verificationResult.dataConsistency` (see section 4)
 
 ## Reference links
 
