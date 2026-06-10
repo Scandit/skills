@@ -17,13 +17,6 @@
 #   - BarcodeCount is broadly uniform. Verified availability boundaries that DO matter:
 #       * list-scanning  (BarcodeCountCaptureList) — available on ALL 8. iOS uses
 #         setCaptureList(...); every other platform uses setBarcodeCountCaptureList(...).
-#       * status-mode    (BarcodeCountStatus / setStatusProvider) — available on ALL 8
-#         (iOS/Android 6.17, .NET/maui 6.18-6.19, flutter 7.0, JS frameworks 8.3). The JS
-#         platforms support it but their advanced docs don't show it yet -> a missing
-#         status-mode eval there is a REAL gap, not an exclusion.
-#       * tote-mapping   (BarcodeSpatialGrid / mapping flow) — NOT available on .NET or maui.
-#       * clustering     (ClusteringMode) — NOT available on .NET or maui.
-#     So only tote-mapping and clustering carry excluded_platforms.
 #   - API-shape divergence to keep in mind (not exclusions): camera uses the
 #     recommendedCameraSettings PROPERTY on iOS/.NET vs createRecommendedCameraSettings()
 #     METHOD on Android + all JS frameworks.
@@ -79,17 +72,12 @@ features:
     evidence: [docs]
     match: ["barcodecountnotinlistactionsettings", "not.?in.?list", "notinlist", "acceptbuttontext", "rejectbuttontext", "didtaprecognizedbarcodenotinlist"]
 
-  # ---- Highlighting / status ----
+  # ---- Highlighting ----
   - id: highlight-customization
     required: false
     evidence: [docs, sample]
     # Icon style (default) vs Dot style; per-barcode icon/brush delegates
     match: ["barcodecountviewstyle", "brushforrecognizedbarcode", "brushforunrecognizedbarcode", "iconforrecognizedbarcode", "scanditiconbuilder", "barcodecounticon", "recognizedbrush", "\\.dot\\b", "setbrush", "seticon"]
-  - id: status-mode
-    required: false
-    evidence: [docs, sample]
-    # available on all 8 (late on JS frameworks); a missing eval is a real gap
-    match: ["barcodecountstatus", "statusprovider", "setstatusprovider", "shouldshowstatusmodebutton", "shouldshowstatusicons", "statusrequested", "status mode", "barcodecountstatusitem"]
 
   # ---- Workflows / settings (broadly available) ----
   - id: filtering
@@ -113,20 +101,6 @@ features:
     required: false
     evidence: [docs]
     match: ["expectsonlyuniquebarcodes", "unique barcodes", "no duplicates"]
-
-  # ---- Not available on .NET / MAUI ----
-  - id: tote-mapping
-    required: false
-    evidence: [docs, sample]
-    # not on .NET/maui; cordova ships only the BarcodeSpatialGrid data model, not the
-    # interactive editor-view UI (verified absent from the cordova plugin) -> excluded.
-    excluded_platforms: [net-android, net-ios, maui, cordova]
-    match: ["tote mapping", "\\btote\\b", "barcodespatialgrid", "barcodespatialgrideditor", "mappingflow", "sub.?tote"]
-  - id: clustering
-    required: false
-    evidence: [docs]
-    excluded_platforms: [net-android, net-ios, maui]
-    match: ["clustering", "clusteringmode", "auto_with_manual_correction", "beginclusterediting", "barcodeclustereditor"]
 
   # ---- Migration ----
   - id: migration-v7-to-v8

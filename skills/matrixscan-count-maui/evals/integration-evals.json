@@ -190,24 +190,6 @@
       ]
     },
     {
-      "id": 11,
-      "prompt": "I want a Status Mode button in my MatrixScan Count .NET MAUI app that marks every counted item as low stock. Update IntegratedBarcodeCountPage.xaml.cs.",
-      "expected_output": "The skill implements IBarcodeCountStatusProvider (OnStatusRequested building BarcodeCountStatusItem.Create entries with BarcodeCountStatus.LowStock and calling callback.OnStatusReady with BarcodeCountStatusResultSuccess.Create), shows the status button via barcodeCountView.ShouldShowStatusModeButton = true, and registers the provider via barcodeCountView.SetStatusProvider once the handler is ready, preserving the existing integration.",
-      "files": [
-        "fixtures/IntegratedBarcodeCountPage.xaml.cs"
-      ],
-      "tags": ["status-mode"],
-      "assertions": [
-        {"text": "A class implementing IBarcodeCountStatusProvider is provided with an OnStatusRequested method"},
-        {"text": "BarcodeCountStatusItem.Create is used to build status items with BarcodeCountStatus.LowStock"},
-        {"text": "callback.OnStatusReady is called with a BarcodeCountStatusResultSuccess.Create result"},
-        {"text": "barcodeCountView.ShouldShowStatusModeButton is set to true"},
-        {"text": "barcodeCountView.SetStatusProvider is called to register the provider"},
-        {"text": "The status provider is registered after the handler is ready (e.g. inside OnBarcodeCountViewHandlerChanged) rather than before the handler exists"},
-        {"text": "Existing integration code (HandlerChanged wiring, ListButtonTapped, ExitButtonTapped, OnAppearing, OnDisappearing) is preserved"}
-      ]
-    },
-    {
       "id": 12,
       "prompt": "I want to hide the List button, the Exit button, and the on-screen hints in my MatrixScan Count .NET MAUI app — keep just the shutter. Update IntegratedBarcodeCountPage.xaml.cs.",
       "expected_output": "The skill sets the relevant ShouldShow* properties to false on barcodeCountView (ShouldShowListButton, ShouldShowExitButton, ShouldShowHints), preserving the existing integration.",

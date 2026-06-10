@@ -1356,7 +1356,7 @@ document.addEventListener('resume', async () => {
 
 ## Step 17 — Filtering (exclude barcodes by symbology or regex)
 
-When several barcode types appear on the same label or package, you can scan only the ones you want and filter the rest out. Filtering is configured on `BarcodeCountSettings.filterSettings` (a `BarcodeFilterSettings`) — exclude by symbology, by symbol count, or by a regex on the decoded data.
+When several barcode types appear in the scene, you can scan only the ones you want and filter the rest out. Filtering is configured on `BarcodeCountSettings.filterSettings` (a `BarcodeFilterSettings`) — exclude by symbology, by symbol count, or by a regex on the decoded data.
 
 `settings.filterSettings` is a **getter** that returns the existing `BarcodeFilterSettings` instance. Mutate it in place (do not construct a new one):
 
@@ -1440,39 +1440,6 @@ await barcodeCount.clearAdditionalBarcodes();
 ```
 
 To also clear the on-screen AR overlays, call `view.clearHighlights()` (does not affect session data).
-
-## Step 21 — Clustering (≥Cordova 8.3)
-
-Clustering groups neighbouring barcodes together — either automatically by visual context or manually by the operator on screen. It is configured via `BarcodeCountSettings.clusteringMode` and is disabled by default. In a plain Cordova project the enum is reached through the `Scandit.*` global as `Scandit.ClusteringMode` (it lives in core, re-exported on the `Scandit` namespace).
-
-```javascript
-const settings = new Scandit.BarcodeCountSettings();
-settings.clusteringMode = Scandit.ClusteringMode.AutoWithManualCorrection;
-```
-
-| `Scandit.ClusteringMode` value | Description |
-|--------------------------------|-------------|
-| `Scandit.ClusteringMode.Disabled` | No clustering is performed. Default. |
-| `Scandit.ClusteringMode.Manual` | Operator selects which barcodes to cluster using the on-screen UI. |
-| `Scandit.ClusteringMode.Auto` | Clustering is performed automatically and cannot be tuned manually. |
-| `Scandit.ClusteringMode.AutoWithManualCorrection` | Clustering is automatic but clusters can be formed or dissolved manually on screen. |
-
-When clustering is enabled, recognized clusters are exposed on the session as `session.recognizedClusters` (an array of `Cluster`), readable inside the listener callbacks:
-
-```javascript
-barcodeCount.addListener({
-  onSessionUpdated: async (barcodeCount, session, getFrameData) => {
-    const clusters = session.recognizedClusters; // ≥8.3
-    console.log('Clusters:', clusters.length);
-  },
-});
-```
-
-For the `Manual` and `AutoWithManualCorrection` modes, set `view.textForClusteringGestureHint` to localize the on-screen clustering gesture hint.
-
-## Tote mapping — not available on Cordova
-
-Tote mapping (assigning scanned barcodes to a spatial grid of totes) is driven by `BarcodeSpatialGridEditorView`, `BarcodeSpatialGridEditorViewSettings`, and `BarcodeSpatialGridEditorViewListener`. On Cordova, only the `BarcodeSpatialGrid` data model is exported — the editor-view UI classes are **not** available in the Cordova plugin and there is no documented Cordova JS usage for them. Do not attempt to construct or use `BarcodeSpatialGridEditorView` on Cordova. If a user needs tote mapping, direct them to a native (iOS/Android) integration.
 
 ## Key rules
 

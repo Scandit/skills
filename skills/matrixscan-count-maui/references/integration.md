@@ -649,7 +649,7 @@ this.barcodeCountView.SetStatusProvider(new StatusProvider());
 
 ### Filtering
 
-If a label carries several barcode types and you only want to count one of them, filter the rest out. Filtering is configured through `barcodeCountSettings.FilterSettings` (a `BarcodeFilterSettings` you read off the settings — you do **not** `new` it for this), then applied by creating the mode with those settings. You can filter by symbology or by a regex on the barcode data.
+If several barcode types appear in the scene and you only want to count one of them, filter the rest out. Filtering is configured through `barcodeCountSettings.FilterSettings` (a `BarcodeFilterSettings` you read off the settings — you do **not** `new` it for this), then applied by creating the mode with those settings. You can filter by symbology or by a regex on the barcode data.
 
 Exclude a symbology (e.g. count everything except PDF417):
 

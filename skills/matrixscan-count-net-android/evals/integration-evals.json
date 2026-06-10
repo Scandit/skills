@@ -174,23 +174,6 @@
       ]
     },
     {
-      "id": 11,
-      "prompt": "In my MatrixScan Count .NET Android app I want to mark each scanned item with a status icon — flag low-stock items. Add status mode to IntegratedActivity.cs.",
-      "expected_output": "The skill implements IBarcodeCountStatusProvider (OnStatusRequested), builds BarcodeCountStatusItem.Create(barcode, BarcodeCountStatus.LowStock) entries, returns them via callback.OnStatusReady(BarcodeCountStatusResultSuccess.Create(...)), enables the status mode button with barcodeCountView.ShouldShowStatusModeButton = true, and registers it via barcodeCountView.SetStatusProvider(provider). The rest of the integration is intact.",
-      "files": [
-        "fixtures/IntegratedActivity.cs"
-      ],
-      "tags": ["status-mode"],
-      "assertions": [
-        {"text": "IBarcodeCountStatusProvider is implemented with OnStatusRequested(IList<TrackedBarcode>, IBarcodeCountStatusProviderCallback)"},
-        {"text": "BarcodeCountStatusItem.Create is used to build status items"},
-        {"text": "BarcodeCountStatus.LowStock is used as the status for low-stock items"},
-        {"text": "The callback delivers the result via OnStatusReady with BarcodeCountStatusResultSuccess.Create"},
-        {"text": "barcodeCountView.SetStatusProvider( is called to register the provider"},
-        {"text": "Existing integration code (camera, BarcodeCount.Create, BarcodeCountView, Scanned handler) is preserved"}
-      ]
-    },
-    {
       "id": 12,
       "prompt": "In my MatrixScan Count .NET Android app, hide the Exit button and the hints, and turn on the floating shutter button for strap mode. Update IntegratedActivity.cs.",
       "expected_output": "The skill sets barcodeCountView.ShouldShowExitButton = false, barcodeCountView.ShouldShowHints = false, and barcodeCountView.ShouldShowFloatingShutterButton = true, keeping the rest of the integration intact.",

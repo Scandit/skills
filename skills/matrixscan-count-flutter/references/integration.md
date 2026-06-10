@@ -85,7 +85,7 @@ settings.expectsOnlyUniqueBarcodes = true;
 
 ### Filtering (excluding barcodes by symbology or regex)
 
-If labels carry several barcode types and you only want to count one of them, exclude the others on `BarcodeCountSettings.filterSettings` (a `BarcodeFilterSettings`). This is the **mode-level** filter that drops barcodes before they are counted — it is **distinct** from the view-level `view.filterSettings`, which only controls how filtered barcodes are highlighted (see Step 9).
+If several barcode types appear in the scene and you only want to count one of them, exclude the others on `BarcodeCountSettings.filterSettings` (a `BarcodeFilterSettings`). This is the **mode-level** filter that drops barcodes before they are counted — it is **distinct** from the view-level `view.filterSettings`, which only controls how filtered barcodes are highlighted (see Step 9).
 
 Exclude by symbology — for example enable Code 128 but never count PDF417:
 
@@ -105,26 +105,6 @@ filterSettings.excludedCodesRegex = '^1234.*';
 ```
 
 `BarcodeFilterSettings` also exposes `excludedSymbolCounts` (`Map<Symbology, Set<int>>`) to exclude specific symbol-count lengths. The getter `settings.filterSettings` returns the live instance, so mutate it in place rather than reassigning.
-
-### Clustering (Flutter ≥8.3, beta)
-
-Clustering groups neighbouring barcodes together — either automatically or with manual user correction. It is disabled by default; enable it by setting `clusteringMode` on `BarcodeCountSettings` before constructing the mode:
-
-```dart
-final settings = BarcodeCountSettings()
-  ..clusteringMode = ClusteringMode.autoWithManualCorrection;
-```
-
-`ClusteringMode` values:
-
-| Value | Behavior |
-|-------|----------|
-| `ClusteringMode.disabled` | No clustering (default). |
-| `ClusteringMode.manual` | The user selects which barcodes to cluster via the on-screen UI. |
-| `ClusteringMode.auto` | Clusters are formed automatically and cannot be tuned. |
-| `ClusteringMode.autoWithManualCorrection` | Clusters are formed automatically but can be created or dissolved manually. |
-
-When clustering is enabled, the grouped barcodes are reported on `session.recognizedClusters` (`List<Cluster>`) in the `didScan` callback, and cluster taps are delivered through `didTapCluster` on `IBarcodeCountViewExtendedListener` (see Step 7). The clustering gesture hint text is set via `view.textForClusteringGestureHint`.
 
 ### BarcodeCountSettings Properties and Methods
 
@@ -240,7 +220,6 @@ class CountBloc implements IBarcodeCountExtendedListener {
 |----------|------|-------------|
 | `recognizedBarcodes` | `List<Barcode>` | All currently recognized barcodes (available from Flutter 7.0). |
 | `additionalBarcodes` | `List<Barcode>` | Barcodes injected via `setAdditionalBarcodes`. |
-| `recognizedClusters` | `List<Cluster>` | Grouped barcodes when `clusteringMode` is enabled. Flutter ≥8.3. |
 | `frameSequenceId` | `int` | Identifier of the current frame sequence. |
 | `reset()` | `Future<void>` | Reset the session inside the listener callback. |
 | `getSpatialMap()` | `Future<BarcodeSpatialGrid?>` | Compute the spatial map (requires `mappingEnabled = true`). Flutter ≥8.3. |

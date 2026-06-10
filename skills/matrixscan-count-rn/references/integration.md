@@ -95,12 +95,11 @@ settings.expectsOnlyUniqueBarcodes = true;
 | `disableModeWhenCaptureListCompleted` | `boolean` (RN 8.3+) — auto-disable mode when capture list is completed. |
 | `clusteringMode` | `ClusteringMode` (RN 8.3+) — `Disabled` (default), `Auto`, `Manual`, or `AutoWithManualCorrection`. |
 | `filterSettings` | Read-only `BarcodeFilterSettings` getter — mutate it in place to exclude barcodes from counting. |
-| `mappingEnabled` | `boolean` — enable spatial mapping (tote mapping); required before `session.getSpatialMap()` returns a grid. |
 | `setProperty(name, value)` / `getProperty(name)` | Advanced property access by name. |
 
 ### Filtering — excluding barcodes from the count (Step 2 add-on)
 
-When a label or package carries several barcodes but you only want to count some of them, exclude the
+When several barcode types appear in the scene but you only want to count some of them, exclude the
 rest with `BarcodeCountSettings.filterSettings`. This is a **read-only getter** that returns a
 `BarcodeFilterSettings` instance — mutate it in place; do **not** construct a new `BarcodeFilterSettings`
 and assign it back. Filtering applies at the settings level (which barcodes are counted), separately
@@ -131,57 +130,6 @@ filterSettings.excludedCodesRegex = '^1234.*';
 | `excludeEan13` | `boolean` | Convenience flag to exclude EAN-13 barcodes. |
 | `excludeUpca` | `boolean` | Convenience flag to exclude UPC-A barcodes. |
 | `setExcludedSymbolCounts(counts, symbology)` | method | Exclude specific symbol counts for a symbology. |
-
-### Clustering — grouping neighbouring barcodes (RN 8.3+)
-
-Clustering groups multiple barcodes together based on their visual context, or lets the operator group
-them manually. Set `clusteringMode` on the settings; `ClusteringMode` is imported from
-`scandit-react-native-datacapture-core`.
-
-```typescript
-import { BarcodeCountSettings } from 'scandit-react-native-datacapture-barcode';
-import { ClusteringMode } from 'scandit-react-native-datacapture-core';
-
-const settings = new BarcodeCountSettings();
-// Auto-cluster, but still let the operator form or break clusters on screen
-settings.clusteringMode = ClusteringMode.AutoWithManualCorrection;
-```
-
-`ClusteringMode` values: `Disabled` (default), `Manual`, `Auto`, `AutoWithManualCorrection`. This
-requires react-native=8.3+.
-
-### Tote mapping — spatial grid (read-only on React Native)
-
-Tote mapping maps scanned barcodes to a spatial grid of totes. On React Native the **read-only spatial
-grid** is available: enable `settings.mappingEnabled = true`, then read the grid from the session inside
-the listener with `session.getSpatialMap()` (or `session.getSpatialMapWithHints(rows, cols)`), which
-resolves to a `BarcodeSpatialGrid`.
-
-```typescript
-import { BarcodeCountSettings, BarcodeSpatialGrid } from 'scandit-react-native-datacapture-barcode';
-
-const settings = new BarcodeCountSettings();
-settings.mappingEnabled = true;
-
-// Inside the BarcodeCountListener:
-barcodeCount.addListener({
-  didScan: async (_, session) => {
-    const grid: BarcodeSpatialGrid | null = await session.getSpatialMap();
-    if (grid) {
-      const topLeft = grid.barcodeAt(0, 0);  // Barcode | null
-      console.log('rows:', grid.rows, 'columns:', grid.columns);
-    }
-  },
-});
-```
-
-`BarcodeSpatialGrid` exposes `rows`, `columns`, and `barcodeAt(row, column)`.
-
-> **The interactive spatial-grid editor UI is NOT available on React Native.** The
-> `BarcodeSpatialGridEditorView` / `BarcodeSpatialGridEditorViewSettings` /
-> `BarcodeSpatialGridEditorViewListener` classes (used to let an operator edit the tote layout on
-> screen) are not exported by the React Native SDK. React Native supports only the read-only
-> `BarcodeSpatialGrid` shown above.
 
 ## Step 3 — Construct BarcodeCount and attach camera
 

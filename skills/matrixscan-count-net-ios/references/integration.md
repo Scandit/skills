@@ -169,9 +169,9 @@ settings.ExpectsOnlyUniqueBarcodes = true;
 
 `ExpectsOnlyUniqueBarcodes` (default `false`) tells the engine each barcode value appears at most once in the scene, so it can stop re-evaluating a value once counted. Leave it `false` if the same barcode can legitimately appear multiple times.
 
-### Filtering (count only some of the barcodes on a label)
+### Filtering (count only some of the barcodes in the scene)
 
-When a label carries several barcodes and you only want to count some of them, filter the rest out through `settings.FilterSettings` (a `BarcodeFilterSettings`, exposed read-only on `BarcodeCountSettings`). Filtering is by symbology, by symbol count, or by a regex on the barcode data. Filtered barcodes are still detected but are covered by a highlight and excluded from the count.
+When several barcode types appear in the scene and you only want to count some of them, filter the rest out through `settings.FilterSettings` (a `BarcodeFilterSettings`, exposed read-only on `BarcodeCountSettings`). Filtering is by symbology, by symbol count, or by a regex on the barcode data. Filtered barcodes are still detected but are covered by a highlight and excluded from the count.
 
 ```csharp
 using Scandit.DataCapture.Barcode.Data;

@@ -205,22 +205,6 @@
         {"text": "barcodeCountView.clearHighlights() is called"},
         {"text": "Existing integration code (context, barcodeCount, barcodeCountView, camera) is preserved"}
       ]
-    },
-    {
-      "id": 13,
-      "prompt": "Enable automatic clustering in my Cordova MatrixScan Count app (IntegratedApp.js) so neighbouring barcodes get grouped, but still let the operator manually form or break clusters on screen.",
-      "expected_output": "The skill sets settings.clusteringMode = Scandit.ClusteringMode.AutoWithManualCorrection on the BarcodeCountSettings and notes it requires Cordova 8.3 or later. Existing integration code and the license placeholder are preserved.",
-      "files": [
-        "fixtures/IntegratedApp.js"
-      ],
-      "assertions": [
-        {"text": "settings.clusteringMode is assigned"},
-        {"text": "Scandit.ClusteringMode.AutoWithManualCorrection is used"},
-        {"text": "Clustering requires Cordova 8.3 or later is mentioned (semantic)"},
-        {"text": "'-- ENTER YOUR SCANDIT LICENSE KEY HERE --' is present"},
-        {"text": "Existing integration code (context, barcodeCount, barcodeCountView) is preserved (semantic)"}
-      ],
-      "tags": ["clustering"]
     }
   ]
 }

@@ -172,19 +172,6 @@
       "tags": ["filtering"]
     },
     {
-      "id": 14,
-      "prompt": "In my MatrixScan Count app, automatically group neighbouring barcodes into clusters, and let the user fix the grouping by hand. File: IntegratedBarcodeCountViewController.swift",
-      "expected_output": "The skill enables clustering by setting settings.clusteringMode = .autoWithManualCorrection on the BarcodeCountSettings before constructing the BarcodeCount mode (auto clustering with the manual-correction UI). The rest of the integration is unchanged.",
-      "files": ["fixtures/IntegratedBarcodeCountViewController.swift"],
-      "assertions": [
-        {"text": "settings.clusteringMode is set to ClusteringMode.autoWithManualCorrection"},
-        {"text": "clusteringMode is set on the BarcodeCountSettings before BarcodeCount(context:settings:) is constructed"},
-        {"text": "It uses the real ClusteringMode case .autoWithManualCorrection — not a guessed/invented case name"},
-        {"text": "The existing enabled symbologies remain enabled; the camera, mode, view, listener, uiDelegate and lifecycle are unchanged"}
-      ],
-      "tags": ["clustering"]
-    },
-    {
       "id": 15,
       "prompt": "Let the user trigger a scan with the volume button in my MatrixScan Count app instead of only the on-screen shutter. File: IntegratedBarcodeCountViewController.swift",
       "expected_output": "The skill enables the hardware trigger by setting barcodeCountView.hardwareTriggerEnabled = true (on iOS this binds the volume button). No custom key-event handling is added; the rest of the integration is unchanged.",
@@ -235,20 +222,6 @@
         {"text": "The context, camera, settings, mode, view, listener, uiDelegate and lifecycle are unchanged"}
       ],
       "tags": ["reset-mode"]
-    },
-    {
-      "id": 19,
-      "prompt": "I want to map the scanned barcodes to physical totes in my MatrixScan Count app and let the user review the tote layout. File: IntegratedBarcodeCountViewController.swift",
-      "expected_output": "The skill enables tote mapping by setting settings.mappingEnabled = true on the BarcodeCountSettings, obtains the spatial grid from the session via session.spatialMap() (a BarcodeSpatialGrid), and presents a BarcodeSpatialGridEditorView built with the grid and a BarcodeSpatialGridEditorViewSettings, conforming to BarcodeSpatialGridEditorViewDelegate to read back the finished grid. This is a beta API.",
-      "files": ["fixtures/IntegratedBarcodeCountViewController.swift"],
-      "assertions": [
-        {"text": "settings.mappingEnabled = true is set on the BarcodeCountSettings before BarcodeCount(context:settings:) is constructed"},
-        {"text": "The spatial grid is obtained from the session via session.spatialMap() returning a BarcodeSpatialGrid (semantic)"},
-        {"text": "A BarcodeSpatialGridEditorView is constructed with the grid and a BarcodeSpatialGridEditorViewSettings"},
-        {"text": "The controller conforms to BarcodeSpatialGridEditorViewDelegate and reads the finished grid in barcodeSpatialGridEditorView(_:didFinishEditingWith:)"},
-        {"text": "It uses the real mapping APIs (mappingEnabled, spatialMap, BarcodeSpatialGridEditorView) — not guessed names; the core integration is otherwise unchanged"}
-      ],
-      "tags": ["tote-mapping"]
     }
   ]
 }

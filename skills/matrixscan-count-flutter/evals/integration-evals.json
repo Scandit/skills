@@ -185,20 +185,6 @@
       "tags": ["expects-only-unique"]
     },
     {
-      "id": 12,
-      "prompt": "In my MatrixScan Count Flutter app, automatically group neighbouring barcodes into clusters, and let the user fix the grouping by hand. File: IntegratedBloc.dart",
-      "expected_output": "The skill enables clustering by setting settings.clusteringMode = ClusteringMode.autoWithManualCorrection on the BarcodeCountSettings before constructing the BarcodeCount mode. The rest of the integration is unchanged.",
-      "files": [
-        "fixtures/IntegratedBloc.dart"
-      ],
-      "assertions": [
-        {"text": "clusteringMode is set to ClusteringMode.autoWithManualCorrection on the BarcodeCountSettings"},
-        {"text": "It is set before BarcodeCount( settings ) is constructed"},
-        {"text": "Existing integration code (BarcodeCount, BarcodeCountView, listeners) is preserved"}
-      ],
-      "tags": ["clustering"]
-    },
-    {
       "id": 13,
       "prompt": "In my MatrixScan Count Flutter app, when the app goes to the background I want to clear the count, but when it comes back I want the previously scanned barcodes to still be shown as already counted. File: IntegratedBloc.dart",
       "expected_output": "The skill stashes the recognized barcodes and calls barcodeCount.reset() when going to the background, then calls barcodeCount.setAdditionalBarcodes with the previously scanned barcodes when returning to the foreground so they are restored as already-counted. The core integration is otherwise unchanged.",

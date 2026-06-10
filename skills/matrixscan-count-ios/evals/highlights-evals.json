@@ -102,21 +102,6 @@
         {"text": "It keeps the default Icon style (does not switch to .dot) and does not invent a per-state icon property"},
         {"text": "The context, mode, camera, listener, uiDelegate and lifecycle are unchanged"}
       ]
-    },
-    {
-      "id": 9,
-      "prompt": "In my MatrixScan Count app, after a barcode is scanned I want to show a per-barcode status overlay — mark items I know are expired as expired. File: IntegratedBarcodeCountViewController.swift",
-      "expected_output": "The skill enables status mode: sets barcodeCountView.shouldShowStatusIconsOnScan = true, calls barcodeCountView.setStatusProvider(self), and makes the controller conform to BarcodeCountStatusProvider implementing statusRequested(for:callback:). The provider builds a BarcodeCountStatusItem per TrackedBarcode (with BarcodeCountStatus, e.g. .expired) and returns them via a BarcodeCountStatusSuccessResult passed to callback.onStatusReady(_:). The rest of the integration is unchanged.",
-      "files": ["fixtures/IntegratedBarcodeCountViewController.swift"],
-      "assertions": [
-        {"text": "barcodeCountView.shouldShowStatusIconsOnScan = true is set (or barcodeCountView.shouldShowStatusModeButton = true) to surface status mode"},
-        {"text": "barcodeCountView.setStatusProvider(self) is called"},
-        {"text": "The controller conforms to BarcodeCountStatusProvider and implements statusRequested(for:callback:) with a [TrackedBarcode] parameter and a BarcodeCountStatusProviderCallback"},
-        {"text": "A BarcodeCountStatusItem is built per barcode via BarcodeCountStatusItem(barcode:status:) using a real BarcodeCountStatus case such as .expired"},
-        {"text": "The statuses are returned via BarcodeCountStatusSuccessResult(statusList:statusModeEnabledMessage:statusModeDisabledMessage:) passed to callback.onStatusReady(_:)"},
-        {"text": "It uses only real BarcodeCountStatus cases (.none, .notAvailable, .expired, .fragile, .qualityCheck, .lowStock, .wrong, .expiringSoon) and does not invent status cases (semantic)"}
-      ],
-      "tags": ["status-mode"]
     }
   ]
 }

@@ -184,22 +184,6 @@
       "tags": ["filtering"]
     },
     {
-      "id": 10,
-      "prompt": "Enable automatic clustering in my MatrixScan Count app so neighbouring barcodes get grouped, but still let the operator manually form or break clusters on screen.",
-      "expected_output": "The skill sets settings.clusteringMode = ClusteringMode.AutoWithManualCorrection on the BarcodeCountSettings, imports ClusteringMode, and notes it is Cap 8.3+. Existing integration code is preserved.",
-      "files": [
-        "fixtures/IntegratedApp.js"
-      ],
-      "assertions": [
-        {"text": "settings.clusteringMode is assigned"},
-        {"text": "ClusteringMode.AutoWithManualCorrection is used"},
-        {"text": "ClusteringMode is imported"},
-        {"text": "A note or comment mentions clustering is Cap 8.3 or later (semantic)"},
-        {"text": "Existing integration code (context, barcodeCount, barcodeCountView) is still referenced and used (semantic)"}
-      ],
-      "tags": ["clustering"]
-    },
-    {
       "id": 11,
       "prompt": "Every barcode in my batches is unique — no duplicates ever appear. Turn on the optimization for that in my MatrixScan Count app.",
       "expected_output": "The skill sets settings.expectsOnlyUniqueBarcodes = true on the BarcodeCountSettings. Existing integration code is preserved.",

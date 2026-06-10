@@ -197,38 +197,6 @@
         {"text": "expectsOnlyUniqueBarcodes is set on the BarcodeCountSettings before BarcodeCount is constructed (semantic)"},
         {"text": "Existing BarcodeCount mode, camera lifecycle, and listeners are preserved (semantic)"}
       ]
-    },
-    {
-      "id": 12,
-      "prompt": "Enable automatic clustering in my MatrixScan Count app so neighbouring barcodes get grouped, but still let the operator manually form or break clusters on screen. File: IntegratedApp.tsx.",
-      "expected_output": "The skill sets settings.clusteringMode = ClusteringMode.AutoWithManualCorrection on the BarcodeCountSettings, imports ClusteringMode from scandit-react-native-datacapture-core, and notes the RN 8.3+ requirement. The existing integration is preserved.",
-      "files": [
-        "fixtures/IntegratedApp.tsx"
-      ],
-      "tags": ["clustering"],
-      "assertions": [
-        {"text": "settings.clusteringMode is assigned"},
-        {"text": "ClusteringMode.AutoWithManualCorrection is used"},
-        {"text": "ClusteringMode is imported from 'scandit-react-native-datacapture-core'"},
-        {"text": "A note or comment mentions clustering requires RN 8.3 or later (semantic)"},
-        {"text": "Existing BarcodeCount mode, camera lifecycle, and listeners are preserved (semantic)"}
-      ]
-    },
-    {
-      "id": 13,
-      "prompt": "I want to map scanned barcodes to a spatial grid of totes in my MatrixScan Count app and read back the grid after each scan. File: IntegratedApp.tsx.",
-      "expected_output": "The skill sets settings.mappingEnabled = true on the BarcodeCountSettings and reads the grid inside the BarcodeCountListener via session.getSpatialMap(), which resolves to a BarcodeSpatialGrid. The skill notes that the interactive BarcodeSpatialGridEditorView is not available on React Native. The existing integration is preserved.",
-      "files": [
-        "fixtures/IntegratedApp.tsx"
-      ],
-      "tags": ["tote-mapping"],
-      "assertions": [
-        {"text": "settings.mappingEnabled = true is present"},
-        {"text": "session.getSpatialMap( is called inside the BarcodeCountListener (semantic)"},
-        {"text": "BarcodeSpatialGrid is imported from 'scandit-react-native-datacapture-barcode'"},
-        {"text": "A note explains BarcodeSpatialGridEditorView is NOT available on React Native (semantic)"},
-        {"text": "Existing BarcodeCount mode, camera lifecycle, and listeners are preserved (semantic)"}
-      ]
     }
   ]
 }

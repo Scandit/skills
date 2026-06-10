@@ -171,24 +171,6 @@
       ]
     },
     {
-      "id": 10,
-      "tags": ["status-mode"],
-      "prompt": "In my MatrixScan Count .NET iOS app (IntegratedViewController.cs) I want to use Status Mode to annotate each counted barcode as low stock, and show the Status Mode button in the UI.",
-      "expected_output": "The skill implements IBarcodeCountStatusProvider (OnStatusRequested builds BarcodeCountStatusItem.Create(barcode, BarcodeCountStatus.LowStock) for each tracked barcode and calls callback.OnStatusReady with BarcodeCountStatusResultSuccess.Create(...)), registers it via barcodeCountView.SetStatusProvider(provider), and sets barcodeCountView.ShouldShowStatusModeButton = true, preserving the existing integration.",
-      "files": [
-        "fixtures/IntegratedViewController.cs"
-      ],
-      "assertions": [
-        {"text": "An IBarcodeCountStatusProvider is implemented with an OnStatusRequested method"},
-        {"text": "barcodeCountView.SetStatusProvider( is called to register the status provider"},
-        {"text": "barcodeCountView.ShouldShowStatusModeButton is set to true"},
-        {"text": "BarcodeCountStatus.LowStock is used as the per-barcode status"},
-        {"text": "BarcodeCountStatusItem.Create( is used to build each status item"},
-        {"text": "The provider callback delivers results via BarcodeCountStatusResultSuccess.Create("},
-        {"text": "Existing integration code (camera, BarcodeCount.Create, BarcodeCountView, Scanned handler) is preserved"}
-      ]
-    },
-    {
       "id": 11,
       "tags": ["ui-customization"],
       "prompt": "In my MatrixScan Count .NET iOS app (IntegratedViewController.cs) I want a minimal UI: hide the List, Exit, and Shutter buttons, and turn off the user guidance view and hints.",

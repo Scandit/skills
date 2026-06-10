@@ -417,10 +417,10 @@ These are optional configurations on top of the basic integration. They mirror t
 [Advanced Configurations](https://docs.scandit.com/sdks/ios/matrixscan-count/advanced/) page. Verify
 exact signatures against the API reference before writing code if anything is unclear.
 
-### Filtering (scan only some of the barcodes on a label)
+### Filtering (count only some of the barcodes in the scene)
 
-If a label carries several barcodes and you only want to count some of them, exclude the others with a
-`BarcodeFilterSettings` assigned to `BarcodeCountSettings.filterSettings`. Excluded barcodes still need
+If several barcode types appear in the scene and you only want to count some of them, exclude the others
+with a `BarcodeFilterSettings` assigned to `BarcodeCountSettings.filterSettings`. Excluded barcodes still need
 to be *enabled* on the settings — they are decoded, then filtered out of the count and covered by a
 colored layer in the AR view. Exclude by **symbology** (`excludedSymbologies`), by a **regex** matched
 against the barcode data (`excludedCodesRegex`), or by **symbol count** (`excludedSymbolCounts`):
@@ -449,24 +449,6 @@ filterSettings.excludedCodesRegex = "^1234.*"
   a `BarcodeFilterHighlightSettingsBrush(brush:)` (which conforms to `BarcodeFilterHighlightSettings`)
   and set `barcodeCountView.filterSettings = BarcodeFilterHighlightSettingsBrush(brush: someBrush)`.
 
-### Clustering (group neighbouring barcodes)
-
-Clustering smart-groups neighbouring barcodes. It is **disabled by default**; enable it by setting
-`BarcodeCountSettings.clusteringMode` to a `ClusteringMode` case **before** constructing the mode:
-
-```swift
-let settings = BarcodeCountSettings()
-settings.set(symbology: .ean13UPCA, enabled: true)
-settings.clusteringMode = .autoWithManualCorrection
-
-let barcodeCount = BarcodeCount(context: context, settings: settings)
-```
-
-`ClusteringMode` cases: `.disabled` (default), `.manual` (the user selects which barcodes to cluster
-with the on-screen UI), `.auto` (automatic, not manually tunable), and `.autoWithManualCorrection`
-(automatic, but clusters can be formed/dissolved manually). When clustering is on, the grouped barcodes
-are exposed via `session.recognizedClusters` (and on the snapshot).
-
 ### Hardware trigger (volume button)
 
 On iOS you can let the view react to presses of the device **volume button** instead of (or alongside)
@@ -478,17 +460,6 @@ barcodeCountView.hardwareTriggerEnabled = true
 
 `hardwareTriggerEnabled` is a `Bool` on the view. (On iOS this binds to the volume button; the
 `hardwareTriggerKeyCode` / `hardwareTriggerSupported` APIs are Android-only.)
-
-### Status mode (per-barcode status overlay)
-
-Status mode replaces the normal highlights with per-barcode **status indicators** (e.g. expired,
-low-stock) so the user gets richer handling information. It is documented in **`highlights.md`** (Status
-mode section), since it customizes what the AR overlay shows.
-
-### Tote mapping (MS Map)
-
-Mapping barcodes to physical totes (and sub-totes) is a separate feature built on
-`BarcodeSpatialGrid` / `BarcodeSpatialGridEditorView`. → see **`tote-mapping.md`**.
 
 ## SwiftUI
 
