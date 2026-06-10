@@ -71,6 +71,12 @@ flow is always propose-and-confirm:
    itself** — coverage of each platform's real capability is.
 3. Ask the human which verified gaps to fill; draft the fix for review; never commit
    silently.
+4. **Never commit unverified platform code.** A drafted fixture or reference snippet is
+   only committable after it compiles against the resolved real Scandit SDK (the
+   fix-verification gate in `audit evals` / `references/eval-conventions.md`). Where that
+   build is too heavy to run (Kotlin, Swift), the auditor proposes the code as UNVERIFIED
+   and hands it to `skill-creator` to build in a local sample app — it does not write the
+   fixture itself. Finding gaps is the auditor's job; vouching for a fix requires a build.
 
 So "put platforms on par" is the *outcome of a confirmed, truth-checked decision*, not an
 automatic rule.
@@ -134,7 +140,17 @@ stops surfacing. Product prefixes and parity exemptions live in `manifest.json`.
    for the same feature — re-target the prompt and APIs, don't copy assertions verbatim.
    Follow the conventions in `references/eval-conventions.md`. Match the per-product eval
    file layout the siblings use; put new evals in the matching `evals/*.json` file.
-5. Once evals carry explicit `tags`, tags are the source of truth and the taxonomy
+5. **Fix-verification gate (HARD RULE).** Any fixture or reference code snippet you write
+   must be compiled against the resolved real Scandit SDK before commit — string/semantic
+   evals do not catch hallucinated APIs or wrong-language code (Java-style Kotlin shipped
+   once exactly this way). Per `references/eval-conventions.md`: where a cheap deps-resolved
+   gate exists (Flutter `analyze`, TS `tsc` against the installed `@scandit/*` pkg, .NET
+   `dotnet build`, Cordova `node --check` + export check) run it and require a pass; where
+   the toolchain is heavy (Kotlin+gradle+Android SDK, Swift+xcodebuild) DO NOT bare-compile
+   and DO NOT commit — stay audit-only for that platform and hand the proposed code to
+   `skill-creator` to build in a local sample app. The gate is anti-hallucination only;
+   runtime behaviour is QA, not the auditor.
+6. Once evals carry explicit `tags`, tags are the source of truth and the taxonomy
    `match` patterns only catch new untagged evals.
 
 ### `audit consistency <product>`

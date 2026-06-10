@@ -21,30 +21,54 @@ Judge migration evals **against code blocks only**. Migration answers legitimate
 mention old APIs in prose ("replace forLicenseKey with..."), so assertions about
 old-API absence must scope to code, or they false-fail correct answers.
 
-## Compile gates
+## Fix-verification gate (HARD RULE — anti-hallucination)
 
-String assertions alone pass non-compiling code. Where the platform has a cheap static
-check, add it:
+**The auditor must never commit a fixture or reference code snippet that has not been
+compiled against the resolved real Scandit SDK.** String/semantic evals validate API
+*shape* in prose; they pass non-compiling code and wrong-language code (e.g. Java-style
+Kotlin). They do not catch hallucinated APIs. This rule exists because that exact failure
+shipped (Java-in-Kotlin fixtures in label-capture).
 
-- Flutter: `flutter analyze` gate on the produced file.
-- Web/TS: hand-write one `App.ts` from the skill's docs and run `tsc` — cheaper than a
-  model-graded gate and doubles as a doc-fidelity check (if the docs can't produce
-  compiling code, the docs are the bug).
+What the gate is FOR — and what it is NOT:
 
-## Snippet compile gate (skill reference content)
+- **Goal: the API is not hallucinated.** Every Scandit symbol the code uses (class,
+  method, property, enum case, import path, signature) must actually exist in the
+  released SDK, and the file must compile. That is the whole bar.
+- **NOT in scope: runtime behavior.** Whether it actually scans / detects / reads a
+  document is QA's job (needs a device + license + camera) — do not claim the gate
+  covers it.
 
-Never commit a code snippet into a skill's SKILL.md or references/ that has not been
-compile-checked. String-verified-against-source is not enough — compile against the
-**published** package (released behavior):
+The gate is only meaningful with the **real Scandit packages resolved on the
+classpath**. A bare `kotlinc File.kt` / `swiftc File.swift` is a FALSE gate: it cannot
+resolve `com.scandit.datacapture.*` at all, so it errors on every Scandit symbol
+indiscriminately (can't tell a real API from a hallucinated one) or, with imports
+stubbed, checks nothing. The fixture must be built inside a **deps-resolved project**
+(the skill-creator "local sample app" approach).
 
-- Dart: temp project with the pub.dev package + `dart analyze` on the snippet.
-- TS (rn/capacitor/web): temp dir, `npm install` the published package, `tsc --strict
-  --noEmit` on the snippet.
-- Plain JS (cordova): `node --check` for syntax, then verify every `Scandit.*` name is
-  exported by the plugin (the cordova plugin re-exports the shared frameworks-barcode
-  package, so tsc-checking the rn/capacitor snippet usually covers the signatures).
+Per-platform — who runs the gate:
 
-Order matters: compile the snippet BEFORE committing the skill change, not after.
+| Platform(s) | Gate (deps-resolved) | Cheap enough for the auditor to run? |
+|---|---|---|
+| Flutter | scratch pub project + `flutter analyze` / `dart analyze` | yes |
+| Web / RN / Capacitor (TS) | temp dir, `npm install` the published `@scandit/*` / `scandit-*` pkg, `tsc --strict --noEmit` | yes |
+| Cordova (plain JS) | `node --check` for syntax + verify every `Scandit.*` name against the plugin's exports (it re-exports the shared frameworks pkg; the tsc check above usually covers signatures) | yes |
+| .NET (net-android/net-ios/maui, C#) | scratch project + `dotnet restore` the Scandit NuGet + `dotnet build` | yes |
+| Android (Kotlin) | gradle project w/ `com.scandit.datacapture:*` + Android SDK → `./gradlew compileDebugKotlin` | NO — heavy toolchain |
+| iOS (Swift) | SPM/xcodebuild w/ the Scandit frameworks → `swift build` / `xcodebuild` | NO — heavy toolchain |
+
+**Decision rule (Option C):**
+
+1. If a cheap deps-resolved gate exists for the platform → the auditor MUST run it and the
+   fixture/snippet must pass BEFORE the change is committed. Compile before commit, not after.
+2. If the gate is heavy (Kotlin, Swift) → the auditor does NOT bare-compile (toothless) and
+   does NOT commit unverified code. It stays **audit-only** for that platform: it emits the
+   proposed fixture/snippet to the report as UNVERIFIED and hands it to `skill-creator`,
+   which builds the local sample app and compiles it. The auditor never self-commits
+   Kotlin/Swift fixtures.
+3. A cheaper anti-hallucination fallback (NOT a substitute for a build): cross-check every
+   Scandit symbol used against the SDK's declared surface (`docs/source/**/*.rst`,
+   `docs/api_availability/`). This catches hallucinated symbols/signatures but not all
+   syntax — so it is "propose-only / mark not-build-verified," never an auto-commit path.
 
 ## Honesty rules
 
