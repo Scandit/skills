@@ -125,6 +125,12 @@ context.setMode(idCapture);
 
 > **Use the plain constructors.** `IdCapture(settings)` and `IdCaptureOverlay(idCapture)` are the only forms on Flutter. Do **not** write `IdCapture.forContext(context, settings)`, `IdCaptureOverlay.withIdCapture(...)`, or `IdCaptureOverlay.withIdCaptureForView(...)` — those are other modes' / other platforms' APIs and do not exist here. The mode is attached to the context via `context.setMode(idCapture)`, and the overlay to the view via `captureView.addOverlay(overlay)`.
 
+### One mode at a time
+
+`IdCapture` cannot run simultaneously with another capture mode (Barcode Capture, SparkScan, Label Capture, …) on the same `DataCaptureContext`. Do **not** attach a second mode alongside `IdCapture`. If your app also scans barcodes, give each mode its own screen/context and switch between them rather than enabling both at once.
+
+`context.setMode(idCapture)` is the recommended way to attach the mode precisely because it **removes any existing mode** from the context before adding `IdCapture`. (`context.addMode(idCapture)` adds without removing — use it only if you know no other mode is attached.) When leaving the ID screen, call `context.removeMode(idCapture)` (or `context.removeAllModes()`) before attaching a different mode elsewhere.
+
 ## Step 5 — Set up and control the camera
 
 ```dart

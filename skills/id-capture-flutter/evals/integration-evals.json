@@ -133,6 +133,49 @@
         {"text": "idCapture.isEnabled is set to false while the rejection message is shown (semantic)"},
         {"text": "RejectionReason.timeout is present"}
       ]
+    },
+    {
+      "id": 10,
+      "prompt": "We want to reject IDs whose printed data doesn't match the data in the MRZ or barcode, to catch tampered documents. Set that up in ID Capture and let me inspect what failed. My screen is EmptyPage.dart.",
+      "expected_output": "The skill sets settings.rejectInconsistentData = true, handles RejectionReason.inconsistentData in didRejectId, and reads capturedId.verificationResult.dataConsistency to inspect the consistency checks.",
+      "files": ["fixtures/EmptyPage.dart"],
+      "assertions": [
+        {"text": "settings.rejectInconsistentData is enabled"},
+        {"text": "RejectionReason.inconsistentData is present"},
+        {"text": "didRejectId( is present"},
+        {"text": "capturedId.verificationResult.dataConsistency is read (semantic)"},
+        {"text": "DataConsistencyResult fields such as allChecksPassed or failedChecks are inspected (semantic)"}
+      ],
+      "tags": ["data-consistency-verification"]
+    },
+    {
+      "id": 11,
+      "prompt": "I already have ID Capture working on a screen. I now also want to scan barcodes with Barcode Capture at the same time on the same camera preview. Can I run both modes together? My screen is EmptyPage.dart.",
+      "expected_output": "The skill explains that IdCapture cannot run simultaneously with another capture mode on the same DataCaptureContext, advises against attaching a second mode to the same context, and recommends separate screens/contexts switched via setMode or removeMode. The ID Capture integration is preserved.",
+      "files": ["fixtures/EmptyPage.dart"],
+      "assertions": [
+        {"text": "It states that IdCapture cannot run at the same time as another capture mode such as Barcode Capture (semantic)"},
+        {"text": "It advises against attaching a second mode to the same DataCaptureContext (semantic)"},
+        {"text": "It recommends switching modes via context.setMode or context.removeMode rather than enabling both at once (semantic)"},
+        {"text": "context.setMode( is present"}
+      ],
+      "tags": ["mode-exclusivity"]
+    },
+    {
+      "id": 12,
+      "prompt": "I need to scan mobile driver's licenses (mDL, ISO 18013-5) in my Flutter app and read the holder's name and date of birth. Set that up in EmptyPage.dart.",
+      "expected_output": "The skill configures settings.scanner = IdCaptureScanner(mobileDocumentScanner: MobileDocumentScanner(iso180135: true, ocr: false)) for mobile documents, and reads the mobile-document data via capturedId.mobileDocument (or the harmonized top-level fields). MobileDocumentScanner ships in the base scandit_flutter_datacapture_id module, with no add-on package.",
+      "files": ["fixtures/EmptyPage.dart"],
+      "assertions": [
+        {"text": "MobileDocumentScanner( is present"},
+        {"text": "IdCaptureScanner( is present"},
+        {"text": "the MobileDocumentScanner is supplied to IdCaptureScanner via the named mobileDocumentScanner: argument, with iso180135: true (semantic)"},
+        {"text": "capturedId.mobileDocument is read, or the harmonized top-level fields the mobile document populates are read (semantic)"},
+        {"text": "didCaptureId is present"},
+        {"text": "no separate add-on package is added for mobile documents — MobileDocumentScanner is in the base module (semantic)"},
+        {"text": "no AamvaBarcodeVerifier and no IdDocumentType bitmask are used for mobile documents (semantic)"}
+      ],
+      "tags": ["mobile-document-mdl"]
     }
   ]
 }

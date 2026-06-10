@@ -85,16 +85,28 @@ The listener contract is unchanged across v7 → v8: implement `IdCaptureListene
 
 ## Step 7 — If you are coming from v6 (`supportedDocuments`)
 
-In v6, documents were selected with a `supportedDocuments` bitmask of `IdDocumentType` and the scanner was implied by `supportedSides`. That API was removed at v7. Move to the list-based model:
+In v6, documents were selected with a `supportedDocuments` bitmask of `IdDocumentType`, the sides were chosen with `supportedSides`, and the document type was read from `capturedId.documentType`. All three were removed at v7. Move to the list-based model:
 
 ```dart
-// v6 (removed): settings.supportedDocuments = IdDocumentType.idCardViz | IdDocumentType.passportMrz;
-// v7+: declare documents and a scanner explicitly
+// BEFORE (v6, removed):
+// settings.supportedDocuments = IdDocumentType.idCardViz | IdDocumentType.passportMrz;
+// settings.supportedSides = SupportedSides.frontAndBack;
+
+// AFTER (v7+): declare documents and a scanner explicitly
 settings.acceptedDocuments.addAll([
   IdCard(IdCaptureRegion.any),
   Passport(IdCaptureRegion.any),
 ]);
 settings.scanner = IdCaptureScanner(physicalDocumentScanner: FullDocumentScanner()); // v8 form
+```
+
+The document **type** also moved off `CapturedId`. Replace `capturedId.documentType` (removed, along with the `IdDocumentType` enum) with `capturedId.document?.documentType` (an `IdCaptureDocumentType`) or the convenience methods `isPassport()` / `isDriverLicense()` / `isIdCard()` / …:
+
+```dart
+// BEFORE (v6, removed): final type = capturedId.documentType;
+// AFTER (v7+):
+final IdCaptureDocumentType? type = capturedId.document?.documentType;
+// or: if (capturedId.isPassport()) { ... }
 ```
 
 For the full v6 → v7 details, see the [6 → 7 migration guide](https://docs.scandit.com/sdks/flutter/migrate-6-to-7/) and the [ID Capture API reference](https://docs.scandit.com/data-capture-sdk/flutter/id-capture/api.html).

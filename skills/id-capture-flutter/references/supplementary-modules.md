@@ -128,7 +128,86 @@ settings.rejectForgedAamvaBarcodes = true;
 
 ---
 
-## Related rejection / verification flags (no add-on package required)
+## 4. Data-consistency verification
+
+Cross-checks the document's human-readable data (VIZ) against the data encoded in its MRZ or barcode, and rejects documents whose fields don't agree (a common forgery / tampering signal). **No add-on package** — this lives in the base `scandit_flutter_datacapture_id` module.
+
+**Enable** — set the settings flag; inconsistent documents are rejected with `RejectionReason.inconsistentData`:
+
+```dart
+settings.rejectInconsistentData = true;
+```
+
+**Handle the rejection** in `didRejectId`:
+
+```dart
+@override
+Future<void> didRejectId(
+    IdCapture idCapture, CapturedId? rejectedId, RejectionReason reason) async {
+  if (reason == RejectionReason.inconsistentData) {
+    // The document's printed data did not match its MRZ / barcode.
+  }
+}
+```
+
+**Inspect the detail** on a captured document via `capturedId.verificationResult.dataConsistency` (a `DataConsistencyResult?`):
+
+```dart
+final consistency = capturedId.verificationResult.dataConsistency;
+if (consistency != null) {
+  final bool passed = consistency.allChecksPassed;
+  final Set<DataConsistencyCheck> failed = consistency.failedChecks;
+  // Also: consistency.passedChecks, consistency.skippedChecks (Set<DataConsistencyCheck>),
+  // and consistency.frontReviewImage (Image?) highlighting the mismatched fields.
+}
+```
+
+`DataConsistencyCheck` values: `issuingCountryComparison`, `issuingJurisdictionComparison`, `fullNameComparison`, `documentNumberComparison`, `dateOfBirthComparison`, `dateOfExpiryComparison`, `dateOfIssueComparison`.
+
+> `rejectInconsistentData = true` both rejects mismatched documents and populates `verificationResult.dataConsistency` on captured ones. With it `false`, `dataConsistency` is `null`.
+
+---
+
+## 5. Mobile documents (mDL / ISO 18013-5)
+
+Reads **mobile driver's licenses** (mDL) — both the offline ISO 18013-5 mdoc exchange and the OCR of the on-screen rendering. This is GA, but thin in the guide docs. **No add-on package** — `MobileDocumentScanner` lives in the base `scandit_flutter_datacapture_id` module.
+
+Mobile documents are read by a `MobileDocumentScanner`, supplied to `IdCaptureScanner` via the named `mobileDocumentScanner:` argument (the physical scanner is the separate `physicalDocumentScanner:` argument):
+
+```dart
+// Mobile documents only:
+settings.scanner = IdCaptureScanner(
+    mobileDocumentScanner: MobileDocumentScanner(iso180135: true, ocr: false));
+
+// Physical + mobile documents in the same session:
+settings.scanner = IdCaptureScanner(
+    physicalDocumentScanner: FullDocumentScanner(),
+    mobileDocumentScanner: MobileDocumentScanner(iso180135: true, ocr: false));
+```
+
+`MobileDocumentScanner(iso180135: true, ocr: false)` enables the ISO 18013-5 mdoc path and disables OCR; `MobileDocumentScanner(iso180135: false, ocr: true)` reads only the OCR of the on-screen document. An optional `elementsToRetain: {...}` set of `MobileDocumentDataElement` declares which fields the app intends to retain, setting the `IntentToRetain` flag in the ISO 18013-5 request.
+
+**Read the result** — mobile-document data arrives in source-specific getters on `CapturedId`:
+
+```dart
+@override
+Future<void> didCaptureId(IdCapture idCapture, CapturedId capturedId) async {
+  final mobile = capturedId.mobileDocument;     // MobileDocumentResult? (ISO 18013-5 mdoc)
+  if (mobile != null) {
+    print('${mobile.fullName} ${mobile.dateOfBirth}');
+  }
+  final ocr = capturedId.mobileDocumentOcr;     // on-screen OCR result (nullable)
+  // The harmonized top-level fields (capturedId.fullName, dateOfBirth, …) are still
+  // populated for mobile documents — reach into mobileDocument / mobileDocumentOcr
+  // only for mobile-specific data.
+}
+```
+
+> Document type is read via `capturedId.document?.documentType` — there is no `IdDocumentType` bitmask, and no `AamvaBarcodeVerifier` is involved here.
+
+---
+
+## Related rejection flags (no add-on package required)
 
 These live in the base module and don't need a separate package, but they share the rejection model above:
 
@@ -136,7 +215,6 @@ These live in the base module and don't need a separate package, but they share 
 - `settings.rejectIdsExpiringIn = Duration(days: 30)` → `RejectionReason.documentExpiresSoon`
 - `settings.rejectHolderBelowAge = 18` → `RejectionReason.holderUnderage`
 - `settings.rejectNotRealIdCompliant = true` → `RejectionReason.notRealIdCompliant`
-- `settings.rejectInconsistentData = true` → `RejectionReason.inconsistentData`; the detail is on `capturedId.verificationResult.dataConsistency`
 
 ## Reference links
 

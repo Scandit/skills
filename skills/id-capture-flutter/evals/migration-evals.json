@@ -45,6 +45,24 @@
         {"text": "these flags are described as surfacing reasons in didRejectId, e.g. documentExpired and holderUnderage (semantic)"},
         {"text": "settings.scannerType is no longer used in the migrated code (semantic)"}
       ]
+    },
+    {
+      "id": 4,
+      "prompt": "This old ID Capture screen uses supportedDocuments and supportedSides and won't compile anymore. Migrate it to the current API. Here's before-v6-idcapture.dart.",
+      "expected_output": "The skill replaces the removed v6 supportedDocuments bitmask with a list-based settings.acceptedDocuments of document classes (IdCard, Passport), replaces supportedSides with a scanner set via settings.scanner = IdCaptureScanner(physicalDocumentScanner: FullDocumentScanner()), and replaces capturedId.documentType with capturedId.document?.documentType. No supportedDocuments, supportedSides, IdDocumentType, or capturedId.documentType remain in the migrated code.",
+      "files": ["fixtures/before-v6-idcapture.dart"],
+      "assertions": [
+        {"text": "settings.acceptedDocuments is configured with document objects like IdCard and Passport (semantic)"},
+        {"text": ".scanner = is present"},
+        {"text": "IdCaptureScanner( is present"},
+        {"text": "physicalDocumentScanner: is present"},
+        {"text": "FullDocumentScanner( is present"},
+        {"text": "settings.supportedDocuments does not appear in the migrated code blocks (semantic)"},
+        {"text": "settings.supportedSides does not appear in the migrated code blocks (semantic)"},
+        {"text": "IdDocumentType does not appear in the migrated code blocks (semantic)"},
+        {"text": "the document type is read via capturedId.document?.documentType, not capturedId.documentType, in the migrated code blocks (semantic)"}
+      ],
+      "tags": ["migration-v6-to-v7"]
     }
   ]
 }
