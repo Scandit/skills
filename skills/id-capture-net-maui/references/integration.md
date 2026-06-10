@@ -495,6 +495,42 @@ After writing the integration code, show this checklist:
 
 **Cause:** You added Microsoft's `Xamarin.KotlinX.Serialization.Json` but did not also `ExcludeAssets="all"` on the community `Org.Jetbrains.Kotlinx.KotlinxSerializationJsonJvm` that Scandit's nuspec pulls transitively — both packages emit `[Register]`-bound managed types for the same Java classes, and the .NET Android linker rejects the duplicate. **Fix:** Add the `ExcludeAssets="all"` line for `Org.Jetbrains.Kotlinx.KotlinxSerializationJsonJvm` (not just the parent `KotlinxSerializationJson`).
 
+## Co-existence with Barcode Capture
+
+`IdCapture` and `BarcodeCapture` can run **together on one `DataCaptureContext`** — one context, one `<scandit:DataCaptureView>`, one camera. A common case is an airport screen that reads a boarding-pass PDF417 barcode **and** a passport/ID at the same time. This example uses a **separate `BarcodeCapture` mode**, which requires adding the **`Scandit.DataCapture.Barcode`** NuGet package alongside `Core` + `IdCapture` (verified by build). The base ID Capture flow does **not** need it — `IdCapture` reads the ID's own AAMVA/PDF417 barcode internally; a standalone `BarcodeCapture` mode for *other* barcodes (the boarding pass) is what pulls in the Barcode package.
+
+On .NET MAUI each mode is attached to the context by its static factory: `IdCapture.Create(context, settings)` **and** `BarcodeCapture.Create(context, settings)` (the .NET equivalent of `addMode` — there is no public `new IdCapture(...)` and no `setMode`). Both factories take the **same** `DataCaptureContext`, so both modes stay attached; the native layer runs them together. Give each mode its own listener and toggle each independently with `mode.Enabled`. Dispatch any UI work from the callbacks via `MainThread.BeginInvokeOnMainThread`. Do **not** create a second context or remove one mode to add the other.
+
+```csharp
+// In the DataCaptureManager, alongside the existing IdCapture.
+// ID Capture mode (passport / ID)
+var idSettings = new IdCaptureSettings
+{
+    AcceptedDocuments = { new Passport(IdCaptureRegion.Any) },
+    Scanner = new IdCaptureScanner(physicalDocument: new FullDocumentScanner(), mobileDocument: null),
+};
+this.IdCapture = IdCapture.Create(this.DataCaptureContext, idSettings); // attaches to context
+this.IdCapture.IdCaptured += OnIdCaptured;
+this.IdCapture.IdRejected += OnIdRejected;
+
+// Barcode Capture mode (IATA boarding pass = PDF417), same context
+var bcSettings = BarcodeCaptureSettings.Create();
+bcSettings.EnableSymbology(Symbology.Pdf417, true);
+this.BarcodeCapture = BarcodeCapture.Create(this.DataCaptureContext, bcSettings); // attaches to same context
+this.BarcodeCapture.BarcodeScanned += (sender, args) =>
+{
+    Barcode? barcode = args.Session.NewlyRecognizedBarcode;
+    if (barcode != null)
+    {
+        MainThread.BeginInvokeOnMainThread(() => { /* show result */ });
+    }
+};
+
+// Both can be enabled at once — they run together.
+this.IdCapture.Enabled = true;
+this.BarcodeCapture.Enabled = true;
+```
+
 ## Key rules
 
 1. **Three NuGet packages** — `Core`, `Core.Maui`, `IdCapture`. **No `IdCapture.Maui`, no Barcode package.** Fetch the version from NuGet; don't guess.

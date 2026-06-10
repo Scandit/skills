@@ -234,6 +234,39 @@ void _cleanup() {
 }
 ```
 
+## Co-existence with Barcode Capture
+
+`IdCapture` and `BarcodeCapture` can run **together on one `DataCaptureContext`** — one context, one `DataCaptureView`, one camera. A common case is an airport screen that reads a boarding-pass PDF417 barcode **and** a passport/ID at the same time.
+
+Attach **both** modes with `context.addMode(idCapture)` **and** `context.addMode(barcodeCapture)`. Do **not** use `context.setMode(...)` here — `setMode` **replaces** the context's current mode, so calling it twice would leave only the last mode. `setMode` is fine for a single-mode screen; for co-existence use `addMode` for each. Give each mode its own listener and toggle each independently with `mode.isEnabled` — both can be enabled at once and the native layer runs them together.
+
+```dart
+// BarcodeCapture/BarcodeCaptureSettings come from the scandit_flutter_datacapture_barcode
+// package — add it to pubspec.yaml and import the barcode_capture entry point:
+import 'package:scandit_flutter_datacapture_barcode/scandit_flutter_datacapture_barcode_capture.dart';
+
+// ID Capture mode (passport / ID)
+final idSettings = IdCaptureSettings()
+  ..acceptedDocuments = [Passport(IdCaptureRegion.any)]
+  ..scanner = IdCaptureScanner(physicalDocumentScanner: FullDocumentScanner());
+final idCapture = IdCapture(idSettings);
+idCapture.addListener(this); // implements IdCaptureListener
+context.addMode(idCapture);
+
+// Barcode Capture mode (IATA boarding pass = PDF417), same context
+final bcSettings = BarcodeCaptureSettings()
+  ..enableSymbologies({Symbology.pdf417});
+final barcodeCapture = BarcodeCapture(bcSettings);
+barcodeCapture.addListener(this); // implements BarcodeCaptureListener
+context.addMode(barcodeCapture);
+
+// Both can be enabled at once — they run together.
+idCapture.isEnabled = true;
+barcodeCapture.isEnabled = true;
+```
+
+In `didScan` read `session.newlyRecognizedBarcode`; in `didCaptureId` read the `CapturedId`. When tearing down both modes, `context.removeAllModes()` removes them all at once.
+
 ## Common pitfalls
 
 - **Forgetting `await ScanditFlutterDataCaptureId.initialize()`** in `main()` → opaque MethodChannel crashes. It must run before `runApp` and before any context/settings code.

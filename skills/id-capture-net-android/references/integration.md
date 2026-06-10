@@ -580,6 +580,38 @@ public abstract class CameraPermissionActivity : AppCompatActivity
 }
 ```
 
+## Co-existence with Barcode Capture
+
+`IdCapture` and `BarcodeCapture` can run **together on one `DataCaptureContext`** — one context, one `DataCaptureView`, one camera. A common case is an airport screen that reads a boarding-pass PDF417 barcode **and** a passport/ID at the same time. This example uses a **separate `BarcodeCapture` mode**, so add the **`Scandit.DataCapture.Barcode`** NuGet package alongside `Core` + `IdCapture` (verified by build). The base ID Capture flow doesn't need it — `IdCapture` reads the ID's own barcode internally; a standalone `BarcodeCapture` mode for the boarding pass is what pulls in the Barcode package.
+
+On .NET each mode is attached to the context by its static factory: `IdCapture.Create(context, settings)` **and** `BarcodeCapture.Create(context, settings)` (these are the .NET equivalent of `addMode` — there is no public `new IdCapture(...)` and no `setMode`). Both factories take the **same** `DataCaptureContext`, so both modes stay attached; the native layer runs them together. Give each mode its own listener and toggle each independently with `mode.Enabled` — do **not** create a second context or remove one mode to add the other.
+
+```csharp
+// ID Capture mode (passport / ID)
+var idSettings = new IdCaptureSettings
+{
+    AcceptedDocuments = { new Passport(IdCaptureRegion.Any) },
+    Scanner = new IdCaptureScanner(physicalDocument: new FullDocumentScanner(), mobileDocument: null),
+};
+this.idCapture = IdCapture.Create(this.dataCaptureContext, idSettings); // attaches to context
+this.idCapture.IdCaptured += OnIdCaptured;
+this.idCapture.IdRejected += OnIdRejected;
+
+// Barcode Capture mode (IATA boarding pass = PDF417), same context
+var bcSettings = BarcodeCaptureSettings.Create();
+bcSettings.EnableSymbology(Symbology.Pdf417, true);
+this.barcodeCapture = BarcodeCapture.Create(this.dataCaptureContext, bcSettings); // attaches to same context
+this.barcodeCapture.BarcodeScanned += (sender, args) =>
+{
+    Barcode? barcode = args.Session.NewlyRecognizedBarcode;
+    if (barcode != null) { /* ... */ }
+};
+
+// Both can be enabled at once — they run together.
+this.idCapture.Enabled = true;
+this.barcodeCapture.Enabled = true;
+```
+
 ## Key rules
 
 1. **One context per scanning surface** — construct `DataCaptureContext.ForLicenseKey(key)` once and reuse it.

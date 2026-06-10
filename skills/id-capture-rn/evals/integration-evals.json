@@ -167,6 +167,23 @@
         {"text": "capturedId.mobileDocument is read, or the harmonized top-level fields the mobile document populates are read (semantic)"},
         {"text": "didCaptureId is present"}
       ]
+    },
+    {
+      "id": 13,
+      "prompt": "I'm building an airport check-in screen in my React Native app. On one screen I need to scan the PDF417 barcode on a boarding pass AND scan the passenger's passport — both with the same camera preview. Set that up in EmptyScreen.tsx.",
+      "expected_output": "The skill keeps one DataCaptureContext, one DataCaptureView and one camera, and runs IdCapture and BarcodeCapture together. It attaches BOTH modes with context.addMode(idCapture) and context.addMode(barcodeCapture) — NOT context.setMode (which replaces the current mode). Each mode gets its own listener (IdCapture's didCaptureId/didRejectId; BarcodeCapture's didScan reading session.newlyRecognizedBarcode), BarcodeCaptureSettings enables Symbology.PDF417, and both modes are toggled via isEnabled. Co-existence is presented as supported.",
+      "files": ["fixtures/EmptyScreen.tsx"],
+      "tags": ["barcode-coexistence"],
+      "assertions": [
+        {"text": "context.addMode(idCapture) is called to attach the ID Capture mode"},
+        {"text": "context.addMode(barcodeCapture) is called to attach the Barcode Capture mode to the SAME context"},
+        {"text": "context.setMode( is NOT used to attach these two modes — setMode replaces the current mode rather than adding, so it cannot run both together (semantic)"},
+        {"text": "new IdCapture( and new BarcodeCapture( are both constructed"},
+        {"text": "the IdCapture mode has its own listener with didCaptureId"},
+        {"text": "the BarcodeCapture mode has its own listener with didScan that reads session.newlyRecognizedBarcode"},
+        {"text": "BarcodeCaptureSettings enables Symbology.PDF417 (the IATA boarding-pass symbology)"},
+        {"text": "running IdCapture and BarcodeCapture together on one DataCaptureContext is presented as supported, not as something that must be avoided (semantic)"}
+      ]
     }
   ]
 }

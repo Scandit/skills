@@ -117,21 +117,32 @@ func idCapture(_ idCapture: IdCapture, didCapture capturedId: CapturedId) {
 
 The category code is `category.code` — there is no `categoryCode` property. This feature requires the `ScanditIdEuropeDrivingLicense` module in your project. See the [module overview](https://docs.scandit.com/sdks/ios/id-capture/get-started/#module-overview) for details.
 
-## Co-existing with BarcodeCapture
+## Co-existence with Barcode Capture
 
-In most apps that switch between modes, call `context.removeCurrentMode()` before adding the new mode — otherwise the SDK may surface a visible error on the `DataCaptureView`:
+`IdCapture` and `BarcodeCapture` can run **together on one `DataCaptureContext`** — one context, one `DataCaptureView`, one camera. A common case is an airport screen that reads a boarding-pass PDF417 barcode **and** a passport/ID on the same screen.
+
+On iOS each mode is attached to the context by passing the context to its constructor (`IdCapture(context:settings:)` / `BarcodeCapture(context:settings:)` — the iOS equivalent of `context.addMode`). Both modes stay attached at once; the native layer runs them together. Give each mode its own listener, and toggle each independently with `mode.isEnabled`. Do **not** remove or replace one mode to add the other — that is not required for co-existence.
 
 ```swift
-// When showing the ID scanning screen:
-context.removeCurrentMode()
-idCapture = IdCapture(context: context, settings: idCaptureSettings)
+// ID Capture mode (passport / ID)
+let idCaptureSettings = IdCaptureSettings()
+idCaptureSettings.acceptedDocuments = [Passport(region: .any)]
+idCaptureSettings.scanner = IdCaptureScanner(physicalDocument: FullDocumentScanner())
+idCapture = IdCapture(context: context, settings: idCaptureSettings) // attaches to context
+idCapture.addListener(self)
 
-// When returning to the barcode scanning screen:
-context.removeCurrentMode()
-barcodeCapture = BarcodeCapture(context: context, settings: barcodeCaptureSettings)
+// Barcode Capture mode (IATA boarding pass = PDF417), same context
+let barcodeSettings = BarcodeCaptureSettings()
+barcodeSettings.set(symbology: .pdf417, enabled: true)
+barcodeCapture = BarcodeCapture(context: context, settings: barcodeSettings) // attaches to same context
+barcodeCapture.addListener(self)
+
+// Both can be enabled at once — they run together.
+idCapture.isEnabled = true
+barcodeCapture.isEnabled = true
 ```
 
-**Exception:** apps that intentionally scan both simultaneously (e.g. scanning a boarding-pass barcode and an ID at the same time) keep both modes active. This is an advanced use case with restrictions — consult the documentation.
+In `barcodeCapture(_:didScanIn:frameData:)` read `session.newlyRecognizedBarcode`; in `idCapture(_:didCapture:capturedId:)` read the `CapturedId`. Use `isEnabled` (not mode removal) when you want to pause one of them.
 
 ## Overlay customization
 

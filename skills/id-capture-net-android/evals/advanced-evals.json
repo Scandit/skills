@@ -189,6 +189,40 @@
           "text": "The existing integration (camera, IdCapture.Create, DataCaptureView, overlay, accepted documents, scanner, OnIdCaptured) is preserved"
         }
       ]
+    },
+    {
+      "id": 7,
+      "prompt": "I'm building an airport check-in screen in my .NET Android app (start from EmptyActivity.cs). On one screen I need to scan the PDF417 barcode on a boarding pass AND scan the passenger's passport, sharing one camera preview. How do I run both ID Capture and Barcode Capture at the same time in C#?",
+      "expected_output": "The skill keeps one DataCaptureContext, one DataCaptureView and one camera, and runs IdCapture and BarcodeCapture together. It creates BOTH modes against the SAME context via the static factories IdCapture.Create(context, idSettings) and BarcodeCapture.Create(context, bcSettings) (the .NET equivalent of addMode; there is no setMode and no public constructor). Each mode gets its own listener/event: IdCapture via IdCaptured/IdRejected, BarcodeCapture via BarcodeScanned reading args.Session.NewlyRecognizedBarcode. BarcodeCaptureSettings enables Symbology.Pdf417, and each mode is toggled with its Enabled property. It does not create a second context or remove one mode to add the other. No separate Barcode NuGet package is needed (the reader ships in Scandit.DataCapture.IdCapture).",
+      "files": [
+        "fixtures/EmptyActivity.cs"
+      ],
+      "assertions": [
+        {
+          "text": "IdCapture.Create(context, ...) is called with the shared DataCaptureContext to attach the ID Capture mode"
+        },
+        {
+          "text": "BarcodeCapture.Create(context, ...) is called with the SAME DataCaptureContext to attach the Barcode Capture mode"
+        },
+        {
+          "text": "No setMode call and no attempt to remove/replace one mode to add the other — both modes stay attached to the one context (semantic)"
+        },
+        {
+          "text": "The IdCapture mode is wired to its own IdCaptured (and IdRejected) handler"
+        },
+        {
+          "text": "The BarcodeCapture mode is wired to its own BarcodeScanned handler (or IBarcodeCaptureListener.OnBarcodeScanned) that reads Session.NewlyRecognizedBarcode"
+        },
+        {
+          "text": "BarcodeCaptureSettings enables Symbology.Pdf417 (the IATA boarding-pass symbology)"
+        },
+        {
+          "text": "running IdCapture and BarcodeCapture together on one DataCaptureContext is presented as supported, not as something that must be avoided (semantic)"
+        }
+      ],
+      "tags": [
+        "barcode-coexistence"
+      ]
     }
   ]
 }

@@ -269,6 +269,38 @@ if (capturedId.mrzResult) {
 }
 ```
 
+## Co-existence with Barcode Capture
+
+`IdCapture` and `BarcodeCapture` can run **together on one `DataCaptureContext`** — one context, one `DataCaptureView`, one camera. A common case is an airport screen that reads a boarding-pass PDF417 barcode **and** a passport/ID at the same time.
+
+Attach **both** modes with `context.addMode(idCapture)` **and** `context.addMode(barcodeCapture)`. Do **not** use `context.setMode(...)` here — `setMode` **replaces** the context's current mode (it removes whatever was there first), so calling it twice would leave only the last mode. `setMode` is fine for a single-mode screen; for co-existence use `addMode` for each. Give each mode its own listener and toggle each independently with `mode.isEnabled` — both can be enabled at once and the native layer runs them together.
+
+```ts
+// ID Capture mode (passport / ID)
+const idSettings = new IdCaptureSettings();
+idSettings.acceptedDocuments.push(new Passport(IdCaptureRegion.Any));
+idSettings.scanner = new IdCaptureScanner(new FullDocumentScanner());
+const idCapture = new IdCapture(idSettings);
+idCapture.addListener({ didCaptureId: (_, capturedId) => { /* ... */ } });
+await context.addMode(idCapture);
+
+// Barcode Capture mode (IATA boarding pass = PDF417), same context
+const bcSettings = new BarcodeCaptureSettings();
+bcSettings.enableSymbologies([Symbology.PDF417]);
+const barcodeCapture = new BarcodeCapture(bcSettings);
+barcodeCapture.addListener({
+  didScan: (_, session) => {
+    const barcode = session.newlyRecognizedBarcode;
+    if (barcode) { /* ... */ }
+  },
+});
+await context.addMode(barcodeCapture);
+
+// Both can be enabled at once — they run together.
+idCapture.isEnabled = true;
+barcodeCapture.isEnabled = true;
+```
+
 ## Common pitfalls
 
 - **Skipping `await ScanditCaptureCorePlugin.initializePlugins()`** — the native bridge isn't wired; every subsequent Scandit call fails with "plugin not implemented".

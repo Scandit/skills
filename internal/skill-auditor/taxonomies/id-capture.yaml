@@ -137,6 +137,14 @@ features:
     required: false
     evidence: [sample]
     match: ["mobiledocumentscanner", "mobiledocument", "iso18013", "iso 18013", "\\bmdl\\b", "mobile driving licen", "elementstoretain", "mobiledocumentdataelement"]
+  - id: barcode-coexistence
+    required: false
+    evidence: [docs, sample]
+    # IdCapture + BarcodeCapture on ONE DataCaptureContext (airport boarding-pass + passport).
+    # Both attached via addMode (native/web/flutter/rn/capacitor/cordova) or the .Create(context, ...)
+    # factory (.NET); NOT setMode, which replaces the current mode. Verified against the cordova
+    # IdCaptureAirportUseCaseSample.
+    match: ["co.?existence", "co.?exist", "airport", "boarding.?pass", "both modes", "addmode.*barcode", "barcodecapture.*idcapture|idcapture.*barcodecapture", "run.*together"]
 
   # ---- Migration ----
   - id: migration-v7-to-v8

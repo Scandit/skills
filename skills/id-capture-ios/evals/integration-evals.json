@@ -105,7 +105,8 @@
         {"text": "Sets up IdCaptureSettings with acceptedDocuments and scanner"},
         {"text": "Implements IdCaptureListener with didCapture and didReject"},
         {"text": "Manages camera lifecycle in viewWillAppear / viewDidDisappear"}
-      ]
+      ],
+      "tags": ["barcode-coexistence"]
     },
     {
       "id": 8,
