@@ -1,0 +1,156 @@
+# ID Capture (`IdCapture`) feature taxonomy — pilot seed.
+#
+# Curated edge-case checklist (NOT an API dump): each entry is a distinct thing a
+# developer integrating IdCapture has to get right and that therefore deserves an eval.
+# `match` patterns are case-insensitive regexes applied to eval prompt + expected_output
+# + assertion texts; bootstrap heuristic until evals carry explicit `tags`.
+# `evidence` records mining provenance for future gap-ranking.
+#
+# Provenance (mined 2026-06-10, four parallel source classes):
+#   public_docs  data-capture-documentation @ 60d979dd — docs/sdks/*/id-capture/** + partials
+#   samples      datacapture-{ios,android,web,rn,flutter,capacitor,cordova,dotnet}-samples
+#                02_ID_Scanning_Samples/* (Simple/Extended/USDLVerification/Settings/...)
+#   sdk_source   data-capture-sdk @ b6ecc5bcdf3 — docs/api_availability/** + source/id-capture/api
+#   eval-survey  existing skills/id-capture-*/evals/*.json (vocabulary calibration)
+#
+# Platform-truth notes (layer 1):
+#   - 8 in-scope skills: capacitor, cordova, flutter, ios, net-android, net-ios, net-maui, rn.
+#     NB: there are NO id-capture-android / id-capture-web skills in this repo, though the
+#     SDK fully supports both (structure finding — out of scope for this taxonomy).
+#   - IdCapture is broadly UNIFORM across the 8 in-scope platforms: api_availability has no
+#     whole-class exclusions, and all verification add-ons (voided, AAMVA, EU driving
+#     license, data-consistency) ship on all 8 (per :available: versions). So
+#     excluded_platforms is intentionally empty. (The web-only AAMVA-forgery gap and the
+#     NFC/mDL experimental exclusions don't affect any in-scope skill.)
+#   - Documentation skew (not availability): EU-DL back-decode is API-available everywhere
+#     but only iOS/Android docs describe it — so among our skills only ios documents it.
+#     A missing-on-platform eval there is a real, fillable gap, not an exclusion.
+#
+# Commonly-hallucinated APIs the skills must suppress (confirmed against the SDK; tracked
+# here so coverage/quality work can warn about them — not matched as features):
+#   capturedId.documentType        -> capturedId.document?.documentType / isPassport()
+#   DrivingLicenseCategory.categoryCode -> .code
+#   IdDocumentType bitmask         -> REMOVED in v7; use acceptedDocuments/rejectedDocuments
+#   AamvaBarcodeVerifier.verify()  -> REMOVED in 8.0; use settings RejectForgedAamvaBarcodes
+#   IdCapture.forContext / IdCaptureOverlay.withIdCaptureForView -> web-only spellings;
+#       elsewhere IdCapture.forDataCaptureContext / IdCaptureOverlay.newInstance (or ctor)
+product: id-capture
+skill_prefix: id-capture-
+features:
+  # ---- Required: core to any IdCapture integration ----
+  - id: basic-integration
+    required: true
+    evidence: [docs, sample]
+    match: ["add id.?capture", "integrate id.?capture", "set.?up id.?capture", "id document scanning", "document scanning to my", "fresh integration", "new (ios|android|web|flutter|react.?native|capacitor|cordova|maui|\\.net) (app|project)", "\\.net (for )?(android|ios)", "\\.net maui app"]
+  - id: license-init
+    required: true
+    evidence: [docs, sample]
+    match: ["datacapturecontext", "license key", "licensekey", "forlicensekey", "idcaptureloader", "\\.initialize\\("]
+  - id: capture-listener
+    required: true
+    evidence: [docs, sample]
+    # v7 collapsed to two callbacks: captured + rejected
+    match: ["idcapturelistener", "iidcapturelistener", "didcaptureid", "didcapture\\b", "didreject", "onidcaptured", "onidrejected", "addlistener"]
+  - id: captured-id-result
+    required: true
+    evidence: [docs, sample]
+    match: ["capturedid", "fullname", "dateofbirth", "dateofexpiry", "documentnumber", "\\.document\\b", "documenttype", "ispassport", "isdriverlicense"]
+  - id: accepted-rejected-documents
+    required: true
+    evidence: [docs, sample]
+    match: ["accepteddocuments", "rejecteddocuments", "idcapturedocument", "driverlicense", "idcard", "passport\\(", "regionspecific", "idcaptureregion"]
+  - id: scanner-type
+    required: true
+    evidence: [docs, sample]
+    # SingleSideScanner vs FullDocumentScanner (front+back). supportedSides is the v6 term.
+    match: ["singlesidescanner", "fulldocumentscanner", "scannertype", "idcapturescanner", "physicaldocument", "front and back", "supportedsides"]
+  - id: capture-overlay
+    required: true
+    evidence: [docs, sample]
+    match: ["idcaptureoverlay", "datacaptureview", "viewfinder", "id layout", "idlayout"]
+  - id: camera-setup
+    required: true
+    evidence: [docs, sample]
+    match: ["recommendedcamerasettings", "createrecommendedcamerasettings", "getdefaultcamera", "camera\\.default", "camera\\.withsettings", "switchtodesiredstate", "framesourcestate"]
+  - id: lifecycle-handling
+    required: true
+    evidence: [docs, sample]
+    match: ["onpause", "onresume", "viewwillappear", "viewwilldisappear", "onappearing", "ondisappearing", "appstate", "\\.isenabled", "widgetsbindingobserver", "lifecycle", "dispose"]
+
+  # ---- Capture zones & result types ----
+  - id: mrz-scanning
+    required: false
+    evidence: [docs, sample]
+    match: ["machinereadablezone", "\\bmrz\\b", "capturedid\\.mrz", "mrzresult", "\\.mrz\\b"]
+  - id: viz-scanning
+    required: false
+    evidence: [docs, sample]
+    match: ["visualinspectionzone", "\\bviz\\b", "capturedid\\.viz", "vizresult", "enablevizdocuments", "scanditidcapturebackend", "scanditidc\\b"]
+  - id: barcode-scanning
+    required: false
+    evidence: [docs, sample]
+    match: ["enablingbarcode", "pdf417", "\\baamva\\b", "capturedid\\.barcode", "us driver", "driver.?s licens"]
+
+  # ---- Rejection, validation, privacy, images ----
+  - id: rejection-handling
+    required: false
+    evidence: [docs, sample]
+    match: ["rejectionreason", "notaccepteddocumenttype", "invalid_format", "single_image", "rejection reason"]
+  - id: expiry-age-rejection
+    required: false
+    evidence: [docs, sample]
+    match: ["rejectexpiredids", "rejectholderbelowage", "rejectidsexpiringin", "documentexpired", "holderunderage", "expiressoon", "below.?age"]
+  - id: data-anonymization
+    required: false
+    evidence: [docs, sample]
+    match: ["anonymizationmode", "idanonymizationmode", "fieldsonly", "fieldsandimages", "imagesonly", "anonymiz"]
+  - id: image-extraction
+    required: false
+    evidence: [docs, sample]
+    match: ["idimagetype", "resultshouldcontainimage", "setshouldpassimagetypetoresult", "setincludeimage", "croppeddocument", "face image", "idimagetypeface"]
+
+  # ---- Verification add-on modules (settings-driven; all 8 in-scope platforms support) ----
+  - id: aamva-barcode-verification
+    required: false
+    evidence: [docs, sample]
+    match: ["rejectforgedaamvabarcodes", "aamvabarcodeverification", "aamvabarcodeverificationstatus", "likelyforged", "forgedaamva", "scanditidaamvabarcodeverification"]
+  - id: data-consistency-verification
+    required: false
+    evidence: [docs, sample]
+    match: ["rejectinconsistentdata", "dataconsistency", "inconsistentdata", "allcheckspassed", "frontreviewimage"]
+  - id: voided-detection
+    required: false
+    evidence: [docs, sample]
+    match: ["rejectvoidedids", "voided", "document_voided", "documentvoided", "scanditidvoideddetection"]
+  - id: europe-driving-license
+    required: false
+    evidence: [docs, sample]
+    # The back-decode RESULT (VizResult.drivingLicenseDetails) is NOT available on .NET
+    # (viz-result.rst:176 lists ios/android/web/flutter/rn/capacitor/cordova only — no
+    # dotnet). The DecodeBackOfEuropeanDrivingLicense setting exists on .NET but its
+    # categories cannot be read via the documented VIZ path, so the feature is excluded.
+    excluded_platforms: [net-android, net-ios, net-maui]
+    match: ["decodebackofeuropeandrivinglicense", "drivinglicensecategories", "drivinglicensedetails", "european driving", "scanditideuropedrivinglicense"]
+
+  # ---- Optional / niche ----
+  - id: mobile-document-mdl
+    required: false
+    evidence: [sample]
+    match: ["mobiledocumentscanner", "mobiledocument", "iso18013", "iso 18013", "\\bmdl\\b", "mobile driving licen", "elementstoretain", "mobiledocumentdataelement"]
+  - id: mode-exclusivity
+    required: false
+    evidence: [docs]
+    # IdCapture cannot run simultaneously with another capture mode
+    match: ["at the same time as other modes", "barcode capture.*same time", "removeallmodes", "only one mode", "simultaneous"]
+
+  # ---- Migration ----
+  - id: migration-v7-to-v8
+    required: true
+    evidence: [docs]
+    # scannerType -> scanner/IdCaptureScanner wrapper; AamvaBarcodeVerifier class removed
+    match: ["aamvabarcodeverifier", "scannertype", "idcapturescanner", "v7 to v8", "7\\.x", "8\\.0"]
+  - id: migration-v6-to-v7
+    required: false
+    evidence: [docs]
+    # supportedDocuments bitmask -> acceptedDocuments; documentType -> document; result restructure
+    match: ["supporteddocuments", "supportedsides", "iddocumenttype", "\\bv6\\b", "6\\.x", "onidcapturedtimedout", "bitmask"]
