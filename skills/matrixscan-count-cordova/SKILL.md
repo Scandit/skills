@@ -17,6 +17,8 @@ Your training data may contain outdated or incorrect Scandit SDK APIs. The Barco
 - **Cordova 7.6**: Context-free constructor `new Scandit.BarcodeCount(settings)` introduced; `context.addMode(barcodeCount)` is now the wiring call.
 - **Cordova 7.1**: `BarcodeCountNotInListActionSettings` available.
 - **Cordova 8.3**: `BarcodeCountStatusProvider`, `shouldShowStatusModeButton`, `textForBarcodesNotInListDetectedHint`, `textForClusteringGestureHint`, `textForScreenCleanedUpHint`, `disableModeWhenCaptureListCompleted`, `ClusteringMode` available.
+- **Filtering / unique / additional barcodes / reset**: `BarcodeCountSettings.filterSettings` (`BarcodeFilterSettings` — `excludedSymbologies`, `excludedCodesRegex`), `expectsOnlyUniqueBarcodes`, `setAdditionalBarcodes` / `clearAdditionalBarcodes`, and `reset()` are available on Cordova.
+- **Tote mapping is NOT available on Cordova**: only the `BarcodeSpatialGrid` data model is exported; the `BarcodeSpatialGridEditorView` UI classes are not. See `references/integration.md` ("Tote mapping — not available on Cordova").
 
 **Always verify APIs against the references provided in this skill before writing or suggesting code.** Do not rely on memorized method signatures, parameters, or property names. If you cannot find an API in the provided references, fetch the relevant documentation page before responding.
 
