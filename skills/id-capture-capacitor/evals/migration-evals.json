@@ -5,68 +5,147 @@
       "id": 1,
       "prompt": "Upgrade my ID Capture integration to the latest SDK (v8). It stopped compiling. Here's my file: before-v7-idcapture.ts and package_v7.json.",
       "expected_output": "The skill migrates the v7 scanner assignment (settings.scannerType = new FullDocumentScanner()) to the v8 wrapped form (settings.scanner = new IdCaptureScanner(new FullDocumentScanner())), replaces the removed AamvaBarcodeVerifier with settings.rejectForgedAamvaBarcodes + reading verificationResult.aamvaBarcodeVerification, bumps package.json to 8.x, and adds the AAMVA add-on package. Listener and lifecycle (including initializePlugins) are preserved.",
-      "files": ["fixtures/before-v7-idcapture.ts", "fixtures/package_v7.json"],
+      "files": [
+        "fixtures/before-v7-idcapture.ts",
+        "fixtures/package_v7.json"
+      ],
       "assertions": [
-        {"text": "settings.scanner = new IdCaptureScanner( is present"},
-        {"text": "new FullDocumentScanner( is present"},
-        {"text": "settings.scannerType is no longer used in the migrated code (semantic)"},
-        {"text": "settings.rejectForgedAamvaBarcodes is enabled"},
-        {"text": "verificationResult.aamvaBarcodeVerification is read instead of calling a verifier (semantic)"},
-        {"text": "AamvaBarcodeVerifier is no longer used in the migrated code (semantic)"},
-        {"text": "AamvaBarcodeVerifier.create is not called in the final migrated code, though it may appear in before/after explanation prose (semantic)"},
-        {"text": "package.json is bumped to an 8.x version for the scandit-capacitor-datacapture-* packages (semantic)"},
-        {"text": "the scandit-capacitor-datacapture-id-aamva-barcode-verification package is added (semantic)"},
-        {"text": "the existing didCaptureId and didRejectId callbacks are preserved (semantic)"},
-        {"text": "new DriverLicense(IdCaptureRegion.Us) is present"},
-        {"text": "ScanditCaptureCorePlugin.initializePlugins is preserved at startup (semantic)"}
+        {
+          "text": "settings.scanner = new IdCaptureScanner( is present"
+        },
+        {
+          "text": "new FullDocumentScanner( is present"
+        },
+        {
+          "text": "settings.scannerType is no longer used in the migrated code (semantic)"
+        },
+        {
+          "text": "settings.rejectForgedAamvaBarcodes is enabled"
+        },
+        {
+          "text": "verificationResult.aamvaBarcodeVerification is read instead of calling a verifier (semantic)"
+        },
+        {
+          "text": "AamvaBarcodeVerifier is no longer used in the migrated code (semantic)"
+        },
+        {
+          "text": "AamvaBarcodeVerifier.create is not called in the final migrated code, though it may appear in before/after explanation prose (semantic)"
+        },
+        {
+          "text": "package.json is bumped to an 8.x version for the scandit-capacitor-datacapture-* packages (semantic)"
+        },
+        {
+          "text": "the scandit-capacitor-datacapture-id-aamva-barcode-verification package is added (semantic)"
+        },
+        {
+          "text": "the existing didCaptureId and didRejectId callbacks are preserved (semantic)"
+        },
+        {
+          "text": "new DriverLicense(IdCaptureRegion.Us) is present"
+        },
+        {
+          "text": "ScanditCaptureCorePlugin.initializePlugins is preserved at startup (semantic)"
+        }
       ]
     },
     {
       "id": 2,
-      "prompt": "Just fix the scanner API in this file for the v8 upgrade — I'll deal with the rest later. Here's before-v7-idcapture.ts.",
+      "prompt": "Just fix the scanner API in this file for the v8 upgrade \u2014 I'll deal with the rest later. Here's before-v7-idcapture.ts.",
       "expected_output": "The skill changes settings.scannerType = new FullDocumentScanner() into settings.scanner = new IdCaptureScanner(new FullDocumentScanner()).",
-      "files": ["fixtures/before-v7-idcapture.ts"],
+      "files": [
+        "fixtures/before-v7-idcapture.ts"
+      ],
       "assertions": [
-        {"text": "new IdCaptureScanner( is present"},
-        {"text": "new FullDocumentScanner( is present"},
-        {"text": "settings.scannerType is no longer used in the migrated code (semantic)"},
-        {"text": ".scanner = is present"}
+        {
+          "text": "new IdCaptureScanner( is present"
+        },
+        {
+          "text": "new FullDocumentScanner( is present"
+        },
+        {
+          "text": "settings.scannerType is no longer used in the migrated code (semantic)"
+        },
+        {
+          "text": ".scanner = is present"
+        }
       ]
     },
     {
       "id": 3,
       "prompt": "After upgrading to v8 I also want to reject expired documents and anyone under 18, using the new declarative settings rather than checking manually. Here's before-v7-idcapture.ts.",
       "expected_output": "The skill completes the v8 scanner/verifier migration and additionally sets settings.rejectExpiredIds = true and settings.rejectHolderBelowAge = 18, noting these surface DocumentExpired and HolderUnderage in didRejectId.",
-      "files": ["fixtures/before-v7-idcapture.ts"],
+      "files": [
+        "fixtures/before-v7-idcapture.ts"
+      ],
       "assertions": [
-        {"text": "settings.rejectExpiredIds is enabled"},
-        {"text": "settings.rejectHolderBelowAge is present"},
-        {"text": "new IdCaptureScanner( is present"},
-        {"text": "these flags are described as surfacing reasons in didRejectId, e.g. DocumentExpired and HolderUnderage (semantic)"},
-        {"text": "settings.scannerType is no longer used in the migrated code (semantic)"}
+        {
+          "text": "settings.rejectExpiredIds is enabled"
+        },
+        {
+          "text": "settings.rejectHolderBelowAge is present"
+        },
+        {
+          "text": "new IdCaptureScanner( is present"
+        },
+        {
+          "text": "these flags are described as surfacing reasons in didRejectId, e.g. DocumentExpired and HolderUnderage (semantic)"
+        },
+        {
+          "text": "settings.scannerType is no longer used in the migrated code (semantic)"
+        }
       ]
     },
     {
       "id": 4,
       "prompt": "This ID Capture code is from an old v6 integration and no longer compiles on the current SDK (v8). Migrate it. Here's before-v6-idcapture.ts.",
       "expected_output": "The skill replaces the v6 supportedDocuments / IdDocumentType bitmask with acceptedDocuments populated by typed document objects (IdCard, DriverLicense, Passport with an IdCaptureRegion), replaces supportedSides with settings.scanner = new IdCaptureScanner(new FullDocumentScanner()), renames the onIdCaptured / onIdCapturedTimedOut listener to didCaptureId / didRejectId (timeout now surfaces as RejectionReason.Timeout in didRejectId), and reads the document type via capturedId.document?.documentType instead of capturedId.documentType.",
-      "files": ["fixtures/before-v6-idcapture.ts"],
-      "assertions": [
-        {"text": "settings.acceptedDocuments is populated with typed document objects, e.g. new IdCard(IdCaptureRegion.Any) (semantic)"},
-        {"text": "new FullDocumentScanner( is present"},
-        {"text": "settings.scanner = new IdCaptureScanner( is present"},
-        {"text": "settings.supportedDocuments is no longer used in the migrated code (semantic)"},
-        {"text": "IdDocumentType is no longer used in the migrated code (semantic)"},
-        {"text": "settings.supportedSides is no longer used in the migrated code (semantic)"},
-        {"text": "didCaptureId is present"},
-        {"text": "didRejectId is present"},
-        {"text": "onIdCaptured is no longer used as the success callback name in the migrated code (semantic)"},
-        {"text": "onIdCapturedTimedOut is no longer used in the migrated code; timeout is handled via RejectionReason.Timeout in didRejectId (semantic)"},
-        {"text": "RejectionReason.Timeout is present"},
-        {"text": "the document type is read via capturedId.document?.documentType, not capturedId.documentType (semantic)"},
-        {"text": "capturedId.documentType is no longer used in the migrated code (semantic)"}
+      "files": [
+        "fixtures/before-v6-idcapture.ts"
       ],
-      "tags": ["migration-v6-to-v7"]
+      "assertions": [
+        {
+          "text": "settings.acceptedDocuments is populated with typed document objects, e.g. new IdCard(IdCaptureRegion.Any) (semantic)"
+        },
+        {
+          "text": "new FullDocumentScanner( is present"
+        },
+        {
+          "text": "settings.scanner = new IdCaptureScanner( is present"
+        },
+        {
+          "text": "settings.supportedDocuments is no longer used in the migrated code (semantic)"
+        },
+        {
+          "text": "IdDocumentType is no longer used in the migrated code (semantic)"
+        },
+        {
+          "text": "settings.supportedSides is no longer used in the migrated code (semantic)"
+        },
+        {
+          "text": "didCaptureId is present"
+        },
+        {
+          "text": "didRejectId is present"
+        },
+        {
+          "text": "onIdCaptured is no longer used as the success callback name in the migrated code (semantic)"
+        },
+        {
+          "text": "onIdCapturedTimedOut is no longer used in the migrated code; timeout is handled via RejectionReason.Timeout in didRejectId (semantic)"
+        },
+        {
+          "text": "RejectionReason.Timeout is present"
+        },
+        {
+          "text": "the document type is read via capturedId.document?.documentType, not capturedId.documentType (semantic)"
+        },
+        {
+          "text": "The old flat capturedId.documentType accessor (without .document?.) is not used in executable migrated code \u2014 capturedId.document?.documentType is the correct v8 form (semantic)"
+        }
+      ],
+      "tags": [
+        "migration-v6-to-v7"
+      ]
     }
   ]
 }

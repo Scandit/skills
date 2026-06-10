@@ -53,7 +53,7 @@
           "text": "AcceptedDocuments is narrowed to a US driver's license (new DriverLicense(IdCaptureRegion.Us))"
         },
         {
-          "text": "Document images are read from capturedId.Images (e.g. Face and/or GetCroppedDocument(IdSide.Front))"
+          "text": "Document images are read from capturedId.Images via Face and/or GetCroppedDocument(IdSide.Front or IdSide.Back) (semantic)"
         },
         {
           "text": "The images are treated as UIImage? (iOS), NOT Android.Graphics.Bitmap"

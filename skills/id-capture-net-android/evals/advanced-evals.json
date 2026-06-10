@@ -158,7 +158,7 @@
           "text": "It explains that DateOfBirth / Nationality / DocumentNumber are NOT on VizResult in .NET and must be read from the top-level capturedId"
         },
         {
-          "text": "If a single zone is configured, it uses a SingleSideScanner with visualInspectionZone enabled"
+          "text": "A VIZ-capable scanner is configured: a SingleSideScanner with visualInspectionZone enabled, or a FullDocumentScanner (which also reads the VIZ) (semantic)"
         },
         {
           "text": "The existing integration (camera, IdCapture.Create, DataCaptureView, overlay, OnIdCaptured/OnIdRejected) is preserved"

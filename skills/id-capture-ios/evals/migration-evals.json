@@ -13,13 +13,13 @@
           "text": "Replaces supportedDocuments bitmask with acceptedDocuments array using typed document objects e.g. IdCard(region: .any), DriverLicense(region: .any), Passport(region: .any)"
         },
         {
-          "text": "Replaces didCaptureIn session:frameData: with didCapture(_:capturedId:) \u2014 reads capturedId directly from the parameter, NOT from session.newlyCapturedId"
+          "text": "The v8 capture delegate idCapture(_:didCapture:) is implemented and reads the CapturedId (semantic)"
         },
         {
-          "text": "Replaces didRejectIn session:frameData: with didReject(_:capturedId:reason:) with a RejectionReason parameter"
+          "text": "The v8 reject delegate idCapture(_:didReject:reason:) is implemented with a RejectionReason (semantic)"
         },
         {
-          "text": "Does NOT reference IdCaptureSession or FrameData"
+          "text": "IdCaptureSession and FrameData are not used in the migrated v8 code (a before/summary block may still mention them) (semantic)"
         },
         {
           "text": "Sets settings.scanner = IdCaptureScanner(physicalDocument: FullDocumentScanner()) \u2014 does NOT use settings.scannerType or settings.supportedSides"

@@ -124,10 +124,10 @@
       ],
       "assertions": [
         {
-          "text": "settings.SetShouldPassImageTypeToResult is called with IdImageType.Face"
+          "text": "SetShouldPassImageTypeToResult is called to request an ID image type \u2014 IdImageType.Face, .CroppedDocument, or .Frame (semantic)"
         },
         {
-          "text": "settings.SetShouldPassImageTypeToResult is called with IdImageType.CroppedDocument"
+          "text": "A requested ID image is read from capturedId.Images (semantic)"
         },
         {
           "text": "capturedId.Images.Face is read in OnIdCaptured"
@@ -192,7 +192,7 @@
       ],
       "assertions": [
         {
-          "text": "A SingleSideScanner is configured with visualInspectionZone: true"
+          "text": "A VIZ-capable scanner is configured (SingleSideScanner with visualInspectionZone, or FullDocumentScanner) (semantic)"
         },
         {
           "text": "The VIZ result is read via capturedId.Viz"
