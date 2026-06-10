@@ -123,6 +123,43 @@ settings.rejectForgedAamvaBarcodes = true;
 
 ---
 
+## 4. Mobile documents (mDL / ISO 18013-5)
+
+Reads **mobile driver's licenses** (mDL) — both the offline ISO 18013-5 mdoc exchange and the OCR of the on-screen rendering. This is GA, but thin in the guide docs. No add-on plugin is required — `Scandit.MobileDocumentScanner` lives in the base `scandit-cordova-datacapture-id` plugin.
+
+Mobile documents are read by a `MobileDocumentScanner`, passed as the **second** positional argument to `IdCaptureScanner` (the first is the physical-document scanner; pass `undefined` for mDL-only):
+
+```js
+// Mobile documents only:
+settings.scanner = new Scandit.IdCaptureScanner(undefined, new Scandit.MobileDocumentScanner(true, false));
+
+// Physical + mobile documents in the same session:
+settings.scanner = new Scandit.IdCaptureScanner(new Scandit.FullDocumentScanner(), new Scandit.MobileDocumentScanner(true, false));
+```
+
+`MobileDocumentScanner(true, false)` enables the ISO 18013-5 mdoc path and disables OCR; `MobileDocumentScanner(false, true)` reads only the OCR of the on-screen document.
+
+**Read the result** — mobile-document data arrives in source-specific getters on `CapturedId`:
+
+```js
+const listener = {
+  didCaptureId: (idCapture, capturedId) => {
+    const mobile = capturedId.mobileDocument;     // MobileDocumentResult | null (ISO 18013-5 mdoc)
+    if (mobile) {
+      console.log(mobile.fullName, mobile.dateOfBirth, mobile.documentNumber);
+    }
+    const ocr = capturedId.mobileDocumentOcr;      // on-screen OCR result | null
+    if (ocr) {
+      console.log(ocr.fullName, ocr.documentNumber);
+    }
+  },
+};
+```
+
+> The harmonized top-level fields (`capturedId.fullName`, `dateOfBirth`, …) are still populated for mobile documents; reach into `mobileDocument` / `mobileDocumentOcr` only for mobile-specific data. Document type is read via `capturedId.document?.documentType` — there is no `IdDocumentType` bitmask, and no `AamvaBarcodeVerifier` is involved.
+
+---
+
 ## Related rejection / verification flags (no add-on plugin required)
 
 These live in the base plugin and don't need a separate install, but they share the rejection model above:

@@ -41,6 +41,25 @@
         {"text": "Scandit.AamvaBarcodeVerifier is no longer used in the migrated code (semantic)"},
         {"text": "verificationResult.aamvaBarcodeVerification is read or the rejection reason ForgedAamvaBarcode is handled (semantic)"}
       ]
+    },
+    {
+      "id": 4,
+      "prompt": "This ID Capture code is from an old v6 SDK and no longer compiles on v8. Migrate it to the current API. Here's before-v6-idcapture.js.",
+      "expected_output": "The skill replaces the removed v6 supportedDocuments bitmask and supportedSides with settings.acceptedDocuments plus settings.scanner = new Scandit.IdCaptureScanner(new Scandit.FullDocumentScanner()), reads the document type via capturedId.document?.documentType instead of capturedId.documentType, and moves the removed onIdCaptureTimedOut callback to a Scandit.RejectionReason.Timeout branch in didRejectId.",
+      "files": ["fixtures/before-v6-idcapture.js"],
+      "tags": ["migration-v6-to-v7"],
+      "assertions": [
+        {"text": "settings.acceptedDocuments is configured with document objects via the Scandit.* namespace (semantic)"},
+        {"text": "settings.scanner = new Scandit.IdCaptureScanner( is present in a code block"},
+        {"text": "new Scandit.FullDocumentScanner( is present in a code block"},
+        {"text": "the document type is read via capturedId.document?.documentType or a capturedId.document convenience method like isPassport, not capturedId.documentType (semantic)"},
+        {"text": "a Scandit.RejectionReason.Timeout branch in didRejectId replaces the old onIdCaptureTimedOut callback (semantic)"},
+        {"text": "settings.supportedDocuments is NOT present in any migrated code block (semantic)"},
+        {"text": "settings.supportedSides is NOT present in any migrated code block (semantic)"},
+        {"text": "Scandit.IdDocumentType is NOT present in any migrated code block (semantic)"},
+        {"text": "capturedId.documentType is NOT present in any migrated code block (semantic)"},
+        {"text": "onIdCaptureTimedOut is NOT present in any migrated code block (semantic)"}
+      ]
     }
   ]
 }
