@@ -102,15 +102,16 @@
     {
       "id": 6,
       "prompt": "I want to use Scandit Label Capture in my Android retail app to scan printed price shelf labels — the product barcode plus the displayed price. Write the integration into MainActivity.kt.",
-      "expected_output": "The skill recognises this as a price/shelf-label scenario and uses the pre-built whole-label factory LabelDefinition.createPriceCaptureDefinition(...) rather than hand-assembling the label from addCustomBarcode()/addTotalPriceText() individual builders. It includes the label-text-models dependency.",
+      "expected_output": "The skill recognises this as a price/shelf-label scenario and uses the pre-built whole-label factory LabelDefinition.createPriceCaptureDefinition(...) rather than hand-assembling the label from addCustomBarcode()/addTotalPriceText() individual builders. It includes BOTH the label-text-models AND the price-label Gradle dependencies (price capture needs the price-label model artifact in addition to label-text-models).",
       "files": [
         "fixtures/MainActivity.kt"
       ],
       "assertions": [
         { "text": "LabelDefinition.createPriceCaptureDefinition( is used to define the price/shelf label" },
         { "text": "The label is NOT hand-assembled from individual addTotalPriceText()/addUnitPriceText()/addCustomBarcode() builders when the pre-built price-capture definition covers the scenario" },
-        { "text": "LabelDefinition is imported from com.scandit.datacapture.label" },
+        { "text": "LabelDefinition is imported from com.scandit.datacapture.label.capture" },
         { "text": "The com.scandit.datacapture:label-text-models Gradle dependency is included" },
+        { "text": "The com.scandit.datacapture:price-label Gradle dependency is included (required for createPriceCaptureDefinition in addition to label-text-models)" },
         { "text": "LabelCapture.forDataCaptureContext( and DataCaptureContext.forLicenseKey( are present" }
       ]
     },
@@ -190,7 +191,8 @@
         { "text": "The response describes the Adaptive Recognition Engine as a cloud-based OCR fallback that triggers when the on-device model fails" },
         { "text": "The enabling API is shown: adaptiveRecognition(adaptiveRecognitionMode = AdaptiveRecognitionMode.AUTO) (AdaptiveRecognitionMode.AUTO) on the label definition" },
         { "text": "The response flags that the Adaptive Recognition API is in BETA" },
-        { "text": "The response states it requires a license key with the ARE feature flag and that enabling it for production requires contacting support@scandit.com" }
+        { "text": "The response states it requires a license key with the ARE feature flag and that enabling it for production requires contacting support@scandit.com" },
+        { "text": "The response surfaces that the adaptiveRecognition(...) API is not present in public SDK releases up to and including 8.4.0 (availability caveat), so the user's SDK version must be checked" }
       ],
       "tags": ["adaptive-recognition-cloud"]
     },
@@ -201,11 +203,57 @@
       "files": [],
       "assertions": [
         { "text": "The response states Receipt Scanning uses the LabelCaptureAdaptiveRecognitionOverlay instead of the standard Basic/Validation Flow overlay" },
-        { "text": "The response uses a LabelCaptureAdaptiveRecognitionListener with an onRecognized callback that returns a ReceiptScanningResult" },
+        { "text": "The response uses a LabelCaptureAdaptiveRecognitionListener whose onRecognized callback receives the sealed base type AdaptiveRecognitionResult and narrows it to ReceiptScanningResult (it does NOT type the override parameter as ReceiptScanningResult, which doesn't compile)" },
         { "text": "The response names ReceiptScanningResult fields such as storeName, paymentTotal, and lineItems" },
-        { "text": "The response flags that Receipt Scanning / the Adaptive Recognition Engine is in BETA and requires contacting support@scandit.com to enable" }
+        { "text": "The response flags that Receipt Scanning / the Adaptive Recognition Engine is in BETA and requires contacting support@scandit.com to enable" },
+        { "text": "The response surfaces that the public Receipt Scanning classes are not present in public SDK releases up to and including 8.4.0 (availability caveat)" }
       ],
       "tags": ["receipt-scanning"]
+    },
+    {
+      "id": 14,
+      "prompt": "I'm using Scandit Label Capture in my Android retail app with the pre-built price-capture definition (createPriceCaptureDefinition). I validate the scanned price against my own price database. I want the price field on screen to be outlined green when the captured price matches and red when it doesn't, and I want a small status icon floating just above the price field showing the same result. Write the overlay code.",
+      "expected_output": "The skill reads advanced.md. It colors the price field with a per-field brush via LabelCaptureBasicOverlayListener.brushForField (returning a green/red Brush based on validation state read off the whole CapturedLabel), and floats the status icon with LabelCaptureAdvancedOverlay. Crucially, because the icon's appearance depends on sibling fields (barcode vs price), it does NOT build the floating view from the advanced overlay's per-field listener (viewForCapturedLabelField, which has no label context) — it pushes the view imperatively via setViewForCapturedLabelField(field, label, view) from onSessionUpdated, with setAnchorForCapturedLabelField / setOffsetForCapturedLabelField for placement.",
+      "files": [],
+      "assertions": [
+        { "text": "Field coloring uses LabelCaptureBasicOverlayListener.brushForField (overriding brushForField), returning a Brush whose color depends on the validation state" },
+        { "text": "A Brush is constructed (e.g. Brush(...)) with green/red colors for the match/mismatch states" },
+        { "text": "LabelCaptureAdvancedOverlay is used for the floating status icon" },
+        { "text": "The floating view is pushed imperatively with setViewForCapturedLabelField(field, label, view) (or the per-label setViewForCapturedLabel) called from onSessionUpdated, NOT produced from the advanced overlay listener's viewForCapturedLabelField callback" },
+        { "text": "setAnchorForCapturedLabelField and setOffsetForCapturedLabelField are used to position the icon above the price field (Anchor plus a PointWithUnit offset)" },
+        { "text": "The response explains or reflects that the advanced overlay's per-field listener callback (viewForCapturedLabelField) carries no label context, which is why the imperative push from onSessionUpdated is used" },
+        { "text": "Fields are read by type (LabelFieldType.BARCODE / LabelFieldType.TEXT) rather than by hardcoded field names" }
+      ],
+      "tags": ["overlay-ar-feedback"]
+    },
+    {
+      "id": 15,
+      "prompt": "I'm using Scandit Label Capture on Android to scan shipping labels (a custom definition with a tracking-number barcode and a weight text field). After a label is captured I want a small summary card floating just below the whole label showing both values. How do I do that?",
+      "expected_output": "The skill reads advanced.md and uses the advanced overlay's per-LABEL APIs — either the listener's viewForCapturedLabel(overlay, capturedLabel) (which, unlike the per-field callback, receives the whole CapturedLabel, so the listener path is fine here) or the imperative setViewForCapturedLabel(label, view). The card reads both fields off the CapturedLabel. Placement is Anchor.BOTTOM_CENTER with a POSITIVE-Y PointWithUnit offset (the view is centered on the anchor and +Y is downward, so pushing the card fully below the label needs a downward shift).",
+      "files": [],
+      "assertions": [
+        { "text": "LabelCaptureAdvancedOverlay is used with a per-LABEL view: either the listener's viewForCapturedLabel(overlay, capturedLabel) callback or the imperative setViewForCapturedLabel(label, view) — NOT the per-field view APIs (viewForCapturedLabelField / setViewForCapturedLabelField)" },
+        { "text": "The response does NOT claim the advanced overlay listener cannot be used for this case — the per-label callback receives the whole CapturedLabel, so sibling-field state is available there (the no-label-context trap applies only to the per-FIELD callback)" },
+        { "text": "The summary card's content is read off the CapturedLabel's fields (by type or name) inside the view-producing code path — no global/session-keyed side store is introduced to smuggle label state" },
+        { "text": "The card is anchored below the label: Anchor.BOTTOM_CENTER (or equivalent bottom anchor) is used" },
+        { "text": "The offset is a PointWithUnit with a POSITIVE Y value (downward), consistent with the view being centered on the anchor point and +Y pointing down — not a negative/upward offset" },
+        { "text": "No invented APIs: only documented advanced-overlay methods (viewForCapturedLabel / anchorForCapturedLabel / offsetForCapturedLabel listener callbacks, or setViewForCapturedLabel / setAnchorForCapturedLabel / setOffsetForCapturedLabel imperative setters) are used" }
+      ],
+      "tags": ["advanced-overlay-per-label"]
+    },
+    {
+      "id": 16,
+      "prompt": "My Android app uses Label Capture with the Validation Flow overlay. I'd like to additionally outline each captured field in my brand color and float a checkmark icon above fields as they're captured, like I saw in the price-capture sample. Can I add the basic and advanced overlays on top of my validation flow setup?",
+      "expected_output": "The skill answers YES for the basic overlay: the Validation Flow overlay draws no field highlighting, and the official LabelCaptureSimpleSample attaches a LabelCaptureBasicOverlay (with a brush listener) alongside the VF overlay on the same DataCaptureView — so the brand-color outline is directly supported. The VF overlay remains the capture-lifecycle owner: no LabelCaptureListener is added alongside it, and results still come only through onValidationFlowLabelCaptured. For the floating checkmark, the advanced overlay can be added too, but under VF it can only be driven through its listener callbacks (the imperative push requires a LabelCaptureListener, which VF setups must not add) — a state-gated checkmark via viewForCapturedLabelField(overlay, labelField) checking the field's own state is fine since it needs no sibling-field context.",
+      "files": [],
+      "assertions": [
+        { "text": "The response answers that the basic overlay CAN be attached alongside LabelCaptureValidationFlowOverlay for field highlighting (the VF overlay provides no field outlines itself) — it does NOT claim the Validation Flow is self-contained and must not be combined with other overlays" },
+        { "text": "The VF overlay remains the capture-lifecycle owner: no LabelCaptureListener is added alongside the Validation Flow overlay, and label results are still consumed via onValidationFlowLabelCaptured" },
+        { "text": "The field outline uses the basic overlay's brushes (a Brush via the brushForField listener or the capturedFieldBrush/predictedFieldBrush properties) — purely visual, no result handling moved into it" },
+        { "text": "If the floating checkmark is implemented, the advanced overlay is driven via its LISTENER callbacks (e.g. viewForCapturedLabelField gated on the field's own state) — the response does NOT use the imperative setViewForCapturedLabelField push from onSessionUpdated, which is unavailable under VF because it would require adding a LabelCaptureListener" },
+        { "text": "No invented APIs: overlay methods used are documented ones (newInstance, listener assignment, brush APIs, viewFor/anchorFor/offsetForCapturedLabelField)" }
+      ],
+      "tags": ["validation-flow-overlay-mixing"]
     }
   ]
 }
