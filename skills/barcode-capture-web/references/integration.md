@@ -371,19 +371,143 @@ To change at runtime, update `settings` and call `barcodeCapture.applySettings(s
 
 ### BarcodeCaptureFeedback
 
-By default, BarcodeCapture plays a beep on success. To customize feedback, set `barcodeCapture.feedback` before the first scan. Fetch the [Advanced Configurations](https://docs.scandit.com/sdks/web/barcode-capture/advanced/) page for the exact `BarcodeCaptureFeedback` constructor arguments — do not guess.
+By default, BarcodeCapture plays a beep and vibrates on success. Feedback is configured through `BarcodeCaptureFeedback`, whose `success` property is a `core.Feedback` built from an optional `Vibration` and an optional `Sound`. Pass `null` for the part you want to silence.
+
+```typescript
+import { BarcodeCaptureFeedback } from "@scandit/web-datacapture-barcode";
+import { Feedback, Sound, Vibration } from "@scandit/web-datacapture-core";
+
+// Start from the default and replace the success feedback.
+const feedback = BarcodeCaptureFeedback.default;
+
+// Vibration only — no sound:
+feedback.success = new Feedback(Vibration.defaultVibration, null);
+
+// Sound only — no vibration:
+feedback.success = new Feedback(null, Sound.defaultSound);
+
+// Apply to the mode. `barcodeCapture.feedback` is read-only — use setFeedback().
+await barcodeCapture.setFeedback(feedback);
+```
+
+- `BarcodeCaptureFeedback.default` returns a feedback with beep and vibration enabled (web getter is `default`, not `defaultFeedback`).
+- `new Feedback(vibration, sound)` — both arguments are nullable; pass `null` to disable that channel.
+- `Vibration.defaultVibration` and `Sound.defaultSound` are the built-in defaults. `new Sound(resource)` is also possible.
+- A fully silent success: `feedback.success = new Feedback(null, null)`.
+- `barcodeCapture.feedback` is a read-only getter on web — apply changes with `await barcodeCapture.setFeedback(feedback)`, not by assigning to `barcodeCapture.feedback`.
 
 ### Viewfinder
 
-Attach a viewfinder to the overlay to draw a guide on the preview. Fetch the [Advanced Configurations](https://docs.scandit.com/sdks/web/barcode-capture/advanced/) page for the `RectangularViewfinder` API and style options — do not guess the constructor arguments.
+A viewfinder draws a guide on the preview. Build one of the viewfinder types and attach it with the overlay's `setViewfinder()` method (web uses a method, not a property assignment).
+
+```typescript
+import {
+    AimerViewfinder,
+    LaserlineViewfinder,
+    RectangularViewfinder,
+    RectangularViewfinderLineStyle,
+    RectangularViewfinderStyle,
+} from "@scandit/web-datacapture-core";
+
+// Rectangular (most common). Styles: Square, Rounded. Line styles: Bold, Light.
+const viewfinder = new RectangularViewfinder(
+    RectangularViewfinderStyle.Square,
+    RectangularViewfinderLineStyle.Light
+);
+await overlay.setViewfinder(viewfinder);
+
+// Aimer — a crosshair-style aim point (frameColor / dotColor configurable):
+await overlay.setViewfinder(new AimerViewfinder());
+
+// Laserline — a horizontal line (width / enabledColor / disabledColor configurable):
+await overlay.setViewfinder(new LaserlineViewfinder());
+```
+
+`RectangularViewfinder` exposes `setSize(...)`, `setWidthAndAspectRatio(...)`, `color`, and `dimming`. Pass no arguments (`new RectangularViewfinder()`) for the default `Rounded` + `Light` style.
 
 ### Location selection
 
-To restrict scanning to a sub-area of the preview, use `RectangularLocationSelection` on `BarcodeCaptureSettings`. Fetch the [Advanced Configurations](https://docs.scandit.com/sdks/web/barcode-capture/advanced/) page for the exact API.
+To restrict scanning to a sub-area of the preview, set `locationSelection` on `BarcodeCaptureSettings`. Only barcodes whose location overlaps the selection area are reported — useful for aiming at one code in a dense layout.
+
+```typescript
+import {
+    NumberWithUnit,
+    MeasureUnit,
+    RadiusLocationSelection,
+    RectangularLocationSelection,
+    SizeWithUnit,
+} from "@scandit/web-datacapture-core";
+
+// Rectangular area — e.g. 90% width, 30% height of the view (Fraction units).
+settings.locationSelection = RectangularLocationSelection.withSize(
+    new SizeWithUnit(
+        new NumberWithUnit(0.9, MeasureUnit.Fraction),
+        new NumberWithUnit(0.3, MeasureUnit.Fraction)
+    )
+);
+
+// Circular area centred in the view — e.g. radius of 0.2 of the view.
+settings.locationSelection = new RadiusLocationSelection(
+    new NumberWithUnit(0.2, MeasureUnit.Fraction)
+);
+```
+
+`RectangularLocationSelection` also has `withWidthAndAspectRatio(...)` and `withHeightAndAspectRatio(...)`.
 
 ### Composite codes
 
-Composite codes (linear + 2D companion) require both symbologies and composite types to be enabled. Fetch the [Advanced Configurations](https://docs.scandit.com/sdks/web/barcode-capture/advanced/) page for the exact API.
+Composite codes (a linear code plus a 2D companion, types CC-A/CC-B/CC-C) require **both** the component symbologies and the composite types to be enabled on `BarcodeCaptureSettings`.
+
+```typescript
+import { CompositeType, Symbology } from "@scandit/web-datacapture-barcode";
+
+const settings = new BarcodeCaptureSettings();
+
+// 1. Enable the composite types you want to read.
+settings.enabledCompositeTypes = [CompositeType.A, CompositeType.B, CompositeType.C];
+
+// 2. Enable the symbologies that make up those composite types.
+settings.enableSymbologiesForCompositeTypes([
+    CompositeType.A,
+    CompositeType.B,
+    CompositeType.C,
+]);
+```
+
+`enabledCompositeTypes` is a `CompositeType[]` (values `A`, `B`, `C`). `enableSymbologiesForCompositeTypes(...)` turns on the underlying linear + 2D symbologies — calling it is required in addition to setting `enabledCompositeTypes`.
+
+### Symbology extensions
+
+Extensions configure symbology-specific behaviour (e.g. how to treat the leading zero of a UPC-A code, or full-ASCII mode for Code 39). Get the per-symbology `SymbologySettings` with `settings.settingsForSymbology(symbology)`, then call `setExtensionEnabled(name, enabled)`.
+
+```typescript
+const code39Settings = settings.settingsForSymbology(Symbology.Code39);
+code39Settings.setExtensionEnabled("full_ascii", true);
+```
+
+The set of currently enabled extensions is readable via `code39Settings.enabledExtensions` (a `string[]`). See [Symbology Properties](https://docs.scandit.com/symbology-properties) for the extension names per symbology.
+
+### Symbology checksums
+
+Optional checksums add a validation step for symbologies that support them. Set the `checksums` property (a `Set<Checksum>` on web) on the symbology's `SymbologySettings`. The code is accepted if any configured checksum matches, in addition to any mandatory checksum of the symbology.
+
+```typescript
+import { Checksum, Symbology } from "@scandit/web-datacapture-barcode";
+
+const code39Settings = settings.settingsForSymbology(Symbology.Code39);
+code39Settings.checksums = new Set([Checksum.Mod43]);
+```
+
+`Checksum` values include `None`, `Mod10`, `Mod11`, `Mod16`, `Mod43`, `Mod47`, `Mod103`, `Mod10AndMod11`, `Mod10AndMod10`. Only one checksum is applied even if multiple are set.
+
+### Color-inverted codes
+
+By default the engine decodes dark codes on a bright background. To also read bright-on-dark (color-inverted) codes for a symbology, set `isColorInvertedEnabled` on its `SymbologySettings`. The symbology must also be enabled normally.
+
+```typescript
+const dataMatrixSettings = settings.settingsForSymbology(Symbology.DataMatrix);
+dataMatrixSettings.isColorInvertedEnabled = true;
+```
 
 ### Active symbol counts
 
@@ -391,15 +515,15 @@ For variable-length symbologies (Code 39, ITF, Code 128, etc.) you can restrict 
 
 ```typescript
 // Accept only ITF (Interleaved 2 of 5) barcodes of length 14 (ITF-14)
-const itfSettings = settings.getSymbologySettings(Symbology.InterleavedTwoOfFive);
-itfSettings.activeSymbolCounts = new Set([14]);
+const itfSettings = settings.settingsForSymbology(Symbology.InterleavedTwoOfFive);
+itfSettings.activeSymbolCounts = [14];
 
 // Accept Code 39 barcodes of 6, 7, or 8 characters
-const code39Settings = settings.getSymbologySettings(Symbology.Code39);
-code39Settings.activeSymbolCounts = new Set([6, 7, 8]);
+const code39Settings = settings.settingsForSymbology(Symbology.Code39);
+code39Settings.activeSymbolCounts = [6, 7, 8];
 ```
 
-Call `settings.getSymbologySettings(symbology)` to get the `SymbologySettings` for that symbology, then set `activeSymbolCounts` to a `Set<number>` containing the accepted lengths. For fixed-length symbologies (EAN-13, QR Code, DataMatrix) this property has no effect.
+Call `settings.settingsForSymbology(symbology)` to get the `SymbologySettings` for that symbology, then set `activeSymbolCounts` to a `number[]` containing the accepted lengths. For fixed-length symbologies (EAN-13, QR Code, DataMatrix) this property has no effect.
 
 > **Note:** ITF-14 is `Symbology.InterleavedTwoOfFive` — there is no `Symbology.ITF` in the web SDK.
 

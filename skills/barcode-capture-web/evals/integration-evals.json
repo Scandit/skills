@@ -217,6 +217,307 @@
           "text": "Existing integration code (DataCaptureContext, BarcodeCapture, DataCaptureView, mount/unmount) is preserved"
         }
       ]
+    },
+    {
+      "id": 5,
+      "prompt": "I want to change the scan feedback in my BarcodeCapture app: vibrate on a successful scan but do NOT play the beep sound.",
+      "expected_output": "The skill builds a BarcodeCaptureFeedback whose success Feedback has the default vibration and a null sound, then applies it via setFeedback, preserving the existing integration.",
+      "files": [
+        "eval-fixtures/integrated-app.ts"
+      ],
+      "assertions": [
+        {
+          "text": "BarcodeCaptureFeedback.default is used to obtain the starting feedback"
+        },
+        {
+          "text": "feedback.success is assigned a new Feedback( instance"
+        },
+        {
+          "text": "new Feedback( is called with Vibration.defaultVibration as the vibration argument and null as the sound argument"
+        },
+        {
+          "text": "await barcodeCapture.setFeedback( is called to apply the feedback"
+        },
+        {
+          "text": "The feedback is NOT applied by assigning to the read-only barcodeCapture.feedback property (semantic)"
+        },
+        {
+          "text": "Feedback and Vibration are imported from @scandit/web-datacapture-core"
+        },
+        {
+          "text": "Existing integration code (DataCaptureContext, BarcodeCapture, DataCaptureView, mount/unmount) is preserved"
+        }
+      ],
+      "tags": [
+        "feedback-control"
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "Add a rectangular viewfinder to my BarcodeCapture scanner so users see a guide rectangle. Use the square style with a light line.",
+      "expected_output": "The skill creates a RectangularViewfinder with Square style and Light line style and attaches it to the overlay using the overlay's setViewfinder method, keeping a reference to the overlay.",
+      "files": [
+        "eval-fixtures/integrated-app.ts"
+      ],
+      "assertions": [
+        {
+          "text": "new RectangularViewfinder( is created"
+        },
+        {
+          "text": "RectangularViewfinderStyle.Square is passed as the style"
+        },
+        {
+          "text": "RectangularViewfinderLineStyle.Light is passed as the line style"
+        },
+        {
+          "text": "await overlay.setViewfinder( is called to attach the viewfinder"
+        },
+        {
+          "text": "The viewfinder is attached via the overlay setViewfinder method, NOT a brush property (semantic)"
+        },
+        {
+          "text": "RectangularViewfinder, RectangularViewfinderStyle, and RectangularViewfinderLineStyle are imported from @scandit/web-datacapture-core"
+        },
+        {
+          "text": "The BarcodeCaptureOverlay returned by withBarcodeCaptureForView is stored in a variable so setViewfinder can be called on it"
+        },
+        {
+          "text": "Existing integration code (DataCaptureContext, BarcodeCapture, DataCaptureView, mount/unmount) is preserved"
+        }
+      ],
+      "tags": [
+        "rectangular-viewfinder"
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "I want an aimer-style viewfinder (a crosshair aim point) on my BarcodeCapture preview instead of a rectangle.",
+      "expected_output": "The skill creates an AimerViewfinder and attaches it via overlay.setViewfinder, preserving the existing integration.",
+      "files": [
+        "eval-fixtures/integrated-app.ts"
+      ],
+      "assertions": [
+        {
+          "text": "new AimerViewfinder( is created"
+        },
+        {
+          "text": "await overlay.setViewfinder( is called with the AimerViewfinder"
+        },
+        {
+          "text": "AimerViewfinder is imported from @scandit/web-datacapture-core"
+        },
+        {
+          "text": "Existing integration code (DataCaptureContext, BarcodeCapture, DataCaptureView, mount/unmount) is preserved"
+        }
+      ],
+      "tags": [
+        "aimer-viewfinder"
+      ]
+    },
+    {
+      "id": 8,
+      "prompt": "Show a laserline viewfinder (a horizontal line) over the camera preview in my BarcodeCapture app.",
+      "expected_output": "The skill creates a LaserlineViewfinder and attaches it via overlay.setViewfinder, preserving the existing integration.",
+      "files": [
+        "eval-fixtures/integrated-app.ts"
+      ],
+      "assertions": [
+        {
+          "text": "new LaserlineViewfinder( is created"
+        },
+        {
+          "text": "await overlay.setViewfinder( is called with the LaserlineViewfinder"
+        },
+        {
+          "text": "LaserlineViewfinder is imported from @scandit/web-datacapture-core"
+        },
+        {
+          "text": "Existing integration code (DataCaptureContext, BarcodeCapture, DataCaptureView, mount/unmount) is preserved"
+        }
+      ],
+      "tags": [
+        "laserline-viewfinder"
+      ]
+    },
+    {
+      "id": 9,
+      "prompt": "Restrict my BarcodeCapture scanner to only read barcodes inside a rectangular area covering about 90% of the width and 30% of the height of the preview.",
+      "expected_output": "The skill sets a RectangularLocationSelection sized with Fraction units on BarcodeCaptureSettings.locationSelection, preserving the existing integration.",
+      "files": [
+        "eval-fixtures/integrated-app.ts"
+      ],
+      "assertions": [
+        {
+          "text": "settings.locationSelection is assigned"
+        },
+        {
+          "text": "RectangularLocationSelection.withSize( is used to build the location selection"
+        },
+        {
+          "text": "new SizeWithUnit( is used to express the area size"
+        },
+        {
+          "text": "MeasureUnit.Fraction is used for the size units"
+        },
+        {
+          "text": "The locationSelection is set on BarcodeCaptureSettings before BarcodeCapture.forContext is called, OR applySettings is used afterward"
+        },
+        {
+          "text": "RectangularLocationSelection, SizeWithUnit, and MeasureUnit are imported from @scandit/web-datacapture-core"
+        },
+        {
+          "text": "Existing integration code (DataCaptureContext, BarcodeCapture, DataCaptureView, mount/unmount) is preserved"
+        }
+      ],
+      "tags": [
+        "location-selection"
+      ]
+    },
+    {
+      "id": 10,
+      "prompt": "Enable the full-ASCII extension for Code 39 in my BarcodeCapture app so it decodes lowercase and control characters.",
+      "expected_output": "The skill obtains the Code 39 SymbologySettings via settingsForSymbology and calls setExtensionEnabled('full_ascii', true), preserving the existing integration.",
+      "files": [
+        "eval-fixtures/integrated-app.ts"
+      ],
+      "assertions": [
+        {
+          "text": "settings.settingsForSymbology(Symbology.Code39) is called to get the SymbologySettings"
+        },
+        {
+          "text": "setExtensionEnabled is called with the extension name and true"
+        },
+        {
+          "text": "The extension argument is the string full_ascii"
+        },
+        {
+          "text": "Symbology.Code39 is enabled on the settings"
+        },
+        {
+          "text": "Existing integration code (DataCaptureContext, BarcodeCapture, DataCaptureView, mount/unmount) is preserved"
+        }
+      ],
+      "tags": [
+        "symbology-extensions"
+      ]
+    },
+    {
+      "id": 11,
+      "prompt": "Require a Mod 43 checksum for Code 39 barcodes in my BarcodeCapture scanner.",
+      "expected_output": "The skill gets the Code 39 SymbologySettings via settingsForSymbology and sets checksums to a Set containing Checksum.Mod43, preserving the existing integration.",
+      "files": [
+        "eval-fixtures/integrated-app.ts"
+      ],
+      "assertions": [
+        {
+          "text": "settings.settingsForSymbology(Symbology.Code39) is called to get the SymbologySettings"
+        },
+        {
+          "text": "The checksums property is assigned a new Set( containing Checksum.Mod43"
+        },
+        {
+          "text": "Checksum.Mod43 is used"
+        },
+        {
+          "text": "Checksum is imported from @scandit/web-datacapture-barcode"
+        },
+        {
+          "text": "Existing integration code (DataCaptureContext, BarcodeCapture, DataCaptureView, mount/unmount) is preserved"
+        }
+      ],
+      "tags": [
+        "symbology-checksums"
+      ]
+    },
+    {
+      "id": 12,
+      "prompt": "I am scanning ITF-14 codes, which are always 14 characters. Restrict the active symbol count for Interleaved 2 of 5 to 14 in my BarcodeCapture app.",
+      "expected_output": "The skill gets the Interleaved 2 of 5 SymbologySettings via settingsForSymbology and sets activeSymbolCounts to a number array containing 14, preserving the existing integration.",
+      "files": [
+        "eval-fixtures/integrated-app.ts"
+      ],
+      "assertions": [
+        {
+          "text": "settings.settingsForSymbology(Symbology.InterleavedTwoOfFive) is called to get the SymbologySettings"
+        },
+        {
+          "text": "activeSymbolCounts is assigned an array containing 14"
+        },
+        {
+          "text": "activeSymbolCounts is assigned a number array (e.g. [14]), not a Set (semantic)"
+        },
+        {
+          "text": "Symbology.InterleavedTwoOfFive is enabled on the settings"
+        },
+        {
+          "text": "Existing integration code (DataCaptureContext, BarcodeCapture, DataCaptureView, mount/unmount) is preserved"
+        }
+      ],
+      "tags": [
+        "active-symbol-counts"
+      ]
+    },
+    {
+      "id": 13,
+      "prompt": "Some of my Data Matrix labels are printed bright-on-dark (color inverted). Make my BarcodeCapture app read those too.",
+      "expected_output": "The skill gets the Data Matrix SymbologySettings via settingsForSymbology and sets isColorInvertedEnabled to true, keeping the symbology enabled, preserving the existing integration.",
+      "files": [
+        "eval-fixtures/integrated-app.ts"
+      ],
+      "assertions": [
+        {
+          "text": "settings.settingsForSymbology(Symbology.DataMatrix) is called to get the SymbologySettings"
+        },
+        {
+          "text": "isColorInvertedEnabled is set to true"
+        },
+        {
+          "text": "The property used is isColorInvertedEnabled, NOT colorInvertedEnabled (semantic)"
+        },
+        {
+          "text": "Symbology.DataMatrix is enabled on the settings"
+        },
+        {
+          "text": "Existing integration code (DataCaptureContext, BarcodeCapture, DataCaptureView, mount/unmount) is preserved"
+        }
+      ],
+      "tags": [
+        "color-inverted"
+      ]
+    },
+    {
+      "id": 14,
+      "prompt": "I need to scan GS1 composite codes (a linear code with a 2D companion) in my BarcodeCapture app. How do I enable composite codes?",
+      "expected_output": "The skill enables the composite types via enabledCompositeTypes and enables the underlying symbologies via enableSymbologiesForCompositeTypes, preserving the existing integration.",
+      "files": [
+        "eval-fixtures/integrated-app.ts"
+      ],
+      "assertions": [
+        {
+          "text": "settings.enabledCompositeTypes is assigned an array of CompositeType values"
+        },
+        {
+          "text": "CompositeType.A is included"
+        },
+        {
+          "text": "CompositeType.B is included"
+        },
+        {
+          "text": "CompositeType.C is included"
+        },
+        {
+          "text": "settings.enableSymbologiesForCompositeTypes( is called with the composite types to enable the underlying symbologies"
+        },
+        {
+          "text": "CompositeType is imported from @scandit/web-datacapture-barcode"
+        },
+        {
+          "text": "Existing integration code (DataCaptureContext, BarcodeCapture, DataCaptureView, mount/unmount) is preserved"
+        }
+      ],
+      "tags": [
+        "composite-codes"
+      ]
     }
   ]
 }
