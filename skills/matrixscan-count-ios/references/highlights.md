@@ -75,6 +75,9 @@ extension CountViewController: BarcodeCountViewDelegate {
   `.starHalfFilled`, `.starOutlined`, `.arrowRight`, `.arrowLeft`, `.arrowUp`, `.arrowDown`,
   `.chevronRight`, `.chevronLeft`, `.chevronUp`, `.chevronDown`, `.delete`, `.print`, `.slash`, `.plus`,
   `.minus`. (Omit `.withIcon` to keep the default icon and just recolor the background.)
+- **A background color only renders if you also set a background shape.** `.withBackgroundColor(_:)` has
+  no visible effect on its own — pair it with `.withBackgroundShape(.circle)` (or `.square`), otherwise the
+  background won't show.
 - The class properties `BarcodeCountView.defaultRecognizedIcon` (and `defaultNotInListIcon` /
   `defaultAcceptedIcon` / `defaultRejectedIcon`) return the SDK defaults, so you can override only some
   states.
@@ -85,6 +88,9 @@ The icon callbacks mirror the brush ones: `iconForRecognizedBarcode`, `iconForRe
 appear when scanning against a list (see `list-scanning.md`).
 
 To recolor the highlight as a plain colored **dot** instead of an icon, use the Dot style below.
+
+> The same `ScanditIcon` / `ScanditIconBuilder` is also used for **status mode** (per-barcode status
+> icons). If that's what you're after, see `status-mode.md`.
 
 ## Dot style
 

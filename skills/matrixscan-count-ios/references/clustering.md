@@ -165,6 +165,9 @@ extension CountViewController: BarcodeCountViewDelegate {
   highlight. Note the Swift name is `didTap:`, **not** `didTapCluster:` — the SDK shortens it because the
   parameter type is already `Cluster`.
 
+> If you also use **status mode** with clustering on, the per-barcode status icons are organized on the
+> cluster highlight (not per individual barcode) — see `status-mode.md`.
+
 ## After wiring up
 
 Build the project. If a clustering API doesn't resolve or a delegate method isn't called, fetch the
