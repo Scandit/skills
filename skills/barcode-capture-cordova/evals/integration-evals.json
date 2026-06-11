@@ -166,6 +166,127 @@
         {"text": "barcodeCapture.applySettings(settings) is called after the change, or the change is made before new Scandit.BarcodeCapture(settings) (semantic)"},
         {"text": "Existing integration code (context, barcodeCapture, view, overlay, listener) is preserved"}
       ]
+    },
+    {
+      "id": 11,
+      "prompt": "Replace the rectangular viewfinder on my BarcodeCapture overlay with an aimer viewfinder (the crosshair-style one) so users aim precisely at a single code.",
+      "expected_output": "The skill assigns a new Scandit.AimerViewfinder to overlay.viewfinder, optionally customizing frameColor/dotColor.",
+      "files": [
+        "fixtures/IntegratedApp.js"
+      ],
+      "assertions": [
+        {"text": "overlay.viewfinder is assigned a new Scandit.AimerViewfinder( instance"},
+        {"text": "new Scandit.AimerViewfinder() is constructed with no arguments"},
+        {"text": "Scandit.RectangularViewfinder is NOT used for the viewfinder assignment"},
+        {"text": "Existing integration code (context, barcodeCapture, view, overlay, listener) is preserved"}
+      ],
+      "tags": ["aimer-viewfinder"]
+    },
+    {
+      "id": 12,
+      "prompt": "I'm scanning single-line 1D codes. Put a laserline viewfinder on my BarcodeCapture overlay and make the line span 90% of the view width.",
+      "expected_output": "The skill assigns a new Scandit.LaserlineViewfinder to overlay.viewfinder and sets its width to a fractional NumberWithUnit.",
+      "files": [
+        "fixtures/IntegratedApp.js"
+      ],
+      "assertions": [
+        {"text": "overlay.viewfinder is assigned a new Scandit.LaserlineViewfinder( instance"},
+        {"text": "new Scandit.LaserlineViewfinder() is constructed with no arguments"},
+        {"text": "laserline width is set via a new Scandit.NumberWithUnit( with Scandit.MeasureUnit.Fraction"},
+        {"text": "Existing integration code (context, barcodeCapture, view, overlay, listener) is preserved"}
+      ],
+      "tags": ["laserline-viewfinder"]
+    },
+    {
+      "id": 13,
+      "prompt": "In my BarcodeCapture app, only accept barcodes whose data starts with '09:'. Any other code should be ignored and not highlighted. Wire this filtering into the scan callback.",
+      "expected_output": "The skill inspects barcode.data inside didScan; for a non-matching code it sets overlay.brush = Scandit.Brush.transparent and returns; for a matching code it processes the result.",
+      "files": [
+        "fixtures/IntegratedApp.js"
+      ],
+      "assertions": [
+        {"text": "didScan reads session.newlyRecognizedBarcode"},
+        {"text": "barcode.data is inspected (e.g. with startsWith) to decide accept vs reject"},
+        {"text": "On a rejected barcode, overlay.brush = Scandit.Brush.transparent is set"},
+        {"text": "On a rejected barcode, the callback returns without pushing to scannedProducts (semantic)"},
+        {"text": "Existing integration code (context, barcodeCapture, view, overlay, listener) is preserved"}
+      ],
+      "tags": ["reject-pattern"]
+    },
+    {
+      "id": 14,
+      "prompt": "Change the highlight drawn over a recognized barcode in my BarcodeCapture overlay to a semi-transparent green fill with a solid green border.",
+      "expected_output": "The skill assigns overlay.brush a new Scandit.Brush built from two Scandit.Color values and a stroke width.",
+      "files": [
+        "fixtures/IntegratedApp.js"
+      ],
+      "assertions": [
+        {"text": "overlay.brush is assigned a new Scandit.Brush( instance"},
+        {"text": "new Scandit.Brush( is constructed with a fill color, a stroke color, and a stroke width"},
+        {"text": "Scandit.Color.fromHex( is used to build the brush colors"},
+        {"text": "Existing integration code (context, barcodeCapture, view, overlay, listener) is preserved"}
+      ],
+      "tags": ["overlay-brush"]
+    },
+    {
+      "id": 15,
+      "prompt": "My Code 39 barcodes use the full-ASCII extension. Enable the full_ascii extension for Code 39 in my BarcodeCapture settings.",
+      "expected_output": "The skill gets the Code 39 symbology settings and calls setExtensionEnabled('full_ascii', true), then re-applies the settings.",
+      "files": [
+        "fixtures/IntegratedApp.js"
+      ],
+      "assertions": [
+        {"text": "settings.settingsForSymbology(Scandit.Symbology.Code39) is called to get the per-symbology settings"},
+        {"text": "setExtensionEnabled('full_ascii', true) is called on the Code 39 symbology settings"},
+        {"text": "barcodeCapture.applySettings(settings) is called after the change, or the change is made before new Scandit.BarcodeCapture(settings) (semantic)"},
+        {"text": "Existing integration code (context, barcodeCapture, view, overlay, listener) is preserved"}
+      ],
+      "tags": ["symbology-extensions"]
+    },
+    {
+      "id": 16,
+      "prompt": "Require the Mod 43 checksum for Code 39 in my BarcodeCapture integration so codes without a valid check digit are rejected.",
+      "expected_output": "The skill gets the Code 39 symbology settings and sets checksums to an array containing Scandit.Checksum.Mod43, then re-applies the settings.",
+      "files": [
+        "fixtures/IntegratedApp.js"
+      ],
+      "assertions": [
+        {"text": "settings.settingsForSymbology(Scandit.Symbology.Code39) is called to get the per-symbology settings"},
+        {"text": "the Code 39 symbology settings checksums property is assigned an array containing Scandit.Checksum.Mod43"},
+        {"text": "barcodeCapture.applySettings(settings) is called after the change, or the change is made before new Scandit.BarcodeCapture(settings) (semantic)"},
+        {"text": "Existing integration code (context, barcodeCapture, view, overlay, listener) is preserved"}
+      ],
+      "tags": ["symbology-checksums"]
+    },
+    {
+      "id": 17,
+      "prompt": "My Code 128 barcodes are short — between 6 and 12 characters. Restrict the active symbol counts for Code 128 to that range in my BarcodeCapture settings.",
+      "expected_output": "The skill gets the Code 128 symbology settings and sets activeSymbolCounts to the requested range, then re-applies the settings.",
+      "files": [
+        "fixtures/IntegratedApp.js"
+      ],
+      "assertions": [
+        {"text": "settings.settingsForSymbology(Scandit.Symbology.Code128) is called to get the per-symbology settings"},
+        {"text": "the Code 128 symbology settings activeSymbolCounts property is assigned an array of numbers covering the requested range"},
+        {"text": "barcodeCapture.applySettings(settings) is called after the change, or the change is made before new Scandit.BarcodeCapture(settings) (semantic)"},
+        {"text": "Existing integration code (context, barcodeCapture, view, overlay, listener) is preserved"}
+      ],
+      "tags": ["active-symbol-counts"]
+    },
+    {
+      "id": 18,
+      "prompt": "Some of my QR codes are printed light-on-dark (inverted). Enable color-inverted decoding for QR in my BarcodeCapture settings.",
+      "expected_output": "The skill gets the QR symbology settings and sets isColorInvertedEnabled = true, then re-applies the settings.",
+      "files": [
+        "fixtures/IntegratedApp.js"
+      ],
+      "assertions": [
+        {"text": "settings.settingsForSymbology(Scandit.Symbology.QR) is called to get the per-symbology settings"},
+        {"text": "the QR symbology settings isColorInvertedEnabled property is set to true"},
+        {"text": "barcodeCapture.applySettings(settings) is called after the change, or the change is made before new Scandit.BarcodeCapture(settings) (semantic)"},
+        {"text": "Existing integration code (context, barcodeCapture, view, overlay, listener) is preserved"}
+      ],
+      "tags": ["color-inverted"]
     }
   ]
 }
