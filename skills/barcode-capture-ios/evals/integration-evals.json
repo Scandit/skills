@@ -9,29 +9,75 @@
         "fixtures/EmptyViewController.swift"
       ],
       "assertions": [
-        {"text": "Setup checklist is shown and mentions adding ScanditBarcodeCapture and ScanditCaptureCore via Swift Package Manager (datacapture-spm)"},
-        {"text": "Setup checklist mentions adding NSCameraUsageDescription to Info.plist"},
-        {"text": "A license key placeholder string is present"},
-        {"text": "DataCaptureContext.initialize(licenseKey: is used (v7 API, not the deprecated constructor)"},
-        {"text": "DataCaptureContext(licenseKey: is NOT present in the new code"},
-        {"text": "DataCaptureContext.shared is read after initialize"},
-        {"text": "BarcodeCapture.recommendedCameraSettings is used (no parentheses — it is a property)"},
-        {"text": "Camera.default is used to obtain the camera"},
-        {"text": "context.setFrameSource( is called with the camera"},
-        {"text": "BarcodeCaptureSettings is constructed and configured"},
-        {"text": "Symbology .ean13UPCA is enabled"},
-        {"text": "Symbology .code128 is enabled"},
-        {"text": "No symbologies other than ean13UPCA and code128 are enabled"},
-        {"text": "BarcodeCapture(context:settings:) is used to create the mode"},
-        {"text": "barcodeCapture.addListener( is called"},
-        {"text": "DataCaptureView(context:frame:) is used to create the preview"},
-        {"text": "BarcodeCaptureOverlay(barcodeCapture:view:) is called"},
-        {"text": "The view controller (or an extension of it) conforms to BarcodeCaptureListener"},
-        {"text": "barcodeCapture(_:didScanIn:frameData:) is implemented and reads session.newlyRecognizedBarcode"},
-        {"text": "DispatchQueue.main.async is used inside the didScanIn callback for UI work"},
-        {"text": "camera?.switch(toDesiredState: .on) is called in viewWillAppear (or equivalent lifecycle hook)"},
-        {"text": "camera?.switch(toDesiredState: .off) is called in viewWillDisappear (or equivalent lifecycle hook)"},
-        {"text": "context.removeCurrentMode() is called in deinit (or equivalent cleanup hook)"}
+        {
+          "text": "Setup checklist is shown and mentions adding ScanditBarcodeCapture and ScanditCaptureCore via Swift Package Manager (datacapture-spm)"
+        },
+        {
+          "text": "Setup checklist mentions adding NSCameraUsageDescription to Info.plist"
+        },
+        {
+          "text": "A license key placeholder string is present"
+        },
+        {
+          "text": "DataCaptureContext.initialize(licenseKey: is used (v7 API, not the deprecated constructor)"
+        },
+        {
+          "text": "DataCaptureContext(licenseKey: is NOT present in the new code"
+        },
+        {
+          "text": "DataCaptureContext.shared is read after initialize"
+        },
+        {
+          "text": "BarcodeCapture.recommendedCameraSettings is used (no parentheses — it is a property)"
+        },
+        {
+          "text": "Camera.default is used to obtain the camera"
+        },
+        {
+          "text": "context.setFrameSource( is called with the camera"
+        },
+        {
+          "text": "BarcodeCaptureSettings is constructed and configured"
+        },
+        {
+          "text": "Symbology .ean13UPCA is enabled (semantic)"
+        },
+        {
+          "text": "Symbology .code128 is enabled (semantic)"
+        },
+        {
+          "text": "No symbologies other than ean13UPCA and code128 are enabled"
+        },
+        {
+          "text": "BarcodeCapture(context:settings:) is used to create the mode"
+        },
+        {
+          "text": "barcodeCapture.addListener( is called"
+        },
+        {
+          "text": "DataCaptureView(context:frame:) is used to create the preview"
+        },
+        {
+          "text": "BarcodeCaptureOverlay(barcodeCapture:view:) is called"
+        },
+        {
+          "text": "The view controller (or an extension of it) conforms to BarcodeCaptureListener"
+        },
+        {
+          "text": "barcodeCapture(_:didScanIn:frameData:) is implemented and reads session.newlyRecognizedBarcode"
+        },
+        {
+          "text": "DispatchQueue.main.async is used inside the didScanIn callback for UI work"
+        },
+        {
+          "text": "camera?.switch(toDesiredState: .on) is called in viewWillAppear (or equivalent lifecycle hook)"
+        },
+        {
+          "text": "camera?.switch(toDesiredState: .off) is called in viewWillDisappear (or equivalent lifecycle hook)"
+        },
+        {
+          "text": "context.removeCurrentMode() is called in deinit (or equivalent cleanup hook)"
+        }
       ]
     },
     {
@@ -42,15 +88,33 @@
         "fixtures/EmptyViewController.swift"
       ],
       "assertions": [
-        {"text": "Symbology .qr is enabled"},
-        {"text": "Symbology .dataMatrix is enabled"},
-        {"text": "No symbologies other than qr and dataMatrix are enabled"},
-        {"text": "BarcodeCapture(context:settings:) is used"},
-        {"text": "barcodeCapture(_:didScanIn:frameData:) is implemented and accesses barcode.data"},
-        {"text": "The scan result is logged (print or os_log)"},
-        {"text": "viewWillAppear turns the camera on"},
-        {"text": "viewWillDisappear turns the camera off"},
-        {"text": "Setup checklist mentions Swift Package Manager / datacapture-spm"}
+        {
+          "text": "Symbology .qr is enabled (semantic)"
+        },
+        {
+          "text": "Symbology .dataMatrix is enabled (semantic)"
+        },
+        {
+          "text": "No symbologies other than qr and dataMatrix are enabled"
+        },
+        {
+          "text": "BarcodeCapture(context:settings:) is used"
+        },
+        {
+          "text": "barcodeCapture(_:didScanIn:frameData:) is implemented and accesses barcode.data"
+        },
+        {
+          "text": "The scan result is logged (print or os_log)"
+        },
+        {
+          "text": "viewWillAppear turns the camera on"
+        },
+        {
+          "text": "viewWillDisappear turns the camera off"
+        },
+        {
+          "text": "Setup checklist mentions Swift Package Manager / datacapture-spm"
+        }
       ]
     },
     {
@@ -61,10 +125,18 @@
         "fixtures/IntegratedViewController.swift"
       ],
       "assertions": [
-        {"text": "barcodeCapture.isEnabled = false is set inside didScanIn before the async work"},
-        {"text": "A Task { } or async completion handler is used to perform the async lookup"},
-        {"text": "barcodeCapture.isEnabled = true is set after the lookup completes (defer or final step)"},
-        {"text": "Existing integration code (context, barcodeCapture, camera, listener) is preserved"}
+        {
+          "text": "barcodeCapture.isEnabled = false is set inside didScanIn before the async work"
+        },
+        {
+          "text": "A Task { } or async completion handler is used to perform the async lookup"
+        },
+        {
+          "text": "barcodeCapture.isEnabled = true is set after the lookup completes (defer or final step)"
+        },
+        {
+          "text": "Existing integration code (context, barcodeCapture, camera, listener) is preserved"
+        }
       ]
     },
     {
@@ -75,9 +147,15 @@
         "fixtures/IntegratedViewController.swift"
       ],
       "assertions": [
-        {"text": "barcodeCapture.feedback.success is reassigned to a Feedback with no sound and no vibration (vibration: nil, sound: nil)"},
-        {"text": "BarcodeCaptureFeedback() empty constructor is NOT used (that is the Android API)"},
-        {"text": "Existing integration code (context, barcodeCapture, camera, listener) is preserved"}
+        {
+          "text": "barcodeCapture.feedback.success is reassigned to a Feedback with no sound and no vibration (vibration: nil, sound: nil)"
+        },
+        {
+          "text": "BarcodeCaptureFeedback() empty constructor is NOT used (that is the Android API)"
+        },
+        {
+          "text": "Existing integration code (context, barcodeCapture, camera, listener) is preserved"
+        }
       ]
     },
     {
@@ -88,9 +166,15 @@
         "fixtures/IntegratedViewController.swift"
       ],
       "assertions": [
-        {"text": "A RectangularViewfinder is constructed with style: .square"},
-        {"text": "The viewfinder is assigned to a BarcodeCaptureOverlay's viewfinder property (overlay.viewfinder = ...)"},
-        {"text": "Existing integration code (context, barcodeCapture, camera, listener) is preserved"}
+        {
+          "text": "A RectangularViewfinder is constructed with style: .square"
+        },
+        {
+          "text": "The viewfinder is assigned to a BarcodeCaptureOverlay's viewfinder property (overlay.viewfinder = ...)"
+        },
+        {
+          "text": "Existing integration code (context, barcodeCapture, camera, listener) is preserved"
+        }
       ]
     },
     {
@@ -101,9 +185,15 @@
         "fixtures/IntegratedViewController.swift"
       ],
       "assertions": [
-        {"text": "codeDuplicateFilter is set to 0.5 (seconds) on the BarcodeCaptureSettings — NOT 500 and NOT TimeInterval.millis(500)"},
-        {"text": "codeDuplicateFilter is set before BarcodeCapture(context:settings:) is invoked, or via barcodeCapture.apply"},
-        {"text": "Existing integration code (context, barcodeCapture, camera, listener) is preserved"}
+        {
+          "text": "codeDuplicateFilter is set to 0.5 (seconds) on the BarcodeCaptureSettings — NOT 500 and NOT TimeInterval.millis(500)"
+        },
+        {
+          "text": "codeDuplicateFilter is set before BarcodeCapture(context:settings:) is invoked, or via barcodeCapture.apply"
+        },
+        {
+          "text": "Existing integration code (context, barcodeCapture, camera, listener) is preserved"
+        }
       ]
     },
     {
@@ -114,11 +204,19 @@
         "fixtures/IntegratedViewController.swift"
       ],
       "assertions": [
-        {"text": "An AimerViewfinder() is constructed"},
-        {"text": "The viewfinder is assigned to the overlay via overlay.viewfinder ="},
-        {"text": "Existing integration code (context, barcodeCapture, camera, listener) is preserved"}
+        {
+          "text": "An AimerViewfinder() is constructed"
+        },
+        {
+          "text": "The viewfinder is assigned to the overlay via overlay.viewfinder ="
+        },
+        {
+          "text": "Existing integration code (context, barcodeCapture, camera, listener) is preserved"
+        }
       ],
-      "tags": ["aimer-viewfinder"]
+      "tags": [
+        "aimer-viewfinder"
+      ]
     },
     {
       "id": 8,
@@ -128,11 +226,19 @@
         "fixtures/IntegratedViewController.swift"
       ],
       "assertions": [
-        {"text": "A LaserlineViewfinder() is constructed"},
-        {"text": "The viewfinder is assigned to the overlay via overlay.viewfinder ="},
-        {"text": "Existing integration code (context, barcodeCapture, camera, listener) is preserved"}
+        {
+          "text": "A LaserlineViewfinder() is constructed"
+        },
+        {
+          "text": "The viewfinder is assigned to the overlay via overlay.viewfinder ="
+        },
+        {
+          "text": "Existing integration code (context, barcodeCapture, camera, listener) is preserved"
+        }
       ],
-      "tags": ["laserline-viewfinder"]
+      "tags": [
+        "laserline-viewfinder"
+      ]
     },
     {
       "id": 9,
@@ -142,14 +248,28 @@
         "fixtures/IntegratedViewController.swift"
       ],
       "assertions": [
-        {"text": "A FloatWithUnit(value: 0.9, unit: .fraction) is constructed for the width"},
-        {"text": "A FloatWithUnit(value: 0.3, unit: .fraction) is constructed for the height"},
-        {"text": "A SizeWithUnit(width:height:) is constructed from the FloatWithUnit values"},
-        {"text": "A RectangularLocationSelection(size:) is constructed"},
-        {"text": "settings.locationSelection is assigned the RectangularLocationSelection"},
-        {"text": "Existing integration code (context, barcodeCapture, camera, listener) is preserved"}
+        {
+          "text": "A FloatWithUnit(value: 0.9, unit: .fraction) is constructed for the width"
+        },
+        {
+          "text": "A FloatWithUnit(value: 0.3, unit: .fraction) is constructed for the height"
+        },
+        {
+          "text": "A SizeWithUnit(width:height:) is constructed from the FloatWithUnit values"
+        },
+        {
+          "text": "A RectangularLocationSelection(size:) is constructed"
+        },
+        {
+          "text": "settings.locationSelection is assigned the RectangularLocationSelection"
+        },
+        {
+          "text": "Existing integration code (context, barcodeCapture, camera, listener) is preserved"
+        }
       ],
-      "tags": ["location-selection"]
+      "tags": [
+        "location-selection"
+      ]
     },
     {
       "id": 10,
@@ -159,12 +279,22 @@
         "fixtures/IntegratedViewController.swift"
       ],
       "assertions": [
-        {"text": "A FloatWithUnit(value: 0.2, unit: .fraction) is constructed for the radius"},
-        {"text": "A RadiusLocationSelection(radius:) is constructed"},
-        {"text": "settings.locationSelection is assigned the RadiusLocationSelection"},
-        {"text": "Existing integration code (context, barcodeCapture, camera, listener) is preserved"}
+        {
+          "text": "A FloatWithUnit(value: 0.2, unit: .fraction) is constructed for the radius"
+        },
+        {
+          "text": "A RadiusLocationSelection(radius:) is constructed"
+        },
+        {
+          "text": "settings.locationSelection is assigned the RadiusLocationSelection"
+        },
+        {
+          "text": "Existing integration code (context, barcodeCapture, camera, listener) is preserved"
+        }
       ],
-      "tags": ["location-selection"]
+      "tags": [
+        "location-selection"
+      ]
     },
     {
       "id": 11,
@@ -174,13 +304,25 @@
         "fixtures/IntegratedViewController.swift"
       ],
       "assertions": [
-        {"text": "Inside didScanIn the code reads barcode.data"},
-        {"text": "The barcode data is checked with .hasPrefix(\"978\")"},
-        {"text": "When the prefix does not match, overlay.brush is set to Brush.transparent (or a Brush with transparent fill and stroke)"},
-        {"text": "(semantic) the callback returns early for rejected codes so non-matching barcodes are not handled"},
-        {"text": "Existing integration code (context, barcodeCapture, camera, listener) is preserved"}
+        {
+          "text": "Inside didScanIn the code reads barcode.data"
+        },
+        {
+          "text": "The barcode data is checked with .hasPrefix(\"978\")"
+        },
+        {
+          "text": "When the prefix does not match, overlay.brush is set to Brush.transparent (or a Brush with transparent fill and stroke)"
+        },
+        {
+          "text": "(semantic) the callback returns early for rejected codes so non-matching barcodes are not handled"
+        },
+        {
+          "text": "Existing integration code (context, barcodeCapture, camera, listener) is preserved"
+        }
       ],
-      "tags": ["reject-pattern"]
+      "tags": [
+        "reject-pattern"
+      ]
     },
     {
       "id": 12,
@@ -190,11 +332,19 @@
         "fixtures/IntegratedViewController.swift"
       ],
       "assertions": [
-        {"text": "A Brush(fill:stroke:strokeWidth:) is constructed"},
-        {"text": "The brush is assigned to the overlay via overlay.brush ="},
-        {"text": "Existing integration code (context, barcodeCapture, camera, listener) is preserved"}
+        {
+          "text": "A Brush(fill:stroke:strokeWidth:) is constructed"
+        },
+        {
+          "text": "The brush is assigned to the overlay via overlay.brush ="
+        },
+        {
+          "text": "Existing integration code (context, barcodeCapture, camera, listener) is preserved"
+        }
       ],
-      "tags": ["overlay-brush"]
+      "tags": [
+        "overlay-brush"
+      ]
     },
     {
       "id": 13,
@@ -204,11 +354,19 @@
         "fixtures/IntegratedViewController.swift"
       ],
       "assertions": [
-        {"text": "settings.settings(for: .code39) is used to obtain the SymbologySettings"},
-        {"text": "set(extension: \"full_ascii\", enabled: true) is called on the symbology settings"},
-        {"text": "Existing integration code (context, barcodeCapture, camera, listener) is preserved"}
+        {
+          "text": "settings.settings(for: .code39) is used to obtain the SymbologySettings"
+        },
+        {
+          "text": "set(extension: \"full_ascii\", enabled: true) is called on the symbology settings"
+        },
+        {
+          "text": "Existing integration code (context, barcodeCapture, camera, listener) is preserved"
+        }
       ],
-      "tags": ["symbology-extensions"]
+      "tags": [
+        "symbology-extensions"
+      ]
     },
     {
       "id": 14,
@@ -218,11 +376,19 @@
         "fixtures/IntegratedViewController.swift"
       ],
       "assertions": [
-        {"text": "settings.settings(for: .code39) is used to obtain the SymbologySettings"},
-        {"text": "checksums is set to [.mod43] on the symbology settings"},
-        {"text": "Existing integration code (context, barcodeCapture, camera, listener) is preserved"}
+        {
+          "text": "settings.settings(for: .code39) is used to obtain the SymbologySettings"
+        },
+        {
+          "text": "checksums is set to [.mod43] on the symbology settings"
+        },
+        {
+          "text": "Existing integration code (context, barcodeCapture, camera, listener) is preserved"
+        }
       ],
-      "tags": ["symbology-checksums"]
+      "tags": [
+        "symbology-checksums"
+      ]
     },
     {
       "id": 15,
@@ -232,11 +398,19 @@
         "fixtures/IntegratedViewController.swift"
       ],
       "assertions": [
-        {"text": "settings.settings(for: .code128) is used to obtain the SymbologySettings"},
-        {"text": "activeSymbolCounts is set to Set(7...20) on the symbology settings"},
-        {"text": "Existing integration code (context, barcodeCapture, camera, listener) is preserved"}
+        {
+          "text": "settings.settings(for: .code128) is used to obtain the SymbologySettings"
+        },
+        {
+          "text": "activeSymbolCounts is set to Set(7...20) on the symbology settings"
+        },
+        {
+          "text": "Existing integration code (context, barcodeCapture, camera, listener) is preserved"
+        }
       ],
-      "tags": ["active-symbol-counts"]
+      "tags": [
+        "active-symbol-counts"
+      ]
     },
     {
       "id": 16,
@@ -246,11 +420,19 @@
         "fixtures/IntegratedViewController.swift"
       ],
       "assertions": [
-        {"text": "settings.settings(for: .qr) is used to obtain the SymbologySettings"},
-        {"text": "isColorInvertedEnabled is set to true on the symbology settings"},
-        {"text": "Existing integration code (context, barcodeCapture, camera, listener) is preserved"}
+        {
+          "text": "settings.settings(for: .qr) is used to obtain the SymbologySettings"
+        },
+        {
+          "text": "isColorInvertedEnabled is set to true on the symbology settings"
+        },
+        {
+          "text": "Existing integration code (context, barcodeCapture, camera, listener) is preserved"
+        }
       ],
-      "tags": ["color-inverted"]
+      "tags": [
+        "color-inverted"
+      ]
     },
     {
       "id": 17,
@@ -260,11 +442,19 @@
         "fixtures/IntegratedViewController.swift"
       ],
       "assertions": [
-        {"text": "settings.enabledCompositeTypes is set to include CompositeType .a and .b"},
-        {"text": "settings.enableSymbologies(forCompositeTypes:) is called with the composite types"},
-        {"text": "Existing integration code (context, barcodeCapture, camera, listener) is preserved"}
+        {
+          "text": "settings.enabledCompositeTypes is set to include CompositeType .a and .b"
+        },
+        {
+          "text": "settings.enableSymbologies(forCompositeTypes:) is called with the composite types"
+        },
+        {
+          "text": "Existing integration code (context, barcodeCapture, camera, listener) is preserved"
+        }
       ],
-      "tags": ["composite-codes"]
+      "tags": [
+        "composite-codes"
+      ]
     }
   ]
 }

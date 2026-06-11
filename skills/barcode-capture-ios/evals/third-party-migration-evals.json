@@ -9,26 +9,66 @@
         "fixtures/AVFoundationViewController.swift"
       ],
       "assertions": [
-        {"text": "import AVFoundation is NOT present in the output (may appear in a before/after summary table)"},
-        {"text": "AVCaptureSession is NOT instantiated in the new code"},
-        {"text": "AVCaptureMetadataOutput is NOT instantiated in the new code"},
-        {"text": "AVCaptureMetadataOutputObjectsDelegate conformance is NOT present on the view controller in the new code"},
-        {"text": "AVCaptureVideoPreviewLayer is NOT present in the new code"},
-        {"text": "import ScanditBarcodeCapture IS present"},
-        {"text": "BarcodeCaptureListener conformance is present"},
-        {"text": "Symbology .ean13UPCA is enabled (not .ean13)"},
-        {"text": "Symbology .code128 is enabled"},
-        {"text": "Symbology .qr is enabled (not .qrCode, which does not exist as a Swift case)"},
-        {"text": "DataCaptureView(context:frame:) is used and added as a subview"},
-        {"text": "BarcodeCaptureOverlay(barcodeCapture:view:) is called"},
-        {"text": "viewWillAppear turns the camera on (camera?.switch(toDesiredState: .on))"},
-        {"text": "viewWillDisappear turns the camera off (camera?.switch(toDesiredState: .off))"},
-        {"text": "ScannedBarcode struct is preserved in the output"},
-        {"text": "scannedBarcodes array is preserved in the output"},
-        {"text": "Deduplication logic (checking for existing value before appending) is preserved"},
-        {"text": "A summary of changes is shown with what was removed and what was added"},
-        {"text": "Setup checklist mentions adding the SDK via Swift Package Manager (datacapture-spm)"},
-        {"text": "Setup checklist mentions NSCameraUsageDescription in Info.plist"}
+        {
+          "text": "import AVFoundation is NOT present in the output (may appear in a before/after summary table)"
+        },
+        {
+          "text": "AVCaptureSession is NOT instantiated in the new code"
+        },
+        {
+          "text": "AVCaptureMetadataOutput is NOT instantiated in the new code"
+        },
+        {
+          "text": "AVCaptureMetadataOutputObjectsDelegate conformance is NOT present on the view controller in the new code"
+        },
+        {
+          "text": "AVCaptureVideoPreviewLayer is NOT present in the new code"
+        },
+        {
+          "text": "import ScanditBarcodeCapture IS present"
+        },
+        {
+          "text": "BarcodeCaptureListener conformance is present (semantic)"
+        },
+        {
+          "text": "Symbology .ean13UPCA is enabled (not .ean13) (semantic)"
+        },
+        {
+          "text": "Symbology .code128 is enabled (semantic)"
+        },
+        {
+          "text": "Symbology .qr is enabled (not .qrCode, which does not exist as a Swift case) (semantic)"
+        },
+        {
+          "text": "DataCaptureView(context:frame:) is used and added as a subview"
+        },
+        {
+          "text": "BarcodeCaptureOverlay(barcodeCapture:view:) is called"
+        },
+        {
+          "text": "viewWillAppear turns the camera on (camera?.switch(toDesiredState: .on))"
+        },
+        {
+          "text": "viewWillDisappear turns the camera off (camera?.switch(toDesiredState: .off))"
+        },
+        {
+          "text": "ScannedBarcode struct is preserved in the output"
+        },
+        {
+          "text": "scannedBarcodes array is preserved in the output"
+        },
+        {
+          "text": "Deduplication logic (checking for existing value before appending) is preserved"
+        },
+        {
+          "text": "A summary of changes is shown with what was removed and what was added"
+        },
+        {
+          "text": "Setup checklist mentions adding the SDK via Swift Package Manager (datacapture-spm)"
+        },
+        {
+          "text": "Setup checklist mentions NSCameraUsageDescription in Info.plist"
+        }
       ]
     }
   ]
