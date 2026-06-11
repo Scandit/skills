@@ -29,7 +29,7 @@
       "prompt": "I want to add BarcodeCapture to my web app. Here's my main file: empty-app.ts. I need to scan EAN-13 and Code 128 barcodes for a retail app.",
       "expected_output": "The skill reads integration.md, writes complete BarcodeCapture integration code into empty-app.ts, and shows the setup checklist.",
       "files": [
-        "eval-fixtures/empty-app.ts"
+        "fixtures/empty-app.ts"
       ],
       "assertions": [
         {
@@ -105,7 +105,7 @@
       "prompt": "I have a basic React app and need to integrate BarcodeCapture barcode scanning. I want to scan EAN-13 and Code 128. Here's my component: empty-react-app.tsx.",
       "expected_output": "The skill integrates BarcodeCapture into the React component using a useRef for the capture element, useEffect for initialization and cleanup, and proper async patterns.",
       "files": [
-        "eval-fixtures/empty-react-app.tsx"
+        "fixtures/empty-react-app.tsx"
       ],
       "assertions": [
         {
@@ -154,7 +154,7 @@
       "prompt": "I want to filter duplicate scans in my BarcodeCapture app. Suppress the same barcode from being reported again for 1 second after it's first scanned.",
       "expected_output": "The skill sets codeDuplicateFilter to 1000 on BarcodeCaptureSettings and preserves the existing integration.",
       "files": [
-        "eval-fixtures/integrated-app.ts"
+        "fixtures/integrated-app.ts"
       ],
       "assertions": [
         {
@@ -173,7 +173,7 @@
       "prompt": "I want to show the image of the scanned barcode in my app. How do I capture the frame when a barcode is scanned?",
       "expected_output": "The skill updates didScan to include the frameData parameter and uses frameData.toBlob('image/jpeg', 0.3) without awaiting it, using .then()/.catch() to handle the result. SymbologyDescription is used for a readable symbology name.",
       "files": [
-        "eval-fixtures/integrated-app.ts"
+        "fixtures/integrated-app.ts"
       ],
       "assertions": [
         {
@@ -201,7 +201,7 @@
       "prompt": "When a barcode is scanned in my app, I want to reject it if the data starts with '00' and disable the overlay highlight for those barcodes. All other barcodes should be accepted.",
       "expected_output": "The skill updates the didScan listener to check barcode.data and call overlay.setBrush(Brush.transparent) for rejected codes, preserving the existing integration.",
       "files": [
-        "eval-fixtures/integrated-app.ts"
+        "fixtures/integrated-app.ts"
       ],
       "assertions": [
         {
@@ -223,7 +223,7 @@
       "prompt": "I want to change the scan feedback in my BarcodeCapture app: vibrate on a successful scan but do NOT play the beep sound.",
       "expected_output": "The skill builds a BarcodeCaptureFeedback whose success Feedback has the default vibration and a null sound, then applies it via setFeedback, preserving the existing integration.",
       "files": [
-        "eval-fixtures/integrated-app.ts"
+        "fixtures/integrated-app.ts"
       ],
       "assertions": [
         {
@@ -257,7 +257,7 @@
       "prompt": "Add a rectangular viewfinder to my BarcodeCapture scanner so users see a guide rectangle. Use the square style with a light line.",
       "expected_output": "The skill creates a RectangularViewfinder with Square style and Light line style and attaches it to the overlay using the overlay's setViewfinder method, keeping a reference to the overlay.",
       "files": [
-        "eval-fixtures/integrated-app.ts"
+        "fixtures/integrated-app.ts"
       ],
       "assertions": [
         {
@@ -294,7 +294,7 @@
       "prompt": "I want an aimer-style viewfinder (a crosshair aim point) on my BarcodeCapture preview instead of a rectangle.",
       "expected_output": "The skill creates an AimerViewfinder and attaches it via overlay.setViewfinder, preserving the existing integration.",
       "files": [
-        "eval-fixtures/integrated-app.ts"
+        "fixtures/integrated-app.ts"
       ],
       "assertions": [
         {
@@ -319,7 +319,7 @@
       "prompt": "Show a laserline viewfinder (a horizontal line) over the camera preview in my BarcodeCapture app.",
       "expected_output": "The skill creates a LaserlineViewfinder and attaches it via overlay.setViewfinder, preserving the existing integration.",
       "files": [
-        "eval-fixtures/integrated-app.ts"
+        "fixtures/integrated-app.ts"
       ],
       "assertions": [
         {
@@ -344,7 +344,7 @@
       "prompt": "Restrict my BarcodeCapture scanner to only read barcodes inside a rectangular area covering about 90% of the width and 30% of the height of the preview.",
       "expected_output": "The skill sets a RectangularLocationSelection sized with Fraction units on BarcodeCaptureSettings.locationSelection, preserving the existing integration.",
       "files": [
-        "eval-fixtures/integrated-app.ts"
+        "fixtures/integrated-app.ts"
       ],
       "assertions": [
         {
@@ -378,7 +378,7 @@
       "prompt": "Enable the full-ASCII extension for Code 39 in my BarcodeCapture app so it decodes lowercase and control characters.",
       "expected_output": "The skill obtains the Code 39 SymbologySettings via settingsForSymbology and calls setExtensionEnabled('full_ascii', true), preserving the existing integration.",
       "files": [
-        "eval-fixtures/integrated-app.ts"
+        "fixtures/integrated-app.ts"
       ],
       "assertions": [
         {
@@ -406,7 +406,7 @@
       "prompt": "Require a Mod 43 checksum for Code 39 barcodes in my BarcodeCapture scanner.",
       "expected_output": "The skill gets the Code 39 SymbologySettings via settingsForSymbology and sets checksums to a Set containing Checksum.Mod43, preserving the existing integration.",
       "files": [
-        "eval-fixtures/integrated-app.ts"
+        "fixtures/integrated-app.ts"
       ],
       "assertions": [
         {
@@ -434,7 +434,7 @@
       "prompt": "I am scanning ITF-14 codes, which are always 14 characters. Restrict the active symbol count for Interleaved 2 of 5 to 14 in my BarcodeCapture app.",
       "expected_output": "The skill gets the Interleaved 2 of 5 SymbologySettings via settingsForSymbology and sets activeSymbolCounts to a number array containing 14, preserving the existing integration.",
       "files": [
-        "eval-fixtures/integrated-app.ts"
+        "fixtures/integrated-app.ts"
       ],
       "assertions": [
         {
@@ -462,7 +462,7 @@
       "prompt": "Some of my Data Matrix labels are printed bright-on-dark (color inverted). Make my BarcodeCapture app read those too.",
       "expected_output": "The skill gets the Data Matrix SymbologySettings via settingsForSymbology and sets isColorInvertedEnabled to true, keeping the symbology enabled, preserving the existing integration.",
       "files": [
-        "eval-fixtures/integrated-app.ts"
+        "fixtures/integrated-app.ts"
       ],
       "assertions": [
         {
@@ -490,7 +490,7 @@
       "prompt": "I need to scan GS1 composite codes (a linear code with a 2D companion) in my BarcodeCapture app. How do I enable composite codes?",
       "expected_output": "The skill enables the composite types via enabledCompositeTypes and enables the underlying symbologies via enableSymbologiesForCompositeTypes, preserving the existing integration.",
       "files": [
-        "eval-fixtures/integrated-app.ts"
+        "fixtures/integrated-app.ts"
       ],
       "assertions": [
         {

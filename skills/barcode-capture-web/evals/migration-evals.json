@@ -6,8 +6,8 @@
       "prompt": "I need to migrate my BarcodeCapture web app from SDK v7 to v8. Here's my main file: scanner-v7.ts, and my package.json: package-v7.json.",
       "expected_output": "The skill detects v7 from package.json, updates the package version, replaces configure()+DataCaptureContext.create() with DataCaptureContext.forLicenseKey(), and updates context variable references to DataCaptureContext.sharedInstance.",
       "files": [
-        "eval-fixtures/scanner-v7.ts",
-        "eval-fixtures/package-v7.json"
+        "fixtures/scanner-v7.ts",
+        "fixtures/package-v7.json"
       ],
       "assertions": [
         {
@@ -35,7 +35,7 @@
       "prompt": "I'm upgrading my scanning app from Scandit Web SDK v6 to v7. My package.json uses: package-v6.json. What changes do I need to make?",
       "expected_output": "The skill explains the v6→v7 migration: package rename from unscoped to scoped, libraryLocation path change from build/engine to sdc-lib, and the scan intention default change.",
       "files": [
-        "eval-fixtures/package-v6.json"
+        "fixtures/package-v6.json"
       ],
       "assertions": [
         {

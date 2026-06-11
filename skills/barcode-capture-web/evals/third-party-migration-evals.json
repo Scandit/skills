@@ -6,7 +6,7 @@
       "prompt": "I have a web app using ZXing (@zxing/library) for barcode scanning. I want to replace it with BarcodeCapture. Here is my scanner module: zxing-scanner.ts",
       "expected_output": "Removes all @zxing/library APIs (BrowserMultiFormatReader, decodeFromVideoDevice, DecodeHintType, BarcodeFormat), adds a BarcodeCapture integration with matching symbologies (EAN13UPCA, Code128, QR), preserves the deduplication logic and the on-screen summary, and shows a summary of changes plus a setup checklist with the scoped npm packages.",
       "files": [
-        "eval-fixtures/zxing-scanner.ts"
+        "fixtures/zxing-scanner.ts"
       ],
       "assertions": [
         {
