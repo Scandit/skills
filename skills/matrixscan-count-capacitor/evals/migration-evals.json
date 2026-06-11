@@ -9,7 +9,7 @@
         "fixtures/IntegratedApp.js"
       ],
       "assertions": [
-        {"text": "BarcodeCount.forDataCaptureContext( is NOT present in the output"},
+        {"text": "BarcodeCount.forDataCaptureContext( is not used in the migrated code (semantic)"},
         {"text": "new BarcodeCount(settings) is present in the output"},
         {"text": "context.addMode( is present and called with the barcodeCount instance"},
         {"text": "context.setMode( is NOT present (addMode is the correct call)"},

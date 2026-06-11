@@ -81,7 +81,7 @@
       "expected_output": "The skill silences feedback through barcodeCount.feedback (a BarcodeCountFeedback) by setting its success (and failure) to a silent Feedback (Feedback(vibration: nil, sound: nil)), rather than a non-existent boolean toggle. The rest of the integration is unchanged.",
       "files": ["fixtures/IntegratedBarcodeCountViewController.swift"],
       "assertions": [
-        {"text": "Feedback is silenced via barcodeCount.feedback — a BarcodeCountFeedback whose success (and ideally failure) is set to a silent Feedback constructed with no sound and no vibration (e.g. Feedback(vibration: nil, sound: nil))"},
+        {"text": "Feedback is silenced by assigning a BarcodeCountFeedback with silent success/failure Feedback (semantic)"},
         {"text": "It does NOT use a non-existent boolean like settings.isSoundEnabled / isHapticsEnabled (that is the MatrixScan Pick API; BarcodeCount has no such toggle — feedback is configured via the BarcodeCountFeedback object)"},
         {"text": "The change is confined to feedback; the camera, settings, mode, view, listener and lifecycle are unchanged"}
       ]
@@ -156,6 +156,72 @@
         {"text": "No other behavior is added (e.g. no custom uncount logic) — enabling the built-in toggle is sufficient"},
         {"text": "The context, mode, camera, settings, listener, uiDelegate and lifecycle are unchanged"}
       ]
+    },
+    {
+      "id": 13,
+      "prompt": "My labels have both a Code 128 and a PDF417 barcode, and I only want to count the Code 128 ones. File: IntegratedBarcodeCountViewController.swift",
+      "expected_output": "The skill filters out PDF417 by creating a BarcodeFilterSettings, setting excludedSymbologies = [.pdf417], and assigning it to settings.filterSettings on the BarcodeCountSettings before the BarcodeCount mode is constructed. Both symbologies stay enabled (the excluded one must be enabled to be decoded then filtered). The rest of the integration is unchanged.",
+      "files": ["fixtures/IntegratedBarcodeCountViewController.swift"],
+      "assertions": [
+        {"text": "A BarcodeFilterSettings is constructed via BarcodeFilterSettings()"},
+        {"text": "filterSettings.excludedSymbologies is set to a set containing .pdf417"},
+        {"text": "The filter is applied via settings.filterSettings on the BarcodeCountSettings before BarcodeCount(context:settings:) is constructed"},
+        {"text": "PDF417 is also enabled via settings.set(symbology: .pdf417, enabled: true) so it is decoded and then filtered out (semantic)"},
+        {"text": "The existing enabled symbologies remain enabled; the camera, mode, view, listener, uiDelegate and lifecycle are unchanged"}
+      ],
+      "tags": ["filtering"]
+    },
+    {
+      "id": 15,
+      "prompt": "Let the user trigger a scan with the volume button in my MatrixScan Count app instead of only the on-screen shutter. File: IntegratedBarcodeCountViewController.swift",
+      "expected_output": "The skill enables the hardware trigger by setting barcodeCountView.hardwareTriggerEnabled = true (on iOS this binds the volume button). No custom key-event handling is added; the rest of the integration is unchanged.",
+      "files": ["fixtures/IntegratedBarcodeCountViewController.swift"],
+      "assertions": [
+        {"text": "barcodeCountView.hardwareTriggerEnabled = true is set"},
+        {"text": "It uses the real Bool property hardwareTriggerEnabled on the BarcodeCountView — not a guessed API and not a hand-rolled volume-button observer"},
+        {"text": "It does NOT use the Android-only enableHardwareTrigger(hardwareTriggerKeyCode:) / hardwareTriggerSupported APIs (semantic)"},
+        {"text": "The context, mode, camera, settings, listener, uiDelegate and lifecycle are unchanged"}
+      ],
+      "tags": ["hardware-trigger"]
+    },
+    {
+      "id": 16,
+      "prompt": "I'm sure every barcode in the scene is unique in my MatrixScan Count app — turn on whatever makes scanning faster for that. File: IntegratedBarcodeCountViewController.swift",
+      "expected_output": "The skill sets settings.expectsOnlyUniqueBarcodes = true on the BarcodeCountSettings before constructing the BarcodeCount mode, to enable the unique-barcode optimization. The rest of the integration is unchanged.",
+      "files": ["fixtures/IntegratedBarcodeCountViewController.swift"],
+      "assertions": [
+        {"text": "settings.expectsOnlyUniqueBarcodes = true is set on the BarcodeCountSettings"},
+        {"text": "It is set before BarcodeCount(context:settings:) is constructed"},
+        {"text": "It uses the real property expectsOnlyUniqueBarcodes — not a guessed API"},
+        {"text": "The existing enabled symbologies remain enabled; the camera, mode, view, listener, uiDelegate and lifecycle are unchanged"}
+      ],
+      "tags": ["expects-only-unique"]
+    },
+    {
+      "id": 17,
+      "prompt": "In my MatrixScan Count app, when the app goes to the background I want to clear the count, but when it comes back I want the previously scanned barcodes to still be shown as already counted. File: IntegratedBarcodeCountViewController.swift",
+      "expected_output": "The skill carries the previous batch across the background cycle by stashing the recognized barcodes and calling barcodeCount.reset() when going to the background, then calling barcodeCount.setAdditionalBarcodes(previouslyScanned) when returning to the foreground so they are restored as already-counted. The core integration is otherwise unchanged.",
+      "files": ["fixtures/IntegratedBarcodeCountViewController.swift"],
+      "assertions": [
+        {"text": "On returning to the foreground, barcodeCount.setAdditionalBarcodes(_:) is called with the previously scanned barcodes"},
+        {"text": "On going to the background, the previously scanned barcodes are stashed and barcodeCount.reset() is called to clear the current count (semantic)"},
+        {"text": "It uses the real APIs setAdditionalBarcodes(_:) and reset() — not a guessed restore API"},
+        {"text": "The context, camera, settings, mode, view, listener and uiDelegate wiring are otherwise unchanged"}
+      ],
+      "tags": ["additional-barcodes"]
+    },
+    {
+      "id": 18,
+      "prompt": "Add a 'Start new count' action to my MatrixScan Count app that clears all the scanned barcodes and the on-screen highlights so the user can begin a fresh count. File: IntegratedBarcodeCountViewController.swift",
+      "expected_output": "The skill adds an action that calls barcodeCount.reset() to clear the scanned list and the AR overlays, and clears the app's own running tally (allRecognizedBarcodes). The rest of the integration is unchanged.",
+      "files": ["fixtures/IntegratedBarcodeCountViewController.swift"],
+      "assertions": [
+        {"text": "barcodeCount.reset() is called to clear the scanned barcodes and the AR overlays"},
+        {"text": "The app's own running tally (allRecognizedBarcodes) is also cleared (semantic)"},
+        {"text": "It uses the real reset() method on BarcodeCount — not a guessed clear API and not a manual teardown of the view"},
+        {"text": "The context, camera, settings, mode, view, listener, uiDelegate and lifecycle are unchanged"}
+      ],
+      "tags": ["reset-mode"]
     }
   ]
 }

@@ -94,7 +94,42 @@ settings.expectsOnlyUniqueBarcodes = true;
 | `expectsOnlyUniqueBarcodes` | `boolean` — optimize for unique-barcode scenarios. Do not enable if multiple identical barcodes are expected. |
 | `disableModeWhenCaptureListCompleted` | `boolean` (RN 8.3+) — auto-disable mode when capture list is completed. |
 | `clusteringMode` | `ClusteringMode` (RN 8.3+) — `Disabled` (default), `Auto`, `Manual`, or `AutoWithManualCorrection`. |
+| `filterSettings` | Read-only `BarcodeFilterSettings` getter — mutate it in place to exclude barcodes from counting. |
 | `setProperty(name, value)` / `getProperty(name)` | Advanced property access by name. |
+
+### Filtering — excluding barcodes from the count (Step 2 add-on)
+
+When several barcode types appear in the scene but you only want to count some of them, exclude the
+rest with `BarcodeCountSettings.filterSettings`. This is a **read-only getter** that returns a
+`BarcodeFilterSettings` instance — mutate it in place; do **not** construct a new `BarcodeFilterSettings`
+and assign it back. Filtering applies at the settings level (which barcodes are counted), separately
+from how filtered barcodes are highlighted on the view (see section 5j, `BarcodeFilterHighlightSettings`).
+
+```typescript
+import {
+  BarcodeCountSettings,
+  Symbology,
+} from 'scandit-react-native-datacapture-barcode';
+
+const settings = new BarcodeCountSettings();
+settings.enableSymbologies([Symbology.Code128, Symbology.PDF417]);
+
+const filterSettings = settings.filterSettings;
+// Exclude an entire symbology — e.g. count Code 128 but never PDF417
+filterSettings.excludedSymbologies = [Symbology.PDF417];
+// Exclude by data content — e.g. any barcode whose data starts with 1234
+filterSettings.excludedCodesRegex = '^1234.*';
+```
+
+`BarcodeFilterSettings` members:
+
+| Member | Type | Description |
+|--------|------|-------------|
+| `excludedSymbologies` | `Symbology[]` | Symbologies that are recognized but not counted. |
+| `excludedCodesRegex` | `string` | Barcodes whose data matches this regex are excluded. |
+| `excludeEan13` | `boolean` | Convenience flag to exclude EAN-13 barcodes. |
+| `excludeUpca` | `boolean` | Convenience flag to exclude UPC-A barcodes. |
+| `setExcludedSymbolCounts(counts, symbology)` | method | Exclude specific symbol counts for a symbology. |
 
 ## Step 3 — Construct BarcodeCount and attach camera
 

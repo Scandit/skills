@@ -83,6 +83,29 @@ final settings = BarcodeCountSettings()
 settings.expectsOnlyUniqueBarcodes = true;
 ```
 
+### Filtering (excluding barcodes by symbology or regex)
+
+If several barcode types appear in the scene and you only want to count one of them, exclude the others on `BarcodeCountSettings.filterSettings` (a `BarcodeFilterSettings`). This is the **mode-level** filter that drops barcodes before they are counted — it is **distinct** from the view-level `view.filterSettings`, which only controls how filtered barcodes are highlighted (see Step 9).
+
+Exclude by symbology — for example enable Code 128 but never count PDF417:
+
+```dart
+final settings = BarcodeCountSettings()
+  ..enableSymbology(Symbology.code128, true);
+
+final filterSettings = settings.filterSettings;
+filterSettings.excludedSymbologies = {Symbology.pdf417};
+```
+
+Exclude by regex — for example drop every barcode whose data starts with four digits:
+
+```dart
+final filterSettings = settings.filterSettings;
+filterSettings.excludedCodesRegex = '^1234.*';
+```
+
+`BarcodeFilterSettings` also exposes `excludedSymbolCounts` (`Map<Symbology, Set<int>>`) to exclude specific symbol-count lengths. The getter `settings.filterSettings` returns the live instance, so mutate it in place rather than reassigning.
+
 ### BarcodeCountSettings Properties and Methods
 
 | API | Type | Description |
@@ -91,6 +114,7 @@ settings.expectsOnlyUniqueBarcodes = true;
 | `enableSymbology(symbology, enabled)` | method | Enable or disable a single symbology. |
 | `settingsForSymbology(symbology)` | method | Get per-symbology settings (e.g. `activeSymbolCounts`). Flutter: `SymbologySettings`. |
 | `expectsOnlyUniqueBarcodes` | `bool` | Set to `true` if duplicates within a batch are not expected. Default `false`. |
+| `filterSettings` | `BarcodeFilterSettings` (read-only getter) | Mode-level filter: `excludedSymbologies` (`Set<Symbology>`), `excludedCodesRegex` (`String`), `excludedSymbolCounts` (`Map<Symbology, Set<int>>`). Distinct from `view.filterSettings`. |
 | `disableModeWhenCaptureListCompleted` | `bool` | Auto-disable the mode when the capture list is fully scanned. Flutter ≥8.3. Default `false`. |
 | `mappingEnabled` | `bool` | Enable the barcode mapping flow (beta). Flutter ≥8.3. Default `false`. |
 | `clusteringMode` | `ClusteringMode` | Smart grouping of neighbouring barcodes. Flutter ≥8.3. |
@@ -532,7 +556,9 @@ final notInListSettings = BarcodeCountNotInListActionSettings()
 view.barcodeNotInListActionSettings = notInListSettings;
 ```
 
-### Filter Settings
+### Filter Highlight Settings (view-level)
+
+This is the **view-level** highlight appearance for filtered barcodes — not the mode-level exclusion filter. To exclude barcodes from counting by symbology or regex, set `BarcodeCountSettings.filterSettings` instead (see Step 3, "Filtering").
 
 ```dart
 // view.filterSettings accepts a BarcodeFilterHighlightSettings instance.

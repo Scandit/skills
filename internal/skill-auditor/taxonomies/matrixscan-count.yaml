@@ -1,0 +1,113 @@
+# MatrixScan Count (API: `BarcodeCount`) feature taxonomy — pilot seed.
+#
+# Curated edge-case checklist (NOT an API dump). `match` patterns are case-insensitive
+# regexes over eval prompt + expected_output + assertion texts; bootstrap heuristic until
+# evals carry explicit `tags`. `evidence` records mining provenance.
+#
+# Provenance (mined 2026-06-10, four parallel source classes):
+#   public_docs  data-capture-documentation @ 60d979dd — docs/sdks/*/matrixscan-count/** + partials/count
+#   samples      datacapture-*-samples — 03_Advanced_Batch_Scanning_Samples/02_Counting_and_Receiving/*
+#   sdk_source   data-capture-sdk @ 2f919ef1a9b — api_availability/** + source/**/*.rst :available:
+#   eval-survey  existing skills/matrixscan-count-*/evals/*.json (the iOS skill is the richest —
+#                it ships highlights.md + list-scanning.md the other 7 platforms lack)
+#
+# Platform-truth notes (layer 1):
+#   - 8 in-scope skills: capacitor, cordova, flutter, ios, maui, net-android, net-ios, rn.
+#     (Web + Titanium are n/a for BarcodeCount and have no skill.)
+#   - BarcodeCount is broadly uniform. Verified availability boundaries that DO matter:
+#       * list-scanning  (BarcodeCountCaptureList) — available on ALL 8. iOS uses
+#         setCaptureList(...); every other platform uses setBarcodeCountCaptureList(...).
+#   - API-shape divergence to keep in mind (not exclusions): camera uses the
+#     recommendedCameraSettings PROPERTY on iOS/.NET vs createRecommendedCameraSettings()
+#     METHOD on Android + all JS frameworks.
+product: matrixscan-count
+skill_prefix: matrixscan-count-
+features:
+  # ---- Required: core to any MatrixScan Count integration ----
+  - id: basic-integration
+    required: true
+    evidence: [docs, sample]
+    match: ["add (matrixscan count|barcode count)", "integrate (matrixscan count|barcodecount)", "barcode count to my", "new barcodecount", "barcodecount\\(context", "barcodecountsettings"]
+  - id: license-init
+    required: true
+    evidence: [docs, sample]
+    match: ["datacapturecontext", "license key", "licensekey", "forlicensekey", "\\.initialize\\("]
+  - id: barcode-count-view
+    required: true
+    evidence: [docs, sample]
+    match: ["barcodecountview"]
+  - id: scan-listener
+    required: true
+    evidence: [docs, sample]
+    match: ["barcodecountlistener", "didscan", "onscan", "recognizedbarcodes", "barcodecountsession", "addlistener"]
+  - id: camera-setup
+    required: true
+    evidence: [docs, sample]
+    match: ["recommendedcamerasettings", "createrecommendedcamerasettings", "setframesource", "camera\\.default", "getdefaultcamera"]
+  - id: camera-lifecycle
+    required: true
+    evidence: [docs, sample]
+    # BarcodeCountView does NOT own the camera — manual on/off + prepare/stop scanning
+    match: ["preparescanning", "stopscanning", "switchtodesiredstate", "viewwillappear", "viewdiddisappear", "framesourcestate", "standby", "dismantleuiview", "lifecycle"]
+  - id: scan-review-workflow
+    required: true
+    evidence: [docs, sample]
+    # the scan -> review list -> done cycle (list/exit buttons + UI delegate)
+    match: ["listbutton", "exitbutton", "uidelegate", "uilistener", "didtaplist", "didtapexit", "isordercompleted", "review (the )?list"]
+  - id: reset-mode
+    # only one suite (rn) exercises reset() — even the rich iOS suite doesn't — so it is
+    # not an eval-gated core feature; surfaced as optional rather than forced.
+    required: false
+    evidence: [docs, sample]
+    match: ["\\.reset\\(", "resetsession", "resetmode", "restart scanning", "clears the list", "clearadditional"]
+
+  # ---- List scanning ----
+  - id: list-scanning
+    required: false
+    evidence: [docs]
+    # iOS: setCaptureList; everyone else: setBarcodeCountCaptureList
+    match: ["barcodecountcapturelist", "targetbarcode", "setcapturelist", "setbarcodecountcapturelist", "barcodecountcapturelistlistener", "missingbarcodes", "correctbarcodes", "scanning against (a )?list", "expected barcodes"]
+  - id: not-in-list-action
+    required: false
+    evidence: [docs]
+    match: ["barcodecountnotinlistactionsettings", "not.?in.?list", "notinlist", "acceptbuttontext", "rejectbuttontext", "didtaprecognizedbarcodenotinlist"]
+
+  # ---- Highlighting ----
+  - id: highlight-customization
+    required: false
+    evidence: [docs, sample]
+    # Icon style (default) vs Dot style; per-barcode icon/brush delegates
+    match: ["barcodecountviewstyle", "brushforrecognizedbarcode", "brushforunrecognizedbarcode", "iconforrecognizedbarcode", "scanditiconbuilder", "barcodecounticon", "recognizedbrush", "\\.dot\\b", "setbrush", "seticon"]
+
+  # ---- Workflows / settings (broadly available) ----
+  - id: filtering
+    required: false
+    evidence: [docs]
+    match: ["barcodefiltersettings", "filtersettings", "excludedsymbologies", "excludedcodesregex", "barcodefilterhighlightsettings"]
+  - id: ui-customization
+    required: false
+    evidence: [docs]
+    match: ["shouldshowtoolbar", "shouldshowexitbutton", "shouldshowshutterbutton", "shouldshowhints", "shouldshowfloatingshutterbutton", "shouldshowclearhighlightsbutton", "shouldshowlistbutton", "shouldshowtorchcontrol", "torchcontrolposition", "shouldshowuserguidanceview"]
+  - id: hardware-trigger
+    required: false
+    evidence: [docs]
+    match: ["hardwaretrigger", "enablehardwaretrigger", "hardwaretriggersupported", "volume button", "hardware button"]
+  - id: additional-barcodes
+    required: false
+    evidence: [sample]
+    # persist already-scanned barcodes across background / mode switches
+    match: ["additionalbarcodes", "setadditionalbarcodes", "getadditionalbarcodes"]
+  - id: expects-only-unique
+    required: false
+    evidence: [docs]
+    match: ["expectsonlyuniquebarcodes", "unique barcodes", "no duplicates"]
+
+  # ---- Migration ----
+  - id: migration-v7-to-v8
+    required: false
+    evidence: [docs]
+    # BarcodeCount.forDataCaptureContext(...) -> new BarcodeCount(settings); feedback/ctor shape.
+    # iOS excluded: no iOS-specific v7->v8 BarcodeCount API change exists (the modern
+    # BarcodeCount(context:settings:) init has been the form since 6.14) -> nothing to migrate.
+    excluded_platforms: [ios]
+    match: ["fordatacapturecontext", "new barcodecount\\(settings", "migrat", "\\bv7\\b", "\\bv8\\b", "8\\.0", "upgrade"]

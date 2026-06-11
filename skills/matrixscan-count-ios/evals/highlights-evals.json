@@ -62,7 +62,7 @@
         {"text": "The answer explains brushes (recognizedBrush / brushForRecognizedBarcode) only take effect in the Dot style, and the default is the Icon style"},
         {"text": "It gives the Dot fix: create the BarcodeCountView with style: .dot"},
         {"text": "It also notes that on the Icon style you customize the icon instead (iconForRecognizedBarcode — e.g. background color), rather than a brush"},
-        {"text": "It does not invent APIs (no recognizedIcon property; real ScanditIconType names)"}
+        {"text": "It uses only real BarcodeCountView appearance APIs — recognizedBrush / the iconForRecognizedBarcode delegate are valid; it does not invent a recognizedIcon property (semantic)"}
       ]
     },
     {

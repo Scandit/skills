@@ -160,11 +160,73 @@
       ],
       "assertions": [
         {"text": "view.hardwareTriggerEnabled = true is set (iOS volume-button trigger)"},
-        {"text": "view.enableHardwareTrigger( is called (Android hardware trigger)"},
+        {"text": "The hardware trigger is enabled on the view (semantic)"},
         {"text": "BarcodeCountView.hardwareTriggerSupported is checked before calling enableHardwareTrigger (Android guard)"},
         {"text": "A comment or note explains that hardwareTriggerEnabled is iOS-only and enableHardwareTrigger is Android-only (semantic)"},
         {"text": "Existing integration code (context, barcodeCount, barcodeCountView) is still referenced and used (semantic)"}
       ]
+    },
+    {
+      "id": 9,
+      "prompt": "My labels have both Code 128 and PDF417 barcodes, but I only want MatrixScan Count to count the Code 128 ones. Filter out the PDF417 codes. Also exclude any barcode whose data starts with the digits 1234.",
+      "expected_output": "The skill accesses settings.filterSettings on the BarcodeCountSettings, sets excludedSymbologies to [Symbology.PDF417], and sets excludedCodesRegex to a regex matching data that starts with 1234. The existing symbology enablement and integration code are preserved.",
+      "files": [
+        "fixtures/IntegratedApp.js"
+      ],
+      "assertions": [
+        {"text": "settings.filterSettings is accessed on the BarcodeCountSettings"},
+        {"text": "filterSettings.excludedSymbologies is assigned"},
+        {"text": "Symbology.PDF417 appears in the excludedSymbologies array"},
+        {"text": "filterSettings.excludedCodesRegex is assigned a regex string"},
+        {"text": "The excludedCodesRegex matches barcode data starting with 1234 (semantic)"},
+        {"text": "Existing integration code (context, barcodeCount, barcodeCountView) is still referenced and used (semantic)"}
+      ],
+      "tags": ["filtering"]
+    },
+    {
+      "id": 11,
+      "prompt": "Every barcode in my batches is unique — no duplicates ever appear. Turn on the optimization for that in my MatrixScan Count app.",
+      "expected_output": "The skill sets settings.expectsOnlyUniqueBarcodes = true on the BarcodeCountSettings. Existing integration code is preserved.",
+      "files": [
+        "fixtures/IntegratedApp.js"
+      ],
+      "assertions": [
+        {"text": "settings.expectsOnlyUniqueBarcodes = true is set"},
+        {"text": "expectsOnlyUniqueBarcodes is set on the BarcodeCountSettings before BarcodeCount is constructed (semantic)"},
+        {"text": "Existing integration code (context, barcodeCount, barcodeCountView) is still referenced and used (semantic)"}
+      ],
+      "tags": ["expects-only-unique"]
+    },
+    {
+      "id": 12,
+      "prompt": "I scan a batch in two passes. After the first pass I save the recognized barcodes, then on the second pass I want to carry them over so the counts continue from where the first pass left off. Inject the saved barcodes into the BarcodeCount mode.",
+      "expected_output": "The skill calls window.barcodeCount.setAdditionalBarcodes(savedBarcodes) to inject the previously saved barcodes, and awaits it. Existing integration code is preserved.",
+      "files": [
+        "fixtures/IntegratedApp.js"
+      ],
+      "assertions": [
+        {"text": "window.barcodeCount.setAdditionalBarcodes( is called"},
+        {"text": "setAdditionalBarcodes is passed an array of saved barcodes (semantic)"},
+        {"text": "The setAdditionalBarcodes call is awaited"},
+        {"text": "Existing integration code (context, barcodeCount, barcodeCountView) is still referenced and used (semantic)"}
+      ],
+      "tags": ["additional-barcodes"]
+    },
+    {
+      "id": 13,
+      "prompt": "Add a 'Start over' button to my MatrixScan Count screen that clears all counted barcodes and any injected additional barcodes so the user can begin a fresh count.",
+      "expected_output": "The skill wires a handler that calls window.barcodeCount.reset() to clear the session and window.barcodeCount.clearAdditionalBarcodes() to drop injected barcodes, both awaited. Existing integration code is preserved.",
+      "files": [
+        "fixtures/IntegratedApp.js"
+      ],
+      "assertions": [
+        {"text": "window.barcodeCount.reset() is called"},
+        {"text": "window.barcodeCount.clearAdditionalBarcodes() is called"},
+        {"text": "The reset() call is awaited"},
+        {"text": "The clearAdditionalBarcodes() call is awaited"},
+        {"text": "Existing integration code (context, barcodeCount, barcodeCountView) is still referenced and used (semantic)"}
+      ],
+      "tags": ["reset-mode"]
     }
   ]
 }

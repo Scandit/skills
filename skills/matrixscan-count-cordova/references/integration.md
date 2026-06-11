@@ -1354,6 +1354,93 @@ document.addEventListener('resume', async () => {
 }, false);
 ```
 
+## Step 17 — Filtering (exclude barcodes by symbology or regex)
+
+When several barcode types appear in the scene, you can scan only the ones you want and filter the rest out. Filtering is configured on `BarcodeCountSettings.filterSettings` (a `BarcodeFilterSettings`) — exclude by symbology, by symbol count, or by a regex on the decoded data.
+
+`settings.filterSettings` is a **getter** that returns the existing `BarcodeFilterSettings` instance. Mutate it in place (do not construct a new one):
+
+```javascript
+const settings = new Scandit.BarcodeCountSettings();
+settings.enableSymbologies([
+  Scandit.Symbology.Code128,
+  Scandit.Symbology.PDF417,
+]);
+
+const filterSettings = settings.filterSettings;
+
+// Exclude by symbology — scan Code 128 but ignore PDF417:
+filterSettings.excludedSymbologies = [Scandit.Symbology.PDF417];
+
+// Exclude by regex — drop any barcode whose data starts with 1234:
+filterSettings.excludedCodesRegex = '^1234.*';
+
+// Exclude specific symbol counts for a symbology:
+filterSettings.setExcludedSymbolCounts([12], Scandit.Symbology.Code128);
+```
+
+### BarcodeFilterSettings members
+
+| Member | Type | Description |
+|--------|------|-------------|
+| `excludedSymbologies` | `Symbology[]` | Symbologies to exclude from counting. |
+| `excludedCodesRegex` | `string` | Regex; barcodes whose data matches are excluded. |
+| `setExcludedSymbolCounts(counts, symbology)` | method | Exclude specific symbol counts for a symbology. |
+
+> **Note**: By default, filtered-out barcodes are highlighted transparently. To change the color/transparency of the filtered highlight overlay, assign a `BarcodeFilterHighlightSettingsBrush` to `view.filterSettings` (see Step 8 — "Filter settings"). The settings-level `BarcodeFilterSettings` (which decides *what* gets filtered) and the view-level `BarcodeFilterHighlightSettings` (which decides *how* filtered codes look) are distinct.
+
+## Step 18 — Optimize for unique barcodes only (`expectsOnlyUniqueBarcodes`)
+
+If you are sure your environment only contains unique barcodes (no two barcodes share the same data), set `expectsOnlyUniqueBarcodes` on `BarcodeCountSettings`. This enables scanning optimizations.
+
+```javascript
+const settings = new Scandit.BarcodeCountSettings();
+settings.expectsOnlyUniqueBarcodes = true;
+```
+
+> **Do not** enable this if you expect to scan multiple barcodes that carry identical data — duplicate barcodes will be undercounted.
+
+## Step 19 — Additional barcodes (multi-session workflows)
+
+`setAdditionalBarcodes` injects barcodes from a previous scanning session so the next session continues from the existing tally instead of starting empty. Useful when a count is split across several screens or interrupted and resumed.
+
+```javascript
+// Capture the barcodes from the finished session...
+let savedBarcodes = [];
+barcodeCount.addListener({
+  didScan: (mode, session) => {
+    savedBarcodes = Object.values(session.recognizedBarcodes);
+  },
+});
+
+// ...then inject them into the next session before scanning resumes.
+// Returns Promise<void>.
+await barcodeCount.setAdditionalBarcodes(savedBarcodes);
+```
+
+Injected barcodes are reported on `session.additionalBarcodes` (`Barcode[]`). Clear them with `clearAdditionalBarcodes`:
+
+```javascript
+await barcodeCount.clearAdditionalBarcodes(); // Promise<void>
+```
+
+## Step 20 — Resetting the mode
+
+`barcodeCount.reset()` clears all tracked barcodes and the session state, returning the mode to an empty count. Call it when the user starts a fresh count (e.g. a new order). It returns `Promise<void>`.
+
+```javascript
+await barcodeCount.reset();
+```
+
+`reset()` clears tracked/recognized barcodes but does **not** clear injected additional barcodes — call `clearAdditionalBarcodes()` as well if you want a fully empty start:
+
+```javascript
+await barcodeCount.reset();
+await barcodeCount.clearAdditionalBarcodes();
+```
+
+To also clear the on-screen AR overlays, call `view.clearHighlights()` (does not affect session data).
+
 ## Key rules
 
 1. **Always wait for `deviceready`** before calling any `Scandit.*` API.

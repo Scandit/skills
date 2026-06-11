@@ -192,6 +192,7 @@ public class BarcodeCountPageViewModel : BaseViewModel
 | `ExpectsOnlyUniqueBarcodes` | `bool` get/set | When `true`, assumes each barcode appears once and optimizes accordingly. |
 | `DisableModeWhenCaptureListCompleted` | `bool` get/set | Auto-disable the mode once a capture list is complete. |
 | `MappingEnabled` | `bool` get/set | Enables the spatial map (`session.GetSpatialMap()`). |
+| `FilterSettings` | `BarcodeFilterSettings` (get) | Per-symbology / regex filtering. Mutate it (`ExcludedSymbologies`, `ExcludedCodesRegex`); do not reassign. See Filtering. |
 
 > Symbology names are C# PascalCase: `Ean13Upca`, `Ean8`, `Upce`, `Code39`, `Code93`, `Code128`, `InterleavedTwoOfFive`, `Qr`, `DataMatrix`, `Pdf417`, `Aztec`, … Not Kotlin's `EAN13_UPCA` and not Swift's `.ean13UPCA`.
 
@@ -645,6 +646,76 @@ this.barcodeCountView.SetStatusProvider(new StatusProvider());
 ```
 
 `BarcodeCountStatus` values: `None`, `NotAvailable`, `Expired`, `Fragile`, `QualityCheck`, `LowStock`, `Wrong`. Result factories: `BarcodeCountStatusResultSuccess.Create(statusList, enabledMessage, disabledMessage)`, `BarcodeCountStatusResultError.Create(statusList, errorMessage, disabledMessage)`, `BarcodeCountStatusResultAbort.Create(errorMessage)`.
+
+### Filtering
+
+If several barcode types appear in the scene and you only want to count one of them, filter the rest out. Filtering is configured through `barcodeCountSettings.FilterSettings` (a `BarcodeFilterSettings` you read off the settings — you do **not** `new` it for this), then applied by creating the mode with those settings. You can filter by symbology or by a regex on the barcode data.
+
+Exclude a symbology (e.g. count everything except PDF417):
+
+```csharp
+using Scandit.DataCapture.Barcode.Count.Capture;
+using Scandit.DataCapture.Barcode.Data;
+
+var settings = new BarcodeCountSettings();
+settings.EnableSymbologies(new HashSet<Symbology>
+{
+    Symbology.Code128,
+    Symbology.Pdf417,
+});
+
+// Count Code 128 but ignore PDF417 on the same label.
+settings.FilterSettings.ExcludedSymbologies = new[] { Symbology.Pdf417 };
+```
+
+Exclude by a regex on the barcode data (e.g. drop anything starting with `1234`):
+
+```csharp
+settings.FilterSettings.ExcludedCodesRegex = "^1234.*";
+```
+
+> `BarcodeCountSettings.FilterSettings` is a **get-only** property — mutate the object it returns (`ExcludedSymbologies`, `ExcludedCodesRegex`, `ExcludedSymbolCounts`), do not reassign `FilterSettings`. On .NET, `BarcodeFilterSettings` is unified across iOS and Android (the Kotlin/Swift `BarcodeFilterSettings.Create()` factory does not exist here). Filtered barcodes are highlighted transparently by default; the per-barcode `IBarcodeCountViewListener.OnFilteredBarcodeTapped` callback fires when one is tapped.
+
+### Expect only unique barcodes
+
+If the environment guarantees each physical barcode value appears at most once (no duplicate labels), set `ExpectsOnlyUniqueBarcodes` to optimize scanning:
+
+```csharp
+var settings = new BarcodeCountSettings();
+settings.EnableSymbologies(new HashSet<Symbology> { Symbology.Ean13Upca });
+settings.ExpectsOnlyUniqueBarcodes = true;
+```
+
+### Hardware trigger
+
+A hardware trigger lets the user start scanning with a physical button (e.g. a scan sled or a rugged device key). **The API differs by platform**, and MAUI compiles per target — guard each call with a platform check so the Android-only and iOS-only members are not referenced on the wrong target:
+
+```csharp
+#if ANDROID
+// Android: enable via EnableHardwareTrigger(int? keyCode); null = default key.
+if (Scandit.DataCapture.Barcode.Count.UI.BarcodeCountView.HardwareTriggerSupported)
+{
+    this.barcodeCountView.EnableHardwareTrigger(null);
+}
+#elif IOS
+// iOS: a single bool property.
+this.barcodeCountView.HardwareTriggerEnabled = true;
+#endif
+```
+
+> Do **not** call `HardwareTriggerEnabled` on Android or `EnableHardwareTrigger` / `HardwareTriggerSupported` on iOS — those members only exist on their respective platform binding. Set this from code-behind after the handler is ready (inside `HandlerChanged`), like the other view configuration.
+
+### Disable built-in UI elements
+
+The built-in UI is integral to MatrixScan Count and Scandit recommends keeping it, but individual elements can be toggled off via the `ShouldShow*` properties (bindable in XAML, or set from code-behind):
+
+```csharp
+this.barcodeCountView.ShouldShowListButton = false;
+this.barcodeCountView.ShouldShowExitButton = false;
+this.barcodeCountView.ShouldShowShutterButton = false;
+this.barcodeCountView.ShouldShowUserGuidanceView = false;
+this.barcodeCountView.ShouldShowHints = false;
+```
 
 ### Apply settings at runtime
 

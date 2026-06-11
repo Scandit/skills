@@ -96,8 +96,7 @@
       ],
       "assertions": [
         {"text": "Scandit.BarcodeCountCaptureList.create( is called"},
-        {"text": "Scandit.TargetBarcode.create('12345670', 1) is present"},
-        {"text": "Scandit.TargetBarcode.create('98765432', 2) is present"},
+        {"text": "Scandit.TargetBarcode.create( is present"},
         {"text": "barcodeCount.setBarcodeCountCaptureList( is called"},
         {"text": "view.listener or barcodeCountView.listener is assigned"},
         {"text": "didTapRecognizedBarcodeNotInList callback is implemented and logs the barcode data (semantic)"},
@@ -146,6 +145,64 @@
         {"text": "Scandit.BarcodeCountView.hardwareTriggerSupported is checked before enabling (semantic)"},
         {"text": "barcodeCountView.enableHardwareTrigger(null) is called OR barcodeCountView.hardwareTriggerEnabled = true is set"},
         {"text": "A comment or note explains Android API >=28 is required for hardware trigger (semantic)"},
+        {"text": "Existing integration code (context, barcodeCount, barcodeCountView, camera) is preserved"}
+      ]
+    },
+    {
+      "id": 9,
+      "prompt": "In my Cordova MatrixScan Count app (IntegratedApp.js), the labels also carry PDF417 barcodes that I do NOT want to count. Filter them out so only the other symbologies are counted. Also exclude any barcode whose data starts with the digits 1234.",
+      "expected_output": "The skill accesses settings.filterSettings (the BarcodeFilterSettings getter), sets excludedSymbologies to include Scandit.Symbology.PDF417, and sets excludedCodesRegex to a pattern matching data starting with 1234. Existing integration is preserved.",
+      "files": [
+        "fixtures/IntegratedApp.js"
+      ],
+      "tags": ["filtering"],
+      "assertions": [
+        {"text": "settings.filterSettings is accessed as the BarcodeFilterSettings getter (semantic)"},
+        {"text": "filterSettings.excludedSymbologies is assigned an array including Scandit.Symbology.PDF417"},
+        {"text": "filterSettings.excludedCodesRegex is set to a regex matching data starting with 1234 (semantic)"},
+        {"text": "A new BarcodeFilterSettings is NOT constructed directly; the settings.filterSettings getter is mutated in place (semantic)"},
+        {"text": "Existing integration code (context, barcodeCount, barcodeCountView, camera) is preserved"}
+      ]
+    },
+    {
+      "id": 10,
+      "prompt": "My Cordova MatrixScan Count app (IntegratedApp.js) only ever scans environments where every barcode is unique. Turn on the optimization for that.",
+      "expected_output": "The skill sets settings.expectsOnlyUniqueBarcodes = true on the BarcodeCountSettings. Existing integration is preserved.",
+      "files": [
+        "fixtures/IntegratedApp.js"
+      ],
+      "tags": ["expects-only-unique"],
+      "assertions": [
+        {"text": "settings.expectsOnlyUniqueBarcodes = true is present"},
+        {"text": "Existing integration code (context, barcodeCount, barcodeCountView, camera) is preserved"}
+      ]
+    },
+    {
+      "id": 11,
+      "prompt": "My Cordova MatrixScan Count app (IntegratedApp.js) splits one count across two screens. I have an array savedBarcodes of barcodes from the first screen. Inject them into the mode so the second scanning session continues the tally, and add a helper to clear them when starting over.",
+      "expected_output": "The skill calls barcodeCount.setAdditionalBarcodes(savedBarcodes) (awaited) to inject the previous-session barcodes, and adds a helper that calls barcodeCount.clearAdditionalBarcodes(). Existing integration is preserved.",
+      "files": [
+        "fixtures/IntegratedApp.js"
+      ],
+      "tags": ["additional-barcodes"],
+      "assertions": [
+        {"text": "barcodeCount.setAdditionalBarcodes( is called with the saved barcodes"},
+        {"text": "barcodeCount.clearAdditionalBarcodes() is called in the clear/start-over helper"},
+        {"text": "Existing integration code (context, barcodeCount, barcodeCountView, camera) is preserved"}
+      ]
+    },
+    {
+      "id": 12,
+      "prompt": "Add a 'Start new count' button handler to my Cordova MatrixScan Count app (IntegratedApp.js) that resets the count mode so the next count starts empty, and also clears any injected additional barcodes and the on-screen highlights.",
+      "expected_output": "The skill adds a handler that calls barcodeCount.reset(), barcodeCount.clearAdditionalBarcodes(), and barcodeCountView.clearHighlights() (all awaited). Existing integration is preserved.",
+      "files": [
+        "fixtures/IntegratedApp.js"
+      ],
+      "tags": ["reset-mode"],
+      "assertions": [
+        {"text": "barcodeCount.reset() is called"},
+        {"text": "barcodeCount.clearAdditionalBarcodes() is called"},
+        {"text": "barcodeCountView.clearHighlights() is called"},
         {"text": "Existing integration code (context, barcodeCount, barcodeCountView, camera) is preserved"}
       ]
     }

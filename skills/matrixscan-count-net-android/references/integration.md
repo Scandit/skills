@@ -146,6 +146,42 @@ settings.EnableSymbologies(symbologies);
 settings.ExpectsOnlyUniqueBarcodes = true;
 ```
 
+`ExpectsOnlyUniqueBarcodes` (default `false`) tells the engine each barcode value appears at most once in the scene, so it can stop re-evaluating a value once counted. Leave it `false` if the same barcode can legitimately appear multiple times.
+
+### Filtering (count only some of the barcodes in the scene)
+
+When several barcode types appear in the scene and you only want to count some of them, filter the rest out through `settings.FilterSettings` (a `BarcodeFilterSettings`, exposed read-only on `BarcodeCountSettings`). Filtering is by symbology, by symbol count, or by a regex on the barcode data. Filtered barcodes are still detected but are covered by a highlight and excluded from the count.
+
+```csharp
+using Scandit.DataCapture.Barcode.Data;
+
+BarcodeCountSettings settings = new BarcodeCountSettings();
+settings.EnableSymbologies(enabledSymbologies);
+
+// Exclude an entire symbology (e.g. count Code 128 but never PDF417):
+settings.FilterSettings.ExcludedSymbologies = new HashSet<Symbology> { Symbology.Pdf417 };
+
+// Or exclude by a regex matched against the barcode data (e.g. anything starting with 1234):
+settings.FilterSettings.ExcludedCodesRegex = "^1234.*";
+```
+
+| `BarcodeFilterSettings` member | Type | Description |
+|--------|------|-------------|
+| `ExcludedSymbologies` | `ISet<Symbology>` (get/set) | Symbologies to filter out. Has no effect on a symbology that isn't also enabled on the mode. |
+| `ExcludedCodesRegex` | `string` (get/set) | Regex matched against each barcode's data; matching barcodes are filtered out. |
+| `ExcludedSymbolCounts` | `IDictionary<Symbology, ISet<int>>` (get/set) | Filter by symbol count per symbology. |
+| `SetExcludedSymbolCounts(IList<short>, Symbology)` / `GetExcludedSymbolCountsForSymbology(Symbology)` | methods | Per-symbology symbol-count filtering. |
+
+By default the filtered barcodes are covered by a transparent layer. To change that highlight's color/transparency, set the **view's** `FilterSettings` property (distinct from `BarcodeCountSettings.FilterSettings`, which holds the filter *rules* above — this one holds the filter *highlight*). On .NET the highlight type is the **`IBarcodeFilterHighlightSettings` interface** (the cross-platform name `BarcodeFilterHighlightSettings` is exposed as this interface), implemented by `BarcodeFilterHighlightSettingsBrush`:
+
+```csharp
+using Scandit.DataCapture.Barcode.Filter.UI.Overlay;  // BarcodeFilterHighlightSettingsBrush
+using Scandit.DataCapture.Core.UI.Style;
+
+this.barcodeCountView.FilterSettings =
+    BarcodeFilterHighlightSettingsBrush.Create(new Brush(fillColor, strokeColor, strokeWidth));
+```
+
 ### BarcodeCountSettings members
 
 | Member | Type | Description |
@@ -679,6 +715,29 @@ this.barcodeCountView.SetStatusProvider(new StatusProvider());
 
 `BarcodeCountStatus` values: `None`, `NotAvailable`, `Expired`, `Fragile`, `QualityCheck`, `LowStock`, `Wrong`. Result factories: `BarcodeCountStatusResultSuccess.Create(statusList, enabledMessage, disabledMessage)`, `BarcodeCountStatusResultError.Create(statusList, errorMessage, disabledMessage)`, `BarcodeCountStatusResultAbort.Create(errorMessage)`.
 
+### Show / hide built-in UI elements
+
+The built-in UI is an integral part of MatrixScan Count and is recommended, but individual elements can be toggled with the `ShouldShow*` `bool` properties on `BarcodeCountView`. Set them after creating the view:
+
+```csharp
+// Hide toolbar buttons:
+this.barcodeCountView.ShouldShowListButton = false;
+this.barcodeCountView.ShouldShowExitButton = false;
+this.barcodeCountView.ShouldShowShutterButton = false;
+
+// Hide guidance and hints:
+this.barcodeCountView.ShouldShowUserGuidanceView = false;
+this.barcodeCountView.ShouldShowHints = false;
+
+// Strap mode — a draggable floating shutter button for wrist-mounted devices:
+this.barcodeCountView.ShouldShowFloatingShutterButton = true;
+
+// "Clear screen" button — wipes AR overlays but keeps the counted barcodes:
+this.barcodeCountView.ShouldShowClearHighlightsButton = true;
+```
+
+Other toggles: `ShouldShowSingleScanButton`, `ShouldShowStatusModeButton`, `ShouldShowToolbar`, `ShouldShowScanAreaGuides`, `ShouldShowListProgressBar`, `ShouldShowTorchControl`. To clear the on-screen highlights imperatively (without a button), call `this.barcodeCountView.ClearHighlights()`.
+
 ### Toolbar text
 
 ```csharp
@@ -691,6 +750,26 @@ var toolbar = new BarcodeCountToolbarSettings
 };
 this.barcodeCountView.SetToolbarSettings(toolbar);
 ```
+
+### Hardware trigger (scan on a hardware button)
+
+On Android you can let a hardware button (e.g. the volume-down key, or the dedicated scan button on XCover devices) drive the shutter instead of the on-screen button. This is a `BarcodeCountView` method on .NET Android — **not** the `HardwareTriggerEnabled` property (that property is the iOS/cross-platform shape and is **not** exposed on `dotnet.android`).
+
+```csharp
+using Android.Views; // for Keycode
+
+// Use the default button (volume-down on most devices, the dedicated HW button on XCover):
+if (BarcodeCountView.HardwareTriggerSupported)
+{
+    this.barcodeCountView.EnableHardwareTrigger(null);
+}
+
+// ...or react to a specific key code:
+this.barcodeCountView.EnableHardwareTrigger((int)Keycode.VolumeDown);
+```
+
+- `EnableHardwareTrigger(int? hardwareTriggerKeyCode)` — pass `null` for the default button, or a `Keycode` cast to `int` for a specific key.
+- Static `BarcodeCountView.HardwareTriggerSupported` (`bool`, get) — `true` only on API level 28+. Gate the call on it.
 
 ### Apply settings at runtime
 

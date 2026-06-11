@@ -23,7 +23,7 @@
         {"text": "BarcodeCountView has a barcodeCount prop and a context prop (semantic)"},
         {"text": "view.listener or view.uiListener is set inside the BarcodeCountView ref callback"},
         {"text": "view.start() is NOT present (BarcodeCountView does not require explicit start)"},
-        {"text": "camera.switchToDesiredState(FrameSourceState.On) is present"},
+        {"text": "The camera is switched on with switchToDesiredState (semantic)"},
         {"text": "The component is written as a function component (no class syntax)"},
         {"text": "useRef is used to hold the BarcodeCount mode reference"},
         {"text": "useEffect cleanup calls dataCaptureContext.setFrameSource(null)"},
@@ -49,7 +49,7 @@
         {"text": "didCompleteCaptureList is implemented in the view listener (semantic)"},
         {"text": "'-- ENTER YOUR SCANDIT LICENSE KEY HERE --' is present"},
         {"text": "DataCaptureContext.initialize( is present"},
-        {"text": "camera.switchToDesiredState(FrameSourceState.On) is present"},
+        {"text": "The camera is switched on with switchToDesiredState (semantic)"},
         {"text": "useEffect cleanup calls dataCaptureContext.setFrameSource(null)"}
       ]
     },
@@ -165,6 +165,36 @@
         {"text": "BarcodeCountView.hardwareTriggerSupported is checked before enabling the trigger (semantic)"},
         {"text": "A comment or note about Android API level 28+ requirement is present (semantic)"},
         {"text": "A comment or note about RN 7.1+ requirement is present (semantic)"},
+        {"text": "Existing BarcodeCount mode, camera lifecycle, and listeners are preserved (semantic)"}
+      ]
+    },
+    {
+      "id": 10,
+      "prompt": "My labels carry PDF417 barcodes alongside the ones I want to count. Filter the PDF417 ones out of my MatrixScan Count app so they are not counted. Also exclude any barcode whose data starts with the digits 1234. File: IntegratedApp.tsx.",
+      "expected_output": "The skill accesses settings.filterSettings (the BarcodeFilterSettings getter on BarcodeCountSettings), sets excludedSymbologies to an array including Symbology.PDF417, and sets excludedCodesRegex to a pattern matching data starting with 1234. The existing integration is preserved.",
+      "files": [
+        "fixtures/IntegratedApp.tsx"
+      ],
+      "tags": ["filtering"],
+      "assertions": [
+        {"text": "settings.filterSettings is accessed as the BarcodeFilterSettings getter (semantic)"},
+        {"text": "filterSettings.excludedSymbologies is assigned an array including Symbology.PDF417"},
+        {"text": "filterSettings.excludedCodesRegex is set to a regex matching data starting with 1234 (semantic)"},
+        {"text": "A new BarcodeFilterSettings is NOT constructed and assigned back; the settings.filterSettings getter is mutated in place (semantic)"},
+        {"text": "Existing BarcodeCount mode, camera lifecycle, and listeners are preserved (semantic)"}
+      ]
+    },
+    {
+      "id": 11,
+      "prompt": "Every barcode in my batches is unique — no duplicates ever appear. Turn on the optimization for that in my MatrixScan Count app. File: IntegratedApp.tsx.",
+      "expected_output": "The skill sets settings.expectsOnlyUniqueBarcodes = true on the BarcodeCountSettings before the BarcodeCount mode is constructed. The existing integration is preserved.",
+      "files": [
+        "fixtures/IntegratedApp.tsx"
+      ],
+      "tags": ["expects-only-unique"],
+      "assertions": [
+        {"text": "settings.expectsOnlyUniqueBarcodes = true is present"},
+        {"text": "expectsOnlyUniqueBarcodes is set on the BarcodeCountSettings before BarcodeCount is constructed (semantic)"},
         {"text": "Existing BarcodeCount mode, camera lifecycle, and listeners are preserved (semantic)"}
       ]
     }

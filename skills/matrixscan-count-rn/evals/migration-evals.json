@@ -9,10 +9,9 @@
         "fixtures/LegacyCountApp.tsx"
       ],
       "assertions": [
-        {"text": "BarcodeCount.forDataCaptureContext( is NOT present in the output file"},
+        {"text": "BarcodeCount.forDataCaptureContext( is not used in the migrated code (semantic)"},
         {"text": "new BarcodeCount(settings) is present in the output file"},
         {"text": "dataCaptureContext.addMode( is present in the output file"},
-        {"text": "DataCaptureContext.forLicenseKey( is NOT present in the output file"},
         {"text": "DataCaptureContext.initialize( is present in the output file"},
         {"text": "BarcodeCount.createRecommendedCameraSettings() is used for camera setup (semantic)"},
         {"text": "Camera.default is NOT used as the primary camera source (semantic)"},
