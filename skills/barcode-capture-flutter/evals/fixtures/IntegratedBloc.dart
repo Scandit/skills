@@ -7,6 +7,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:scandit_flutter_datacapture_barcode/scandit_flutter_datacapture_barcode.dart';
+import 'package:scandit_flutter_datacapture_barcode/scandit_flutter_datacapture_barcode_capture.dart';
 import 'package:scandit_flutter_datacapture_core/scandit_flutter_datacapture_core.dart';
 
 const String licenseKey = '-- ENTER YOUR SCANDIT LICENSE KEY HERE --';
@@ -23,6 +24,7 @@ class HomeBloc implements BarcodeCaptureListener {
   late final BarcodeCapture barcodeCapture;
   late final Camera? camera;
   late final DataCaptureView captureView;
+  late final BarcodeCaptureOverlay overlay;
 
   final List<ScannedProduct> scannedProducts = [];
   final StreamController<ScannedProduct> _scansController =
@@ -43,11 +45,12 @@ class HomeBloc implements BarcodeCaptureListener {
     dataCaptureContext.addMode(barcodeCapture);
 
     camera = Camera.defaultCamera;
-    camera?.applySettings(BarcodeCapture.recommendedCameraSettings);
+    camera?.applySettings(BarcodeCapture.createRecommendedCameraSettings());
     if (camera != null) dataCaptureContext.setFrameSource(camera!);
 
     captureView = DataCaptureView.forContext(dataCaptureContext);
-    BarcodeCaptureOverlay.withBarcodeCaptureForView(barcodeCapture, captureView);
+    overlay = BarcodeCaptureOverlay(barcodeCapture);
+    captureView.addOverlay(overlay);
   }
 
   @override

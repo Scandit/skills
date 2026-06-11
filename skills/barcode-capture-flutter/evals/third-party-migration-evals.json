@@ -1,0 +1,38 @@
+{
+  "skill_name": "barcode-capture-flutter",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I have a Flutter app using the mobile_scanner plugin (ML Kit) for barcode scanning. I want to replace it with Scandit BarcodeCapture. Here is my page: MobileScannerPage.dart",
+      "expected_output": "The skill removes all mobile_scanner APIs (the MobileScanner widget, MobileScannerController, the onDetect/BarcodeCapture-from-mobile_scanner callback, BarcodeFormat), adds Scandit BarcodeCapture integration with the matching symbologies (ean13Upca, code128, qr), preserves the ScannedItem model, the running summary list, and the de-duplication logic, and shows a setup checklist plus a summary of changes.",
+      "files": [
+        "fixtures/MobileScannerPage.dart"
+      ],
+      "assertions": [
+        {"text": "The import of package:mobile_scanner/mobile_scanner.dart is NOT present in the output"},
+        {"text": "The MobileScanner widget is NOT used in the new widget tree (may appear in a before/after summary)"},
+        {"text": "MobileScannerController is NOT instantiated in the new code (may appear in a before/after summary)"},
+        {"text": "Imports from scandit_flutter_datacapture_barcode and scandit_flutter_datacapture_core are present"},
+        {"text": "package:scandit_flutter_datacapture_barcode/scandit_flutter_datacapture_barcode_capture.dart is imported for BarcodeCapture, BarcodeCaptureOverlay, and BarcodeCaptureListener"},
+        {"text": "A class implements BarcodeCaptureListener with a didScan override"},
+        {"text": "DataCaptureContext.forLicenseKey( or DataCaptureContext.initialize( is present"},
+        {"text": "BarcodeCapture(settings) is used and added via dataCaptureContext.addMode( or dataCaptureContext.setMode("},
+        {"text": "Symbology.ean13Upca is enabled (mapped from BarcodeFormat.ean13)"},
+        {"text": "Symbology.code128 is enabled (mapped from BarcodeFormat.code128)"},
+        {"text": "Symbology.qr is enabled (mapped from BarcodeFormat.qrCode, not Symbology.qrCode which does not exist)"},
+        {"text": "DataCaptureView.forContext( is used to build the preview widget"},
+        {"text": "BarcodeCaptureOverlay(barcodeCapture) is constructed and attached with captureView.addOverlay(overlay)"},
+        {"text": "The new scan handler reads session.newlyRecognizedBarcode and its data, instead of iterating capture.barcodes / barcode.rawValue"},
+        {"text": "The ScannedItem model is preserved in the output (mapped to store Symbology instead of BarcodeFormat) (semantic)"},
+        {"text": "The running summary list (_scannedItems) and its total count display are preserved"},
+        {"text": "The de-duplication logic (the _seenValues Set guarding against re-adding an already-seen value) is preserved"},
+        {"text": "The clear action that empties both the list and the seen-values set is preserved"},
+        {"text": "Setup checklist mentions scandit_flutter_datacapture_barcode in pubspec.yaml and flutter pub get"},
+        {"text": "Setup checklist mentions iOS NSCameraUsageDescription in ios/Runner/Info.plist"},
+        {"text": "Setup checklist mentions await ScanditFlutterDataCaptureBarcode.initialize() in main() before runApp"},
+        {"text": "A summary of changes is shown listing what mobile_scanner APIs were removed and what Scandit APIs replaced them"}
+      ],
+      "tags": ["third-party-migration"]
+    }
+  ]
+}
