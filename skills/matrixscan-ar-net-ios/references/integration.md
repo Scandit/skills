@@ -106,7 +106,7 @@ After providing the code, show this setup checklist:
 | `BarcodeArFeedback` | `Scandit.DataCapture.Barcode.Ar.Feedback` |
 | `BarcodeArView`, `BarcodeArViewSettings`, `HighlightForBarcodeTappedEventArgs` | `Scandit.DataCapture.Barcode.Ar.UI` |
 | `IBarcodeArHighlight`, `IBarcodeArHighlightProvider`, `BarcodeArRectangleHighlight`, `BarcodeArCircleHighlight`, `BarcodeArCircleHighlightPreset` | `Scandit.DataCapture.Barcode.Ar.UI.Highlight` |
-| `IBarcodeArAnnotation`, `IBarcodeArAnnotationProvider`, `BarcodeArInfoAnnotation`, `BarcodeArStatusIconAnnotation`, `BarcodeArPopoverAnnotation`, `BarcodeArAnnotationTrigger` | `Scandit.DataCapture.Barcode.Ar.UI.Annotations` |
+| `IBarcodeArAnnotation`, `IBarcodeArAnnotationProvider`, `BarcodeArInfoAnnotation`, `BarcodeArStatusIconAnnotation`, `BarcodeArPopoverAnnotation`, `BarcodeArResponsiveAnnotation`, `BarcodeArAnnotationTrigger` | `Scandit.DataCapture.Barcode.Ar.UI.Annotations` |
 | `BarcodeArInfoAnnotationBodyComponent`, `BarcodeArInfoAnnotationHeader`, `BarcodeArInfoAnnotationFooter`, `BarcodeArInfoAnnotationAnchor`, `BarcodeArInfoAnnotationWidthPreset`, `IBarcodeArInfoAnnotationListener` | `Scandit.DataCapture.Barcode.Ar.UI.Annotations.Info` |
 | `BarcodeArPopoverAnnotationButton`, `IBarcodeArPopoverAnnotationListener` | `Scandit.DataCapture.Barcode.Ar.UI.Annotations.Popover` |
 | `TrackedBarcode` | `Scandit.DataCapture.Barcode.Batch.Data` |
@@ -492,6 +492,40 @@ All three types take only the `Barcode` in the constructor (no `context`).
 | `Barcode` | `Barcode` (get) | |
 
 `BarcodeArPopoverAnnotationButton(ScanditIcon icon, string text)`: `Text` (get), `TextSize` (get/set), `Typeface` (get/set), `TextColor` (get/set), `Enabled` (get/set), `Icon` (get).
+
+**`BarcodeArResponsiveAnnotation`** (available since `dotnet.ios=8.0`) — wraps two `BarcodeArInfoAnnotation` variations and switches between them based on how large the barcode appears on screen. It is also in the `Scandit.DataCapture.Barcode.Ar.UI.Annotations` namespace.
+
+```csharp
+using Scandit.DataCapture.Barcode.Ar.UI.Annotations;
+using Scandit.DataCapture.Barcode.Ar.UI.Annotations.Info;
+
+var closeUp = new BarcodeArInfoAnnotation(barcode)
+{
+    Body = new List<BarcodeArInfoAnnotationBodyComponent>
+    {
+        new BarcodeArInfoAnnotationBodyComponent { Text = barcode.Data ?? string.Empty },
+    },
+};
+var farAway = new BarcodeArInfoAnnotation(barcode)
+{
+    Body = new List<BarcodeArInfoAnnotationBodyComponent>
+    {
+        new BarcodeArInfoAnnotationBodyComponent { Text = "Scan closer" },
+    },
+};
+
+var annotation = new BarcodeArResponsiveAnnotation(barcode, closeUp, farAway);
+// Threshold is a static property (applies to ALL instances) — barcode area / screen area, 0.0–1.0, default 0.05.
+BarcodeArResponsiveAnnotation.Threshold = 0.1f;
+```
+
+The constructor is `BarcodeArResponsiveAnnotation(Barcode barcode, BarcodeArInfoAnnotation? closeUpAnnotation, BarcodeArInfoAnnotation? farAwayAnnotation)`. Either annotation may be `null` to show nothing for that variation.
+
+| Member | Type | Description |
+|--------|------|-------------|
+| `Threshold` | `static float` (get/set) | Class-level switch point (barcode-area / screen-area, `0.0`–`1.0`, default `0.05`). Above it the close-up annotation shows; at or below it the far-away annotation shows. |
+| `AnnotationTrigger` | `BarcodeArAnnotationTrigger` (get/set) | Default `HighlightTapAndBarcodeScan`. |
+| `Barcode` | `Barcode` (get) | |
 
 Returning `null` from `AnnotationForBarcodeAsync` simply omits the annotation for that barcode.
 
