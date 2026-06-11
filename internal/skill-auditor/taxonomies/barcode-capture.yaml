@@ -1,0 +1,135 @@
+# Barcode Capture (API: `BarcodeCapture`) feature taxonomy — curated edge-case checklist.
+#
+# `match` patterns are case-insensitive regexes over eval prompt + expected_output +
+# assertion texts; bootstrap heuristic until evals carry explicit `tags`. `evidence`
+# records mining provenance.
+#
+# Provenance (mined 2026-06-11, four parallel source classes):
+#   public_docs  data-capture-documentation — docs/sdks/*/barcode-capture/** (intro, get-started,
+#                get-started-with-swift-ui, configure-barcode-symbologies)
+#   sdk_source   data-capture-sdk @ 6750d24734b — docs/source/barcode-capture/api/barcode-capture*.rst
+#                + ui/ overlay & viewfinders + core/api/ui location-selection  (the :available: directive
+#                is availability ground truth)
+#   samples      datacapture-*-samples — 01_Single_Scanning_Samples/02_Barcode_Scanning_with_Low_Level_API/
+#                BarcodeCaptureSimpleSample / BarcodeCaptureSettingsSample / BarcodeCaptureRejectSample
+#   eval-survey  existing skills/barcode-capture-*/evals/*.json (integration + migration + third-party-migration)
+#
+# Platform-truth notes (layer 1 — from the .rst :available: directives):
+#   - 10 in-scope platforms: android, capacitor, cordova, flutter, ios, maui, net-android, net-ios, rn, web.
+#   - BarcodeCapture is the single-scan mode and is broadly UNIFORM: the mode, settings, listener,
+#     session, feedback, overlay, RectangularViewfinder, AimerViewfinder, both location selections,
+#     codeDuplicateFilter, scanAreaMargins and locationSelection are available on ALL 10 — no exclusions.
+#   - The ONE availability boundary that matters here:
+#       * laserline-viewfinder (LaserlineViewfinder) — android/ios=7.3, js frameworks/web=7.4, but NOT in
+#         the .NET/MAUI binding. Exclude net-android, net-ios, maui.
+#   - Deliberately NOT modelled: SelectionMode (8.5) is documented but, like matrixscan-ar's BarcodeArFilter,
+#     risks not being in the published package — use the older ScanIntention (6.24) for the manual-scan edge.
+#   - API-shape divergence to keep in mind (NOT exclusions): FrameSourceState casing (on/On/ON),
+#     enum casing (ean13Upca / EAN13UPCA / EAN13_UPCA), factory (BarcodeCapture.forContext / new BarcodeCapture
+#     / BarcodeCapture.Create), .NET event-listener alternative (BarcodeScanned += …) + frameData.Dispose(),
+#     web async/await + connectToElement, MAUI XAML DataCaptureView.
+product: barcode-capture
+skill_prefix: barcode-capture-
+features:
+  # ---- Required: core to any Barcode Capture integration (available on all 10 platforms) ----
+  - id: basic-integration
+    required: true
+    evidence: [docs, sample, sdk]
+    match: ["barcodecapture\\b", "barcodecapturesettings", "new barcodecapture", "barcodecapture\\.forcontext", "barcodecapture\\.create", "barcodecapture\\(settings"]
+  - id: license-init
+    required: true
+    evidence: [docs, sample, sdk]
+    match: ["datacapturecontext", "license key", "licensekey", "forlicensekey", "\\.initialize\\(", "sharedinstance"]
+  - id: camera-setup
+    required: true
+    evidence: [docs, sample, sdk]
+    match: ["recommendedcamerasettings", "createrecommendedcamerasettings", "camera\\.default", "camera\\.withsettings", "setframesource", "applysettings", "defaultcamera"]
+  - id: capture-view-overlay
+    required: true
+    evidence: [docs, sample, sdk]
+    match: ["datacaptureview", "barcodecaptureoverlay", "addoverlay", "connecttoelement"]
+  - id: symbology-config
+    required: true
+    evidence: [docs, sample, sdk]
+    match: ["symbolog", "activesymbolcount"]
+  - id: scan-listener
+    required: true
+    evidence: [docs, sample, sdk]
+    match: ["didscan", "barcodecapturelistener", "onbarcodescanned", "newlyrecognizedbarcode", "addlistener", "barcodescanned\\s*\\+="]
+  - id: single-scan-disable
+    required: true
+    evidence: [docs, sample]
+    match: ["isenabled\\s*=\\s*false", "setenabled\\(false", "\\.enabled\\s*=\\s*false", "disable.*(scan|capture)|re-?enable", "isenabled\\s*=\\s*true"]
+  - id: lifecycle
+    required: true
+    evidence: [docs, sample, sdk]
+    match: ["switchtodesiredstate", "framesourcestate", "onpause|onresume|ondestroy", "viewwillappear|viewwilldisappear", "applifecyclestate", "didchangeapplifecyclestate", "removelistener", "onappearing|ondisappearing"]
+  - id: feedback-control
+    required: true
+    evidence: [docs, sample, sdk]
+    match: ["barcodecapturefeedback", "\\bfeedback\\b", "vibration", "suppress.*(beep|sound|vibrat)", "silent|mute"]
+
+  # ---- Important: broadly available, not strictly required ----
+  - id: rectangular-viewfinder
+    required: false
+    evidence: [docs, sample, sdk]
+    match: ["rectangularviewfinder", "rectangularviewfinderstyle", "square viewfinder", "viewfinderlinestyle"]
+  - id: aimer-viewfinder
+    required: false
+    evidence: [docs, sdk]
+    match: ["aimerviewfinder", "aimer viewfinder"]
+  - id: laserline-viewfinder
+    required: false
+    evidence: [docs, sdk]
+    excluded_platforms: [net-android, net-ios, maui]
+    match: ["laserlineviewfinder", "laserline viewfinder"]
+  - id: code-duplicate-filter
+    required: false
+    evidence: [docs, sample, sdk]
+    match: ["codeduplicatefilter", "duplicate filter"]
+  - id: location-selection
+    required: false
+    evidence: [docs, sdk]
+    match: ["rectangularlocationselection", "radiuslocationselection", "locationselection"]
+  - id: reject-pattern
+    required: false
+    evidence: [sample, docs]
+    match: ["brush.*transparent|transparent.*brush", "\\breject", "only (accept|scan|show)", "\\.startswith"]
+  - id: overlay-brush
+    required: false
+    evidence: [docs, sample, sdk]
+    match: ["overlay\\.brush", "setbrush", "new brush\\(", "brush\\s*=", "\\.brush\\s*="]
+  - id: symbology-extensions
+    required: false
+    evidence: [docs, sdk]
+    match: ["setextensionenabled", "symbology extension", "enabledextensions", "extensionenabled"]
+  - id: symbology-checksums
+    required: false
+    evidence: [docs, sdk]
+    match: ["checksum"]
+  - id: active-symbol-counts
+    required: false
+    evidence: [docs, sample, sdk]
+    match: ["activesymbolcount", "active symbol count", "symbol count"]
+  - id: color-inverted
+    required: false
+    evidence: [docs, sdk]
+    match: ["colorinverted", "color.?inverted", "iscolorinvertedenabled"]
+  - id: scan-intention
+    required: false
+    evidence: [docs, sdk, eval-survey]
+    match: ["scanintention", "scan intention"]
+  - id: composite-codes
+    required: false
+    evidence: [sample, eval-survey]
+    match: ["compositetype", "enabledcompositetypes", "enablesymbologiesforcomposite", "composite code"]
+
+  # ---- Migration ----
+  - id: version-migration
+    required: false
+    evidence: [eval-survey, docs]
+    match: ["migrat", "v6|v7|v8", "forlicensekey.*initialize|forcontext.*new", "upgrade.*(version|sdk)", "newlyrecognizedbarcodes"]
+  - id: third-party-migration
+    required: false
+    evidence: [eval-survey]
+    match: ["zxing", "ml ?kit", "mlkit", "avfoundation", "avcapture", "third.?party", "intentintegrator", "mobilebarcodescanner", "google.*barcode|barcode.*google"]
