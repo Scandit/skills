@@ -93,4 +93,79 @@ extension ViewController: BarcodeCaptureListener {
 }
 ```
 
-For advanced configuration (custom feedback, viewfinders, duplicate filtering, location selection, composite codes), see the Advanced Configurations and API reference linked from SKILL.md.
+## Optional configuration
+
+All of the following are applied to the `BarcodeCaptureSettings` instance (before `BarcodeCapture(context:settings:)`, or re-applied later with `barcodeCapture.apply(settings, completionHandler:)`) or to the `BarcodeCaptureOverlay`. Use the exact Swift APIs below — many per-symbology options live on `SymbologySettings`, obtained via `settings.settings(for:)`, not directly on `BarcodeCaptureSettings`.
+
+### Per-symbology settings
+
+`settings.settings(for:)` returns a mutable `SymbologySettings` for one symbology. Mutate it, then apply the parent `settings`.
+
+```swift
+let symbologySettings = settings.settings(for: .code39)
+
+// Symbology extensions (e.g. Code 39 full ASCII). Pass the extension name as a String.
+symbologySettings.set(extension: "full_ascii", enabled: true)
+
+// Optional checksums. `checksums` is a Checksum OptionSet — assign with an array literal.
+symbologySettings.checksums = [.mod43]
+
+// Active symbol counts (variable-length 1D codes). Type is Set<Int>.
+settings.settings(for: .code128).activeSymbolCounts = Set(7...20)
+
+// Color-inverted (light-on-dark) codes. This is a PER-SYMBOLOGY setting.
+settings.settings(for: .qr).isColorInvertedEnabled = true
+```
+
+### Viewfinders
+
+Assign a viewfinder to the overlay's `viewfinder` property (the overlay is created with `BarcodeCaptureOverlay(barcodeCapture:view:)`).
+
+```swift
+overlay.viewfinder = AimerViewfinder()      // target dot to aim at
+overlay.viewfinder = LaserlineViewfinder()  // horizontal line for long 1D codes
+```
+
+### Overlay highlight brush
+
+The brush draws recognized barcodes. `Brush(fill:stroke:strokeWidth:)` takes `UIColor` fill, `UIColor` stroke, and a `CGFloat` width.
+
+```swift
+overlay.brush = Brush(fill: UIColor.green.withAlphaComponent(0.2),
+                      stroke: UIColor.green,
+                      strokeWidth: 2)
+```
+
+### Rejecting barcodes
+
+There is no `session.rejectBarcodes(...)` API. To reject codes whose data does not match, do the check inside `didScanIn`: set the overlay brush to `Brush.transparent` so the non-matching code is not highlighted, and `return` early before handling it.
+
+```swift
+func barcodeCapture(_ barcodeCapture: BarcodeCapture,
+                    didScanIn session: BarcodeCaptureSession,
+                    frameData: FrameData) {
+    guard let barcode = session.newlyRecognizedBarcode,
+          let data = barcode.data else { return }
+
+    guard data.hasPrefix("978") else {
+        // Reject: hide the highlight and stop.
+        overlay.brush = Brush.transparent
+        return
+    }
+
+    DispatchQueue.main.async {
+        // Handle the accepted barcode here.
+    }
+}
+```
+
+### Composite codes
+
+Enabling composite codes requires BOTH steps: set `enabledCompositeTypes`, and call `enableSymbologies(forCompositeTypes:)` to turn on the underlying symbologies. Setting `enabledCompositeTypes` alone is not sufficient. `CompositeType` is an OptionSet (`.a`, `.b`, `.c`).
+
+```swift
+settings.enabledCompositeTypes = [.a, .b]
+settings.enableSymbologies(forCompositeTypes: [.a, .b])
+```
+
+For other advanced configuration (custom feedback, duplicate filtering, location selection), see the Advanced Configurations and API reference linked from SKILL.md.
