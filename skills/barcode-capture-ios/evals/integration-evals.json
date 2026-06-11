@@ -105,6 +105,166 @@
         {"text": "codeDuplicateFilter is set before BarcodeCapture(context:settings:) is invoked, or via barcodeCapture.apply"},
         {"text": "Existing integration code (context, barcodeCapture, camera, listener) is preserved"}
       ]
+    },
+    {
+      "id": 7,
+      "prompt": "Add an aimer viewfinder to my iOS BarcodeCapture preview so users have a target dot to aim at. Update IntegratedViewController.swift.",
+      "expected_output": "The skill constructs an AimerViewfinder and assigns it to the BarcodeCaptureOverlay's viewfinder property.",
+      "files": [
+        "fixtures/IntegratedViewController.swift"
+      ],
+      "assertions": [
+        {"text": "An AimerViewfinder() is constructed"},
+        {"text": "The viewfinder is assigned to the overlay via overlay.viewfinder ="},
+        {"text": "Existing integration code (context, barcodeCapture, camera, listener) is preserved"}
+      ],
+      "tags": ["aimer-viewfinder"]
+    },
+    {
+      "id": 8,
+      "prompt": "I want a horizontal laser line viewfinder on my iOS BarcodeCapture preview to guide users when scanning long 1D codes. Update IntegratedViewController.swift.",
+      "expected_output": "The skill constructs a LaserlineViewfinder and assigns it to the BarcodeCaptureOverlay's viewfinder property.",
+      "files": [
+        "fixtures/IntegratedViewController.swift"
+      ],
+      "assertions": [
+        {"text": "A LaserlineViewfinder() is constructed"},
+        {"text": "The viewfinder is assigned to the overlay via overlay.viewfinder ="},
+        {"text": "Existing integration code (context, barcodeCapture, camera, listener) is preserved"}
+      ],
+      "tags": ["laserline-viewfinder"]
+    },
+    {
+      "id": 9,
+      "prompt": "Restrict barcode recognition to a rectangle in the center of the preview so codes outside it are ignored. Use a relative size of 90% width and 30% height. Update my BarcodeCapture settings in IntegratedViewController.swift.",
+      "expected_output": "The skill builds a SizeWithUnit using FloatWithUnit values with MeasureUnit.fraction (0.9 width, 0.3 height), creates a RectangularLocationSelection(size:), and assigns it to settings.locationSelection.",
+      "files": [
+        "fixtures/IntegratedViewController.swift"
+      ],
+      "assertions": [
+        {"text": "A FloatWithUnit(value: 0.9, unit: .fraction) is constructed for the width"},
+        {"text": "A FloatWithUnit(value: 0.3, unit: .fraction) is constructed for the height"},
+        {"text": "A SizeWithUnit(width:height:) is constructed from the FloatWithUnit values"},
+        {"text": "A RectangularLocationSelection(size:) is constructed"},
+        {"text": "settings.locationSelection is assigned the RectangularLocationSelection"},
+        {"text": "Existing integration code (context, barcodeCapture, camera, listener) is preserved"}
+      ],
+      "tags": ["location-selection"]
+    },
+    {
+      "id": 10,
+      "prompt": "I only want to recognize barcodes near the center of the screen, inside a circular area with a radius of 20% of the view width. Configure this on my BarcodeCapture settings in IntegratedViewController.swift.",
+      "expected_output": "The skill builds a FloatWithUnit radius with MeasureUnit.fraction (0.2), creates a RadiusLocationSelection(radius:), and assigns it to settings.locationSelection.",
+      "files": [
+        "fixtures/IntegratedViewController.swift"
+      ],
+      "assertions": [
+        {"text": "A FloatWithUnit(value: 0.2, unit: .fraction) is constructed for the radius"},
+        {"text": "A RadiusLocationSelection(radius:) is constructed"},
+        {"text": "settings.locationSelection is assigned the RadiusLocationSelection"},
+        {"text": "Existing integration code (context, barcodeCapture, camera, listener) is preserved"}
+      ],
+      "tags": ["location-selection"]
+    },
+    {
+      "id": 11,
+      "prompt": "In my iOS BarcodeCapture app I only want to accept barcodes whose data starts with the prefix \"978\" (ISBNs). Other codes should be ignored and not highlighted. Wire this rejection logic into IntegratedViewController.swift.",
+      "expected_output": "The skill, inside barcodeCapture(_:didScanIn:frameData:), reads barcode.data and checks barcode.data.hasPrefix(\"978\"); when it does not match it sets the overlay brush to a transparent Brush (Brush.transparent) and returns without handling the scan.",
+      "files": [
+        "fixtures/IntegratedViewController.swift"
+      ],
+      "assertions": [
+        {"text": "Inside didScanIn the code reads barcode.data"},
+        {"text": "The barcode data is checked with .hasPrefix(\"978\")"},
+        {"text": "When the prefix does not match, overlay.brush is set to Brush.transparent (or a Brush with transparent fill and stroke)"},
+        {"text": "(semantic) the callback returns early for rejected codes so non-matching barcodes are not handled"},
+        {"text": "Existing integration code (context, barcodeCapture, camera, listener) is preserved"}
+      ],
+      "tags": ["reject-pattern"]
+    },
+    {
+      "id": 12,
+      "prompt": "Change the color of the highlight drawn around recognized barcodes in my iOS BarcodeCapture app to a semi-transparent green fill with a solid green stroke. Update IntegratedViewController.swift.",
+      "expected_output": "The skill constructs a Brush(fill:stroke:strokeWidth:) with green colors and assigns it to the BarcodeCaptureOverlay via overlay.brush.",
+      "files": [
+        "fixtures/IntegratedViewController.swift"
+      ],
+      "assertions": [
+        {"text": "A Brush(fill:stroke:strokeWidth:) is constructed"},
+        {"text": "The brush is assigned to the overlay via overlay.brush ="},
+        {"text": "Existing integration code (context, barcodeCapture, camera, listener) is preserved"}
+      ],
+      "tags": ["overlay-brush"]
+    },
+    {
+      "id": 13,
+      "prompt": "I scan Code 39 barcodes that contain full ASCII characters in my iOS app. Enable the full ASCII extension for Code 39 in my BarcodeCapture settings in IntegratedViewController.swift.",
+      "expected_output": "The skill obtains the Code 39 symbology settings via settings.settings(for: .code39) and enables the extension with set(extension: \"full_ascii\", enabled: true).",
+      "files": [
+        "fixtures/IntegratedViewController.swift"
+      ],
+      "assertions": [
+        {"text": "settings.settings(for: .code39) is used to obtain the SymbologySettings"},
+        {"text": "set(extension: \"full_ascii\", enabled: true) is called on the symbology settings"},
+        {"text": "Existing integration code (context, barcodeCapture, camera, listener) is preserved"}
+      ],
+      "tags": ["symbology-extensions"]
+    },
+    {
+      "id": 14,
+      "prompt": "My Code 39 barcodes use a mod 43 checksum. Configure my iOS BarcodeCapture settings to validate that checksum in IntegratedViewController.swift.",
+      "expected_output": "The skill obtains the Code 39 symbology settings via settings.settings(for: .code39) and sets symbologySettings.checksums = [.mod43].",
+      "files": [
+        "fixtures/IntegratedViewController.swift"
+      ],
+      "assertions": [
+        {"text": "settings.settings(for: .code39) is used to obtain the SymbologySettings"},
+        {"text": "checksums is set to [.mod43] on the symbology settings"},
+        {"text": "Existing integration code (context, barcodeCapture, camera, listener) is preserved"}
+      ],
+      "tags": ["symbology-checksums"]
+    },
+    {
+      "id": 15,
+      "prompt": "My Code 128 barcodes vary in length between 7 and 20 characters. Configure the active symbol counts for Code 128 in my iOS BarcodeCapture settings in IntegratedViewController.swift.",
+      "expected_output": "The skill obtains the Code 128 symbology settings via settings.settings(for: .code128) and sets symbologySettings.activeSymbolCounts = Set(7...20).",
+      "files": [
+        "fixtures/IntegratedViewController.swift"
+      ],
+      "assertions": [
+        {"text": "settings.settings(for: .code128) is used to obtain the SymbologySettings"},
+        {"text": "activeSymbolCounts is set to Set(7...20) on the symbology settings"},
+        {"text": "Existing integration code (context, barcodeCapture, camera, listener) is preserved"}
+      ],
+      "tags": ["active-symbol-counts"]
+    },
+    {
+      "id": 16,
+      "prompt": "Some of my QR codes are printed light-on-dark (color inverted). Enable scanning of color-inverted QR codes in my iOS BarcodeCapture settings in IntegratedViewController.swift.",
+      "expected_output": "The skill obtains the QR symbology settings via settings.settings(for: .qr) and sets symbologySettings.isColorInvertedEnabled = true.",
+      "files": [
+        "fixtures/IntegratedViewController.swift"
+      ],
+      "assertions": [
+        {"text": "settings.settings(for: .qr) is used to obtain the SymbologySettings"},
+        {"text": "isColorInvertedEnabled is set to true on the symbology settings"},
+        {"text": "Existing integration code (context, barcodeCapture, camera, listener) is preserved"}
+      ],
+      "tags": ["color-inverted"]
+    },
+    {
+      "id": 17,
+      "prompt": "I need to scan GS1 Composite Code type A and type B (a 2D component on top of a 1D code) in my iOS BarcodeCapture app. Configure my BarcodeCapture settings to support these composite codes in IntegratedViewController.swift.",
+      "expected_output": "The skill sets settings.enabledCompositeTypes to include .a and .b, and calls settings.enableSymbologies(forCompositeTypes:) with the same composite types to enable the underlying symbologies.",
+      "files": [
+        "fixtures/IntegratedViewController.swift"
+      ],
+      "assertions": [
+        {"text": "settings.enabledCompositeTypes is set to include CompositeType .a and .b"},
+        {"text": "settings.enableSymbologies(forCompositeTypes:) is called with the composite types"},
+        {"text": "Existing integration code (context, barcodeCapture, camera, listener) is preserved"}
+      ],
+      "tags": ["composite-codes"]
     }
   ]
 }
