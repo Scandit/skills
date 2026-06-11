@@ -171,6 +171,128 @@
         {"text": "scanIntention is set before new BarcodeCapture(settings) is constructed (semantic)"},
         {"text": "Existing integration code (context, barcodeCapture, view, overlay, listener) is preserved"}
       ]
+    },
+    {
+      "id": 11,
+      "prompt": "I want to show an aimer viewfinder on my Capacitor BarcodeCapture overlay so users have a clear aiming point. Use IntegratedApp.js.",
+      "expected_output": "The skill assigns a new AimerViewfinder to overlay.viewfinder and imports AimerViewfinder from scandit-capacitor-datacapture-core.",
+      "files": [
+        "fixtures/IntegratedApp.js"
+      ],
+      "assertions": [
+        {"text": "overlay.viewfinder = new AimerViewfinder( is set (the receiver may be window.overlay or overlay) (semantic)"},
+        {"text": "new AimerViewfinder() is constructed with no arguments"},
+        {"text": "AimerViewfinder is imported from scandit-capacitor-datacapture-core"},
+        {"text": "Existing integration code (context, barcodeCapture, view, overlay, listener) is preserved"}
+      ],
+      "tags": ["aimer-viewfinder"]
+    },
+    {
+      "id": 12,
+      "prompt": "Add a laser line viewfinder to my Capacitor BarcodeCapture overlay. Use IntegratedApp.js.",
+      "expected_output": "The skill assigns a new LaserlineViewfinder to overlay.viewfinder and imports LaserlineViewfinder from scandit-capacitor-datacapture-core.",
+      "files": [
+        "fixtures/IntegratedApp.js"
+      ],
+      "assertions": [
+        {"text": "overlay.viewfinder = new LaserlineViewfinder( is set (the receiver may be window.overlay or overlay) (semantic)"},
+        {"text": "new LaserlineViewfinder() is constructed with no arguments"},
+        {"text": "LaserlineViewfinder is imported from scandit-capacitor-datacapture-core"},
+        {"text": "Existing integration code (context, barcodeCapture, view, overlay, listener) is preserved"}
+      ],
+      "tags": ["laserline-viewfinder"]
+    },
+    {
+      "id": 13,
+      "prompt": "In my Capacitor BarcodeCapture app I only want to accept barcodes whose data starts with 'ABC'. Other codes should be ignored and not highlighted. Use IntegratedApp.js.",
+      "expected_output": "The skill inspects barcode.data inside didScan, and for non-matching codes sets the overlay brush to a transparent brush and returns early without processing the code.",
+      "files": [
+        "fixtures/IntegratedApp.js"
+      ],
+      "assertions": [
+        {"text": "barcode.data?.startsWith('ABC') is checked inside didScan (the optional chaining and exact prefix string may vary) (semantic)"},
+        {"text": "For a rejected barcode the overlay brush is set to Brush.transparent (semantic)"},
+        {"text": "For a rejected barcode the callback returns early before processing the code (semantic)"},
+        {"text": "Brush is imported from scandit-capacitor-datacapture-core"},
+        {"text": "Existing integration code (context, barcodeCapture, view, overlay, listener) is preserved"}
+      ],
+      "tags": ["reject-pattern"]
+    },
+    {
+      "id": 14,
+      "prompt": "Change the highlight color of recognized barcodes in my Capacitor BarcodeCapture app to a semi-transparent green fill with a green stroke. Use IntegratedApp.js.",
+      "expected_output": "The skill assigns a new Brush built with Color.fromHex colors to overlay.brush and imports Brush and Color from scandit-capacitor-datacapture-core.",
+      "files": [
+        "fixtures/IntegratedApp.js"
+      ],
+      "assertions": [
+        {"text": "overlay.brush = new Brush( is set (the receiver may be window.overlay or overlay) (semantic)"},
+        {"text": "Color.fromHex( is used to build the fill or stroke color"},
+        {"text": "Brush and Color are imported from scandit-capacitor-datacapture-core"},
+        {"text": "Existing integration code (context, barcodeCapture, view, overlay, listener) is preserved"}
+      ],
+      "tags": ["overlay-brush"]
+    },
+    {
+      "id": 15,
+      "prompt": "Enable the full ASCII extension for Code 39 in my Capacitor BarcodeCapture app. Use IntegratedApp.js.",
+      "expected_output": "The skill gets the Code39 symbology settings via settingsForSymbology and calls setExtensionEnabled('full_ascii', true) before constructing the mode.",
+      "files": [
+        "fixtures/IntegratedApp.js"
+      ],
+      "assertions": [
+        {"text": "settings.settingsForSymbology(Symbology.Code39) is called"},
+        {"text": "setExtensionEnabled('full_ascii', true) is called on the Code39 symbology settings"},
+        {"text": "The extension is enabled before new BarcodeCapture(settings) is constructed (semantic)"},
+        {"text": "Existing integration code (context, barcodeCapture, view, overlay, listener) is preserved"}
+      ],
+      "tags": ["symbology-extensions"]
+    },
+    {
+      "id": 16,
+      "prompt": "Enable the Mod 43 optional checksum for Code 39 in my Capacitor BarcodeCapture app. Use IntegratedApp.js.",
+      "expected_output": "The skill gets the Code39 symbology settings via settingsForSymbology, sets checksums to [Checksum.Mod43], and imports Checksum from scandit-capacitor-datacapture-barcode.",
+      "files": [
+        "fixtures/IntegratedApp.js"
+      ],
+      "assertions": [
+        {"text": "settings.settingsForSymbology(Symbology.Code39) is called"},
+        {"text": "checksums = [Checksum.Mod43] is set on the Code39 symbology settings (semantic)"},
+        {"text": "Checksum is imported from scandit-capacitor-datacapture-barcode"},
+        {"text": "The checksum is set before new BarcodeCapture(settings) is constructed (semantic)"},
+        {"text": "Existing integration code (context, barcodeCapture, view, overlay, listener) is preserved"}
+      ],
+      "tags": ["symbology-checksums"]
+    },
+    {
+      "id": 17,
+      "prompt": "Restrict Code 39 to symbol counts of 7 through 20 in my Capacitor BarcodeCapture app. Use IntegratedApp.js.",
+      "expected_output": "The skill gets the Code39 symbology settings via settingsForSymbology and sets activeSymbolCounts to an array covering 7 to 20 before constructing the mode.",
+      "files": [
+        "fixtures/IntegratedApp.js"
+      ],
+      "assertions": [
+        {"text": "settings.settingsForSymbology(Symbology.Code39) is called"},
+        {"text": "activeSymbolCounts is set to an array of integers from 7 to 20 on the Code39 symbology settings (semantic)"},
+        {"text": "activeSymbolCounts is set before new BarcodeCapture(settings) is constructed (semantic)"},
+        {"text": "Existing integration code (context, barcodeCapture, view, overlay, listener) is preserved"}
+      ],
+      "tags": ["active-symbol-counts"]
+    },
+    {
+      "id": 18,
+      "prompt": "I need to scan color-inverted Code 39 barcodes (bright code on a dark background) in my Capacitor BarcodeCapture app. Use IntegratedApp.js.",
+      "expected_output": "The skill gets the Code39 symbology settings via settingsForSymbology and sets isColorInvertedEnabled to true before constructing the mode.",
+      "files": [
+        "fixtures/IntegratedApp.js"
+      ],
+      "assertions": [
+        {"text": "settings.settingsForSymbology(Symbology.Code39) is called"},
+        {"text": "isColorInvertedEnabled = true is set on the Code39 symbology settings"},
+        {"text": "isColorInvertedEnabled is set before new BarcodeCapture(settings) is constructed (semantic)"},
+        {"text": "Existing integration code (context, barcodeCapture, view, overlay, listener) is preserved"}
+      ],
+      "tags": ["color-inverted"]
     }
   ]
 }

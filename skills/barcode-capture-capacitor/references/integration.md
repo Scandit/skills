@@ -341,7 +341,9 @@ window.barcodeCapture.feedback = feedback;
 
 ## Optional — Viewfinders
 
-Attach a viewfinder to the overlay to show users where to aim:
+Attach a viewfinder to the overlay to show users where to aim. Set `overlay.viewfinder` to one of the viewfinder types below (or `null` for no viewfinder).
+
+### RectangularViewfinder
 
 ```javascript
 import { RectangularViewfinder, RectangularViewfinderStyle, RectangularViewfinderLineStyle } from 'scandit-capacitor-datacapture-core';
@@ -351,6 +353,30 @@ window.overlay.viewfinder = new RectangularViewfinder(
   RectangularViewfinderLineStyle.Light,
 );
 ```
+
+### AimerViewfinder
+
+An aimer viewfinder draws a frame plus a central dot. It is the recommended viewfinder when pairing with a `RadiusLocationSelection`. Construct it with no arguments and assign it to the overlay; tune the optional `frameColor` / `dotColor` properties if needed.
+
+```javascript
+import { AimerViewfinder } from 'scandit-capacitor-datacapture-core';
+
+window.overlay.viewfinder = new AimerViewfinder();
+```
+
+`AimerViewfinder` is available from capacitor=6.8.
+
+### LaserlineViewfinder
+
+A horizontal laser line with a Scandit logo underneath. The line toggles color depending on whether the capture mode is enabled. Construct it with no arguments and assign it to the overlay.
+
+```javascript
+import { LaserlineViewfinder } from 'scandit-capacitor-datacapture-core';
+
+window.overlay.viewfinder = new LaserlineViewfinder();
+```
+
+`LaserlineViewfinder` is available from capacitor=7.4. Optional properties: `width` (`FloatWithUnit`), `enabledColor` (`Color`), `disabledColor` (`Color`).
 
 ## Optional — Location Selection
 
@@ -404,6 +430,101 @@ settings.enableSymbologiesForCompositeTypes([
 ]);
 settings.enabledCompositeTypes = [CompositeType.A, CompositeType.B];
 ```
+
+## Optional — Overlay Brush (highlight color)
+
+The `BarcodeCaptureOverlay.brush` controls how recognized barcodes are highlighted in the view. Assign a `Brush` built from a fill `Color`, a stroke `Color`, and a stroke width. Use `Color.fromHex(...)` to build colors from a hex string.
+
+```javascript
+import { Brush, Color } from 'scandit-capacitor-datacapture-core';
+
+// Semi-transparent green fill with a solid green 2px stroke.
+window.overlay.brush = new Brush(
+  Color.fromHex('#8800FF00'),
+  Color.fromHex('#00FF00'),
+  2,
+);
+```
+
+To hide the highlight entirely, assign a fully transparent brush:
+
+```javascript
+import { Brush } from 'scandit-capacitor-datacapture-core';
+
+window.overlay.brush = Brush.transparent;
+```
+
+## Optional — Rejecting Barcodes (reject pattern)
+
+To accept some scanned codes but reject others (e.g. codes that do not match an expected prefix), inspect the barcode inside `didScan`. When a code should be rejected, set the overlay brush to a transparent brush so it is not highlighted, and `return` early without acting on it. Accepted codes are processed normally.
+
+```javascript
+import { Brush } from 'scandit-capacitor-datacapture-core';
+
+window.barcodeCapture.addListener({
+  didScan: async (barcodeCapture, session) => {
+    const barcode = session.newlyRecognizedBarcode;
+    if (barcode == null) return;
+
+    // Reject anything that does not start with the expected prefix.
+    if (!barcode.data?.startsWith('ABC')) {
+      window.overlay.brush = Brush.transparent;
+      return;
+    }
+
+    // Accept: highlight with the default brush and handle the scan.
+    barcodeCapture.isEnabled = false;
+    // ... handle accepted barcode ...
+    barcodeCapture.isEnabled = true;
+  },
+});
+```
+
+## Optional — Symbology Extensions
+
+Some symbologies expose extensions that toggle symbology-specific behavior (for example, decoding the full ASCII character set for Code 39). Get the per-symbology settings with `settingsForSymbology` and call `setExtensionEnabled(extension, enabled)`. Apply the change to the `BarcodeCaptureSettings` before constructing the mode.
+
+```javascript
+const code39Settings = settings.settingsForSymbology(Symbology.Code39);
+code39Settings.setExtensionEnabled('full_ascii', true);
+```
+
+`setExtensionEnabled` is available from capacitor=6.8. Extension names are strings (e.g. `'full_ascii'`, `'relaxed_sharp_quiet_zone_check'`); see the Symbology Properties reference for the list per symbology.
+
+## Optional — Symbology Checksums
+
+Set optional checksum algorithms for a symbology via the per-symbology `checksums` property. For example, Code 39 supports the Mod 43 checksum:
+
+```javascript
+import { Checksum } from 'scandit-capacitor-datacapture-barcode';
+
+const code39Settings = settings.settingsForSymbology(Symbology.Code39);
+code39Settings.checksums = [Checksum.Mod43];
+```
+
+`Checksum` is available from capacitor=6.8. Other values include `Checksum.Mod10`, `Checksum.Mod11`, `Checksum.Mod16`, `Checksum.Mod47`, `Checksum.Mod103`. The code is accepted if any of the listed checksums matches.
+
+## Optional — Active Symbol Counts
+
+Variable-length symbologies (Code 39, Code 128, Interleaved 2 of 5, etc.) accept a range of symbol counts. Narrowing the range improves accuracy when you know the expected length. Set the per-symbology `activeSymbolCounts` to an array of integers:
+
+```javascript
+const code39Settings = settings.settingsForSymbology(Symbology.Code39);
+code39Settings.activeSymbolCounts = [7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20];
+```
+
+`activeSymbolCounts` is available from capacitor=6.8.
+
+## Optional — Color-Inverted Codes
+
+By default a symbology only decodes dark codes on a bright background. To also decode color-inverted (bright code on a dark background) codes, set the per-symbology `isColorInvertedEnabled` to `true`:
+
+```javascript
+const code39Settings = settings.settingsForSymbology(Symbology.Code39);
+code39Settings.isColorInvertedEnabled = true;
+```
+
+`isColorInvertedEnabled` is available from capacitor=6.8.
 
 ## Complete Example
 
