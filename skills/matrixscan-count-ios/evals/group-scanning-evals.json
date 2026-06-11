@@ -1,0 +1,41 @@
+{
+  "skill_name": "matrixscan-count-ios",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Enable group scanning in my MatrixScan Count app. File: IntegratedBarcodeCountViewController.swift",
+      "expected_output": "The skill sets settings.groupScanningEnabled = true on the BarcodeCountSettings before the BarcodeCount mode is constructed, which adds the Next Group / Redo controls to the built-in UI. The existing symbologies and the rest of the integration are unchanged.",
+      "files": ["fixtures/IntegratedBarcodeCountViewController.swift"],
+      "assertions": [
+        {"text": "settings.groupScanningEnabled = true is set on the BarcodeCountSettings"},
+        {"text": "It is set before BarcodeCount(context:settings:) is constructed"},
+        {"text": "It uses the real property groupScanningEnabled — not a guessed API or a view property"},
+        {"text": "The existing enabled symbologies remain enabled; the camera, mode, view, listener, uiDelegate and lifecycle are unchanged"}
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Add group scanning to my MatrixScan Count app, and label the Next Group control \"Next pallet\" and the Redo control \"Clear group\". File: IntegratedBarcodeCountViewController.swift",
+      "expected_output": "The skill enables group scanning (settings.groupScanningEnabled = true on the BarcodeCountSettings before the mode is constructed) and customizes the control labels via barcodeCountView.setNextGroupButtonText(\"Next pallet\") and barcodeCountView.setRedoButtonText(\"Clear group\"). The rest of the integration is unchanged.",
+      "files": ["fixtures/IntegratedBarcodeCountViewController.swift"],
+      "assertions": [
+        {"text": "barcodeCountView.setNextGroupButtonText(\"Next pallet\") is called"},
+        {"text": "barcodeCountView.setRedoButtonText(\"Clear group\") is called"},
+        {"text": "Group scanning is enabled via settings.groupScanningEnabled = true so the controls are visible"},
+        {"text": "It uses the real text setters (setNextGroupButtonText / setRedoButtonText) — not guessed property names; the rest of the integration is unchanged"}
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "With group scanning on in MatrixScan Count, how do I read the scanned barcodes for each group separately?",
+      "expected_output": "The skill explains that group scanning is a UI/workflow aid only — there is NO grouped-result callback. Scanned barcodes still arrive as a flat list through the normal BarcodeCountListener.barcodeCount(_:didScanIn:frameData:) (session.recognizedBarcodes), so per-group bookkeeping must be done in the app's own logic. It does not invent a group/result API.",
+      "files": [],
+      "assertions": [
+        {"text": "It states there is no grouped-result callback / API for group scanning"},
+        {"text": "It says results still come back as a flat list via the existing BarcodeCountListener (barcodeCount(_:didScanIn:frameData:) / session.recognizedBarcodes)"},
+        {"text": "It suggests tracking per-group state in the app's own logic if needed"},
+        {"text": "It does NOT invent a grouped-results API (no session.groups / didFinishGroup / per-group callback)"}
+      ]
+    }
+  ]
+}

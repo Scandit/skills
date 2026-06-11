@@ -176,6 +176,8 @@ What this code does **not** do:
   → see **`clustering.md`**.
 - It does not enable **status mode** (per-barcode status icons) or customize the toolbar — defaults are
   used. → see **`status-mode.md`** for status mode.
+- It does not enable **group scanning** (split the count into batches with Next Group / Redo controls) —
+  `groupScanningEnabled` is off. → see **`group-scanning.md`**.
 
 ## Step 1 — Data Capture Context
 
@@ -411,6 +413,26 @@ API reference for exact signatures before writing code.
 - **Status mode** (annotate each counted barcode with a status icon the user reviews): implement
   `BarcodeCountStatusProvider`, register it via `barcodeCountView.setStatusProvider(_:)`, and return a
   per-barcode status from `statusRequested(for:callback:)`. → **full guide: `status-mode.md`**.
+- **Scan preview**: shows detected barcodes in a live preview *before* the shutter is pressed — they are
+  highlighted but not counted until the user presses the shutter. Enable it by constructing the settings
+  with `BarcodeCountSettings(scanPreviewEnabled: true)` (read-only / init-only — off by default, can't be
+  toggled after construction). Two things differ from the standard integration:
+  - **Add the `ScanditARCapture` framework** to your app — scan preview is built on it and **will not work
+    without it**.
+  - **Remove the camera code** — with scan preview the SDK creates and manages the camera **internally**
+    and overrides your frame source, so the explicit camera setup (`Camera.default`,
+    `BarcodeCount.recommendedCameraSettings`, `context.setFrameSource(...)`) and the `camera?.switch(...)`
+    lifecycle calls are **not** needed; drop them. (This is the opposite of the standard flow, where you
+    must manage the camera yourself.)
+
+  It works with **list scanning**, **status mode**, and **group scanning**, but is **not** compatible with
+  **clustering**, the **not-in-list action**, or **filtering**. If the user asks to enable scan preview
+  *together with* any of those, do **not** write code that turns on both — the combination isn't supported.
+  Say so up front and ask which one they want, rather than emitting combined code with a caveat after it.
+  (The centered text guidance isn't shown in this mode.)
+- **Group scanning**: let the user split a long count into groups (e.g. one per pallet) — set
+  `settings.groupScanningEnabled = true` to add the Next Group / Redo controls. Results still come back as
+  a flat list via the listener (no grouped-result callback). → **full guide: `group-scanning.md`**.
 - **Reset the mode**: when a counting process is over and you want to start fresh, call
   `barcodeCount.reset()` to clear the scanned list and the AR overlays (e.g. from your Exit/summary
   flow). The minimal example above doesn't call it — add it where your app begins a new count.

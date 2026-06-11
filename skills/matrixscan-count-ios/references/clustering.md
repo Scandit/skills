@@ -5,6 +5,15 @@ unit, either automatically from their visual context or manually by the user. It
 integration is already in place (see `integration.md`);
 here we only add clustering on top — do not re-create the context, mode, view, camera, or lifecycle.
 
+> **Clustering vs. group scanning.** Clustering groups barcodes that physically belong together (e.g. a
+> multi-pack) into one highlight within a single count. If instead you want to split one counting session
+> into separate batches the user advances through (e.g. one per pallet), that is **group scanning** — see
+> `group-scanning.md`.
+
+> **Not compatible with scan preview.** Clustering cannot be combined with scan preview
+> (`BarcodeCountSettings(scanPreviewEnabled:)`). If the user asks for both, do **not** write code enabling
+> them together — say the combination isn't supported and ask which one they want.
+
 > If a clustering API doesn't resolve, verify the symbol against the
 > [BarcodeCount API reference](https://docs.scandit.com/data-capture-sdk/ios/barcode-capture/api.html)
 > before guessing.
