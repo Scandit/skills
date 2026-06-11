@@ -688,6 +688,72 @@ this.overlay.Viewfinder = new RectangularViewfinder(
     RectangularViewfinderLineStyle.Light);
 ```
 
+For a single aim point instead of a rectangular frame, use `AimerViewfinder` (same `Scandit.DataCapture.Core.UI.Viewfinder` namespace). It has a parameterless constructor:
+
+```csharp
+using Scandit.DataCapture.Core.UI.Viewfinder;
+
+this.overlay.Viewfinder = new AimerViewfinder();
+```
+
+Set this inside `HandlerChanged`, after `BarcodeCaptureOverlay.Create(barcodeCapture)`.
+
+### Overlay highlight brush
+
+`BarcodeCaptureOverlay.Brush` controls the fill/stroke drawn over recognized barcodes (default: `BarcodeCaptureOverlay.DefaultBrush`, Scandit blue). Set it inside `HandlerChanged`, after the overlay is created.
+
+**Hide the highlight** by assigning the static transparent brush:
+
+```csharp
+using Scandit.DataCapture.Core.UI.Style;
+
+this.overlay.Brush = Brush.TransparentBrush;
+```
+
+**Custom brush** — `Brush(fillColor, strokeColor, strokeWidth)` takes two `Scandit.DataCapture.Core.Common.Color` values and a `float` stroke width:
+
+```csharp
+using Scandit.DataCapture.Core.UI.Style;
+using SdcColor = Scandit.DataCapture.Core.Common.Color;
+
+// Build the Scandit colors from MAUI colors. Scandit.DataCapture.Core.Common.Color
+// has no public constructor in the managed slice, so go through Microsoft.Maui.Graphics:
+SdcColor green       = Microsoft.Maui.Graphics.Colors.Green.ToScanditColor();
+SdcColor greenFill   = Microsoft.Maui.Graphics.Colors.Green.WithAlpha(0.2f).ToScanditColor();
+
+this.overlay.Brush = new Brush(greenFill, green, 2f);
+```
+
+> `Scandit.DataCapture.Core.Common.Color` has no public constructor or factory in the cross-platform managed API — you construct it from a platform color. In MAUI the `Scandit.DataCapture.Core.Maui` package provides the `Microsoft.Maui.Graphics.Color` ⇄ Scandit `Color` conversion (e.g. a `ToScanditColor()` extension); use a `Microsoft.Maui.Graphics.Colors.*` value (optionally `.WithAlpha(...)` for a semi-transparent fill) rather than trying to `new` the Scandit `Color` directly. The `Brush(fill, stroke, strokeWidth)` shape and `strokeWidth` (a `float`, e.g. `2f`) are stable; only the color source is platform-specific.
+
+### Rejecting unwanted codes
+
+To act on only some scanned codes (e.g. those matching a prefix) and keep scanning past the rest, inspect `barcode.Data` at the top of the handler and **return early without disabling scanning** for non-matches — leaving `Enabled` true means the camera keeps feeding frames:
+
+```csharp
+private void OnBarcodeScanned(object? sender, BarcodeCaptureEventArgs args)
+{
+    var barcode = args.Session.NewlyRecognizedBarcode;
+    if (barcode == null) return;
+
+    // Ignore codes that don't match — do NOT disable scanning, just return.
+    if (barcode.Data is null || !barcode.Data.StartsWith("PRD-"))
+    {
+        return; // scanning continues (Enabled stays true)
+    }
+
+    // Accepted: stop scanning and process the result.
+    this.barcodeCapture.Enabled = false;
+    MainThread.BeginInvokeOnMainThread(async () =>
+    {
+        await this.DisplayAlertAsync("Scanned", barcode.Data, "OK");
+        this.barcodeCapture.Enabled = true;
+    });
+}
+```
+
+To also dim the highlight on rejected codes, pair this with `overlay.Brush = Brush.TransparentBrush` (above).
+
 ### CodeDuplicateFilter
 
 Suppress duplicate scans of the same code within a time window. The .NET API uses `TimeSpan` plus two sentinel helpers from `Scandit.DataCapture.Barcode.Data.CodeDuplicate`.
@@ -742,6 +808,52 @@ using Scandit.DataCapture.Barcode.Data;
 
 settings.EnableSymbologies(CompositeType.A | CompositeType.B);
 settings.EnabledCompositeTypes = CompositeType.A | CompositeType.B;
+```
+
+### Per-symbology settings (`SymbologySettings`)
+
+`settings.GetSymbologySettings(Symbology.X)` returns a `SymbologySettings` (from `Scandit.DataCapture.Barcode.Capture`) for fine-tuning a single symbology — **not** `SettingsForSymbology`. Mutating it changes the parent `BarcodeCaptureSettings`; enable the symbology first, then configure it. Apply with `BarcodeCapture.Create(context, settings)` (or `barcodeCapture.ApplySettingsAsync(settings)` at runtime).
+
+#### Symbology extensions (e.g. Code 39 full ASCII)
+
+Toggle an extension by name with `SetExtensionEnabled(name, enabled)` — **not** `IsExtensionEnabled` (that is the read-only getter, `bool IsExtensionEnabled(string)`):
+
+```csharp
+using Scandit.DataCapture.Barcode.Data;
+
+settings.EnableSymbology(Symbology.Code39, true);
+SymbologySettings code39Settings = settings.GetSymbologySettings(Symbology.Code39);
+code39Settings.SetExtensionEnabled("full_ascii", true);
+```
+
+#### Checksums
+
+Set the enforced checksum via the `Checksums` property (type `Checksum`) — **not** `ChecksumType` / `ChecksumType.Mod43`. Members include `Mod43`, `Mod10`, `Mod11`, `Mod47`, `Mod103`, `Mod16`, and the combined `Mod10AndMod10` / `Mod10AndMod11`:
+
+```csharp
+using Scandit.DataCapture.Barcode.Data;
+
+settings.EnableSymbology(Symbology.Code39, true);
+SymbologySettings code39Settings = settings.GetSymbologySettings(Symbology.Code39);
+code39Settings.Checksums = Checksum.Mod43;
+```
+
+#### Active symbol counts
+
+Restrict the accepted code lengths via `ActiveSymbolCounts` (an `ICollection<short>`). The element type is **`short`**, not `int` — cut misreads by accepting only known lengths:
+
+```csharp
+SymbologySettings code128Settings = settings.GetSymbologySettings(Symbology.Code128);
+code128Settings.ActiveSymbolCounts = new HashSet<short>(new short[] { 7, 8, 9, 10 });
+```
+
+#### Color-inverted codes
+
+Enable scanning of light-on-dark (color-inverted) codes via `ColorInvertedEnabled` — **not** `IsColorInvertedEnabled`:
+
+```csharp
+SymbologySettings code128Settings = settings.GetSymbologySettings(Symbology.Code128);
+code128Settings.ColorInvertedEnabled = true;
 ```
 
 ### BarcodeCaptureLicenseInfo

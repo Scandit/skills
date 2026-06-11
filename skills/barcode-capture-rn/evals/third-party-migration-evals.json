@@ -1,0 +1,39 @@
+{
+  "skill_name": "barcode-capture-rn",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I have a React Native app that scans barcodes with react-native-vision-camera's built-in code scanner (useCodeScanner). I want to replace it with Scandit BarcodeCapture. Here is my screen: VisionCameraScanner.tsx",
+      "expected_output": "The skill removes the react-native-vision-camera code scanner (useCodeScanner, the Camera codeScanner prop, vision-camera imports), adds a Scandit BarcodeCapture integration with the matching symbologies (EAN13UPCA, Code128, QR), preserves the ScannedCode dedup logic and the scanned-count summary, and shows a setup checklist.",
+      "files": [
+        "fixtures/VisionCameraScanner.tsx"
+      ],
+      "assertions": [
+        {"text": "react-native-vision-camera is NOT imported in the output code (it may appear in a before/after summary)"},
+        {"text": "useCodeScanner is NOT called in the output code (it may appear in a before/after summary)"},
+        {"text": "The vision-camera Camera component's codeScanner prop is NOT present in the output code (it may appear in a before/after summary)"},
+        {"text": "DataCaptureContext.initialize( is present (v8 API)"},
+        {"text": "DataCaptureContext.sharedInstance is used to obtain the context"},
+        {"text": "new BarcodeCapture(settings) is present"},
+        {"text": "dataCaptureContext.addMode( is called to attach the BarcodeCapture mode"},
+        {"text": "settings.enableSymbologies(...) is called"},
+        {"text": "Symbology.EAN13UPCA is enabled (mapped from 'ean-13')"},
+        {"text": "Symbology.Code128 is enabled (mapped from 'code-128')"},
+        {"text": "Symbology.QR is enabled (mapped from 'qr')"},
+        {"text": "Symbology.QRCode does NOT appear as a Symbology enum value (the correct case is Symbology.QR)"},
+        {"text": "<DataCaptureView is rendered as JSX with a context prop"},
+        {"text": "new BarcodeCaptureOverlay( is constructed and added via addOverlay"},
+        {"text": "barcodeCapture.addListener( is called with a didScan callback"},
+        {"text": "The didScan callback reads session.newlyRecognizedBarcode"},
+        {"text": "camera.switchToDesiredState(FrameSourceState.On) is called to start the camera"},
+        {"text": "The existing dedup behavior is preserved (a scanned value already in the list is not added again) (semantic)"},
+        {"text": "The scanned-count summary (Scanned: <count>) is preserved in the rendered output"},
+        {"text": "Setup checklist mentions scandit-react-native-datacapture-core and scandit-react-native-datacapture-barcode"},
+        {"text": "Setup checklist mentions npx pod-install for iOS"},
+        {"text": "Setup checklist mentions NSCameraUsageDescription in the iOS Info.plist"},
+        {"text": "A summary of changes is shown listing what vision-camera code was removed and what Scandit code was added"}
+      ],
+      "tags": ["third-party-migration"]
+    }
+  ]
+}

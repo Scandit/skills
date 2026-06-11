@@ -1,0 +1,88 @@
+{
+  "skill_name": "barcode-capture-web",
+  "evals": [
+    {
+      "id": 0,
+      "prompt": "I have a web app using ZXing (@zxing/library) for barcode scanning. I want to replace it with BarcodeCapture. Here is my scanner module: zxing-scanner.ts",
+      "expected_output": "Removes all @zxing/library APIs (BrowserMultiFormatReader, decodeFromVideoDevice, DecodeHintType, BarcodeFormat), adds a BarcodeCapture integration with matching symbologies (EAN13UPCA, Code128, QR), preserves the deduplication logic and the on-screen summary, and shows a summary of changes plus a setup checklist with the scoped npm packages.",
+      "files": [
+        "fixtures/zxing-scanner.ts"
+      ],
+      "assertions": [
+        {
+          "text": "The @zxing/library import is removed from the new code (semantic)"
+        },
+        {
+          "text": "BrowserMultiFormatReader is NOT instantiated in the new code (it may appear in a before/after summary table) (semantic)"
+        },
+        {
+          "text": "decodeFromVideoDevice is NOT called in the new code (it may appear in a before/after summary table) (semantic)"
+        },
+        {
+          "text": "BarcodeFormat is NOT used as an enum in the new scanning code (it may appear in a before/after mapping table) (semantic)"
+        },
+        {
+          "text": "DataCaptureContext.forLicenseKey( is used to initialize the context"
+        },
+        {
+          "text": "barcodeCaptureLoader() is present in moduleLoaders"
+        },
+        {
+          "text": "A license key placeholder (e.g. ENTER YOUR SCANDIT LICENSE KEY) is present"
+        },
+        {
+          "text": "BarcodeCaptureSettings is created and enableSymbologies is called"
+        },
+        {
+          "text": "Symbology.EAN13UPCA is enabled (mapped from BarcodeFormat.EAN_13)"
+        },
+        {
+          "text": "Symbology.Code128 is enabled (mapped from BarcodeFormat.CODE_128)"
+        },
+        {
+          "text": "Symbology.QR is enabled (mapped from BarcodeFormat.QR_CODE)"
+        },
+        {
+          "text": "BarcodeCapture.forContext( is present and awaited"
+        },
+        {
+          "text": "A BarcodeCaptureListener with a didScan callback replaces the ZXing decode callback"
+        },
+        {
+          "text": "session.newlyRecognizedBarcode is accessed inside didScan"
+        },
+        {
+          "text": "await barcodeCapture.setEnabled(false) is called inside didScan before processing the result"
+        },
+        {
+          "text": "DataCaptureView.forContext( is present and view.connectToElement( is called"
+        },
+        {
+          "text": "BarcodeCaptureOverlay.withBarcodeCaptureForView( is present"
+        },
+        {
+          "text": "switchToDesiredState(FrameSourceState.On) is called to start the camera"
+        },
+        {
+          "text": "The scannedItems array (or equivalent results collection) is preserved"
+        },
+        {
+          "text": "The deduplication logic (checking for an existing entry before adding) is preserved"
+        },
+        {
+          "text": "The on-screen summary rendering (renderSummary or equivalent) is preserved and still invoked after a new scan"
+        },
+        {
+          "text": "A summary of changes is shown listing what was removed (ZXing APIs) and what was added (BarcodeCapture APIs)"
+        },
+        {
+          "text": "Setup checklist mentions the @scandit/web-datacapture-core npm package"
+        },
+        {
+          "text": "Setup checklist mentions the @scandit/web-datacapture-barcode npm package"
+        }
+      ],
+      "tags": ["third-party-migration"]
+    }
+  ]
+}

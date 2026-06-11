@@ -123,6 +123,143 @@
         {"text": "The skill explains that failing to dispose the frame causes a frozen, non-responsive, or stuttering preview"},
         {"text": "The fix is applied to the existing OnBarcodeScanned and/or OnSessionUpdated callback"}
       ]
+    },
+    {
+      "id": 8,
+      "prompt": "I'm pairing my .NET iOS BarcodeCapture scanner with a tight aiming workflow. Add an aimer viewfinder (the frame-plus-dot style) to the overlay instead of the rectangular one.",
+      "expected_output": "The skill constructs an AimerViewfinder with its parameterless constructor and assigns it to overlay.Viewfinder. Existing integration code is preserved.",
+      "files": [
+        "fixtures/IntegratedViewController.cs"
+      ],
+      "assertions": [
+        {"text": "An AimerViewfinder is constructed with new AimerViewfinder()"},
+        {"text": "The viewfinder is assigned to the overlay via overlay.Viewfinder ="},
+        {"text": "The deprecated AimerViewfinder.Create() factory is NOT used (the .NET iOS binding uses the new AimerViewfinder() constructor) (semantic)"},
+        {"text": "Existing integration code (DataCaptureContext, barcodeCapture, camera, listener) is preserved"}
+      ],
+      "tags": ["aimer-viewfinder"]
+    },
+    {
+      "id": 9,
+      "prompt": "Restrict my .NET iOS BarcodeCapture scanner to only accept codes inside a horizontal band across the middle of the preview — about 90% of the width and 30% of the height. Update the settings.",
+      "expected_output": "The skill sets settings.LocationSelection to a RectangularLocationSelection.Create(SizeWithUnit) built from FloatWithUnit values in MeasureUnit.Fraction, applied before BarcodeCapture.Create (or via ApplySettingsAsync).",
+      "files": [
+        "fixtures/IntegratedViewController.cs"
+      ],
+      "assertions": [
+        {"text": "settings.LocationSelection is assigned"},
+        {"text": "RectangularLocationSelection.Create( is used to build the location selection"},
+        {"text": "A SizeWithUnit is constructed from FloatWithUnit values"},
+        {"text": "MeasureUnit.Fraction is used for the relative size units"},
+        {"text": "The location selection is set before BarcodeCapture.Create( or applied via barcodeCapture.ApplySettingsAsync"},
+        {"text": "Existing integration code (DataCaptureContext, barcodeCapture, camera, listener) is preserved"}
+      ],
+      "tags": ["location-selection"]
+    },
+    {
+      "id": 10,
+      "prompt": "In my .NET iOS BarcodeCapture app I want to reject barcodes whose data does not start with \"P\" — the highlight should not appear for them and scanning should continue. Wire up the rejection in OnBarcodeScanned.",
+      "expected_output": "The skill checks barcode.Data inside OnBarcodeScanned, and for a rejected code sets the overlay brush to a transparent brush (Brush.TransparentBrush) and returns without disabling scanning — while still calling frameData.Dispose() on that path.",
+      "files": [
+        "fixtures/IntegratedViewController.cs"
+      ],
+      "assertions": [
+        {"text": "OnBarcodeScanned reads barcode.Data and tests whether it starts with the expected prefix"},
+        {"text": "For a rejected barcode the overlay brush is set to a transparent brush (overlay.Brush = Brush.TransparentBrush or a Brush with transparent colors)"},
+        {"text": "On the rejection path the code returns without setting barcodeCapture.Enabled = false (scanning continues)"},
+        {"text": "frameData.Dispose() is called on the rejection path before returning"},
+        {"text": "Existing integration code (DataCaptureContext, barcodeCapture, camera, listener) is preserved"}
+      ],
+      "tags": ["reject-pattern"]
+    },
+    {
+      "id": 11,
+      "prompt": "Make the recognized-barcode highlight in my .NET iOS BarcodeCapture preview a semi-transparent green fill with a solid green outline. Update the overlay brush.",
+      "expected_output": "The skill assigns overlay.Brush to a new Brush(fillColor, strokeColor, strokeWidth) using UIColor values, where Brush is Scandit.DataCapture.Core.UI.Style.Brush.",
+      "files": [
+        "fixtures/IntegratedViewController.cs"
+      ],
+      "assertions": [
+        {"text": "overlay.Brush is assigned"},
+        {"text": "A new Brush(...) is constructed with a fill color, stroke color, and stroke width"},
+        {"text": "The Brush type comes from Scandit.DataCapture.Core.UI.Style"},
+        {"text": "Existing integration code (DataCaptureContext, barcodeCapture, camera, listener) is preserved"}
+      ],
+      "tags": ["overlay-brush"]
+    },
+    {
+      "id": 12,
+      "prompt": "My .NET iOS BarcodeCapture app scans Code 39 barcodes that contain lowercase letters and symbols. Enable Full ASCII decoding for Code 39.",
+      "expected_output": "The skill obtains the Code39 SymbologySettings via settings.GetSymbologySettings(Symbology.Code39) and calls SetExtensionEnabled(\"full_ascii\", true) on it.",
+      "files": [
+        "fixtures/IntegratedViewController.cs"
+      ],
+      "assertions": [
+        {"text": "settings.GetSymbologySettings(Symbology.Code39) is used to get the per-symbology settings"},
+        {"text": "SetExtensionEnabled(\"full_ascii\", true) is called on the Code39 symbology settings"},
+        {"text": "Symbology.Code39 is enabled"},
+        {"text": "Existing integration code (DataCaptureContext, barcodeCapture, camera, listener) is preserved"}
+      ],
+      "tags": ["symbology-extensions"]
+    },
+    {
+      "id": 13,
+      "prompt": "Enable the Mod 43 checksum for Code 39 in my .NET iOS BarcodeCapture settings so only codes with a valid check digit are accepted.",
+      "expected_output": "The skill gets the Code39 SymbologySettings via settings.GetSymbologySettings(Symbology.Code39) and sets its Checksums property to Checksum.Mod43.",
+      "files": [
+        "fixtures/IntegratedViewController.cs"
+      ],
+      "assertions": [
+        {"text": "settings.GetSymbologySettings(Symbology.Code39) is used to get the per-symbology settings"},
+        {"text": "The Checksums property is set to Checksum.Mod43"},
+        {"text": "Symbology.Code39 is enabled"},
+        {"text": "Existing integration code (DataCaptureContext, barcodeCapture, camera, listener) is preserved"}
+      ],
+      "tags": ["symbology-checksums"]
+    },
+    {
+      "id": 14,
+      "prompt": "My .NET iOS BarcodeCapture app needs to read Code 128 barcodes that are between 6 and 8 symbols long, which are shorter than the default. Configure the active symbol counts.",
+      "expected_output": "The skill gets the Code128 SymbologySettings via settings.GetSymbologySettings(Symbology.Code128) and assigns its ActiveSymbolCounts property to a HashSet<short> containing 6, 7, and 8.",
+      "files": [
+        "fixtures/IntegratedViewController.cs"
+      ],
+      "assertions": [
+        {"text": "settings.GetSymbologySettings(Symbology.Code128) is used to get the per-symbology settings"},
+        {"text": "The ActiveSymbolCounts property is assigned a set of short values (HashSet<short>) covering 6, 7, and 8"},
+        {"text": "Symbology.Code128 is enabled"},
+        {"text": "Existing integration code (DataCaptureContext, barcodeCapture, camera, listener) is preserved"}
+      ],
+      "tags": ["active-symbol-counts"]
+    },
+    {
+      "id": 15,
+      "prompt": "Some of the Data Matrix codes in my .NET iOS BarcodeCapture app are printed light-on-dark (color inverted). Enable decoding of color-inverted Data Matrix codes.",
+      "expected_output": "The skill gets the DataMatrix SymbologySettings via settings.GetSymbologySettings(Symbology.DataMatrix) and sets its ColorInvertedEnabled property to true.",
+      "files": [
+        "fixtures/IntegratedViewController.cs"
+      ],
+      "assertions": [
+        {"text": "settings.GetSymbologySettings(Symbology.DataMatrix) is used to get the per-symbology settings"},
+        {"text": "The ColorInvertedEnabled property is set to true (the .NET managed property name is ColorInvertedEnabled, not IsColorInvertedEnabled)"},
+        {"text": "Symbology.DataMatrix is enabled"},
+        {"text": "Existing integration code (DataCaptureContext, barcodeCapture, camera, listener) is preserved"}
+      ],
+      "tags": ["color-inverted"]
+    },
+    {
+      "id": 16,
+      "prompt": "My .NET iOS BarcodeCapture app needs to read GS1 Composite codes (CC-A and CC-B). Configure BarcodeCapture for composite codes.",
+      "expected_output": "The skill enables the composite-type symbologies via settings.EnableSymbologies(CompositeType.A | CompositeType.B) and sets settings.EnabledCompositeTypes to CompositeType.A | CompositeType.B, in addition to the underlying linear symbologies.",
+      "files": [
+        "fixtures/IntegratedViewController.cs"
+      ],
+      "assertions": [
+        {"text": "settings.EnableSymbologies(CompositeType.A | CompositeType.B) is called to enable the symbologies required by the composite types"},
+        {"text": "settings.EnabledCompositeTypes is set to CompositeType.A | CompositeType.B"},
+        {"text": "Existing integration code (DataCaptureContext, barcodeCapture, camera, listener) is preserved"}
+      ],
+      "tags": ["composite-codes"]
     }
   ]
 }

@@ -1,0 +1,42 @@
+{
+  "skill_name": "barcode-capture-capacitor",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I have a Capacitor app using @capacitor-mlkit/barcode-scanning (Google ML Kit) for barcode scanning. I want to replace it with Scandit BarcodeCapture. Here is my scanner: MlkitScanner.ts",
+      "expected_output": "Removes the @capacitor-mlkit/barcode-scanning APIs (BarcodeScanner.scan / startScan / addListener, BarcodeFormat) and adds a Scandit BarcodeCapture integration with the equivalent symbologies, preserving the ScannedProduct shape, the deduplication logic, and the summary rendering. Shows a setup checklist and a summary of changes.",
+      "files": [
+        "fixtures/MlkitScanner.ts"
+      ],
+      "assertions": [
+        {"text": "@capacitor-mlkit/barcode-scanning is NOT imported in the output code (it may appear in a before/after summary table)"},
+        {"text": "BarcodeScanner.scan( is NOT called in the new code (it may appear in a before/after summary table)"},
+        {"text": "BarcodeScanner.startScan( is NOT called in the new code (it may appear in a before/after summary table)"},
+        {"text": "BarcodeFormat does NOT appear as an enum used in the new code (it may appear in a before/after summary table)"},
+        {"text": "await ScanditCaptureCorePlugin.initializePlugins() is present"},
+        {"text": "DataCaptureContext.initialize( is present (v8 API)"},
+        {"text": "DataCaptureContext.forLicenseKey( is NOT present"},
+        {"text": "new BarcodeCapture(settings) is present (not BarcodeCapture.forContext)"},
+        {"text": "context.setMode( is called to register the mode"},
+        {"text": "Symbology.EAN13UPCA is enabled (maps the ML Kit Ean13 and UpcA formats)"},
+        {"text": "Symbology.EAN8 is enabled (maps the ML Kit Ean8 format)"},
+        {"text": "Symbology.Code128 is enabled (maps the ML Kit Code128 format)"},
+        {"text": "Symbology.QR is enabled (maps the ML Kit QrCode format)"},
+        {"text": "DataCaptureView.forContext( is present"},
+        {"text": "view.connectToElement( is called"},
+        {"text": "new BarcodeCaptureOverlay( is present"},
+        {"text": "view.addOverlay( is called"},
+        {"text": "barcodeCapture.addListener( registers a listener object with a didScan callback"},
+        {"text": "session.newlyRecognizedBarcode is read inside didScan (semantic)"},
+        {"text": "The ScannedProduct shape (value/format fields) is preserved in the output"},
+        {"text": "The deduplication logic (checking the code does not already exist before adding) is preserved (semantic)"},
+        {"text": "The renderSummary function and count-label update are preserved"},
+        {"text": "Setup checklist mentions scandit-capacitor-datacapture-core and scandit-capacitor-datacapture-barcode packages"},
+        {"text": "Setup checklist mentions npx cap sync"},
+        {"text": "Setup checklist mentions iOS Info.plist NSCameraUsageDescription"},
+        {"text": "A summary of changes is shown describing what ML Kit APIs were removed and what Scandit APIs replaced them"}
+      ],
+      "tags": ["third-party-migration"]
+    }
+  ]
+}

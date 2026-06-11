@@ -69,6 +69,7 @@ Choose which barcode symbologies to scan. By default, all symbologies are disabl
 
 ```dart
 import 'package:scandit_flutter_datacapture_barcode/scandit_flutter_datacapture_barcode.dart';
+import 'package:scandit_flutter_datacapture_barcode/scandit_flutter_datacapture_barcode_capture.dart';
 
 var settings = BarcodeCaptureSettings();
 
@@ -112,12 +113,12 @@ settings.codeDuplicateFilter = const Duration(milliseconds: 500);
 
 ## Step 3 — Camera and frame source
 
-`Camera.defaultCamera` returns the recommended back camera. Apply `BarcodeCapture.recommendedCameraSettings` for the best preset, then attach the camera as the context's frame source.
+`Camera.defaultCamera` returns the recommended back camera. Apply `BarcodeCapture.createRecommendedCameraSettings()` for the best preset, then attach the camera as the context's frame source.
 
 ```dart
 final camera = Camera.defaultCamera;
 if (camera != null) {
-  await camera.applySettings(BarcodeCapture.recommendedCameraSettings);
+  await camera.applySettings(BarcodeCapture.createRecommendedCameraSettings());
   await dataCaptureContext.setFrameSource(camera);
 }
 ```
@@ -146,21 +147,17 @@ dataCaptureContext.addMode(barcodeCapture);
 | `feedback` | `BarcodeCaptureFeedback` — sound / vibration on success. |
 | `applySettings(settings)` | Async update of settings. |
 | `addListener(listener)` / `removeListener(listener)` | Register or remove a `BarcodeCaptureListener`. |
-| `BarcodeCapture.recommendedCameraSettings` | Static — returns the recommended `CameraSettings` for BarcodeCapture. |
+| `BarcodeCapture.createRecommendedCameraSettings()` | Static — returns the recommended `CameraSettings` for BarcodeCapture. |
 
 ## Step 5 — DataCaptureView and BarcodeCaptureOverlay
 
-`DataCaptureView.forContext(context)` returns the camera preview as a Flutter `Widget`. The `BarcodeCaptureOverlay` draws the highlight rectangles on top.
+`DataCaptureView.forContext(context)` returns the camera preview as a Flutter `Widget`. The `BarcodeCaptureOverlay` draws the highlight rectangles on top. Construct it with `BarcodeCaptureOverlay(barcodeCapture)`, then attach it to the view with `captureView.addOverlay(overlay)`.
 
 ```dart
 final captureView = DataCaptureView.forContext(dataCaptureContext);
 
-final overlay = BarcodeCaptureOverlay.withBarcodeCaptureForView(
-  barcodeCapture,
-  captureView,
-);
-// captureView already holds the overlay because we passed it in.
-// To attach an overlay later: captureView.addOverlay(overlay);
+final overlay = BarcodeCaptureOverlay(barcodeCapture);
+captureView.addOverlay(overlay);
 ```
 
 Add the view to your widget tree as you would any other widget — typically as the body of a `Scaffold`.
@@ -176,8 +173,7 @@ return Scaffold(
 
 | Member | Type / Description |
 |--------|-------------|
-| `BarcodeCaptureOverlay.withBarcodeCaptureForView(mode, view)` | Factory that constructs the overlay and adds it to the view. |
-| `BarcodeCaptureOverlay(mode)` | Constructor (v7.6+); add to a view manually with `view.addOverlay(overlay)`. |
+| `BarcodeCaptureOverlay(mode)` | Constructor — create the overlay, then add it to the view with `view.addOverlay(overlay)`. This is the v8 form. |
 | `brush` | `Brush` — fill / stroke for recognized-barcode highlights. |
 | `viewfinder` | `Viewfinder?` — optional viewfinder drawn on the preview. |
 | `shouldShowScanAreaGuides` | `bool` — debug aid, do not enable in production. |
@@ -189,6 +185,7 @@ Implement `BarcodeCaptureListener` on the BLoC and forward results through a str
 ```dart
 import 'dart:async';
 import 'package:scandit_flutter_datacapture_barcode/scandit_flutter_datacapture_barcode.dart';
+import 'package:scandit_flutter_datacapture_barcode/scandit_flutter_datacapture_barcode_capture.dart';
 import 'package:scandit_flutter_datacapture_core/scandit_flutter_datacapture_core.dart';
 
 class ScannerBloc implements BarcodeCaptureListener {
@@ -196,6 +193,7 @@ class ScannerBloc implements BarcodeCaptureListener {
   late final BarcodeCapture barcodeCapture;
   late final Camera? camera;
   late final DataCaptureView captureView;
+  late final BarcodeCaptureOverlay overlay;
 
   final StreamController<Barcode> _scans = StreamController.broadcast();
   Stream<Barcode> get scannedBarcodes => _scans.stream;
@@ -211,11 +209,12 @@ class ScannerBloc implements BarcodeCaptureListener {
     dataCaptureContext.addMode(barcodeCapture);
 
     camera = Camera.defaultCamera;
-    camera?.applySettings(BarcodeCapture.recommendedCameraSettings);
+    camera?.applySettings(BarcodeCapture.createRecommendedCameraSettings());
     if (camera != null) dataCaptureContext.setFrameSource(camera!);
 
     captureView = DataCaptureView.forContext(dataCaptureContext);
-    BarcodeCaptureOverlay.withBarcodeCaptureForView(barcodeCapture, captureView);
+    overlay = BarcodeCaptureOverlay(barcodeCapture);
+    captureView.addOverlay(overlay);
   }
 
   @override
@@ -353,6 +352,93 @@ overlay.viewfinder = RectangularViewfinder.withStyleAndLineStyle(
 );
 ```
 
+The square `RectangularViewfinder` is one option. Two other built-in viewfinders are available:
+
+```dart
+// A camera-aimer dot + frame, good for tap-to-scan / aimed single scanning.
+overlay.viewfinder = AimerViewfinder();
+
+// A horizontal laser line.
+overlay.viewfinder = LaserlineViewfinder();
+```
+
+Both come from `scandit_flutter_datacapture_core`. `AimerViewfinder` exposes `frameColor` and `dotColor`; `LaserlineViewfinder` exposes `width`, `enabledColor`, and `disabledColor`.
+
+### Overlay brush (highlight appearance)
+
+`BarcodeCaptureOverlay.brush` controls the fill / stroke drawn over a recognized barcode. The `Brush` constructor takes `(fillColor, strokeColor, strokeWidth)` using Flutter `Color`s:
+
+```dart
+overlay.brush = Brush(Colors.green.withValues(alpha: 0.2), Colors.green, 2);
+```
+
+To hide the highlight entirely, assign the fully-transparent brush:
+
+```dart
+overlay.brush = Brush.transparent;
+```
+
+> The overlay must be held as a field (not a throwaway local) to mutate `brush` or `viewfinder` after construction. Promote it from the constructor: `overlay = BarcodeCaptureOverlay(barcodeCapture);` followed by `captureView.addOverlay(overlay);`.
+
+### Rejecting unwanted codes
+
+BarcodeCapture has a single overlay `brush`; there is no per-barcode brush callback (that is a MatrixScan feature). To "reject" codes that don't match your business rules, inspect `barcode.data` inside `didScan`, and for a non-matching code set the overlay brush transparent and return early without recording the scan:
+
+```dart
+@override
+Future<void> didScan(
+  BarcodeCapture barcodeCapture,
+  BarcodeCaptureSession session,
+  Future<FrameData?> Function() getFrameData,
+) async {
+  final barcode = session.newlyRecognizedBarcode;
+  if (barcode == null) return;
+
+  // Reject codes that don't start with the expected prefix.
+  if (barcode.data == null || !barcode.data!.startsWith('PROD-')) {
+    overlay.brush = Brush.transparent;
+    return;
+  }
+
+  overlay.brush = Brush(Colors.green.withValues(alpha: 0.2), Colors.green, 2);
+  // ...accept and process the barcode...
+}
+```
+
+### Per-symbology settings
+
+`settings.settingsForSymbology(symbology)` returns a `SymbologySettings` object whose mutations apply when you construct (or `applySettings`) the mode.
+
+**Extensions** — symbology-specific features (e.g. Code 39 Full ASCII). Use the named `enabled:` parameter:
+
+```dart
+var code39 = settings.settingsForSymbology(Symbology.code39);
+code39.setExtensionEnabled('full_ascii', enabled: true);
+```
+
+**Checksums** — set the optional checksum algorithm(s). `checksums` is a `Set<Checksum>`:
+
+```dart
+var code39 = settings.settingsForSymbology(Symbology.code39);
+code39.checksums = {Checksum.mod43};
+```
+
+Available values: `Checksum.mod10`, `Checksum.mod11`, `Checksum.mod16`, `Checksum.mod43`, `Checksum.mod47`. Only a subset is valid per symbology.
+
+**Active symbol counts** — the allowed length range for variable-length 1D symbologies. `activeSymbolCounts` is a `Set<int>`:
+
+```dart
+var code39 = settings.settingsForSymbology(Symbology.code39);
+code39.activeSymbolCounts = {7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20};
+```
+
+**Color-inverted codes** — by default only dark-on-light codes are read. To also read bright-on-dark (inverted) codes for a symbology:
+
+```dart
+var code128 = settings.settingsForSymbology(Symbology.code128);
+code128.isColorInvertedEnabled = true;
+```
+
 ### LocationSelection
 
 Restrict scanning to a sub-area of the preview by setting `BarcodeCaptureSettings.locationSelection`:
@@ -400,7 +486,7 @@ settings.enabledCompositeTypes = {CompositeType.a, CompositeType.b};
 5. **Disable inside `didScan`** — set `barcodeCapture.isEnabled = false` before doing any non-trivial work in the callback to avoid duplicate / racing scans.
 6. **Lazy frame data** — `getFrameData` is `Future<FrameData?> Function()`; only invoke it if needed.
 7. **Camera lifecycle** — drive `camera.switchToDesiredState(FrameSourceState.on/off)` from `WidgetsBindingObserver.didChangeAppLifecycleState` and from `dispose()`.
-8. **Overlay wiring is explicit** — `BarcodeCaptureOverlay.withBarcodeCaptureForView(barcodeCapture, view)` adds the overlay to the view in one step. There is no implicit overlay.
+8. **Overlay wiring is explicit** — construct `BarcodeCaptureOverlay(barcodeCapture)` and attach it with `captureView.addOverlay(overlay)`. There is no implicit overlay.
 9. **Camera permission** — iOS needs `NSCameraUsageDescription`; Android needs the runtime permission via `permission_handler`.
 10. **Symbologies** — enable only what's needed; each extra symbology adds processing time. Variable-length 1D symbologies (Code39, Code128, ITF) may need `activeSymbolCounts` adjusted.
 11. **Settings order** — configure `BarcodeCaptureSettings` before constructing `BarcodeCapture(settings)`. To change settings at runtime, use `barcodeCapture.applySettings(newSettings)`.

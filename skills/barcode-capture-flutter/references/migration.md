@@ -83,7 +83,7 @@ If the project uses `BarcodeTracking` (MatrixScan) alongside BarcodeCapture, ren
 
 ### New v7 APIs (optional, no action required unless the user wants them)
 
-- `BarcodeCapture.recommendedCameraSettings` — static helper returning the recommended `CameraSettings` for BarcodeCapture.
+- `BarcodeCapture.createRecommendedCameraSettings()` — static helper returning the recommended `CameraSettings` for BarcodeCapture.
 - `BarcodeCapture(settings)` constructor — replaces the `BarcodeCapture.forContext(...)` factory.
 - `BarcodeCaptureOverlay(barcodeCapture)` constructor — pair with `view.addOverlay(overlay)` for explicit wiring.
 
@@ -108,19 +108,30 @@ dataCaptureContext.addMode(barcodeCapture);
 
 If the project only uses one mode at a time, `dataCaptureContext.setMode(barcodeCapture)` is also acceptable — it removes any other modes already attached and adds the new one in a single call.
 
-### Overlay constructor
+### Overlay constructor: `BarcodeCaptureOverlay.withBarcodeCaptureForView(mode, view)` removed
 
-`BarcodeCaptureOverlay.withBarcodeCaptureForView(mode, view)` continues to work in v8. The standalone `BarcodeCaptureOverlay(mode)` constructor (added in v7.6) requires manually attaching to the view via `view.addOverlay(overlay)`.
+The `BarcodeCaptureOverlay.withBarcodeCaptureForView(mode, view)` factory was removed in v8. Construct the overlay with the standalone `BarcodeCaptureOverlay(mode)` constructor and attach it to the view explicitly:
+
+**v7 (removed in v8):**
+```dart
+final overlay = BarcodeCaptureOverlay.withBarcodeCaptureForView(barcodeCapture, captureView);
+```
+
+**v8:**
+```dart
+final overlay = BarcodeCaptureOverlay(barcodeCapture);
+captureView.addOverlay(overlay);
+```
 
 ### Camera resolution: `VideoResolution.auto` deprecated
 
 `VideoResolution.auto` is deprecated. If the project uses it, switch to the recommended preset:
 
 ```dart
-await camera.applySettings(BarcodeCapture.recommendedCameraSettings);
+await camera.applySettings(BarcodeCapture.createRecommendedCameraSettings());
 ```
 
-If the project already uses `BarcodeCapture.recommendedCameraSettings`, no action is needed.
+If the project already uses `BarcodeCapture.createRecommendedCameraSettings()`, no action is needed.
 
 ### `DataCaptureContext.forLicenseKey` — still valid
 

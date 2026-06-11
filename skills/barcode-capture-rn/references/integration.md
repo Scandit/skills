@@ -80,6 +80,36 @@ const code39Settings = settings.settingsForSymbology(Symbology.Code39);
 code39Settings.activeSymbolCounts = [7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20];
 ```
 
+### Per-symbology settings (`settingsForSymbology`)
+
+`settings.settingsForSymbology(Symbology.X)` returns the mutable `SymbologySettings` for one symbology. Mutating it updates the parent `BarcodeCaptureSettings`. Apply the result with `barcodeCapture.applySettings(settings)` (or pass `settings` into the constructor before the mode is added). Common per-symbology configuration:
+
+```typescript
+const code39Settings = settings.settingsForSymbology(Symbology.Code39);
+
+// Extensions — symbology-specific feature flags (string keys).
+code39Settings.setExtensionEnabled('full_ascii', true);
+
+// Checksums — array of Checksum values. The code is accepted if any matches.
+code39Settings.checksums = [Checksum.Mod43];
+
+// Active symbol counts — allowed code lengths (in symbols) for variable-length codes.
+code39Settings.activeSymbolCounts = [7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20];
+
+// Color-inverted codes — read bright codes on a dark background.
+code39Settings.isColorInvertedEnabled = true;
+```
+
+| Member | Type | Description |
+|--------|------|-------------|
+| `setExtensionEnabled(extension, enabled)` | method | Enable/disable a symbology extension by string key (e.g. `'full_ascii'`, `'remove_leading_zero'`). |
+| `isExtensionEnabled(extension)` | method | Whether an extension is enabled. |
+| `checksums` | `Checksum[]` | Optional checksums (e.g. `Checksum.Mod43`). Imported from `scandit-react-native-datacapture-barcode`. |
+| `activeSymbolCounts` | `number[]` | Allowed lengths in symbols for variable-length symbologies. |
+| `isColorInvertedEnabled` | `boolean` | Enable decoding of color-inverted (bright-on-dark) codes for this symbology. |
+
+`Checksum` is imported from `scandit-react-native-datacapture-barcode`.
+
 ### BarcodeCaptureSettings Properties
 
 | Property | Type | Description |
@@ -324,11 +354,61 @@ overlay.viewfinder = new RectangularViewfinder(
   RectangularViewfinderLineStyle.Light,
 );
 
-// Or a laserline viewfinder
+// Or a laserline viewfinder (no constructor arguments)
 // overlay.viewfinder = new LaserlineViewfinder();
+
+// Or an aimer viewfinder (a crosshair-style dot + frame, good for single-code aiming)
+// const aimer = new AimerViewfinder();
+// aimer.frameColor = Color.fromHex('#FFFFFF');
+// aimer.dotColor = Color.fromHex('#FF0000');
+// overlay.viewfinder = aimer;
 ```
 
+`AimerViewfinder` is imported from `scandit-react-native-datacapture-core`. It has no constructor arguments; customize it through its `frameColor` and `dotColor` properties (both `Color`). `LaserlineViewfinder` also takes no constructor arguments; customize via its `width` (`NumberWithUnit`), `enabledColor`, and `disabledColor` properties.
+
 To restrict where barcodes are accepted (not just where the viewfinder is drawn), see Step 10.
+
+## Step 9b — Overlay brush (highlight color)
+
+The `brush` property of `BarcodeCaptureOverlay` controls how recognized barcodes are highlighted. Construct a `Brush(fillColor, strokeColor, strokeWidth)`:
+
+```typescript
+import { Brush, Color } from 'scandit-react-native-datacapture-core';
+
+overlay.brush = new Brush(
+  Color.fromRGBA(0, 255, 0, 0.2), // fill
+  Color.fromHex('#00FF00'),       // stroke
+  2,                              // stroke width
+);
+```
+
+`Brush`, `Color` are imported from `scandit-react-native-datacapture-core`. `Brush.transparent` is a static that returns a fully transparent brush (no fill, no stroke) — useful to hide a highlight (see "Rejecting barcodes" below).
+
+## Step 9c — Rejecting barcodes (visually mark unwanted codes)
+
+To reject a scanned barcode — accept only codes that match a rule — handle the rejection inside `didScan`. The pattern: in `didScan`, inspect `barcode.data`; if it does not match your rule, set the overlay's `brush` to `Brush.transparent` so the rejected code is not highlighted, and `return` early without processing it. Acceptable codes get the normal brush.
+
+```typescript
+const listener = {
+  didScan: async (mode, session) => {
+    const barcode = session.newlyRecognizedBarcode;
+    if (barcode == null) return;
+
+    // Reject anything that is not an internal SKU.
+    if (!barcode.data?.startsWith('SKU-')) {
+      overlay.brush = Brush.transparent;
+      return; // do not process the rejected code
+    }
+
+    overlay.brush = new Brush(
+      Color.fromRGBA(0, 255, 0, 0.2),
+      Color.fromHex('#00FF00'),
+      2,
+    );
+    // ... process the accepted barcode
+  },
+};
+```
 
 ## Step 10 — Location selection (optional)
 

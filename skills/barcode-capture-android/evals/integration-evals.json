@@ -119,6 +119,153 @@
         {"text": "onPause (or onDestroy) calls camera.switchToDesiredState(FrameSourceState.OFF)"},
         {"text": "Existing integration code (DataCaptureContext, barcodeCapture, camera, listener) is preserved"}
       ]
+    },
+    {
+      "id": 8,
+      "prompt": "Add an aimer-style viewfinder (a small crosshair with the Scandit logo) to my Android BarcodeCapture preview so users know where to point the camera.",
+      "expected_output": "The skill constructs an AimerViewfinder() and assigns it to the BarcodeCaptureOverlay's viewfinder property (overlay.viewfinder). Existing integration is preserved.",
+      "files": [
+        "fixtures/IntegratedActivity.kt"
+      ],
+      "assertions": [
+        {"text": "AimerViewfinder() is constructed with no arguments"},
+        {"text": "The viewfinder is assigned to the overlay via overlay.viewfinder ="},
+        {"text": "Existing integration code (DataCaptureContext, barcodeCapture, camera, listener) is preserved"}
+      ],
+      "tags": ["aimer-viewfinder"]
+    },
+    {
+      "id": 9,
+      "prompt": "I want a horizontal laser-line viewfinder on my Android BarcodeCapture preview instead of a rectangle. Add it.",
+      "expected_output": "The skill constructs a LaserlineViewfinder() and assigns it to the BarcodeCaptureOverlay's viewfinder property (overlay.viewfinder). Existing integration is preserved.",
+      "files": [
+        "fixtures/IntegratedActivity.kt"
+      ],
+      "assertions": [
+        {"text": "LaserlineViewfinder() is constructed with no arguments"},
+        {"text": "The viewfinder is assigned to the overlay via overlay.viewfinder ="},
+        {"text": "Existing integration code (DataCaptureContext, barcodeCapture, camera, listener) is preserved"}
+      ],
+      "tags": ["laserline-viewfinder"]
+    },
+    {
+      "id": 10,
+      "prompt": "Restrict barcode scanning to a rectangular region in the center of the preview on my Android BarcodeCapture app — about 90% of the view width and 30% of the height — so codes outside that band are ignored.",
+      "expected_output": "The skill sets settings.locationSelection to a RectangularLocationSelection created via the withSize factory, using a SizeWithUnit built from DoubleWithUnit values with MeasureUnit.FRACTION. The location selection is set on BarcodeCaptureSettings before the mode is created (or applied via applySettings). Existing integration is preserved.",
+      "files": [
+        "fixtures/IntegratedActivity.kt"
+      ],
+      "assertions": [
+        {"text": "settings.locationSelection is assigned a location selection instance"},
+        {"text": "RectangularLocationSelection.withSize( is used (not a direct constructor)"},
+        {"text": "SizeWithUnit is constructed for the rectangle dimensions"},
+        {"text": "DoubleWithUnit is used with MeasureUnit.FRACTION for the fractional dimensions"},
+        {"text": "Existing integration code (DataCaptureContext, barcodeCapture, camera, listener) is preserved"}
+      ],
+      "tags": ["location-selection"]
+    },
+    {
+      "id": 11,
+      "prompt": "Reject scans that don't start with the prefix \"ACME-\" in my Android BarcodeCapture app. When a non-matching code is scanned, don't act on it and keep scanning; only accept codes with that prefix.",
+      "expected_output": "Inside onBarcodeScanned the skill reads barcode.data, checks barcode.data.startsWith(\"ACME-\"), and returns early (continuing to scan) for non-matching codes while only handling and disabling scanning for accepted codes. There is no built-in reject API; rejection is done in the listener.",
+      "files": [
+        "fixtures/IntegratedActivity.kt"
+      ],
+      "assertions": [
+        {"text": "onBarcodeScanned reads the scanned value from session.newlyRecognizedBarcode"},
+        {"text": "barcode.data is compared with startsWith(\"ACME-\") to decide acceptance"},
+        {"text": "The listener returns early without acting on a rejected code so scanning continues"},
+        {"text": "barcodeCapture.isEnabled = false is set only for an accepted code"},
+        {"text": "Existing integration code (DataCaptureContext, barcodeCapture, camera, listener) is preserved"}
+      ],
+      "tags": ["reject-pattern"]
+    },
+    {
+      "id": 12,
+      "prompt": "Change the highlight color of recognized barcodes in my Android BarcodeCapture app to a semi-transparent green fill with a solid green outline.",
+      "expected_output": "The skill assigns a Brush to overlay.brush built with Brush(fillColor, strokeColor, strokeWidth) using android.graphics.Color values (e.g. Color.argb for the fill and Color.rgb for the stroke). The brush property is assigned, not set via a method. Existing integration is preserved.",
+      "files": [
+        "fixtures/IntegratedActivity.kt"
+      ],
+      "assertions": [
+        {"text": "A Brush is constructed with Brush(fillColor, strokeColor, strokeWidth)"},
+        {"text": "android.graphics.Color values are used for the fill and stroke colors"},
+        {"text": "The brush is assigned to the overlay via overlay.brush ="},
+        {"text": "Existing integration code (DataCaptureContext, barcodeCapture, camera, listener) is preserved"}
+      ],
+      "tags": ["overlay-brush"]
+    },
+    {
+      "id": 13,
+      "prompt": "Enable Code 39 full ASCII decoding in my Android BarcodeCapture app so lowercase and control characters encoded in Code 39 are read.",
+      "expected_output": "The skill gets the Code 39 SymbologySettings via settings.getSymbologySettings(Symbology.CODE39) and calls setExtensionEnabled(\"full_ascii\", true) on it. Existing integration is preserved.",
+      "files": [
+        "fixtures/IntegratedActivity.kt"
+      ],
+      "assertions": [
+        {"text": "settings.getSymbologySettings(Symbology.CODE39) is used to get the per-symbology settings"},
+        {"text": "setExtensionEnabled(\"full_ascii\", true) is called on the Code 39 SymbologySettings"},
+        {"text": "Existing integration code (DataCaptureContext, barcodeCapture, camera, listener) is preserved"}
+      ],
+      "tags": ["symbology-extensions"]
+    },
+    {
+      "id": 14,
+      "prompt": "My Code 39 barcodes use a mod 43 checksum. Configure the Android BarcodeCapture settings so Code 39 codes are validated with the mod 43 checksum.",
+      "expected_output": "The skill gets the Code 39 SymbologySettings via settings.getSymbologySettings(Symbology.CODE39) and sets its checksums property to a set containing Checksum.MOD_43 (e.g. EnumSet.of(Checksum.MOD_43)). Existing integration is preserved.",
+      "files": [
+        "fixtures/IntegratedActivity.kt"
+      ],
+      "assertions": [
+        {"text": "settings.getSymbologySettings(Symbology.CODE39) is used to get the per-symbology settings"},
+        {"text": "The checksums property is assigned a set containing Checksum.MOD_43"},
+        {"text": "Existing integration code (DataCaptureContext, barcodeCapture, camera, listener) is preserved"}
+      ],
+      "tags": ["symbology-checksums"]
+    },
+    {
+      "id": 15,
+      "prompt": "I need to scan Code 128 barcodes that are longer than the default supported length in my Android BarcodeCapture app. Widen the active symbol counts for Code 128.",
+      "expected_output": "The skill gets the Code 128 SymbologySettings via settings.getSymbologySettings(Symbology.CODE128) and sets its activeSymbolCounts property to a Set<Int> covering the needed range (e.g. setOf(6, 7, ..., 40)). Existing integration is preserved.",
+      "files": [
+        "fixtures/IntegratedActivity.kt"
+      ],
+      "assertions": [
+        {"text": "settings.getSymbologySettings(Symbology.CODE128) is used to get the per-symbology settings"},
+        {"text": "The activeSymbolCounts property is assigned a Set of Int values"},
+        {"text": "Existing integration code (DataCaptureContext, barcodeCapture, camera, listener) is preserved"}
+      ],
+      "tags": ["active-symbol-counts"]
+    },
+    {
+      "id": 16,
+      "prompt": "Some of my Code 128 labels are printed light-on-dark (color inverted). Enable color-inverted decoding for Code 128 in my Android BarcodeCapture app.",
+      "expected_output": "The skill gets the Code 128 SymbologySettings via settings.getSymbologySettings(Symbology.CODE128) and sets isColorInvertedEnabled = true on it, keeping the symbology enabled. Existing integration is preserved.",
+      "files": [
+        "fixtures/IntegratedActivity.kt"
+      ],
+      "assertions": [
+        {"text": "settings.getSymbologySettings(Symbology.CODE128) is used to get the per-symbology settings"},
+        {"text": "isColorInvertedEnabled = true is set on the Code 128 SymbologySettings"},
+        {"text": "Symbology.CODE128 remains enabled"},
+        {"text": "Existing integration code (DataCaptureContext, barcodeCapture, camera, listener) is preserved"}
+      ],
+      "tags": ["color-inverted"]
+    },
+    {
+      "id": 17,
+      "prompt": "I need to scan GS1 composite codes (a linear barcode with a 2D companion) in my Android BarcodeCapture app. Enable composite code scanning for composite types A, B, and C.",
+      "expected_output": "The skill enables the symbologies for the composite types via settings.enableSymbologies(compositeTypes) (Kotlin overload taking an EnumSet<CompositeType>) AND sets settings.enabledCompositeTypes to the same composite types (CompositeType.A, CompositeType.B, CompositeType.C). Existing integration is preserved.",
+      "files": [
+        "fixtures/IntegratedActivity.kt"
+      ],
+      "assertions": [
+        {"text": "settings.enableSymbologies( is called with an EnumSet of CompositeType values to enable the composite component symbologies"},
+        {"text": "settings.enabledCompositeTypes is assigned the composite types"},
+        {"text": "CompositeType.A, CompositeType.B, and CompositeType.C are referenced"},
+        {"text": "Existing integration code (DataCaptureContext, barcodeCapture, camera, listener) is preserved"}
+      ],
+      "tags": ["composite-codes"]
     }
   ]
 }

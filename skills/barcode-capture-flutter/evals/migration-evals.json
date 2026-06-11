@@ -18,7 +18,7 @@
     {
       "id": 2,
       "prompt": "We're upgrading our Flutter app from Scandit SDK 7 to 8. Here's our BarcodeCapture code: ScannerPage_v7.dart. Please apply any necessary changes.",
-      "expected_output": "The skill applies the v7→v8 changes (BarcodeCapture.forContext → BarcodeCapture(settings) + dataCaptureContext.addMode, VideoResolution.auto → BarcodeCapture.recommendedCameraSettings) and summarizes the changes. DataCaptureContext.forLicenseKey is left as-is because it's still valid in v8 Flutter.",
+      "expected_output": "The skill applies the v7→v8 changes (BarcodeCapture.forContext → BarcodeCapture(settings) + dataCaptureContext.addMode, VideoResolution.auto → BarcodeCapture.createRecommendedCameraSettings()) and summarizes the changes. DataCaptureContext.forLicenseKey is left as-is because it's still valid in v8 Flutter.",
       "files": [
         "fixtures/ScannerPage_v7.dart"
       ],
@@ -27,7 +27,7 @@
         {"text": "BarcodeCapture.forContext( is NOT present in the output file"},
         {"text": "dataCaptureContext.addMode( or dataCaptureContext.setMode( is called for the BarcodeCapture instance"},
         {"text": "VideoResolution.auto is NOT present in the output file"},
-        {"text": "BarcodeCapture.recommendedCameraSettings is applied to the camera"},
+        {"text": "BarcodeCapture.createRecommendedCameraSettings() is applied to the camera"},
         {"text": "DataCaptureContext.forLicenseKey( is preserved, or converted to DataCaptureContext.initialize — both are acceptable on Flutter (semantic)"},
         {"text": "A summary.md is present listing the changes"},
         {"text": "Summary mentions flutter pub get must be run after the package version bump"},
@@ -46,7 +46,7 @@
         {"text": "BarcodeCapture.forContext( is NOT present"},
         {"text": "dataCaptureContext.addMode( or dataCaptureContext.setMode( is called for the BarcodeCapture instance"},
         {"text": "VideoResolution.auto is NOT present"},
-        {"text": "BarcodeCapture.recommendedCameraSettings is applied to the camera"},
+        {"text": "BarcodeCapture.createRecommendedCameraSettings() is applied to the camera"},
         {"text": "Composite-type opt-in (enableSymbologiesForCompositeTypes and enabledCompositeTypes) is preserved"},
         {"text": "Summary covers both migration steps (references both 6→7 and 7→8)"}
       ]
@@ -66,14 +66,14 @@
         {"text": "BarcodeCapture(settings) is present (7→8 constructor form applied)"},
         {"text": "BarcodeCapture.forContext( is NOT present"},
         {"text": "VideoResolution.auto is NOT present"},
-        {"text": "BarcodeCapture.recommendedCameraSettings is applied to the camera"},
+        {"text": "BarcodeCapture.createRecommendedCameraSettings() is applied to the camera"},
         {"text": "Did not ask the user for their version — proceeded autonomously"}
       ]
     },
     {
       "id": 5,
       "prompt": "Migrate my BarcodeCapture Flutter app from v7 to v8 — but I'm only attaching one mode to the context. Use the simplest API.",
-      "expected_output": "The skill replaces BarcodeCapture.forContext with BarcodeCapture(settings) and uses dataCaptureContext.setMode(barcodeCapture) (single-mode helper) instead of addMode. Camera resolution is also moved to BarcodeCapture.recommendedCameraSettings.",
+      "expected_output": "The skill replaces BarcodeCapture.forContext with BarcodeCapture(settings) and uses dataCaptureContext.setMode(barcodeCapture) (single-mode helper) instead of addMode. Camera resolution is also moved to BarcodeCapture.createRecommendedCameraSettings().",
       "files": [
         "fixtures/ScannerPage_v7.dart"
       ],
@@ -82,7 +82,7 @@
         {"text": "BarcodeCapture.forContext( is NOT present"},
         {"text": "dataCaptureContext.setMode( is used (single-mode helper, since the project only attaches one mode)"},
         {"text": "VideoResolution.auto is NOT present"},
-        {"text": "BarcodeCapture.recommendedCameraSettings is applied"},
+        {"text": "BarcodeCapture.createRecommendedCameraSettings() is applied"},
         {"text": "A summary.md is present listing the changes"}
       ]
     }
