@@ -1,0 +1,36 @@
+{
+  "skill_name": "matrixscan-ar-android",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "In my MatrixScan AR Android app I want to react when the user taps a highlight on a tracked barcode — log the barcode data when the highlight is tapped. Here is my Activity: IntegratedActivity.kt",
+      "expected_output": "The skill assigns a BarcodeArViewUiListener to barcodeArView.uiListener and implements onHighlightForBarcodeTapped to access the tapped barcode.",
+      "files": [
+        "fixtures/IntegratedActivity.kt"
+      ],
+      "assertions": [
+        {"text": "A BarcodeArViewUiListener is assigned to barcodeArView.uiListener"},
+        {"text": "onHighlightForBarcodeTapped is overridden"},
+        {"text": "The barcode parameter of onHighlightForBarcodeTapped is used to read the tapped barcode data"},
+        {"text": "Existing integration code (BarcodeAr, BarcodeArView, highlight provider) is preserved"}
+      ],
+      "tags": ["highlight-tap"]
+    },
+    {
+      "id": 2,
+      "prompt": "In my MatrixScan AR Android app I only want barcodes whose data starts with 'PROD-' to show highlights and annotations; everything else should be ignored. Here is my Activity: IntegratedActivity.kt",
+      "expected_output": "The skill implements a BarcodeArFilter whose filterBarcodes returns only the matching barcodes and registers it via barcodeAr.setBarcodeFilter(...).",
+      "files": [
+        "fixtures/IntegratedActivity.kt"
+      ],
+      "assertions": [
+        {"text": "A class implements the BarcodeArFilter interface"},
+        {"text": "filterBarcodes is overridden"},
+        {"text": "filterBarcodes returns the subset of barcodes whose data starts with PROD-"},
+        {"text": "barcodeAr.setBarcodeFilter( is called with the filter"},
+        {"text": "BarcodeArFilter is imported from com.scandit.datacapture.barcode.ar.capture"}
+      ],
+      "tags": ["barcode-filter"]
+    }
+  ]
+}

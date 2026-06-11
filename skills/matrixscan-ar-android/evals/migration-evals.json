@@ -1,0 +1,35 @@
+{
+  "skill_name": "matrixscan-ar-android",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I have a MatrixScan (BarcodeBatch) Android Activity and I want to migrate it to MatrixScan AR (BarcodeAr) so I can show interactive highlights on each tracked barcode. Here is my current Activity: BatchActivity.kt",
+      "expected_output": "The skill rewrites the Activity to use BarcodeAr: replaces BarcodeBatch.forDataCaptureContext with the BarcodeAr(dataCaptureContext, settings) constructor, swaps BarcodeBatchSettings for BarcodeArSettings, removes the manual Camera / DataCaptureView / BarcodeBatchBasicOverlay setup in favor of a single BarcodeArView, swaps the listener to BarcodeArListener, supplies a BarcodeArHighlightProvider, and drives the lifecycle through the view.",
+      "files": [
+        "fixtures/BatchActivity.kt"
+      ],
+      "assertions": [
+        {"text": "BarcodeAr( constructor is used with dataCaptureContext and settings"},
+        {"text": "In code, BarcodeBatch.forDataCaptureContext is NOT used to create the mode (semantic)"},
+        {"text": "BarcodeArSettings is constructed and configured"},
+        {"text": "In code, BarcodeBatchSettings is NOT constructed (semantic)"},
+        {"text": "BarcodeArView is constructed and stored"},
+        {"text": "In code, no DataCaptureView is constructed (semantic)"},
+        {"text": "In code, no BarcodeBatchBasicOverlay is constructed (semantic)"},
+        {"text": "In code, no Camera object is constructed (semantic)"},
+        {"text": "In code, dataCaptureContext.setFrameSource is NOT called (semantic)"},
+        {"text": "BarcodeArListener is implemented"},
+        {"text": "onSessionUpdated has a frameData parameter of type FrameData"},
+        {"text": "barcodeArView.highlightProvider is assigned a BarcodeArHighlightProvider"},
+        {"text": "highlightForBarcode returns a BarcodeArRectangleHighlight"},
+        {"text": "barcodeArView.onResume() is called in onResume"},
+        {"text": "barcodeArView.onPause() is called in onPause"},
+        {"text": "barcodeArView.onDestroy() is called in onDestroy"},
+        {"text": "In code, camera.switchToDesiredState is NOT called (semantic)"},
+        {"text": "Symbology.EAN13_UPCA is enabled"},
+        {"text": "Symbology.CODE128 is enabled"}
+      ],
+      "tags": ["migration"]
+    }
+  ]
+}
