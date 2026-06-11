@@ -119,6 +119,159 @@
         {"text": "OnPause (or OnDestroy) calls camera.SwitchToDesiredStateAsync(FrameSourceState.Off)"},
         {"text": "Existing integration code (DataCaptureContext, barcodeCapture, camera, listener) is preserved"}
       ]
+    },
+    {
+      "id": 8,
+      "prompt": "Add an aimer-style viewfinder (the small Scandit aimer with a center dot) to my .NET Android BarcodeCapture preview so users aim at one code at a time. Here's my Activity: IntegratedActivity.cs.",
+      "expected_output": "The skill constructs a new AimerViewfinder and assigns it to the BarcodeCaptureOverlay's Viewfinder property, preserving the existing integration.",
+      "files": [
+        "fixtures/IntegratedActivity.cs"
+      ],
+      "assertions": [
+        {"text": "An AimerViewfinder is constructed with new AimerViewfinder()"},
+        {"text": "The aimer viewfinder is assigned to BarcodeCaptureOverlay.Viewfinder (overlay.Viewfinder = ...)"},
+        {"text": "Existing integration code (DataCaptureContext, barcodeCapture, camera, listener) is preserved"}
+      ],
+      "tags": ["aimer-viewfinder"]
+    },
+    {
+      "id": 9,
+      "prompt": "Restrict barcode scanning to a centered rectangular region of the .NET Android preview (about 90% width, 30% height) so codes outside that band are ignored. Here's my Activity: IntegratedActivity.cs.",
+      "expected_output": "The skill creates a RectangularLocationSelection via RectangularLocationSelection.Create with a SizeWithUnit built from FloatWithUnit values in MeasureUnit.Fraction, assigns it to settings.LocationSelection, and applies the settings (before BarcodeCapture.Create or via ApplySettingsAsync).",
+      "files": [
+        "fixtures/IntegratedActivity.cs"
+      ],
+      "assertions": [
+        {"text": "A RectangularLocationSelection is created via RectangularLocationSelection.Create"},
+        {"text": "A SizeWithUnit is built from FloatWithUnit values"},
+        {"text": "MeasureUnit.Fraction is used for the relative size"},
+        {"text": "The location selection is assigned to BarcodeCaptureSettings.LocationSelection (settings.LocationSelection = ...)"},
+        {"text": "The settings are applied before BarcodeCapture.Create( or via barcodeCapture.ApplySettingsAsync"},
+        {"text": "Existing integration code (DataCaptureContext, barcodeCapture, camera, listener) is preserved"}
+      ],
+      "tags": ["location-selection"]
+    },
+    {
+      "id": 10,
+      "prompt": "I want a circular aimer-driven scan zone in my .NET Android app: only accept the code closest to the center, within a radius. Use a radius-based location selection. Here's my Activity: IntegratedActivity.cs.",
+      "expected_output": "The skill creates a RadiusLocationSelection via RadiusLocationSelection.Create with a FloatWithUnit (MeasureUnit.Fraction) radius and assigns it to settings.LocationSelection. An AimerViewfinder is the recommended companion viewfinder.",
+      "files": [
+        "fixtures/IntegratedActivity.cs"
+      ],
+      "assertions": [
+        {"text": "A RadiusLocationSelection is created via RadiusLocationSelection.Create"},
+        {"text": "The radius is a FloatWithUnit constructed with MeasureUnit.Fraction"},
+        {"text": "The location selection is assigned to BarcodeCaptureSettings.LocationSelection (settings.LocationSelection = ...)"},
+        {"text": "Existing integration code (DataCaptureContext, barcodeCapture, camera, listener) is preserved"}
+      ],
+      "tags": ["location-selection"]
+    },
+    {
+      "id": 11,
+      "prompt": "In my .NET Android BarcodeCapture app I only want to accept barcodes whose data starts with \"98\". Other codes should be rejected and NOT trigger the success flow. Show the scanned barcode highlight as transparent for rejected codes. Here's my Activity: IntegratedActivity.cs.",
+      "expected_output": "Inside OnBarcodeScanned the skill reads barcode.Data, and when it does not match the accept rule it sets the overlay brush to a transparent Brush (Brush.TransparentBrush or a transparent new Brush) and returns early without running the success handling. Matching codes proceed normally.",
+      "files": [
+        "fixtures/IntegratedActivity.cs"
+      ],
+      "assertions": [
+        {"text": "OnBarcodeScanned reads barcode.Data and tests it against the accept rule (starts with \"98\")"},
+        {"text": "For a rejected code the overlay brush is set to a transparent Brush (overlay.Brush = Brush.TransparentBrush or a transparent new Brush(...))"},
+        {"text": "(semantic) for a rejected code the handler returns early and does not run the accepted-code success flow"},
+        {"text": "Existing integration code (DataCaptureContext, barcodeCapture, camera, listener) is preserved"}
+      ],
+      "tags": ["reject-pattern"]
+    },
+    {
+      "id": 12,
+      "prompt": "Change the highlight drawn over recognized barcodes in my .NET Android app to a semi-transparent green fill with a solid green stroke. Here's my Activity: IntegratedActivity.cs.",
+      "expected_output": "The skill assigns a new Brush(fillColor, strokeColor, strokeWidth) to BarcodeCaptureOverlay.Brush, building the colors with Color.FromRGBA.",
+      "files": [
+        "fixtures/IntegratedActivity.cs"
+      ],
+      "assertions": [
+        {"text": "A Brush is constructed via new Brush(fillColor, strokeColor, strokeWidth) (the three-argument Brush constructor)"},
+        {"text": "The colors are built with Color.FromRGBA"},
+        {"text": "The brush is assigned to BarcodeCaptureOverlay.Brush (overlay.Brush = ...)"},
+        {"text": "Existing integration code (DataCaptureContext, barcodeCapture, camera, listener) is preserved"}
+      ],
+      "tags": ["overlay-brush"]
+    },
+    {
+      "id": 13,
+      "prompt": "Enable the full ASCII extension for Code 39 in my .NET Android BarcodeCapture settings so lowercase and control characters decode. Here's my Activity: IntegratedActivity.cs.",
+      "expected_output": "The skill obtains the per-symbology settings via settings.GetSymbologySettings(Symbology.Code39) and calls SetExtensionEnabled(\"full_ascii\", true), then applies the settings.",
+      "files": [
+        "fixtures/IntegratedActivity.cs"
+      ],
+      "assertions": [
+        {"text": "settings.GetSymbologySettings(Symbology.Code39) is used to obtain the per-symbology settings"},
+        {"text": "SetExtensionEnabled(\"full_ascii\", true) is called on the Code39 symbology settings"},
+        {"text": "The settings are applied before BarcodeCapture.Create( or via barcodeCapture.ApplySettingsAsync"},
+        {"text": "Existing integration code (DataCaptureContext, barcodeCapture, camera, listener) is preserved"}
+      ],
+      "tags": ["symbology-extensions"]
+    },
+    {
+      "id": 14,
+      "prompt": "Require the Mod 43 optional checksum for Code 39 scans in my .NET Android app to reduce misreads. Here's my Activity: IntegratedActivity.cs.",
+      "expected_output": "The skill obtains settings.GetSymbologySettings(Symbology.Code39) and sets its Checksums property to Checksum.Mod43, then applies the settings.",
+      "files": [
+        "fixtures/IntegratedActivity.cs"
+      ],
+      "assertions": [
+        {"text": "settings.GetSymbologySettings(Symbology.Code39) is used to obtain the per-symbology settings"},
+        {"text": "The Checksums property is set to Checksum.Mod43 (code39.Checksums = Checksum.Mod43)"},
+        {"text": "The settings are applied before BarcodeCapture.Create( or via barcodeCapture.ApplySettingsAsync"},
+        {"text": "Existing integration code (DataCaptureContext, barcodeCapture, camera, listener) is preserved"}
+      ],
+      "tags": ["symbology-checksums"]
+    },
+    {
+      "id": 15,
+      "prompt": "My .NET Android app scans Code 128 codes that are exactly 6, 7, or 8 symbols long — restrict the active symbol counts so nothing else decodes. Here's my Activity: IntegratedActivity.cs.",
+      "expected_output": "The skill obtains settings.GetSymbologySettings(Symbology.Code128) and assigns its ActiveSymbolCounts to a HashSet<short> containing 6, 7, 8, then applies the settings.",
+      "files": [
+        "fixtures/IntegratedActivity.cs"
+      ],
+      "assertions": [
+        {"text": "settings.GetSymbologySettings(Symbology.Code128) is used to obtain the per-symbology settings"},
+        {"text": "ActiveSymbolCounts is assigned a HashSet<short> (or other ICollection<short>) containing 6, 7, and 8"},
+        {"text": "The short values 6, 7, 8 are typed as short, not int (e.g. new HashSet<short>(new short[] { 6, 7, 8 }))"},
+        {"text": "The settings are applied before BarcodeCapture.Create( or via barcodeCapture.ApplySettingsAsync"},
+        {"text": "Existing integration code (DataCaptureContext, barcodeCapture, camera, listener) is preserved"}
+      ],
+      "tags": ["active-symbol-counts"]
+    },
+    {
+      "id": 16,
+      "prompt": "Some of our QR labels are printed light-on-dark (color inverted). Enable decoding of color-inverted QR codes in my .NET Android BarcodeCapture app. Here's my Activity: IntegratedActivity.cs.",
+      "expected_output": "The skill enables Symbology.Qr, obtains settings.GetSymbologySettings(Symbology.Qr) and sets ColorInvertedEnabled = true, then applies the settings.",
+      "files": [
+        "fixtures/IntegratedActivity.cs"
+      ],
+      "assertions": [
+        {"text": "settings.GetSymbologySettings(Symbology.Qr) is used to obtain the per-symbology settings"},
+        {"text": "ColorInvertedEnabled is set to true (qr.ColorInvertedEnabled = true)"},
+        {"text": "(semantic) the QR symbology itself remains enabled in addition to color-inverted decoding"},
+        {"text": "The settings are applied before BarcodeCapture.Create( or via barcodeCapture.ApplySettingsAsync"},
+        {"text": "Existing integration code (DataCaptureContext, barcodeCapture, camera, listener) is preserved"}
+      ],
+      "tags": ["color-inverted"]
+    },
+    {
+      "id": 17,
+      "prompt": "I need to scan GS1 Composite codes (a linear code with a 2D composite component) in my .NET Android app. Enable composite types A, B, and C. Here's my Activity: IntegratedActivity.cs.",
+      "expected_output": "The skill enables the composite types both by calling settings.EnableSymbologies(CompositeType.A | CompositeType.B | CompositeType.C) (to enable the required component symbologies) and by setting settings.EnabledCompositeTypes to the same CompositeType bit flag, then applies the settings.",
+      "files": [
+        "fixtures/IntegratedActivity.cs"
+      ],
+      "assertions": [
+        {"text": "settings.EnableSymbologies(CompositeType.A | CompositeType.B | CompositeType.C) is called to enable the required component symbologies"},
+        {"text": "settings.EnabledCompositeTypes is set to CompositeType.A | CompositeType.B | CompositeType.C"},
+        {"text": "The settings are applied before BarcodeCapture.Create( or via barcodeCapture.ApplySettingsAsync"},
+        {"text": "Existing integration code (DataCaptureContext, barcodeCapture, camera, listener) is preserved"}
+      ],
+      "tags": ["composite-codes"]
     }
   ]
 }
