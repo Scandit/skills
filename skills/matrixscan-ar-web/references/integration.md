@@ -193,6 +193,58 @@ const barcodeArView = await BarcodeArView.create(container, DataCaptureContext.s
 | `reset()` | `void` | Clears all highlights and annotations; re-queries providers. |
 | `remove()` | `void` | Removes the view element from the DOM. Call during cleanup. |
 
+### Feedback (sound and haptics)
+
+BarcodeAr emits feedback (a beep and a vibration) when a barcode is scanned. There are two
+ways to control it on web.
+
+**1. Toggle via `BarcodeArViewSettings` (simplest).** Construct a `BarcodeArViewSettings`,
+set `soundEnabled` / `hapticEnabled`, and pass the settings to
+`BarcodeArView.createWithSettings()`. Both default to `true`.
+
+```typescript
+import { BarcodeArView, BarcodeArViewSettings } from "@scandit/web-datacapture-barcode";
+import { DataCaptureContext } from "@scandit/web-datacapture-core";
+
+const viewSettings = new BarcodeArViewSettings();
+viewSettings.soundEnabled = true;   // beep on scan (default true)
+viewSettings.hapticEnabled = false; // disable vibration
+
+const container = document.getElementById("barcode-ar-view")!;
+const barcodeArView = await BarcodeArView.createWithSettings(
+  container,
+  DataCaptureContext.sharedInstance,
+  barcodeAr,
+  viewSettings
+);
+```
+
+| `BarcodeArViewSettings` property | Type | Default | Description |
+|----------|------|---------|-------------|
+| `soundEnabled` | `boolean` | `true` | Whether scan feedback plays a sound. |
+| `hapticEnabled` | `boolean` | `true` | Whether scan feedback triggers haptics (vibration). |
+| `defaultCameraPosition` | `CameraPosition` | `WorldFacing` | The camera the view starts with. |
+
+**2. Customize the feedback object via `BarcodeAr.feedback`.** For full control over the
+emitted `Feedback` (e.g. a custom sound or vibration), assign a `BarcodeArFeedback` to the
+`feedback` property of the `BarcodeAr` mode. Build the default with the async factory
+`BarcodeArFeedback.createDefaultBarcodeArFeedback()`, then set its `scanned` `Feedback`.
+
+```typescript
+import { BarcodeArFeedback } from "@scandit/web-datacapture-barcode";
+import { Feedback, Vibration } from "@scandit/web-datacapture-core";
+
+const feedback = await BarcodeArFeedback.createDefaultBarcodeArFeedback();
+feedback.scanned = new Feedback(Vibration.defaultVibration, null); // vibrate, no sound
+barcodeAr.feedback = feedback;
+```
+
+| `BarcodeArFeedback` member | Type | Description |
+|----------|------|---------|
+| `BarcodeArFeedback.createDefaultBarcodeArFeedback()` | `Promise<BarcodeArFeedback>` | Default feedback: beep + vibration on the scanned event. |
+| `scanned` | `Feedback` | Feedback emitted for a barcode-scanned event. |
+| `tapped` | `Feedback` | Feedback emitted for an element-tapped event. |
+
 ## Step 5 — Highlight Provider
 
 Highlights are colored shapes that appear directly over each tracked barcode. Assign a `highlightProvider` object to the `BarcodeArView`.
