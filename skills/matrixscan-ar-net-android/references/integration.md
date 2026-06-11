@@ -477,6 +477,52 @@ All three types take only the `Barcode` in the constructor (no `Context`).
 
 `BarcodeArPopoverAnnotationButton(ScanditIcon icon, string text)`: `Text` (get), `TextSize` (get/set), `Typeface` (get/set), `TextColor` (get/set), `Enabled` (get/set), `Icon` (get).
 
+**`BarcodeArResponsiveAnnotation`** — switches between two `BarcodeArInfoAnnotation` variations based on the barcode's on-screen size. Constructor takes only `Barcode` plus the close-up and far-away annotations (each may be `null`):
+
+```csharp
+using Scandit.DataCapture.Barcode.Ar.UI.Annotations;
+using Scandit.DataCapture.Barcode.Ar.UI.Annotations.Info;
+
+var closeUp = new BarcodeArInfoAnnotation(barcode);
+var farAway = new BarcodeArInfoAnnotation(barcode);
+var annotation = new BarcodeArResponsiveAnnotation(barcode, closeUp, farAway);
+```
+
+| Member | Type | Description |
+|--------|------|-------------|
+| `BarcodeArResponsiveAnnotation(Barcode, BarcodeArInfoAnnotation?, BarcodeArInfoAnnotation?)` | constructor | `(barcode, closeUpAnnotation, farAwayAnnotation)`. Either annotation may be `null`. |
+| `Threshold` | `static float` (get/set) | Barcode-area / screen-area ratio at which the close-up variation is shown (0.0–1.0, default `0.05`). It is a **static** class-level property — set `BarcodeArResponsiveAnnotation.Threshold`, not a per-instance value. |
+| `CloseUpAnnotation` | `BarcodeArInfoAnnotation?` (get) | Shown when the barcode area exceeds `Threshold`. |
+| `FarAwayAnnotation` | `BarcodeArInfoAnnotation?` (get) | Shown otherwise. |
+| `AnnotationTrigger` | `BarcodeArAnnotationTrigger` (get/set) | Defaults to `HighlightTapAndBarcodeScan`. |
+| `Barcode` | `Barcode` (get) | |
+
+### Building a `ScanditIcon`
+
+`BarcodeArStatusIconAnnotation.Icon` and `BarcodeArPopoverAnnotationButton` require a `ScanditIcon` (namespace `Scandit.DataCapture.Core.UI.Icon`). Build one with `ScanditIconBuilder` (a fluent builder; each `With...` returns the builder, `Build()` returns the icon):
+
+```csharp
+using Scandit.DataCapture.Core.UI.Icon;
+
+var icon = new ScanditIconBuilder()
+    .WithIcon(ScanditIconType.ExclamationMark)
+    .WithBackgroundShape(ScanditIconShape.Circle)
+    .Build();
+```
+
+Builder methods: `WithIcon(ScanditIconType?)`, `WithIconColor(Color)`, `WithBackgroundColor(Color)`, `WithBackgroundStrokeColor(Color)`, `WithBackgroundStrokeWidth(float)`, `WithBackgroundShape(ScanditIconShape?)`, then `Build()`. The color arguments take `Scandit.DataCapture.Core.Common.Color`. `ScanditIconType` values include `ExclamationMark`, `Checkmark`, `XMark`, `QuestionMark`, `LowStock`; `ScanditIconShape` is `Circle` or `Square`.
+
+### Annotation trigger
+
+`BarcodeArAnnotationTrigger` controls when an annotation appears. Values: `HighlightTapAndBarcodeScan` (default — shown on scan, toggleable by highlight tap), `HighlightTap` (only on highlight tap), and `BarcodeScan` (shown on scan, not toggleable).
+
+### Tap interactions on annotations
+
+Highlight taps use the `BarcodeArView.HighlightForBarcodeTapped` event (Step 9). Annotation taps are delivered through a per-annotation listener instead:
+
+- `BarcodeArInfoAnnotation.Listener` (`IBarcodeArInfoAnnotationListener`) — `OnInfoAnnotationTapped(annotation)`, `OnInfoAnnotationHeaderTapped(annotation)`, `OnInfoAnnotationFooterTapped(annotation)`, `OnInfoAnnotationLeftIconTapped(annotation, component, componentIndex)`, `OnInfoAnnotationRightIconTapped(annotation, component, componentIndex)`. Whole-annotation taps only fire when `EntireAnnotationTappable` is `true`.
+- `BarcodeArPopoverAnnotation.Listener` (`IBarcodeArPopoverAnnotationListener`) — `OnPopoverButtonTapped(popover, button, buttonIndex)` (fires when `EntirePopoverTappable` is `false`) and `OnPopoverTapped(popover)` (fires when `EntirePopoverTappable` is `true`).
+
 Returning `null` from `AnnotationForBarcodeAsync` simply omits the annotation for that barcode.
 
 ## Step 9 — Tap interactions on highlights
