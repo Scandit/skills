@@ -105,6 +105,97 @@
         {"text": "annotationProvider = this is set on the BarcodeArView"},
         {"text": "Existing integration code (BarcodeAr, BarcodeArView, highlight provider, listener) is preserved"}
       ]
+    },
+    {
+      "id": 6,
+      "prompt": "In my MatrixScan AR Flutter app I want each tracked barcode highlighted with a circular dot overlay instead of the default rectangle. Use a semi-transparent blue dot, about 36 dp wide. Wire it through the highlight provider in IntegratedBloc.dart.",
+      "expected_output": "The skill returns a BarcodeArCircleHighlight from highlightForBarcode, constructed with the dot preset, a blue Brush, and a size of 36. The existing integration code (BarcodeArView, listener, providers) is preserved.",
+      "files": [
+        "fixtures/IntegratedBloc.dart"
+      ],
+      "assertions": [
+        {"text": "BarcodeArCircleHighlight( is returned from highlightForBarcode"},
+        {"text": "BarcodeArCircleHighlightPreset.dot is passed to the BarcodeArCircleHighlight constructor"},
+        {"text": "barcode is passed as the first constructor argument to BarcodeArCircleHighlight"},
+        {"text": "..brush = Brush( is set on the BarcodeArCircleHighlight"},
+        {"text": "..size = is set on the BarcodeArCircleHighlight"},
+        {"text": "highlightForBarcode returns a Future<BarcodeArHighlight?> (semantic)"},
+        {"text": "Existing integration code (BarcodeArView, listener, annotationProvider if present) is preserved (semantic)"}
+      ],
+      "tags": ["circle-highlight"]
+    },
+    {
+      "id": 7,
+      "prompt": "Keep the rectangle highlight in my MatrixScan AR Flutter app but style it: give it a green fill and stroke, and overlay a white checkmark icon on each highlighted barcode. Update the highlightForBarcode provider in IntegratedBloc.dart.",
+      "expected_output": "The skill returns a BarcodeArRectangleHighlight with a green Brush set via ..brush and a checkmark ScanditIcon set via ..icon built with ScanditIconBuilder. The existing integration code is preserved.",
+      "files": [
+        "fixtures/IntegratedBloc.dart"
+      ],
+      "assertions": [
+        {"text": "BarcodeArRectangleHighlight( barcode ) is returned from highlightForBarcode"},
+        {"text": "..brush = Brush( is set on the BarcodeArRectangleHighlight"},
+        {"text": "..icon = is set on the BarcodeArRectangleHighlight"},
+        {"text": "ScanditIconBuilder() is used to build the icon"},
+        {"text": ".withIcon(ScanditIconType.checkmark) is present on the icon builder"},
+        {"text": ".build() is called to produce the ScanditIcon"},
+        {"text": "Existing integration code (BarcodeArView, listener, providers) is preserved (semantic)"}
+      ],
+      "tags": ["highlight-brush-icon"]
+    },
+    {
+      "id": 8,
+      "prompt": "In my MatrixScan AR Flutter app I want a small status icon on each tracked barcode that shows a warning icon, and when tapped expands to show the text 'Check stock'. Wire this through the annotation provider in IntegratedBloc.dart.",
+      "expected_output": "The skill returns a BarcodeArStatusIconAnnotation from annotationForBarcode, setting the icon via ScanditIconBuilder, the text to 'Check stock', and assigns annotationProvider = this on the view. Existing integration code is preserved.",
+      "files": [
+        "fixtures/IntegratedBloc.dart"
+      ],
+      "assertions": [
+        {"text": "BarcodeArStatusIconAnnotation( barcode ) is constructed"},
+        {"text": "BarcodeArStatusIconAnnotation is returned from annotationForBarcode"},
+        {"text": "..icon = is set on the BarcodeArStatusIconAnnotation"},
+        {"text": "ScanditIconBuilder() is used to build the icon"},
+        {"text": "..text = 'Check stock' is set on the BarcodeArStatusIconAnnotation"},
+        {"text": "annotationProvider = this (or equivalent) is set on the BarcodeArView (semantic)"},
+        {"text": "annotationForBarcode returns a Future<BarcodeArAnnotation?> (semantic)"},
+        {"text": "Existing integration code (BarcodeAr, BarcodeArView, highlight provider, listener) is preserved (semantic)"}
+      ],
+      "tags": ["status-icon-annotation"]
+    },
+    {
+      "id": 9,
+      "prompt": "Add a popover annotation to each tracked barcode in my MatrixScan AR Flutter app. The popover should have two buttons: an 'Accept' button with a checkmark icon and a 'Flag' button with a warning icon. Handle taps so I know which button was pressed. Wire it through IntegratedBloc.dart.",
+      "expected_output": "The skill builds a list of two BarcodeArPopoverAnnotationButton (checkmark/Accept, exclamationMark/Flag), constructs a BarcodeArPopoverAnnotation with the barcode and buttons, sets the listener to the BLoC which implements BarcodeArPopoverAnnotationListener, and overrides didTapPopoverButton. Existing integration code is preserved.",
+      "files": [
+        "fixtures/IntegratedBloc.dart"
+      ],
+      "assertions": [
+        {"text": "BarcodeArPopoverAnnotationButton( is constructed for the Accept button"},
+        {"text": "BarcodeArPopoverAnnotationButton( is constructed for the Flag button"},
+        {"text": "BarcodeArPopoverAnnotation( is constructed with the barcode and the buttons list"},
+        {"text": "BarcodeArPopoverAnnotation is returned from annotationForBarcode"},
+        {"text": "The BLoC or provider class implements BarcodeArPopoverAnnotationListener (semantic)"},
+        {"text": "..listener = is set on the BarcodeArPopoverAnnotation"},
+        {"text": "didTapPopoverButton( is overridden"},
+        {"text": "ScanditIconBuilder() is used to build the button icons"},
+        {"text": "Existing integration code (BarcodeAr, BarcodeArView, highlight provider, listener) is preserved (semantic)"}
+      ],
+      "tags": ["popover-annotation"]
+    },
+    {
+      "id": 10,
+      "prompt": "In my MatrixScan AR Flutter app I want the user to be able to toggle the flashlight, switch between front and back cameras, and adjust zoom directly from the scanner UI. Enable the built-in view controls in IntegratedBloc.dart.",
+      "expected_output": "The skill enables the BarcodeArView UI controls by setting shouldShowTorchControl, shouldShowZoomControl, and shouldShowCameraSwitchControl to true on the BarcodeArView (created in initState and stored as a field). Existing integration code is preserved.",
+      "files": [
+        "fixtures/IntegratedBloc.dart"
+      ],
+      "assertions": [
+        {"text": "..shouldShowTorchControl = true is set on the BarcodeArView"},
+        {"text": "..shouldShowZoomControl = true is set on the BarcodeArView"},
+        {"text": "..shouldShowCameraSwitchControl = true is set on the BarcodeArView"},
+        {"text": "The controls are set on the BarcodeArView created in initState() and stored as a field, not inside build() (semantic)"},
+        {"text": "Existing integration code (BarcodeAr, BarcodeArView, highlight provider, listener) is preserved (semantic)"}
+      ],
+      "tags": ["view-controls"]
     }
   ]
 }
