@@ -174,7 +174,8 @@ What this code does **not** do:
   default highlights are used. → see **`highlights.md`**.
 - It does not enable **clustering** (grouping barcodes that belong together) — `clusteringMode` is off.
   → see **`clustering.md`**.
-- It does not customize the status mode or the toolbar — defaults are used.
+- It does not enable **status mode** (per-barcode status icons) or customize the toolbar — defaults are
+  used. → see **`status-mode.md`** for status mode.
 
 ## Step 1 — Data Capture Context
 
@@ -407,6 +408,9 @@ API reference for exact signatures before writing code.
 - **Clustering** (group barcodes that belong together): enable it with
   `BarcodeCountSettings.clusteringMode`, read `session.recognizedClusters`, edit clusters with
   `BarcodeClusterEditor`, and color them via `brushForCluster`. → **full guide: `clustering.md`**.
+- **Status mode** (annotate each counted barcode with a status icon the user reviews): implement
+  `BarcodeCountStatusProvider`, register it via `barcodeCountView.setStatusProvider(_:)`, and return a
+  per-barcode status from `statusRequested(for:callback:)`. → **full guide: `status-mode.md`**.
 - **Reset the mode**: when a counting process is over and you want to start fresh, call
   `barcodeCount.reset()` to clear the scanned list and the AR overlays (e.g. from your Exit/summary
   flow). The minimal example above doesn't call it — add it where your app begins a new count.

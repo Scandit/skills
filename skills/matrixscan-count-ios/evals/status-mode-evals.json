@@ -1,0 +1,70 @@
+{
+  "skill_name": "matrixscan-count-ios",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Enable status mode in my MatrixScan Count app. File: IntegratedBarcodeCountViewController.swift",
+      "expected_output": "Following the skill's recommended setup, the skill makes the controller conform to BarcodeCountStatusProvider, registers it with barcodeCountView.setStatusProvider(self), and shows the statuses automatically on scan via barcodeCountView.shouldShowStatusIconsOnScan = true (NOT the status-mode button). In statusRequested(for:callback:) it builds a BarcodeCountStatusItem(barcode:icon:) for each TrackedBarcode (the icon may be nil since no particular status was requested), wraps them in a BarcodeCountStatusSuccessResult, and delivers it via callback.onStatusReady(_:). The rest of the integration is unchanged.",
+      "files": ["fixtures/IntegratedBarcodeCountViewController.swift"],
+      "assertions": [
+        {"text": "The controller conforms to BarcodeCountStatusProvider and barcodeCountView.setStatusProvider(self) is called"},
+        {"text": "Statuses are shown automatically on scan via barcodeCountView.shouldShowStatusIconsOnScan = true (the recommended default) — it does NOT rely on the status-mode button (no shouldShowStatusModeButton)"},
+        {"text": "statusRequested(for:callback:) is implemented, building a BarcodeCountStatusItem(barcode:icon:) per TrackedBarcode (the icon-based initializer, NOT the deprecated barcode:status: one; the icon may be nil)"},
+        {"text": "Items are wrapped in a BarcodeCountStatusSuccessResult and delivered via callback.onStatusReady(...)"},
+        {"text": "No status API is misused (real BarcodeCountStatusProvider / BarcodeCountStatusProviderCallback / BarcodeCountStatusSuccessResult names); the rest of the integration is unchanged"}
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "In my MatrixScan Count app with status mode, mark barcodes whose data is an even number with a red status, and all others with a green status. File: IntegratedBarcodeCountViewController.swift",
+      "expected_output": "In statusRequested(for:callback:) the skill chooses each barcode's icon by its data: it unwraps trackedBarcode.barcode.data (String?) and parses it as an Int, building a BarcodeCountStatusItem(barcode:icon:) with a red icon when the number is even and a green icon otherwise (icons via ScanditIconBuilder, each with a background shape set so the color renders). The items go into a BarcodeCountStatusSuccessResult delivered via callback.onStatusReady. The provider is registered and statuses are shown automatically (shouldShowStatusIconsOnScan = true). The rest of the integration is unchanged.",
+      "files": ["fixtures/IntegratedBarcodeCountViewController.swift"],
+      "assertions": [
+        {"text": "statusRequested(for:callback:) builds a per-barcode BarcodeCountStatusItem(barcode:icon:) choosing the icon by trackedBarcode.barcode.data"},
+        {"text": "barcode.data is UNWRAPPED (it is String?) and parsed as an Int; even number -> red, otherwise -> green"},
+        {"text": "Icons are built with ScanditIconBuilder AND a background shape is set (.withBackgroundShape(.circle/.square)) so the background color actually renders (red for even, green otherwise)"},
+        {"text": "Items are wrapped in BarcodeCountStatusSuccessResult and delivered via callback.onStatusReady; setStatusProvider is set and statuses are shown automatically (shouldShowStatusIconsOnScan = true)"},
+        {"text": "It uses the icon-based BarcodeCountStatusItem initializer (not the deprecated barcode:status: form); rest of the integration unchanged"}
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "In my MatrixScan Count app's status provider, show me how to return the right result to distinguish the three cases: all statuses resolved, only some resolved, and none resolved. File: IntegratedBarcodeCountViewController.swift",
+      "expected_output": "In statusRequested(for:callback:) the skill shows the three result types and delivers the chosen one via callback.onStatusReady: a BarcodeCountStatusSuccessResult (built from per-barcode BarcodeCountStatusItem(barcode:icon:)) when all statuses are resolved; a BarcodeCountStatusErrorResult(statusList:errorMessage:statusModeDisabledMessage:) when only some are resolved (the partial list plus an error message); and a BarcodeCountStatusAbortResult(errorMessage:) when none can be resolved. No real networking is needed. The provider is registered with statuses shown automatically (shouldShowStatusIconsOnScan = true). The rest of the integration is unchanged.",
+      "files": ["fixtures/IntegratedBarcodeCountViewController.swift"],
+      "assertions": [
+        {"text": "statusRequested(for:callback:) is implemented and delivers a result via callback.onStatusReady(...)"},
+        {"text": "All-resolved case → a BarcodeCountStatusSuccessResult built from BarcodeCountStatusItem(barcode:icon:) values"},
+        {"text": "Some-resolved case → a BarcodeCountStatusErrorResult(statusList:errorMessage:statusModeDisabledMessage:) (the partial status list plus an error message)"},
+        {"text": "None-resolved case → a BarcodeCountStatusAbortResult(errorMessage:)"},
+        {"text": "Real result-type names are used (no invented API); the icon-based BarcodeCountStatusItem initializer is used; the provider is registered and shouldShowStatusIconsOnScan = true; the rest of the integration is unchanged"}
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "In my MatrixScan Count app, show the per-barcode statuses when the user taps a button. File: IntegratedBarcodeCountViewController.swift",
+      "expected_output": "The skill makes the controller conform to BarcodeCountStatusProvider, registers it via barcodeCountView.setStatusProvider(self), and shows the status-mode button with barcodeCountView.shouldShowStatusModeButton = true. It does NOT set shouldShowStatusIconsOnScan = true (it leaves it at its default false — enabling it would hide the button). In statusRequested(for:callback:) it builds a BarcodeCountStatusItem(barcode:icon:) per barcode, wraps them in a BarcodeCountStatusSuccessResult, and delivers it via callback.onStatusReady(_:). The rest of the integration is unchanged.",
+      "files": ["fixtures/IntegratedBarcodeCountViewController.swift"],
+      "assertions": [
+        {"text": "The controller conforms to BarcodeCountStatusProvider and barcodeCountView.setStatusProvider(self) is called"},
+        {"text": "barcodeCountView.shouldShowStatusModeButton = true is set (the button presentation)"},
+        {"text": "It does NOT enable shouldShowStatusIconsOnScan (leaves it false) — otherwise the status-mode button would be hidden"},
+        {"text": "statusRequested(for:callback:) builds a BarcodeCountStatusItem(barcode:icon:) per barcode (icon-based init, with a background shape set if a background color is used) and delivers a BarcodeCountStatusSuccessResult via callback.onStatusReady"},
+        {"text": "Real status APIs only (no deprecated barcode:status: init, no invented names); the rest of the integration is unchanged"}
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "In my MatrixScan Count app with status mode, flag barcodes whose data is an even number with a warning icon, and show no status for the others. File: IntegratedBarcodeCountViewController.swift",
+      "expected_output": "In statusRequested(for:callback:) the skill builds a BarcodeCountStatusItem for EVERY barcode (none omitted): it unwraps trackedBarcode.barcode.data (String?) and parses it as an Int; even numbers get a warning icon (ScanditIconBuilder, with a background shape so it renders), and all the others are still given a status item but with a nil icon — so nothing is shown for them. It does NOT leave the others out of the list (omitting them would mark them as missing their status and show the SDK's fallback indicator). The items go into a BarcodeCountStatusSuccessResult delivered via callback.onStatusReady; the provider is registered and shouldShowStatusIconsOnScan = true. The rest of the integration is unchanged.",
+      "files": ["fixtures/IntegratedBarcodeCountViewController.swift"],
+      "assertions": [
+        {"text": "statusRequested(for:callback:) builds a BarcodeCountStatusItem for EVERY barcode — none are omitted/skipped from the status list"},
+        {"text": "barcode.data is unwrapped (String?) and parsed as an Int; even-number barcodes get a warning icon built with ScanditIconBuilder (with a background shape set so it renders)"},
+        {"text": "The non-even barcodes are included with a nil icon — BarcodeCountStatusItem(barcode:icon: nil) — so nothing is shown for them; they are NOT left out of the list"},
+        {"text": "Items are wrapped in BarcodeCountStatusSuccessResult and delivered via callback.onStatusReady; setStatusProvider is set and shouldShowStatusIconsOnScan = true"},
+        {"text": "It uses the icon-based BarcodeCountStatusItem initializer (not the deprecated barcode:status: form); the rest of the integration is unchanged"}
+      ]
+    }
+  ]
+}
