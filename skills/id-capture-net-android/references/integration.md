@@ -121,7 +121,7 @@ this.dataCaptureContext =
     DataCaptureContext.ForLicenseKey("-- ENTER YOUR SCANDIT LICENSE KEY HERE --");
 ```
 
-> **ID Capture runs as the only mode.** Using `IdCapture` at the same time as another capture mode (e.g. `BarcodeCapture`, `SparkScan`, `BarcodeTracking`) on the same `DataCaptureContext` is **not supported**. Add `IdCapture` as the single mode on the context. If you also need to scan plain barcodes, do it in a separate, non-concurrent scanning surface — the PDF417 / AAMVA barcode on an ID is already read by `IdCapture` itself via the scanner zones, so you do not add a barcode mode for that.
+> **You don't need a separate barcode mode to read the ID's own barcode** — `IdCapture` reads the PDF417 / AAMVA barcode on an ID itself via its scanner zones, so don't add a `BarcodeCapture` mode just for that. If you also need to scan *other* barcodes on the same screen (e.g. a boarding pass), `IdCapture` and `BarcodeCapture` **can run together** on one `DataCaptureContext` — attach each via its `Create(context, …)` factory. See **Co-existence with Barcode Capture** below.
 
 ## Step 2 — Build the settings (accepted documents + scanner)
 
