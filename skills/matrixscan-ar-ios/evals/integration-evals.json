@@ -6,7 +6,7 @@
       "prompt": "Add MatrixScan AR to my app. The user will pick symbologies later — go with a reasonable default set. File: NonScanditViewController.swift",
       "expected_output": "The skill adds MatrixScan AR to the existing ScanViewController: imports ScanditBarcodeCapture, wires up the DataCaptureContext singleton, builds a BarcodeAr mode with a default symbology set, creates a BarcodeArView using BarcodeAr.recommendedCameraSettings, and calls start()/stop() in viewWillAppear/viewWillDisappear. The response also shows the setup checklist (SPM, Info.plist, license key).",
       "files": [
-        "eval-fixtures/NonScanditViewController.swift"
+        "fixtures/NonScanditViewController.swift"
       ],
       "assertions": [
         {"text": "import ScanditBarcodeCapture is present"},
@@ -28,7 +28,7 @@
       "prompt": "Add MatrixScan AR to my SwiftUI app. File: NonScanditSwiftUIView.swift",
       "expected_output": "The skill adds a UIKit ScanViewController with the full MatrixScan AR pipeline, wraps it in a UIViewControllerRepresentable, and changes the existing SwiftUI ScanView body to use that representable. No Scandit API calls live on the SwiftUI side.",
       "files": [
-        "eval-fixtures/NonScanditSwiftUIView.swift"
+        "fixtures/NonScanditSwiftUIView.swift"
       ],
       "assertions": [
         {"text": "import ScanditBarcodeCapture is present"},
@@ -45,7 +45,7 @@
       "prompt": "Also enable QR codes in my MatrixScan AR app. File: IntegratedBarcodeArViewController.swift",
       "expected_output": "The skill adds settings.set(symbology: .qr, enabled: true) inside setupRecognition(), preserves the existing five enabled symbologies, and does not touch context / mode / view / lifecycle.",
       "files": [
-        "eval-fixtures/IntegratedBarcodeArViewController.swift"
+        "fixtures/IntegratedBarcodeArViewController.swift"
       ],
       "assertions": [
         {"text": "settings.set(symbology: .qr, enabled: true) is present"},
@@ -60,7 +60,7 @@
       "prompt": "In my MatrixScan AR app, Code 39 barcodes are always between 10 and 14 characters. Configure that. File: IntegratedBarcodeArViewController.swift",
       "expected_output": "The skill accesses the Code 39 SymbologySettings via settings.settings(for: .code39) and sets activeSymbolCounts to the range 10...14, inside setupRecognition(), before constructing BarcodeAr.",
       "files": [
-        "eval-fixtures/IntegratedBarcodeArViewController.swift"
+        "fixtures/IntegratedBarcodeArViewController.swift"
       ],
       "assertions": [
         {"text": "settings.settings(for: .code39) is called to get the SymbologySettings"},
@@ -75,7 +75,7 @@
       "prompt": "Switch my MatrixScan AR scanner to use the front camera. File: IntegratedBarcodeArViewController.swift",
       "expected_output": "The skill sets viewSettings.defaultCameraPosition = .userFacing on the BarcodeArViewSettings before constructing the BarcodeArView.",
       "files": [
-        "eval-fixtures/IntegratedBarcodeArViewController.swift"
+        "fixtures/IntegratedBarcodeArViewController.swift"
       ],
       "assertions": [
         {"text": "viewSettings.defaultCameraPosition = .userFacing is set (or equivalent using a documented CameraPosition case)"},
@@ -90,7 +90,7 @@
       "prompt": "Use 4K resolution for the camera in my MatrixScan AR app. File: IntegratedBarcodeArViewController.swift",
       "expected_output": "The skill starts from BarcodeAr.recommendedCameraSettings (already in the fixture) and sets preferredResolution to .uhd4k before passing the CameraSettings into the BarcodeArView initializer.",
       "files": [
-        "eval-fixtures/IntegratedBarcodeArViewController.swift"
+        "fixtures/IntegratedBarcodeArViewController.swift"
       ],
       "assertions": [
         {"text": "recommendedCameraSettings.preferredResolution = .uhd4k is set (or equivalent VideoResolution case for 4K)"},
@@ -105,7 +105,7 @@
       "prompt": "Show a torch button in my MatrixScan AR view. File: IntegratedBarcodeArViewController.swift",
       "expected_output": "The skill sets barcodeArView.shouldShowTorchControl = true after the BarcodeArView is constructed, inside setupRecognition().",
       "files": [
-        "eval-fixtures/IntegratedBarcodeArViewController.swift"
+        "fixtures/IntegratedBarcodeArViewController.swift"
       ],
       "assertions": [
         {"text": "barcodeArView.shouldShowTorchControl = true is set"},
@@ -119,7 +119,7 @@
       "prompt": "Mute both the beep and the vibration in my MatrixScan AR app. File: IntegratedBarcodeArViewController.swift",
       "expected_output": "The skill sets viewSettings.soundEnabled = false and viewSettings.hapticEnabled = false on BarcodeArViewSettings before the BarcodeArView is constructed. A custom BarcodeArFeedback is NOT needed for this simple on/off case.",
       "files": [
-        "eval-fixtures/IntegratedBarcodeArViewController.swift"
+        "fixtures/IntegratedBarcodeArViewController.swift"
       ],
       "assertions": [
         {"text": "viewSettings.soundEnabled = false is set"},
@@ -150,7 +150,7 @@
       "prompt": "Customize the highlight drawn over each barcode in my MatrixScan AR app to be a red rectangle. File: IntegratedBarcodeArViewController.swift",
       "expected_output": "The skill recognizes that customizing the highlight shape and color is out of scope for this skill and tells the user to use the matrixscan-ar-highlight-ios skill instead. No highlight-provider code is written.",
       "files": [
-        "eval-fixtures/IntegratedBarcodeArViewController.swift"
+        "fixtures/IntegratedBarcodeArViewController.swift"
       ],
       "assertions": [
         {"text": "The response defers highlight customization to the matrixscan-ar-highlight-ios sibling skill (names it explicitly, or clearly says highlight customization is out of scope for this skill)"},
@@ -165,7 +165,7 @@
       "prompt": "In my MatrixScan AR app, print the data of every newly detected barcode from the listener callback. File: IntegratedBarcodeArViewController.swift",
       "expected_output": "The skill adds a BarcodeArListener conformance on the view controller, calls barcodeAr.addListener(self) after the mode is constructed, implements the barcodeAr(_:didUpdate:frameData:) callback iterating session.addedTrackedBarcodes (the documented property name, shared with BarcodeBatchSession), and wraps the print call in DispatchQueue.main.async because the listener fires on a background queue. Existing context / mode / view / lifecycle are preserved; no highlight or annotation provider is added.",
       "files": [
-        "eval-fixtures/IntegratedBarcodeArViewController.swift"
+        "fixtures/IntegratedBarcodeArViewController.swift"
       ],
       "assertions": [
         {"text": "BarcodeArListener conformance is added on the view controller (e.g. via an extension)"},
@@ -178,6 +178,25 @@
         {"text": "No BarcodeArAnnotationProvider conformance is added (out of scope)"},
         {"text": "Existing DataCaptureContext, BarcodeAr mode, BarcodeArSettings, BarcodeArView initialization, and start()/stop() lifecycle are preserved — the listener is additive, not a rewrite"}
       ]
+    },
+    {
+      "id": 12,
+      "prompt": "In my MatrixScan AR app, only show AR for barcodes whose data starts with the prefix \"ABC\" — filter out all the others. File: IntegratedBarcodeArViewController.swift",
+      "expected_output": "The skill implements the BarcodeArFilter protocol with a filterBarcodes(_:) method that returns only the barcodes whose data begins with \"ABC\", and installs it on the mode with barcodeAr.setBarcodeFilter(_:) after BarcodeAr is constructed inside setupRecognition(). The filter type conforms to BarcodeArFilter (an NSObjectProtocol-based protocol, so the class is an NSObject subclass). Existing context, mode, view, and lifecycle are preserved; no highlight or annotation provider is added.",
+      "files": [
+        "fixtures/IntegratedBarcodeArViewController.swift"
+      ],
+      "assertions": [
+        {"text": "A type conforming to BarcodeArFilter is added (the conformance literal 'BarcodeArFilter' appears, and the conforming class is declared as an NSObject subclass because BarcodeArFilter is an NSObjectProtocol-based protocol)"},
+        {"text": "The filter method has the exact signature func filterBarcodes(_ barcodes: [Barcode]) -> [Barcode] — not a renamed variant and not a callback/listener method"},
+        {"text": "filterBarcodes(_:) returns a subset of the input barcodes filtered by barcode.data starting with the \"ABC\" prefix (e.g. via hasPrefix), and returns only barcodes from the input array"},
+        {"text": "barcodeAr.setBarcodeFilter(filter) is called to install the filter on the BarcodeAr mode (not a hallucinated property assignment like barcodeAr.filter = ... or barcodeArView.barcodeFilter = ...)"},
+        {"text": "barcodeAr.setBarcodeFilter(_:) is called AFTER the BarcodeAr(context:settings:) mode is constructed inside setupRecognition()"},
+        {"text": "No BarcodeArHighlightProvider conformance is added (filtering is mode-level and independent of highlights)"},
+        {"text": "No BarcodeArAnnotationProvider conformance is added (filtering is mode-level and independent of annotations)"},
+        {"text": "Existing DataCaptureContext, BarcodeAr mode, BarcodeArSettings, BarcodeArView initialization, and start()/stop() lifecycle are preserved — the filter is additive, not a rewrite"}
+      ],
+      "tags": ["barcode-filter"]
     }
   ]
 }

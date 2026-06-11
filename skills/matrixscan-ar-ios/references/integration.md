@@ -169,6 +169,35 @@ These are set on the `BarcodeArView` instance (not on `BarcodeArViewSettings`) a
 
 Rule of thumb: `stop` when the screen is going away, `pause` when scanning pauses but the screen stays, `reset` when the visible state needs to clear without interrupting the camera.
 
+## Filtering which barcodes are shown
+
+To show AR only for a subset of detected barcodes (e.g. only barcodes whose data starts with a prefix, or only specific symbologies), implement the `BarcodeArFilter` protocol and install it with `barcodeAr.setBarcodeFilter(_:)`. This is **mode-level** filtering — it controls which barcodes are visible in the `BarcodeArSession`, independent of highlight/annotation appearance, so it lives in this core skill rather than the highlight/annotation siblings.
+
+`BarcodeArFilter` (available since iOS 8.1) has a single method:
+
+```swift
+import ScanditBarcodeCapture
+
+final class PrefixFilter: NSObject, BarcodeArFilter {
+    func filterBarcodes(_ barcodes: [Barcode]) -> [Barcode] {
+        barcodes.filter { ($0.data ?? "").hasPrefix("ABC") }
+    }
+}
+```
+
+Install it after the mode is constructed:
+
+```swift
+barcodeAr.setBarcodeFilter(filter)
+```
+
+Key points, straight from the API contract:
+
+- `filterBarcodes(_:)` must return a **subset of the input** — returning any barcode not in `barcodes` is ignored.
+- The filter is evaluated every time barcodes are added to or removed from the session, and when the filter is first set or changed via `setBarcodeFilter(_:)`. It is **not** re-evaluated when only positions update.
+- `filterBarcodes(_:)` is called on an internal recognition thread and must return quickly — do no heavy work there.
+- Pass `nil` to `setBarcodeFilter(_:)` to remove the filter and show all barcodes.
+
 ## SwiftUI
 
 `BarcodeArView` is a `UIView` — it cannot be dropped into SwiftUI directly. Wrap the scanning view controller in a `UIViewControllerRepresentable` and keep every MatrixScan AR API call (context, mode, settings, view, lifecycle) **inside the wrapped UIKit view controller**. This matters because the sibling skills (`matrixscan-ar-highlight-ios`, `matrixscan-ar-annotation-ios`) assume highlights/annotations are wired up on the UIKit side — if a SwiftUI user tries to touch Scandit APIs from the `View` struct, downstream work breaks.

@@ -12,5 +12,9 @@
   "parity_exempt": [
     "matrixscan-ar-annotation-ios",
     "matrixscan-ar-highlight-ios"
-  ]
+  ],
+  "platform_aliases": {
+    "matrixscan-ar-annotation-ios": "matrixscan-ar-ios",
+    "matrixscan-ar-highlight-ios": "matrixscan-ar-ios"
+  }
 }

@@ -9,28 +9,72 @@
         "fixtures/EmptyApp.js"
       ],
       "assertions": [
-        {"text": "Setup checklist is shown (mentions scandit-capacitor-datacapture-core, scandit-capacitor-datacapture-barcode, and npx cap sync)"},
-        {"text": "Setup checklist mentions iOS Info.plist NSCameraUsageDescription"},
-        {"text": "await ScanditCaptureCorePlugin.initializePlugins() is present and awaited before any other Scandit call"},
-        {"text": "DataCaptureContext.initialize( is present (current API used)"},
-        {"text": "DataCaptureContext.forLicenseKey( is NOT present"},
-        {"text": "'-- ENTER YOUR SCANDIT LICENSE KEY HERE --' is present"},
-        {"text": "BarcodeAr.createRecommendedCameraSettings() is called"},
-        {"text": "Camera.withSettings( is called"},
-        {"text": "context.setFrameSource(camera) is called"},
-        {"text": "camera.switchToDesiredState(FrameSourceState.On) is called"},
-        {"text": "new BarcodeArSettings() is present"},
-        {"text": "Symbology.EAN13UPCA is enabled"},
-        {"text": "Symbology.Code128 is enabled"},
-        {"text": "Only Symbology.EAN13UPCA and Symbology.Code128 are enabled in the BarcodeArSettings (semantic)"},
-        {"text": "new BarcodeAr(settings) is present (context NOT passed to BarcodeAr constructor)"},
-        {"text": "new BarcodeArView({ is present"},
-        {"text": "BarcodeArView is constructed with context and barcodeAr in its options object (semantic)"},
-        {"text": "connectToElement( is called and awaited on barcodeArView"},
-        {"text": "barcodeArView.highlightProvider is assigned an object with highlightForBarcode"},
-        {"text": "new BarcodeArCircleHighlight(barcode, BarcodeArCircleHighlightPreset is returned from highlightForBarcode"},
-        {"text": "Import from 'scandit-capacitor-datacapture-core' is present"},
-        {"text": "Import from 'scandit-capacitor-datacapture-barcode' is present"}
+        {
+          "text": "Setup checklist is shown (mentions scandit-capacitor-datacapture-core, scandit-capacitor-datacapture-barcode, and npx cap sync)"
+        },
+        {
+          "text": "Setup checklist mentions iOS Info.plist NSCameraUsageDescription"
+        },
+        {
+          "text": "await ScanditCaptureCorePlugin.initializePlugins() is present and awaited before any other Scandit call"
+        },
+        {
+          "text": "DataCaptureContext.initialize( is present (current API used)"
+        },
+        {
+          "text": "DataCaptureContext.forLicenseKey( is NOT present"
+        },
+        {
+          "text": "'-- ENTER YOUR SCANDIT LICENSE KEY HERE --' is present"
+        },
+        {
+          "text": "BarcodeAr.createRecommendedCameraSettings() is called"
+        },
+        {
+          "text": "Camera.withSettings( is called"
+        },
+        {
+          "text": "context.setFrameSource(camera) is called"
+        },
+        {
+          "text": "camera.switchToDesiredState(FrameSourceState.On) is called"
+        },
+        {
+          "text": "new BarcodeArSettings() is present"
+        },
+        {
+          "text": "Symbology.EAN13UPCA is enabled"
+        },
+        {
+          "text": "Symbology.Code128 is enabled"
+        },
+        {
+          "text": "Only Symbology.EAN13UPCA and Symbology.Code128 are enabled in the BarcodeArSettings (semantic)"
+        },
+        {
+          "text": "new BarcodeAr(settings) is present (context NOT passed to BarcodeAr constructor)"
+        },
+        {
+          "text": "new BarcodeArView({ is present"
+        },
+        {
+          "text": "BarcodeArView is constructed with context and barcodeAr in its options object (semantic)"
+        },
+        {
+          "text": "connectToElement( is called and awaited on barcodeArView"
+        },
+        {
+          "text": "barcodeArView.highlightProvider is assigned an object with highlightForBarcode"
+        },
+        {
+          "text": "new BarcodeArCircleHighlight(barcode, BarcodeArCircleHighlightPreset is returned from highlightForBarcode"
+        },
+        {
+          "text": "Import from 'scandit-capacitor-datacapture-core' is present"
+        },
+        {
+          "text": "Import from 'scandit-capacitor-datacapture-barcode' is present"
+        }
       ]
     },
     {
@@ -41,24 +85,60 @@
         "fixtures/ProductListApp.js"
       ],
       "assertions": [
-        {"text": "await ScanditCaptureCorePlugin.initializePlugins() is present"},
-        {"text": "DataCaptureContext.initialize( is present"},
-        {"text": "BarcodeAr.createRecommendedCameraSettings() is called"},
-        {"text": "context.setFrameSource( is called"},
-        {"text": "new BarcodeArSettings() is present"},
-        {"text": "new BarcodeAr(settings) is present (context NOT passed to BarcodeAr constructor)"},
-        {"text": "barcodeAr.addListener( is called with a didUpdateSession callback"},
-        {"text": "session.addedTrackedBarcodes is accessed to get new barcodes"},
-        {"text": "scannedProducts.push( or equivalent is called with barcode data from session"},
-        {"text": "renderProductList() is called after pushing new barcodes"},
-        {"text": "new BarcodeArView({ is present"},
-        {"text": "BarcodeArView is constructed with context and barcodeAr in its options object (semantic)"},
-        {"text": "connectToElement( is called on barcodeArView"},
-        {"text": "barcodeArView.highlightProvider is assigned with a highlightForBarcode returning BarcodeArRectangleHighlight"},
-        {"text": "Existing scannedProducts variable is still referenced and used in the integrated code (semantic)"},
-        {"text": "Existing renderProductList function is preserved"},
-        {"text": "Existing updateTotal / totalLabel logic is preserved"},
-        {"text": "Existing clearButton / onClearTapped logic is preserved"}
+        {
+          "text": "await ScanditCaptureCorePlugin.initializePlugins() is present"
+        },
+        {
+          "text": "DataCaptureContext.initialize( is present"
+        },
+        {
+          "text": "BarcodeAr.createRecommendedCameraSettings() is called"
+        },
+        {
+          "text": "context.setFrameSource( is called"
+        },
+        {
+          "text": "new BarcodeArSettings() is present"
+        },
+        {
+          "text": "new BarcodeAr(settings) is present (context NOT passed to BarcodeAr constructor)"
+        },
+        {
+          "text": "barcodeAr.addListener( is called with a didUpdateSession callback"
+        },
+        {
+          "text": "session.addedTrackedBarcodes is accessed to get new barcodes"
+        },
+        {
+          "text": "scannedProducts.push( or equivalent is called with barcode data from session"
+        },
+        {
+          "text": "renderProductList() is called after pushing new barcodes"
+        },
+        {
+          "text": "new BarcodeArView({ is present"
+        },
+        {
+          "text": "BarcodeArView is constructed with context and barcodeAr in its options object (semantic)"
+        },
+        {
+          "text": "connectToElement( is called on barcodeArView"
+        },
+        {
+          "text": "barcodeArView.highlightProvider is assigned with a highlightForBarcode returning BarcodeArRectangleHighlight"
+        },
+        {
+          "text": "Existing scannedProducts variable is still referenced and used in the integrated code (semantic)"
+        },
+        {
+          "text": "Existing renderProductList function is preserved"
+        },
+        {
+          "text": "Existing updateTotal / totalLabel logic is preserved"
+        },
+        {
+          "text": "Existing clearButton / onClearTapped logic is preserved"
+        }
       ]
     },
     {
@@ -69,17 +149,39 @@
         "fixtures/IntegratedApp.js"
       ],
       "assertions": [
-        {"text": "barcodeArView.annotationProvider is assigned an object"},
-        {"text": "annotationForBarcode is a method on the annotation provider"},
-        {"text": "new BarcodeArInfoAnnotation(barcode) is constructed inside annotationForBarcode"},
-        {"text": "annotation.width is set to BarcodeArInfoAnnotationWidthPreset.Medium"},
-        {"text": "new BarcodeArInfoAnnotationHeader() is constructed and assigned to annotation.header"},
-        {"text": "header.text is set to 'Scanned' or equivalent"},
-        {"text": "new BarcodeArInfoAnnotationBodyComponent() is constructed"},
-        {"text": "component.text is set to barcode.data or equivalent"},
-        {"text": "annotation.body is set to an array containing the body component"},
-        {"text": "The annotationForBarcode method returns the annotation (async / Promise)"},
-        {"text": "Existing integration code (context, barcodeAr, barcodeArView, highlightProvider) is still referenced and used in the integrated code (semantic)"}
+        {
+          "text": "barcodeArView.annotationProvider is assigned an object"
+        },
+        {
+          "text": "annotationForBarcode is a method on the annotation provider"
+        },
+        {
+          "text": "new BarcodeArInfoAnnotation(barcode) is constructed inside annotationForBarcode"
+        },
+        {
+          "text": "annotation.width is set to BarcodeArInfoAnnotationWidthPreset.Medium"
+        },
+        {
+          "text": "new BarcodeArInfoAnnotationHeader() is constructed and assigned to annotation.header"
+        },
+        {
+          "text": "header.text is set to 'Scanned' or equivalent"
+        },
+        {
+          "text": "new BarcodeArInfoAnnotationBodyComponent() is constructed"
+        },
+        {
+          "text": "component.text is set to barcode.data or equivalent"
+        },
+        {
+          "text": "annotation.body is set to an array containing the body component"
+        },
+        {
+          "text": "The annotationForBarcode method returns the annotation (async / Promise)"
+        },
+        {
+          "text": "Existing integration code (context, barcodeAr, barcodeArView, highlightProvider) is still referenced and used in the integrated code (semantic)"
+        }
       ]
     },
     {
@@ -90,14 +192,30 @@
         "fixtures/IntegratedApp.js"
       ],
       "assertions": [
-        {"text": "barcodeArView.annotationProvider is assigned"},
-        {"text": "new BarcodeArPopoverAnnotation(barcode, [acceptButton, rejectButton]) or equivalent is constructed"},
-        {"text": "annotation.annotationTrigger = BarcodeArAnnotationTrigger.HighlightTap is set"},
-        {"text": "Two BarcodeArPopoverAnnotationButton instances are created"},
-        {"text": "annotation.listener is assigned with a didTapButton callback"},
-        {"text": "buttonIndex is used in the didTapButton callback to distinguish accept from reject"},
-        {"text": "console.log or equivalent is called with 'accepted' / 'rejected' and barcode data"},
-        {"text": "Existing integration code (context, barcodeAr, barcodeArView, highlightProvider) is still referenced and used in the integrated code (semantic)"}
+        {
+          "text": "barcodeArView.annotationProvider is assigned"
+        },
+        {
+          "text": "new BarcodeArPopoverAnnotation(barcode, [acceptButton, rejectButton]) or equivalent is constructed"
+        },
+        {
+          "text": "annotation.annotationTrigger = BarcodeArAnnotationTrigger.HighlightTap is set"
+        },
+        {
+          "text": "Two BarcodeArPopoverAnnotationButton instances are created"
+        },
+        {
+          "text": "annotation.listener is assigned with a didTapButton callback"
+        },
+        {
+          "text": "buttonIndex is used in the didTapButton callback to distinguish accept from reject"
+        },
+        {
+          "text": "console.log or equivalent is called with 'accepted' / 'rejected' and barcode data"
+        },
+        {
+          "text": "Existing integration code (context, barcodeAr, barcodeArView, highlightProvider) is still referenced and used in the integrated code (semantic)"
+        }
       ]
     },
     {
@@ -108,15 +226,138 @@
         "fixtures/IntegratedApp.js"
       ],
       "assertions": [
-        {"text": "barcodeArView.annotationProvider is assigned"},
-        {"text": "new BarcodeArStatusIconAnnotation(barcode) is constructed inside annotationForBarcode"},
-        {"text": "annotation.text is set to 'Long code' or equivalent when data length > 8"},
-        {"text": "annotation.text is set to 'OK' or equivalent otherwise"},
-        {"text": "annotation.icon is set using ScanditIconBuilder or a ScanditIcon for both branches"},
-        {"text": "A yellow/warning color (e.g. #FBC02C or similar) is used for the long code icon"},
-        {"text": "A green/checkmark color or icon is used for the OK case"},
-        {"text": "barcode.data.length > 8 is present"},
-        {"text": "Existing integration code (context, barcodeAr, barcodeArView, highlightProvider) is still referenced and used in the integrated code (semantic)"}
+        {
+          "text": "barcodeArView.annotationProvider is assigned"
+        },
+        {
+          "text": "new BarcodeArStatusIconAnnotation(barcode) is constructed inside annotationForBarcode"
+        },
+        {
+          "text": "annotation.text is set to 'Long code' or equivalent when data length > 8"
+        },
+        {
+          "text": "annotation.text is set to 'OK' or equivalent otherwise"
+        },
+        {
+          "text": "annotation.icon is set using ScanditIconBuilder or a ScanditIcon for both branches"
+        },
+        {
+          "text": "A yellow/warning color (e.g. #FBC02C or similar) is used for the long code icon"
+        },
+        {
+          "text": "A green/checkmark color or icon is used for the OK case"
+        },
+        {
+          "text": "barcode.data.length > 8 is present"
+        },
+        {
+          "text": "Existing integration code (context, barcodeAr, barcodeArView, highlightProvider) is still referenced and used in the integrated code (semantic)"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "In my Capacitor MatrixScan AR app, change the highlight to a circle highlight that has a checkmark icon inside it, and give the circle a solid green brush. File: IntegratedApp.js",
+      "expected_output": "The skill updates barcodeArView.highlightProvider to return a BarcodeArCircleHighlight built with the Icon preset, sets a green Brush, and assigns a ScanditIcon built with ScanditIconBuilder using the Checkmark icon type to highlight.icon.",
+      "files": [
+        "fixtures/IntegratedApp.js"
+      ],
+      "tags": [
+        "highlight-brush-icon"
+      ],
+      "assertions": [
+        {
+          "text": "window.barcodeArView.highlightProvider is assigned an object with highlightForBarcode"
+        },
+        {
+          "text": "new BarcodeArCircleHighlight(barcode, BarcodeArCircleHighlightPreset.Icon) is constructed inside highlightForBarcode"
+        },
+        {
+          "text": "highlight.brush is assigned a new Brush with a green color"
+        },
+        {
+          "text": "highlight.icon is assigned a ScanditIcon"
+        },
+        {
+          "text": "new ScanditIconBuilder() is used to build the icon"
+        },
+        {
+          "text": ".withIcon(ScanditIconType.Checkmark) is called on the ScanditIconBuilder"
+        },
+        {
+          "text": ".build() is called on the ScanditIconBuilder"
+        },
+        {
+          "text": "ScanditIconBuilder is imported from 'scandit-capacitor-datacapture-core'"
+        },
+        {
+          "text": "BarcodeArCircleHighlight is imported from 'scandit-capacitor-datacapture-barcode'"
+        },
+        {
+          "text": "BarcodeArCircleHighlightPreset is imported from 'scandit-capacitor-datacapture-barcode'"
+        },
+        {
+          "text": "Existing integration code (context, barcodeAr, barcodeArView, camera lifecycle) is still referenced and used in the integrated code (semantic)"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "In my Capacitor MatrixScan AR app, show the torch button, the zoom control, and the camera switch button in the BarcodeArView, and default to the front (user-facing) camera. File: IntegratedApp.js",
+      "expected_output": "The skill sets barcodeArView.shouldShowTorchControl, shouldShowZoomControl, and shouldShowCameraSwitchControl to true, and sets viewSettings.defaultCameraPosition to CameraPosition.UserFacing before the view is created.",
+      "files": [
+        "fixtures/IntegratedApp.js"
+      ],
+      "tags": [
+        "view-controls"
+      ],
+      "assertions": [
+        {
+          "text": "window.barcodeArView.shouldShowTorchControl = true is set"
+        },
+        {
+          "text": "window.barcodeArView.shouldShowZoomControl = true is set"
+        },
+        {
+          "text": "window.barcodeArView.shouldShowCameraSwitchControl = true is set"
+        },
+        {
+          "text": "viewSettings.defaultCameraPosition is set to CameraPosition.UserFacing"
+        },
+        {
+          "text": "CameraPosition is imported from 'scandit-capacitor-datacapture-core'"
+        },
+        {
+          "text": "Existing integration code (context, barcodeAr, barcodeArView, highlightProvider) is still referenced and used in the integrated code (semantic)"
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "prompt": "I want to render my own fully custom highlight view (a React-style custom component) for each tracked barcode in my Capacitor MatrixScan AR app instead of the built-in rectangle. How do I do that? File: IntegratedApp.js",
+      "expected_output": "The skill explains that BarcodeArCustomHighlight is not available on Capacitor (only React Native and Flutter), and instead customizes the built-in highlights via the brush and icon properties of BarcodeArRectangleHighlight or BarcodeArCircleHighlight.",
+      "files": [
+        "fixtures/IntegratedApp.js"
+      ],
+      "tags": [
+        "custom-highlight"
+      ],
+      "assertions": [
+        {
+          "text": "The answer states that BarcodeArCustomHighlight is not available on Capacitor (semantic)"
+        },
+        {
+          "text": "The deprecated/unavailable BarcodeArCustomHighlight type is NOT used in the produced code (semantic)"
+        },
+        {
+          "text": "The answer directs the user to customize the built-in highlight via the brush property (semantic)"
+        },
+        {
+          "text": "The answer directs the user to customize the built-in highlight via the icon property (semantic)"
+        },
+        {
+          "text": "BarcodeArRectangleHighlight or BarcodeArCircleHighlight is used as the highlight type (semantic)"
+        }
       ]
     }
   ]

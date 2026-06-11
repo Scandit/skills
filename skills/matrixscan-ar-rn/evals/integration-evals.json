@@ -9,29 +9,75 @@
         "fixtures/EmptyApp.tsx"
       ],
       "assertions": [
-        {"text": "Setup checklist is shown (mentions scandit-react-native-datacapture-core and scandit-react-native-datacapture-barcode)"},
-        {"text": "Setup checklist mentions npx pod-install for iOS"},
-        {"text": "Setup checklist mentions NSCameraUsageDescription in ios Info.plist"},
-        {"text": "DataCaptureContext.initialize( is present (v8 API used)"},
-        {"text": "DataCaptureContext.sharedInstance is present (semantic)"},
-        {"text": "DataCaptureContext.forLicenseKey( is NOT present"},
-        {"text": "'-- ENTER YOUR SCANDIT LICENSE KEY HERE --' is present"},
-        {"text": "new BarcodeAr(settings) is present (constructor pattern, not a static factory)"},
-        {"text": "dataCaptureContext.addMode( is present"},
-        {"text": "Symbology.EAN13UPCA is enabled"},
-        {"text": "Symbology.Code128 is enabled"},
-        {"text": "<BarcodeArView is in the JSX tree (semantic)"},
-        {"text": "BarcodeArView has a context prop and a barcodeAr prop (semantic)"},
-        {"text": "view.start() is present"},
-        {"text": "view.start() is invoked inside the BarcodeArView ref callback (semantic)"},
-        {"text": "highlightProvider prop is passed to BarcodeArView"},
-        {"text": "BarcodeArCircleHighlight is constructed inside highlightForBarcode"},
-        {"text": "highlightForBarcode returns a Promise (semantic)"},
-        {"text": "The component is written as a function component (no class syntax)"},
-        {"text": "useRef is used to hold the BarcodeAr mode reference"},
-        {"text": "useEffect cleanup calls dataCaptureContext.removeMode(...)"},
-        {"text": "Import from 'scandit-react-native-datacapture-core' is present"},
-        {"text": "Import from 'scandit-react-native-datacapture-barcode' is present"}
+        {
+          "text": "Setup checklist is shown (mentions scandit-react-native-datacapture-core and scandit-react-native-datacapture-barcode)"
+        },
+        {
+          "text": "Setup checklist mentions npx pod-install for iOS"
+        },
+        {
+          "text": "Setup checklist mentions NSCameraUsageDescription in ios Info.plist"
+        },
+        {
+          "text": "DataCaptureContext.initialize( is present (v8 API used)"
+        },
+        {
+          "text": "DataCaptureContext.sharedInstance is present (semantic)"
+        },
+        {
+          "text": "DataCaptureContext.forLicenseKey( is NOT present"
+        },
+        {
+          "text": "'-- ENTER YOUR SCANDIT LICENSE KEY HERE --' is present"
+        },
+        {
+          "text": "new BarcodeAr(settings) is present (constructor pattern, not a static factory)"
+        },
+        {
+          "text": "dataCaptureContext.addMode( is present"
+        },
+        {
+          "text": "Symbology.EAN13UPCA is enabled"
+        },
+        {
+          "text": "Symbology.Code128 is enabled"
+        },
+        {
+          "text": "<BarcodeArView is in the JSX tree (semantic)"
+        },
+        {
+          "text": "BarcodeArView has a context prop and a barcodeAr prop (semantic)"
+        },
+        {
+          "text": "view.start() is present"
+        },
+        {
+          "text": "view.start() is invoked inside the BarcodeArView ref callback (semantic)"
+        },
+        {
+          "text": "highlightProvider prop is passed to BarcodeArView"
+        },
+        {
+          "text": "BarcodeArCircleHighlight is constructed inside highlightForBarcode"
+        },
+        {
+          "text": "highlightForBarcode returns a Promise (semantic)"
+        },
+        {
+          "text": "The component is written as a function component (no class syntax)"
+        },
+        {
+          "text": "useRef is used to hold the BarcodeAr mode reference"
+        },
+        {
+          "text": "useEffect cleanup calls dataCaptureContext.removeMode(...)"
+        },
+        {
+          "text": "Import from 'scandit-react-native-datacapture-core' is present"
+        },
+        {
+          "text": "Import from 'scandit-react-native-datacapture-barcode' is present"
+        }
       ]
     },
     {
@@ -42,20 +88,48 @@
         "fixtures/ProductListApp.tsx"
       ],
       "assertions": [
-        {"text": "DataCaptureContext.initialize( is present (v8 API)"},
-        {"text": "DataCaptureContext.forLicenseKey( is NOT present"},
-        {"text": "new BarcodeAr(settings) is present"},
-        {"text": "dataCaptureContext.addMode( is present"},
-        {"text": "<BarcodeArView is rendered in the component's JSX"},
-        {"text": "view.start() is present"},
-        {"text": "view.start() is invoked inside the BarcodeArView ref callback (semantic)"},
-        {"text": "didUpdateSession( is present"},
-        {"text": "session.addedTrackedBarcodes is accessed to get newly detected barcodes"},
-        {"text": "setScannedProducts is called to append to the product list"},
-        {"text": "Existing scannedProducts state and setScannedProducts setter are preserved"},
-        {"text": "Existing FlatList rendering is preserved"},
-        {"text": "Existing clear button / onClearTapped handler is preserved"},
-        {"text": "useEffect cleanup calls dataCaptureContext.removeMode(...)"}
+        {
+          "text": "DataCaptureContext.initialize( is present (v8 API)"
+        },
+        {
+          "text": "DataCaptureContext.forLicenseKey( is NOT present"
+        },
+        {
+          "text": "new BarcodeAr(settings) is present"
+        },
+        {
+          "text": "dataCaptureContext.addMode( is present"
+        },
+        {
+          "text": "<BarcodeArView is rendered in the component's JSX"
+        },
+        {
+          "text": "view.start() is present"
+        },
+        {
+          "text": "view.start() is invoked inside the BarcodeArView ref callback (semantic)"
+        },
+        {
+          "text": "didUpdateSession( is present"
+        },
+        {
+          "text": "session.addedTrackedBarcodes is accessed to get newly detected barcodes"
+        },
+        {
+          "text": "setScannedProducts is called to append to the product list"
+        },
+        {
+          "text": "Existing scannedProducts state and setScannedProducts setter are preserved"
+        },
+        {
+          "text": "Existing FlatList rendering is preserved"
+        },
+        {
+          "text": "Existing clear button / onClearTapped handler is preserved"
+        },
+        {
+          "text": "useEffect cleanup calls dataCaptureContext.removeMode(...)"
+        }
       ]
     },
     {
@@ -66,14 +140,30 @@
         "fixtures/IntegratedApp.tsx"
       ],
       "assertions": [
-        {"text": "BarcodeArCustomHighlight is imported from scandit-react-native-datacapture-barcode"},
-        {"text": "new BarcodeArCustomHighlight({ is present"},
-        {"text": "renderHighlight is a function returning a ReactElement / JSX"},
-        {"text": "A React functional component or inline JSX is returned from renderHighlight"},
-        {"text": "The custom component renders a View with styling (border, borderRadius, or similar)"},
-        {"text": "highlightForBarcode returns a Promise (semantic)"},
-        {"text": "Existing BarcodeAr mode, context initialization, and BarcodeArView JSX are preserved (semantic)"},
-        {"text": "view.start() is present"}
+        {
+          "text": "BarcodeArCustomHighlight is imported from scandit-react-native-datacapture-barcode"
+        },
+        {
+          "text": "new BarcodeArCustomHighlight({ is present"
+        },
+        {
+          "text": "renderHighlight is a function returning a ReactElement / JSX"
+        },
+        {
+          "text": "A React functional component or inline JSX is returned from renderHighlight"
+        },
+        {
+          "text": "The custom component renders a View with styling (border, borderRadius, or similar)"
+        },
+        {
+          "text": "highlightForBarcode returns a Promise (semantic)"
+        },
+        {
+          "text": "Existing BarcodeAr mode, context initialization, and BarcodeArView JSX are preserved (semantic)"
+        },
+        {
+          "text": "view.start() is present"
+        }
       ]
     },
     {
@@ -84,18 +174,42 @@
         "fixtures/IntegratedApp.tsx"
       ],
       "assertions": [
-        {"text": "BarcodeArAnnotationProvider is used (annotationProvider prop on BarcodeArView)"},
-        {"text": "annotationForBarcode( is present"},
-        {"text": "new BarcodeArInfoAnnotation( is present"},
-        {"text": "new BarcodeArInfoAnnotationHeader() is present"},
-        {"text": "new BarcodeArInfoAnnotationBodyComponent() is present"},
-        {"text": "annotation.isEntireAnnotationTappable = true is present"},
-        {"text": "BarcodeArInfoAnnotationListener is implemented with a didTap callback"},
-        {"text": "annotation.listener is present"},
-        {"text": "BarcodeArInfoAnnotation is imported from scandit-react-native-datacapture-barcode"},
-        {"text": "BarcodeArInfoAnnotationHeader is imported from scandit-react-native-datacapture-barcode"},
-        {"text": "BarcodeArInfoAnnotationBodyComponent is imported from scandit-react-native-datacapture-barcode"},
-        {"text": "Existing highlight provider and BarcodeAr mode setup are preserved (semantic)"}
+        {
+          "text": "BarcodeArAnnotationProvider is used (annotationProvider prop on BarcodeArView)"
+        },
+        {
+          "text": "annotationForBarcode( is present"
+        },
+        {
+          "text": "new BarcodeArInfoAnnotation( is present"
+        },
+        {
+          "text": "new BarcodeArInfoAnnotationHeader() is present"
+        },
+        {
+          "text": "new BarcodeArInfoAnnotationBodyComponent() is present"
+        },
+        {
+          "text": "annotation.isEntireAnnotationTappable = true is present"
+        },
+        {
+          "text": "BarcodeArInfoAnnotationListener is implemented with a didTap callback"
+        },
+        {
+          "text": "annotation.listener is present"
+        },
+        {
+          "text": "BarcodeArInfoAnnotation is imported from scandit-react-native-datacapture-barcode"
+        },
+        {
+          "text": "BarcodeArInfoAnnotationHeader is imported from scandit-react-native-datacapture-barcode"
+        },
+        {
+          "text": "BarcodeArInfoAnnotationBodyComponent is imported from scandit-react-native-datacapture-barcode"
+        },
+        {
+          "text": "Existing highlight provider and BarcodeAr mode setup are preserved (semantic)"
+        }
       ]
     },
     {
@@ -106,10 +220,246 @@
         "fixtures/IntegratedApp.tsx"
       ],
       "assertions": [
-        {"text": "useEffect cleanup (returned function from useEffect) calls dataCaptureContext.removeMode(...)"},
-        {"text": "The BarcodeAr mode passed to removeMode is the one held in the useRef (barcodeArRef.current or equivalent)"},
-        {"text": "dataCaptureContext.dispose() is NOT present"},
-        {"text": "Existing integration code (BarcodeAr mode, BarcodeArView JSX, highlight provider, annotation provider) is preserved (semantic)"}
+        {
+          "text": "useEffect cleanup (returned function from useEffect) calls dataCaptureContext.removeMode(...)"
+        },
+        {
+          "text": "The BarcodeAr mode passed to removeMode is the one held in the useRef (barcodeArRef.current or equivalent)"
+        },
+        {
+          "text": "dataCaptureContext.dispose() is NOT present"
+        },
+        {
+          "text": "Existing integration code (BarcodeAr mode, BarcodeArView JSX, highlight provider, annotation provider) is preserved (semantic)"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "In my MatrixScan AR app, change the circle highlight so it uses a custom brush — a semi-transparent green fill with a solid green 2dp stroke — and put an icon inside each circle. File: IntegratedApp.tsx",
+      "expected_output": "The skill sets a custom Brush on the BarcodeArCircleHighlight via the highlight.brush property (fill, stroke, stroke width) and assigns a ScanditIcon (built with ScanditIconBuilder().withIcon(...).build()) to highlight.icon. Brush, Color, ScanditIconBuilder, and ScanditIconType are imported from scandit-react-native-datacapture-core.",
+      "files": [
+        "fixtures/IntegratedApp.tsx"
+      ],
+      "assertions": [
+        {
+          "text": "highlight.brush is assigned a new Brush instance"
+        },
+        {
+          "text": "new Brush( is constructed with a fill color, a stroke color, and a stroke width"
+        },
+        {
+          "text": "Color.fromHex( is used to build the brush colors"
+        },
+        {
+          "text": "highlight.icon is assigned a ScanditIcon"
+        },
+        {
+          "text": "the icon is built with new ScanditIconBuilder().withIcon( and .build()"
+        },
+        {
+          "text": "withIcon is called with a valid ScanditIconType member (semantic)"
+        },
+        {
+          "text": "Brush is imported from scandit-react-native-datacapture-core"
+        },
+        {
+          "text": "ScanditIconBuilder is imported from scandit-react-native-datacapture-core"
+        },
+        {
+          "text": "BarcodeArCircleHighlight is constructed inside highlightForBarcode (semantic)"
+        },
+        {
+          "text": "Existing BarcodeAr mode, context initialization, and BarcodeArView JSX are preserved (semantic)"
+        }
+      ],
+      "tags": [
+        "highlight-brush-icon"
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "Add a status icon annotation to my MatrixScan AR app. Each scanned barcode should show a compact warning icon, and when tapped it should expand to show the text 'Low stock'. Use a yellow background. File: IntegratedApp.tsx",
+      "expected_output": "The skill returns a BarcodeArStatusIconAnnotation from annotationForBarcode, sets its icon to a ScanditIcon built via ScanditIconBuilder().withIcon(ScanditIconType.ExclamationMark).build(), sets text to 'Low stock', and sets a backgroundColor. BarcodeArStatusIconAnnotation is imported from the barcode package; ScanditIconBuilder/ScanditIconType/Color from the core package.",
+      "files": [
+        "fixtures/IntegratedApp.tsx"
+      ],
+      "assertions": [
+        {
+          "text": "new BarcodeArStatusIconAnnotation(barcode) is present"
+        },
+        {
+          "text": "BarcodeArStatusIconAnnotation is imported from scandit-react-native-datacapture-barcode"
+        },
+        {
+          "text": "statusAnnotation.icon is assigned a ScanditIcon built with new ScanditIconBuilder().withIcon( and .build()"
+        },
+        {
+          "text": "ScanditIconBuilder is imported from scandit-react-native-datacapture-core"
+        },
+        {
+          "text": "statusAnnotation.text is assigned the string 'Low stock'"
+        },
+        {
+          "text": "statusAnnotation.backgroundColor is assigned a Color"
+        },
+        {
+          "text": "annotationForBarcode( returns the BarcodeArStatusIconAnnotation (semantic)"
+        },
+        {
+          "text": "BarcodeArAnnotationProvider is passed as the annotationProvider prop on BarcodeArView (semantic)"
+        },
+        {
+          "text": "Existing BarcodeAr mode, context initialization, and BarcodeArView JSX are preserved (semantic)"
+        }
+      ],
+      "tags": [
+        "status-icon-annotation"
+      ]
+    },
+    {
+      "id": 8,
+      "prompt": "I want a popover with two action buttons to appear when the user taps a barcode highlight in my MatrixScan AR app: a 'Details' button and an 'Add' button, each with an icon. Log which button was tapped. File: IntegratedApp.tsx",
+      "expected_output": "The skill returns a BarcodeArPopoverAnnotation built from an array of BarcodeArPopoverAnnotationButton instances (each constructed with a ScanditIcon built via ScanditIconBuilder and a label). A BarcodeArPopoverAnnotationListener with didTapButton is attached via popover.listener. Symbols imported from the correct packages.",
+      "files": [
+        "fixtures/IntegratedApp.tsx"
+      ],
+      "assertions": [
+        {
+          "text": "new BarcodeArPopoverAnnotation(barcode, is constructed with an array of buttons"
+        },
+        {
+          "text": "new BarcodeArPopoverAnnotationButton( is constructed for the Details button"
+        },
+        {
+          "text": "new BarcodeArPopoverAnnotationButton( is constructed for the Add button"
+        },
+        {
+          "text": "each popover button icon is built with new ScanditIconBuilder().withIcon( and .build()"
+        },
+        {
+          "text": "the ScanditIcon is the first argument to BarcodeArPopoverAnnotationButton and the label string is the second (semantic)"
+        },
+        {
+          "text": "popover.listener is assigned a BarcodeArPopoverAnnotationListener"
+        },
+        {
+          "text": "didTapButton is implemented on the popover listener"
+        },
+        {
+          "text": "BarcodeArPopoverAnnotation is imported from scandit-react-native-datacapture-barcode"
+        },
+        {
+          "text": "BarcodeArPopoverAnnotationButton is imported from scandit-react-native-datacapture-barcode"
+        },
+        {
+          "text": "ScanditIconBuilder is imported from scandit-react-native-datacapture-core"
+        },
+        {
+          "text": "Existing BarcodeAr mode, context initialization, and BarcodeArView JSX are preserved (semantic)"
+        }
+      ],
+      "tags": [
+        "popover-annotation"
+      ]
+    },
+    {
+      "id": 9,
+      "prompt": "Make the annotation in my MatrixScan AR app responsive to distance: show a detailed info card with the barcode data when the barcode is close to the camera, and a compact 'Get closer' card when it is far away. Switch at 5% of the screen area. File: IntegratedApp.tsx",
+      "expected_output": "The skill builds two BarcodeArInfoAnnotation variants (a detailed close-up one and a compact far-away one) and wraps them in a BarcodeArResponsiveAnnotation constructed with (barcode, closeUp, farAway). It sets responsive.threshold to 0.05. A note that BarcodeArResponsiveAnnotation requires SDK 8.2+ is included.",
+      "files": [
+        "fixtures/IntegratedApp.tsx"
+      ],
+      "assertions": [
+        {
+          "text": "new BarcodeArResponsiveAnnotation(barcode, is constructed with a close-up annotation and a far-away annotation"
+        },
+        {
+          "text": "two BarcodeArInfoAnnotation instances are constructed as the close-up and far-away variants (semantic)"
+        },
+        {
+          "text": "responsive.threshold is assigned the value 0.05"
+        },
+        {
+          "text": "BarcodeArResponsiveAnnotation is imported from scandit-react-native-datacapture-barcode"
+        },
+        {
+          "text": "annotationForBarcode( returns the BarcodeArResponsiveAnnotation (semantic)"
+        },
+        {
+          "text": "A note that BarcodeArResponsiveAnnotation requires SDK 8.2+ is included"
+        },
+        {
+          "text": "Existing BarcodeAr mode, context initialization, and BarcodeArView JSX are preserved (semantic)"
+        }
+      ],
+      "tags": [
+        "responsive-annotation"
+      ]
+    },
+    {
+      "id": 10,
+      "prompt": "Change the info annotation in my MatrixScan AR app so it only appears when the user taps the barcode highlight, not automatically when the barcode is scanned. File: IntegratedApp.tsx",
+      "expected_output": "The skill sets annotation.annotationTrigger to BarcodeArAnnotationTrigger.HighlightTap so the annotation shows only on highlight tap. BarcodeArAnnotationTrigger is imported from the barcode package.",
+      "files": [
+        "fixtures/IntegratedApp.tsx"
+      ],
+      "assertions": [
+        {
+          "text": "annotation.annotationTrigger is assigned BarcodeArAnnotationTrigger.HighlightTap"
+        },
+        {
+          "text": "BarcodeArAnnotationTrigger.HighlightTapAndBarcodeScan is NOT used for this annotation (semantic)"
+        },
+        {
+          "text": "BarcodeArAnnotationTrigger is imported from scandit-react-native-datacapture-barcode"
+        },
+        {
+          "text": "Existing BarcodeArInfoAnnotation construction and annotation provider are preserved (semantic)"
+        },
+        {
+          "text": "Existing BarcodeAr mode, context initialization, and BarcodeArView JSX are preserved (semantic)"
+        }
+      ],
+      "tags": [
+        "annotation-trigger"
+      ]
+    },
+    {
+      "id": 11,
+      "prompt": "In my MatrixScan AR app I want to show the torch button and the camera switch button but hide the zoom button, and default to the world-facing (back) camera. File: IntegratedApp.tsx",
+      "expected_output": "The skill sets shouldShowTorchControl = true, shouldShowCameraSwitchControl = true, and shouldShowZoomControl = false on the BarcodeArView inside the ref callback, and sets defaultCameraPosition to CameraPosition.WorldFacing on a BarcodeArViewSettings instance passed as the settings prop.",
+      "files": [
+        "fixtures/IntegratedApp.tsx"
+      ],
+      "assertions": [
+        {
+          "text": "view.shouldShowTorchControl = true is set in the BarcodeArView ref callback"
+        },
+        {
+          "text": "view.shouldShowCameraSwitchControl = true is set in the BarcodeArView ref callback"
+        },
+        {
+          "text": "view.shouldShowZoomControl = false is set in the BarcodeArView ref callback"
+        },
+        {
+          "text": "BarcodeArViewSettings defaultCameraPosition is assigned CameraPosition.WorldFacing"
+        },
+        {
+          "text": "CameraPosition is imported from scandit-react-native-datacapture-core"
+        },
+        {
+          "text": "the settings prop on BarcodeArView is a BarcodeArViewSettings instance (semantic)"
+        },
+        {
+          "text": "view.start() is invoked inside the BarcodeArView ref callback (semantic)"
+        },
+        {
+          "text": "Existing BarcodeAr mode, context initialization, and BarcodeArView JSX are preserved (semantic)"
+        }
+      ],
+      "tags": [
+        "view-controls"
       ]
     }
   ]

@@ -9,30 +9,78 @@
         "fixtures/EmptyApp.js"
       ],
       "assertions": [
-        {"text": "Setup checklist is shown (mentions cordova plugin add scandit-cordova-datacapture-core and scandit-cordova-datacapture-barcode)"},
-        {"text": "Setup checklist mentions minimum plugin version 8.2 for BarcodeAr"},
-        {"text": "Setup checklist mentions cordova prepare after plugin install"},
-        {"text": "Setup checklist mentions CSP meta tag or that camera permissions are auto-configured by the plugins"},
-        {"text": "document.addEventListener('deviceready' is used as the init gate"},
-        {"text": "Scandit.DataCaptureContext.initialize( is present (v8 API used)"},
-        {"text": "Scandit.DataCaptureContext.forLicenseKey( is NOT present"},
-        {"text": "'-- ENTER YOUR SCANDIT LICENSE KEY HERE --' is present"},
-        {"text": "Scandit.BarcodeAr.createRecommendedCameraSettings() is called"},
-        {"text": "Scandit.Camera.withSettings( is called"},
-        {"text": "context.setFrameSource( is called"},
-        {"text": "new Scandit.BarcodeArSettings() is present"},
-        {"text": "Scandit.Symbology.EAN13UPCA is enabled"},
-        {"text": "Scandit.Symbology.Code128 is enabled"},
-        {"text": "Only Scandit.Symbology.EAN13UPCA and Scandit.Symbology.Code128 are enabled in the primary BarcodeArSettings.enableSymbologies(...) call (semantic)"},
-        {"text": "new Scandit.BarcodeAr(settings) is present (Cordova constructor used)"},
-        {"text": "BarcodeAr.forContext( is NOT present"},
-        {"text": "new Scandit.BarcodeArViewSettings() is present"},
-        {"text": "new Scandit.BarcodeArView({ is present"},
-        {"text": "barcodeArView.connectToElement( is called"},
-        {"text": "new Scandit.BarcodeArRectangleHighlight( is returned from highlightProvider"},
-        {"text": "highlightProvider is assigned on barcodeArView"},
-        {"text": "camera.switchToDesiredState(Scandit.FrameSourceState.On) is called to start the camera"},
-        {"text": "The Scandit.* global is used (no 'import ... from scandit-cordova-datacapture-*' statements in runtime code)"}
+        {
+          "text": "Setup checklist is shown (mentions cordova plugin add scandit-cordova-datacapture-core and scandit-cordova-datacapture-barcode)"
+        },
+        {
+          "text": "Setup checklist mentions minimum plugin version 8.2 for BarcodeAr"
+        },
+        {
+          "text": "Setup checklist mentions cordova prepare after plugin install"
+        },
+        {
+          "text": "Setup checklist mentions CSP meta tag or that camera permissions are auto-configured by the plugins"
+        },
+        {
+          "text": "document.addEventListener('deviceready' is used as the init gate"
+        },
+        {
+          "text": "Scandit.DataCaptureContext.initialize( is present (v8 API used)"
+        },
+        {
+          "text": "Scandit.DataCaptureContext.forLicenseKey( is NOT present"
+        },
+        {
+          "text": "'-- ENTER YOUR SCANDIT LICENSE KEY HERE --' is present"
+        },
+        {
+          "text": "Scandit.BarcodeAr.createRecommendedCameraSettings() is called"
+        },
+        {
+          "text": "Scandit.Camera.withSettings( is called"
+        },
+        {
+          "text": "context.setFrameSource( is called"
+        },
+        {
+          "text": "new Scandit.BarcodeArSettings() is present"
+        },
+        {
+          "text": "Scandit.Symbology.EAN13UPCA is enabled"
+        },
+        {
+          "text": "Scandit.Symbology.Code128 is enabled"
+        },
+        {
+          "text": "Only Scandit.Symbology.EAN13UPCA and Scandit.Symbology.Code128 are enabled in the primary BarcodeArSettings.enableSymbologies(...) call (semantic)"
+        },
+        {
+          "text": "new Scandit.BarcodeAr(settings) is present (Cordova constructor used)"
+        },
+        {
+          "text": "BarcodeAr.forContext( is NOT present"
+        },
+        {
+          "text": "new Scandit.BarcodeArViewSettings() is present"
+        },
+        {
+          "text": "new Scandit.BarcodeArView({ is present"
+        },
+        {
+          "text": "barcodeArView.connectToElement( is called"
+        },
+        {
+          "text": "new Scandit.BarcodeArRectangleHighlight( is returned from highlightProvider"
+        },
+        {
+          "text": "highlightProvider is assigned on barcodeArView"
+        },
+        {
+          "text": "camera.switchToDesiredState(Scandit.FrameSourceState.On) is called to start the camera"
+        },
+        {
+          "text": "The Scandit.* global is used (no 'import ... from scandit-cordova-datacapture-*' statements in runtime code)"
+        }
       ]
     },
     {
@@ -43,22 +91,54 @@
         "fixtures/ProductListApp.js"
       ],
       "assertions": [
-        {"text": "document.addEventListener('deviceready' is present"},
-        {"text": "Scandit.DataCaptureContext.initialize( is present"},
-        {"text": "new Scandit.BarcodeArSettings() is present"},
-        {"text": "new Scandit.BarcodeAr(settings) is present"},
-        {"text": "new Scandit.BarcodeArView({ is present"},
-        {"text": "barcodeArView.connectToElement( is called"},
-        {"text": "BarcodeArCircleHighlight is used with BarcodeArCircleHighlightPreset.Dot"},
-        {"text": "highlightProvider is assigned on barcodeArView with a highlightForBarcode method"},
-        {"text": "annotationProvider is assigned on barcodeArView with an annotationForBarcode method"},
-        {"text": "BarcodeArInfoAnnotation is constructed in annotationForBarcode"},
-        {"text": "barcode.data is used as the text of a BarcodeArInfoAnnotationBodyComponent (semantic)"},
-        {"text": "uiListener is assigned OR barcodeAr.addListener is used to push items to scannedProducts"},
-        {"text": "Existing scannedProducts variable is referenced in the integrated code (semantic)"},
-        {"text": "Existing renderProductList function is defined (semantic)"},
-        {"text": "Existing onClearTapped / clear button handler is preserved"},
-        {"text": "camera.switchToDesiredState( is called to start the camera"}
+        {
+          "text": "document.addEventListener('deviceready' is present"
+        },
+        {
+          "text": "Scandit.DataCaptureContext.initialize( is present"
+        },
+        {
+          "text": "new Scandit.BarcodeArSettings() is present"
+        },
+        {
+          "text": "new Scandit.BarcodeAr(settings) is present"
+        },
+        {
+          "text": "new Scandit.BarcodeArView({ is present"
+        },
+        {
+          "text": "barcodeArView.connectToElement( is called"
+        },
+        {
+          "text": "BarcodeArCircleHighlight is used with BarcodeArCircleHighlightPreset.Dot"
+        },
+        {
+          "text": "highlightProvider is assigned on barcodeArView with a highlightForBarcode method"
+        },
+        {
+          "text": "annotationProvider is assigned on barcodeArView with an annotationForBarcode method"
+        },
+        {
+          "text": "BarcodeArInfoAnnotation is constructed in annotationForBarcode"
+        },
+        {
+          "text": "barcode.data is used as the text of a BarcodeArInfoAnnotationBodyComponent (semantic)"
+        },
+        {
+          "text": "uiListener is assigned OR barcodeAr.addListener is used to push items to scannedProducts"
+        },
+        {
+          "text": "Existing scannedProducts variable is referenced in the integrated code (semantic)"
+        },
+        {
+          "text": "Existing renderProductList function is defined (semantic)"
+        },
+        {
+          "text": "Existing onClearTapped / clear button handler is preserved"
+        },
+        {
+          "text": "camera.switchToDesiredState( is called to start the camera"
+        }
       ]
     },
     {
@@ -69,14 +149,30 @@
         "fixtures/IntegratedApp.js"
       ],
       "assertions": [
-        {"text": "barcodeArView.highlightProvider is assigned"},
-        {"text": "barcodeArView.highlightProvider has a highlightForBarcode function (semantic)"},
-        {"text": "new Scandit.BarcodeArCircleHighlight(barcode, Scandit.BarcodeArCircleHighlightPreset.Icon) is returned for the matched condition"},
-        {"text": "new Scandit.BarcodeArRectangleHighlight(barcode) is returned for the other condition"},
-        {"text": "A Brush with a green hex color (e.g. '#0D853D' or '#0D853D66') is assigned for the circle highlight (semantic)"},
-        {"text": "A red Brush is assigned for the rectangle highlight (e.g. Scandit.Color.fromHex('#D92121') or similar red hex)"},
-        {"text": "barcode.data is inspected to determine which highlight to return"},
-        {"text": "Existing integration code (context, barcodeAr, barcodeArView, camera) is preserved"}
+        {
+          "text": "barcodeArView.highlightProvider is assigned"
+        },
+        {
+          "text": "barcodeArView.highlightProvider has a highlightForBarcode function (semantic)"
+        },
+        {
+          "text": "new Scandit.BarcodeArCircleHighlight(barcode, Scandit.BarcodeArCircleHighlightPreset.Icon) is returned for the matched condition"
+        },
+        {
+          "text": "new Scandit.BarcodeArRectangleHighlight(barcode) is returned for the other condition"
+        },
+        {
+          "text": "A Brush with a green hex color (e.g. '#0D853D' or '#0D853D66') is assigned for the circle highlight (semantic)"
+        },
+        {
+          "text": "A red Brush is assigned for the rectangle highlight (e.g. Scandit.Color.fromHex('#D92121') or similar red hex)"
+        },
+        {
+          "text": "barcode.data is inspected to determine which highlight to return"
+        },
+        {
+          "text": "Existing integration code (context, barcodeAr, barcodeArView, camera) is preserved"
+        }
       ]
     },
     {
@@ -87,18 +183,42 @@
         "fixtures/IntegratedApp.js"
       ],
       "assertions": [
-        {"text": "barcodeArView.annotationProvider is assigned"},
-        {"text": "barcodeArView.annotationProvider has an annotationForBarcode function (semantic)"},
-        {"text": "new Scandit.BarcodeArInfoAnnotation(barcode) is constructed"},
-        {"text": "Scandit.BarcodeArAnnotationTrigger.HighlightTapAndBarcodeScan is present"},
-        {"text": "A BarcodeArInfoAnnotationHeader is created and assigned to annotation.header"},
-        {"text": "header.text is set to 'Product' or similar"},
-        {"text": "header.backgroundColor is set to a cyan or close color (e.g. #00FFFF or similar)"},
-        {"text": "A BarcodeArInfoAnnotationBodyComponent is created with text set to barcode.data"},
-        {"text": "annotation.body is assigned an array containing the body component"},
-        {"text": "A BarcodeArInfoAnnotationFooter is created with text 'Tap to dismiss' or similar"},
-        {"text": "annotation.footer is assigned"},
-        {"text": "Existing integration code (context, barcodeAr, barcodeArView, camera) is preserved"}
+        {
+          "text": "barcodeArView.annotationProvider is assigned"
+        },
+        {
+          "text": "barcodeArView.annotationProvider has an annotationForBarcode function (semantic)"
+        },
+        {
+          "text": "new Scandit.BarcodeArInfoAnnotation(barcode) is constructed"
+        },
+        {
+          "text": "Scandit.BarcodeArAnnotationTrigger.HighlightTapAndBarcodeScan is present"
+        },
+        {
+          "text": "A BarcodeArInfoAnnotationHeader is created and assigned to annotation.header"
+        },
+        {
+          "text": "header.text is set to 'Product' or similar"
+        },
+        {
+          "text": "header.backgroundColor is set to a cyan or close color (e.g. #00FFFF or similar)"
+        },
+        {
+          "text": "A BarcodeArInfoAnnotationBodyComponent is created with text set to barcode.data"
+        },
+        {
+          "text": "annotation.body is assigned an array containing the body component"
+        },
+        {
+          "text": "A BarcodeArInfoAnnotationFooter is created with text 'Tap to dismiss' or similar"
+        },
+        {
+          "text": "annotation.footer is assigned"
+        },
+        {
+          "text": "Existing integration code (context, barcodeAr, barcodeArView, camera) is preserved"
+        }
       ]
     },
     {
@@ -109,12 +229,122 @@
         "fixtures/IntegratedApp.js"
       ],
       "assertions": [
-        {"text": "camera.switchToDesiredState(Scandit.FrameSourceState.Off) is called in the teardown path"},
-        {"text": "barcodeArView.detachFromElement() is called"},
-        {"text": "The detachFromElement() call is awaited OR used as a promise (.then / .catch)"},
-        {"text": "camera is set to null after stopping"},
-        {"text": "barcodeArView is set to null after detaching"},
-        {"text": "Existing integration code (context, barcodeAr, barcodeArView, camera) is preserved"}
+        {
+          "text": "camera.switchToDesiredState(Scandit.FrameSourceState.Off) is called in the teardown path"
+        },
+        {
+          "text": "barcodeArView.detachFromElement() is called"
+        },
+        {
+          "text": "The detachFromElement() call is awaited OR used as a promise (.then / .catch)"
+        },
+        {
+          "text": "camera is set to null after stopping"
+        },
+        {
+          "text": "barcodeArView is set to null after detaching"
+        },
+        {
+          "text": "Existing integration code (context, barcodeAr, barcodeArView, camera) is preserved"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "In my Cordova MatrixScan AR app, I want a compact status-icon annotation on each barcode. Barcodes whose data ends with '0' are flagged as close to expiry: show a yellow circle icon with an exclamation mark and the expandable text 'Close to expiry'. All other barcodes get a green circle icon with a checkmark and no expandable text. File: IntegratedApp.js",
+      "expected_output": "The skill assigns an annotationProvider to barcodeArView whose annotationForBarcode returns a BarcodeArStatusIconAnnotation. It branches on barcode.data: a yellow ExclamationMark icon with text 'Close to expiry' for the expiry case, and a green Checkmark icon with text left null for the rest, building each icon with ScanditIconBuilder.",
+      "files": [
+        "fixtures/IntegratedApp.js"
+      ],
+      "tags": [
+        "status-icon-annotation"
+      ],
+      "assertions": [
+        {
+          "text": "barcodeArView.annotationProvider is assigned"
+        },
+        {
+          "text": "barcodeArView.annotationProvider has an annotationForBarcode function (semantic)"
+        },
+        {
+          "text": "new Scandit.BarcodeArStatusIconAnnotation(barcode) is constructed"
+        },
+        {
+          "text": "annotation.icon is assigned a ScanditIcon built with new Scandit.ScanditIconBuilder()"
+        },
+        {
+          "text": "Scandit.ScanditIconType.ExclamationMark is used for the close-to-expiry icon"
+        },
+        {
+          "text": "Scandit.ScanditIconType.Checkmark is used for the non-expiry icon"
+        },
+        {
+          "text": "Scandit.ScanditIconShape.Circle is used for the icon background shape"
+        },
+        {
+          "text": ".build() is called on the ScanditIconBuilder"
+        },
+        {
+          "text": "annotation.text is set to 'Close to expiry' for the close-to-expiry branch"
+        },
+        {
+          "text": "annotation.text is left null (or not set) for the non-expiry branch (semantic)"
+        },
+        {
+          "text": "barcode.data is inspected to determine which status icon to return"
+        },
+        {
+          "text": "Existing integration code (context, barcodeAr, barcodeArView, camera) is preserved"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "Add a popover annotation to my Cordova MatrixScan AR app. When the user taps a barcode highlight, show a popover with two buttons: an 'Accept' button with a checkmark icon and a 'Reject' button with an X-mark icon. Log the barcode data when Accept is tapped. File: IntegratedApp.js",
+      "expected_output": "The skill assigns an annotationProvider to barcodeArView whose annotationForBarcode builds two BarcodeArPopoverAnnotationButton instances (Accept with a Checkmark icon, Reject with an XMark icon), constructs a BarcodeArPopoverAnnotation with the barcode and the button array, sets annotationTrigger to HighlightTap, and wires a listener with didTapButton that logs the barcode data on the Accept button.",
+      "files": [
+        "fixtures/IntegratedApp.js"
+      ],
+      "tags": [
+        "popover-annotation"
+      ],
+      "assertions": [
+        {
+          "text": "barcodeArView.annotationProvider is assigned"
+        },
+        {
+          "text": "barcodeArView.annotationProvider has an annotationForBarcode function (semantic)"
+        },
+        {
+          "text": "new Scandit.BarcodeArPopoverAnnotationButton( is used to build the Accept button"
+        },
+        {
+          "text": "new Scandit.BarcodeArPopoverAnnotationButton( is used to build the Reject button"
+        },
+        {
+          "text": "Scandit.ScanditIconType.Checkmark is used for the Accept button icon"
+        },
+        {
+          "text": "Scandit.ScanditIconType.XMark is used for the Reject button icon"
+        },
+        {
+          "text": "new Scandit.BarcodeArPopoverAnnotation(barcode, is constructed with the barcode and an array of buttons"
+        },
+        {
+          "text": "Scandit.BarcodeArAnnotationTrigger.HighlightTap is assigned to annotationTrigger"
+        },
+        {
+          "text": "popover.listener is assigned an object with a didTapButton method (semantic)"
+        },
+        {
+          "text": "didTapButton uses buttonIndex to identify the Accept button (semantic)"
+        },
+        {
+          "text": "barcode.data is logged when the Accept button is tapped (semantic)"
+        },
+        {
+          "text": "Existing integration code (context, barcodeAr, barcodeArView, camera) is preserved"
+        }
       ]
     }
   ]

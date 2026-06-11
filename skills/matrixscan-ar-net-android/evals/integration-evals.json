@@ -9,40 +9,108 @@
         "fixtures/EmptyActivity.cs"
       ],
       "assertions": [
-        {"text": "Setup checklist is shown and mentions adding the Scandit.DataCapture.Barcode and Scandit.DataCapture.Core NuGet packages"},
-        {"text": "Setup checklist mentions adding android.permission.CAMERA to AndroidManifest.xml"},
-        {"text": "Setup checklist mentions requesting the CAMERA permission at runtime"},
-        {"text": "Setup checklist mentions creating a MainApplication subclass that calls ScanditCaptureCore.Initialize() and ScanditBarcodeCapture.Initialize() (required for SDK 8.0+)"},
-        {"text": "Setup checklist mentions setting a Theme.AppCompat descendant (Theme = @style/Theme.AppCompat...) on the [Activity] attribute"},
-        {"text": "A license key placeholder string is present"},
-        {"text": "DataCaptureContext.ForLicenseKey( is used to create the context"},
-        {"text": "new BarcodeArSettings() is used (not BarcodeArSettings.Create(), which does not exist)"},
-        {"text": "new BarcodeAr(context, settings) is used as the constructor (not BarcodeAr.Create(...) or BarcodeAr.ForDataCaptureContext(...), which do not exist)"},
-        {"text": "Symbology.Ean13Upca is enabled"},
-        {"text": "Symbology.Qr is enabled"},
-        {"text": "No symbologies other than Ean13Upca and Qr are enabled"},
-        {"text": "Kotlin-style underscore symbology names (Symbology.EAN13_UPCA, Symbology.QR) are NOT used"},
-        {"text": "BarcodeArView.Create( is called (not new BarcodeArView(...), which is not a public constructor)"},
-        {"text": "BarcodeArView.Create( receives a ViewGroup (FrameLayout or activity layout root) as the parentView argument"},
-        {"text": "BarcodeArView.Create( receives the BarcodeAr instance as the barcodeAr argument"},
-        {"text": "BarcodeArView.Create( receives the DataCaptureContext as the dataCaptureContext argument"},
-        {"text": "BarcodeArView.Create( receives a BarcodeArViewSettings as the settings argument"},
-        {"text": "BarcodeArView.Create( receives null (or a CameraSettings) as the cameraSettings argument"},
-        {"text": "IBarcodeArHighlightProvider is implemented"},
-        {"text": "HighlightForBarcodeAsync is implemented and returns a Task<IBarcodeArHighlight?> (the async/Task-based provider, not a callback)"},
-        {"text": "A new BarcodeArRectangleHighlight(barcode) is constructed with only the Barcode argument (no Context argument is passed)"},
-        {"text": "callback.OnData(...) / callback.onData(...) is NOT used (that is the Kotlin pattern, not the .NET pattern)"},
-        {"text": "barcodeArView.HighlightProvider is assigned to the provider instance"},
-        {"text": "Either barcodeAr.SessionUpdated += handler or barcodeAr.AddListener(IBarcodeArListener) is wired"},
-        {"text": "OnObservationStarted and OnObservationStopped are NOT declared (the .NET IBarcodeArListener has only one method)"},
-        {"text": "barcodeArView.Start() is called after providers are assigned"},
-        {"text": "The activity's OnResume forwards to barcodeArView.OnResume()"},
-        {"text": "The activity's OnPause forwards to barcodeArView.OnPause()"},
-        {"text": "barcodeArView.Dispose() is called on teardown (NOT barcodeArView.OnDestroy(), which does not exist in the .NET binding)"},
-        {"text": "No call to BarcodeCapture.Create or barcodeCapture.AddListener appears (BarcodeAr is not BarcodeCapture)"},
-        {"text": "No DataCaptureView, BarcodeCaptureOverlay, or BarcodeBatchBasicOverlay is created (BarcodeArView is the only view needed)"},
-        {"text": "No Camera.GetDefaultCamera() or dataCaptureContext.SetFrameSourceAsync(...) call is present (BarcodeArView manages its own camera internally)"},
-        {"text": "No SparkScanCoordinatorLayout is referenced (that is SparkScan-specific and not used by BarcodeAr)"}
+        {
+          "text": "Setup checklist is shown and mentions adding the Scandit.DataCapture.Barcode and Scandit.DataCapture.Core NuGet packages"
+        },
+        {
+          "text": "Setup checklist mentions adding android.permission.CAMERA to AndroidManifest.xml"
+        },
+        {
+          "text": "Setup checklist mentions requesting the CAMERA permission at runtime"
+        },
+        {
+          "text": "Setup checklist mentions creating a MainApplication subclass that calls ScanditCaptureCore.Initialize() and ScanditBarcodeCapture.Initialize() (required for SDK 8.0+)"
+        },
+        {
+          "text": "Setup checklist mentions setting a Theme.AppCompat descendant (Theme = @style/Theme.AppCompat...) on the [Activity] attribute"
+        },
+        {
+          "text": "A license key placeholder string is present"
+        },
+        {
+          "text": "DataCaptureContext.ForLicenseKey( is used to create the context"
+        },
+        {
+          "text": "new BarcodeArSettings() is used (not BarcodeArSettings.Create(), which does not exist)"
+        },
+        {
+          "text": "new BarcodeAr(context, settings) is used as the constructor (not BarcodeAr.Create(...) or BarcodeAr.ForDataCaptureContext(...), which do not exist)"
+        },
+        {
+          "text": "Symbology.Ean13Upca is enabled"
+        },
+        {
+          "text": "Symbology.Qr is enabled"
+        },
+        {
+          "text": "No symbologies other than Ean13Upca and Qr are enabled"
+        },
+        {
+          "text": "Kotlin-style underscore symbology names (Symbology.EAN13_UPCA, Symbology.QR) are NOT used"
+        },
+        {
+          "text": "BarcodeArView.Create( is called (not new BarcodeArView(...), which is not a public constructor)"
+        },
+        {
+          "text": "BarcodeArView.Create( receives a ViewGroup (FrameLayout or activity layout root) as the parentView argument"
+        },
+        {
+          "text": "BarcodeArView.Create( receives the BarcodeAr instance as the barcodeAr argument"
+        },
+        {
+          "text": "BarcodeArView.Create( receives the DataCaptureContext as the dataCaptureContext argument"
+        },
+        {
+          "text": "BarcodeArView.Create( receives a BarcodeArViewSettings as the settings argument"
+        },
+        {
+          "text": "BarcodeArView.Create( receives null (or a CameraSettings) as the cameraSettings argument"
+        },
+        {
+          "text": "IBarcodeArHighlightProvider is implemented"
+        },
+        {
+          "text": "HighlightForBarcodeAsync is implemented and returns a Task<IBarcodeArHighlight?> (the async/Task-based provider, not a callback)"
+        },
+        {
+          "text": "A new BarcodeArRectangleHighlight(barcode) is constructed with only the Barcode argument (no Context argument is passed)"
+        },
+        {
+          "text": "callback.OnData(...) / callback.onData(...) is NOT used (that is the Kotlin pattern, not the .NET pattern)"
+        },
+        {
+          "text": "barcodeArView.HighlightProvider is assigned to the provider instance"
+        },
+        {
+          "text": "Either barcodeAr.SessionUpdated += handler or barcodeAr.AddListener(IBarcodeArListener) is wired"
+        },
+        {
+          "text": "OnObservationStarted and OnObservationStopped are NOT declared (the .NET IBarcodeArListener has only one method)"
+        },
+        {
+          "text": "barcodeArView.Start() is called after providers are assigned"
+        },
+        {
+          "text": "The activity's OnResume forwards to barcodeArView.OnResume()"
+        },
+        {
+          "text": "The activity's OnPause forwards to barcodeArView.OnPause()"
+        },
+        {
+          "text": "barcodeArView.Dispose() is called on teardown (NOT barcodeArView.OnDestroy(), which does not exist in the .NET binding)"
+        },
+        {
+          "text": "No call to BarcodeCapture.Create or barcodeCapture.AddListener appears (BarcodeAr is not BarcodeCapture)"
+        },
+        {
+          "text": "No DataCaptureView, BarcodeCaptureOverlay, or BarcodeBatchBasicOverlay is created (BarcodeArView is the only view needed)"
+        },
+        {
+          "text": "No Camera.GetDefaultCamera() or dataCaptureContext.SetFrameSourceAsync(...) call is present (BarcodeArView manages its own camera internally) (semantic)"
+        },
+        {
+          "text": "No SparkScanCoordinatorLayout is referenced (that is SparkScan-specific and not used by BarcodeAr)"
+        }
       ]
     },
     {
@@ -53,14 +121,30 @@
         "fixtures/IntegratedActivity.cs"
       ],
       "assertions": [
-        {"text": "IBarcodeArAnnotationProvider is implemented"},
-        {"text": "AnnotationForBarcodeAsync is implemented and returns Task<IBarcodeArAnnotation?>"},
-        {"text": "A new BarcodeArInfoAnnotation(barcode) is constructed with only the Barcode argument (no Context)"},
-        {"text": "BarcodeArInfoAnnotationBodyComponent is used and its Text is set to barcode.Data"},
-        {"text": "The BarcodeArInfoAnnotationBodyComponent is imported from the Scandit.DataCapture.Barcode.Ar.UI.Annotations.Info sub-namespace"},
-        {"text": "barcodeArView.AnnotationProvider is assigned to the new provider instance"},
-        {"text": "callback.OnData(...) is NOT used (the .NET annotation provider is async/Task-based, not callback-based)"},
-        {"text": "Existing integration code (BarcodeAr, BarcodeArView, SessionUpdated handler, RectangleHighlightProvider) is preserved"}
+        {
+          "text": "IBarcodeArAnnotationProvider is implemented"
+        },
+        {
+          "text": "AnnotationForBarcodeAsync is implemented and returns Task<IBarcodeArAnnotation?>"
+        },
+        {
+          "text": "A new BarcodeArInfoAnnotation(barcode) is constructed with only the Barcode argument (no Context)"
+        },
+        {
+          "text": "BarcodeArInfoAnnotationBodyComponent is used and its Text is set to barcode.Data"
+        },
+        {
+          "text": "The BarcodeArInfoAnnotationBodyComponent is imported from the Scandit.DataCapture.Barcode.Ar.UI.Annotations.Info sub-namespace"
+        },
+        {
+          "text": "barcodeArView.AnnotationProvider is assigned to the new provider instance"
+        },
+        {
+          "text": "callback.OnData(...) is NOT used (the .NET annotation provider is async/Task-based, not callback-based)"
+        },
+        {
+          "text": "Existing integration code (BarcodeAr, BarcodeArView, SessionUpdated handler, RectangleHighlightProvider) is preserved"
+        }
       ]
     },
     {
@@ -71,10 +155,256 @@
         "fixtures/IntegratedActivity.cs"
       ],
       "assertions": [
-        {"text": "barcodeAr.Feedback is reassigned to a new BarcodeArFeedback() (empty constructor)"},
-        {"text": "BarcodeArFeedback is imported from Scandit.DataCapture.Barcode.Ar.Feedback"},
-        {"text": "BarcodeArFeedback.DefaultFeedback is NOT called as a method (BarcodeArFeedback.DefaultFeedback() with parentheses) — it is a static property in .NET"},
-        {"text": "Existing integration code (BarcodeAr, BarcodeArView, SessionUpdated handler, RectangleHighlightProvider) is preserved"}
+        {
+          "text": "barcodeAr.Feedback is reassigned to a new BarcodeArFeedback() (empty constructor)"
+        },
+        {
+          "text": "BarcodeArFeedback is imported from Scandit.DataCapture.Barcode.Ar.Feedback"
+        },
+        {
+          "text": "BarcodeArFeedback.DefaultFeedback is NOT called as a method (BarcodeArFeedback.DefaultFeedback() with parentheses) — it is a static property in .NET"
+        },
+        {
+          "text": "Existing integration code (BarcodeAr, BarcodeArView, SessionUpdated handler, RectangleHighlightProvider) is preserved"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "In my MatrixScan AR .NET Android app, I want each rectangle highlight to use a custom green brush and show a checkmark icon inside it. Update the highlight provider in IntegratedActivity.cs.",
+      "expected_output": "The skill customizes the BarcodeArRectangleHighlight returned by the existing provider: it sets highlight.Brush to a new Brush(...) and highlight.Icon to a ScanditIcon built with ScanditIconBuilder (WithIcon(ScanditIconType.Checkmark)...Build()), keeping the BarcodeArRectangleHighlight(barcode) constructor (Barcode only, no Context) and the async Task<IBarcodeArHighlight?> provider shape.",
+      "files": [
+        "fixtures/IntegratedActivity.cs"
+      ],
+      "assertions": [
+        {
+          "text": "The provider still constructs a new BarcodeArRectangleHighlight(barcode) with only the Barcode argument (no Context)"
+        },
+        {
+          "text": "highlight.Brush is assigned to a new Brush(...) instance"
+        },
+        {
+          "text": "Brush is imported from Scandit.DataCapture.Core.UI.Style"
+        },
+        {
+          "text": "highlight.Icon is assigned to a ScanditIcon produced by a ScanditIconBuilder"
+        },
+        {
+          "text": "new ScanditIconBuilder() is used and its Build() method is called to produce the icon"
+        },
+        {
+          "text": "ScanditIconBuilder.WithIcon(ScanditIconType.Checkmark) is called"
+        },
+        {
+          "text": "ScanditIconBuilder and ScanditIconType are imported from Scandit.DataCapture.Core.UI.Icon"
+        },
+        {
+          "text": "The provider still returns Task<IBarcodeArHighlight?> (the async provider shape is preserved)"
+        },
+        {
+          "text": "callback.OnData(...) is NOT used (the .NET highlight provider is async/Task-based, not callback-based)"
+        }
+      ],
+      "tags": [
+        "highlight-brush-icon"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "Add a status-icon annotation to each tracked barcode in my MatrixScan AR .NET Android app (IntegratedActivity.cs). It should show a checkmark icon, expand to the text 'In stock' when tapped, and show the tip pointing at the barcode.",
+      "expected_output": "The skill adds an IBarcodeArAnnotationProvider that returns a BarcodeArStatusIconAnnotation(barcode), sets its Icon to a ScanditIcon built via ScanditIconBuilder (WithIcon(ScanditIconType.Checkmark)), its Text to \"In stock\", and HasTip to true, then assigns the provider to barcodeArView.AnnotationProvider while preserving the existing integration.",
+      "files": [
+        "fixtures/IntegratedActivity.cs"
+      ],
+      "assertions": [
+        {
+          "text": "IBarcodeArAnnotationProvider is implemented"
+        },
+        {
+          "text": "AnnotationForBarcodeAsync is implemented and returns Task<IBarcodeArAnnotation?>"
+        },
+        {
+          "text": "A new BarcodeArStatusIconAnnotation(barcode) is constructed with only the Barcode argument (no Context)"
+        },
+        {
+          "text": "BarcodeArStatusIconAnnotation is imported from Scandit.DataCapture.Barcode.Ar.UI.Annotations"
+        },
+        {
+          "text": "The annotation's Icon is assigned a ScanditIcon built with new ScanditIconBuilder().WithIcon(ScanditIconType.Checkmark)"
+        },
+        {
+          "text": "The annotation's Text is set to \"In stock\""
+        },
+        {
+          "text": "The annotation's HasTip is set to true"
+        },
+        {
+          "text": "barcodeArView.AnnotationProvider is assigned to the new provider instance"
+        },
+        {
+          "text": "Existing integration code (BarcodeAr, BarcodeArView, SessionUpdated handler, RectangleHighlightProvider) is preserved"
+        }
+      ],
+      "tags": [
+        "status-icon-annotation"
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "I want a popover with two action buttons (a 'Pick' button and a 'Skip' button) on each tracked barcode in my MatrixScan AR .NET Android app. Update IntegratedActivity.cs.",
+      "expected_output": "The skill adds an IBarcodeArAnnotationProvider that builds a BarcodeArPopoverAnnotation(barcode, buttons) where buttons is an IList<BarcodeArPopoverAnnotationButton> containing two BarcodeArPopoverAnnotationButton(icon, text) entries (ScanditIcon via ScanditIconBuilder), and assigns the provider to barcodeArView.AnnotationProvider while preserving the existing integration.",
+      "files": [
+        "fixtures/IntegratedActivity.cs"
+      ],
+      "assertions": [
+        {
+          "text": "IBarcodeArAnnotationProvider is implemented and AnnotationForBarcodeAsync returns Task<IBarcodeArAnnotation?>"
+        },
+        {
+          "text": "A new BarcodeArPopoverAnnotation(barcode, buttons) is constructed with the Barcode and an IList<BarcodeArPopoverAnnotationButton> (no Context argument)"
+        },
+        {
+          "text": "Two BarcodeArPopoverAnnotationButton instances are constructed, one with the text \"Pick\" and one with the text \"Skip\""
+        },
+        {
+          "text": "Each BarcodeArPopoverAnnotationButton is constructed with a ScanditIcon as the first argument and a string text as the second argument"
+        },
+        {
+          "text": "BarcodeArPopoverAnnotationButton is imported from Scandit.DataCapture.Barcode.Ar.UI.Annotations.Popover"
+        },
+        {
+          "text": "BarcodeArPopoverAnnotation is imported from Scandit.DataCapture.Barcode.Ar.UI.Annotations"
+        },
+        {
+          "text": "barcodeArView.AnnotationProvider is assigned to the new provider instance"
+        },
+        {
+          "text": "Existing integration code (BarcodeAr, BarcodeArView, SessionUpdated handler, RectangleHighlightProvider) is preserved"
+        }
+      ],
+      "tags": [
+        "popover-annotation"
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "In my MatrixScan AR .NET Android app (IntegratedActivity.cs), I want the annotation to look different depending on how close the barcode is: a detailed info annotation when it's close-up and a compact one when it's far away, switching at 10% of the screen area.",
+      "expected_output": "The skill adds an IBarcodeArAnnotationProvider that builds two BarcodeArInfoAnnotation(barcode) instances (close-up and far-away) and wraps them in a BarcodeArResponsiveAnnotation(barcode, closeUpAnnotation, farAwayAnnotation), sets the static BarcodeArResponsiveAnnotation.Threshold to 0.1f, and assigns the provider to barcodeArView.AnnotationProvider while preserving the existing integration.",
+      "files": [
+        "fixtures/IntegratedActivity.cs"
+      ],
+      "assertions": [
+        {
+          "text": "A new BarcodeArResponsiveAnnotation(barcode, closeUpAnnotation, farAwayAnnotation) is constructed with the Barcode and two BarcodeArInfoAnnotation arguments (no Context)"
+        },
+        {
+          "text": "Two BarcodeArInfoAnnotation(barcode) instances are constructed to serve as the close-up and far-away variations"
+        },
+        {
+          "text": "BarcodeArResponsiveAnnotation.Threshold is assigned the value 0.1f"
+        },
+        {
+          "text": "BarcodeArResponsiveAnnotation.Threshold is set as a static member on the type (not as an instance property on a constructed annotation)"
+        },
+        {
+          "text": "BarcodeArResponsiveAnnotation is imported from Scandit.DataCapture.Barcode.Ar.UI.Annotations"
+        },
+        {
+          "text": "barcodeArView.AnnotationProvider is assigned to the new provider instance"
+        },
+        {
+          "text": "Existing integration code (BarcodeAr, BarcodeArView, SessionUpdated handler, RectangleHighlightProvider) is preserved"
+        }
+      ],
+      "tags": [
+        "responsive-annotation"
+      ]
+    },
+    {
+      "id": 8,
+      "prompt": "When the user taps a highlight in my MatrixScan AR .NET Android app, I want to log the tapped barcode's data. Wire that up in IntegratedActivity.cs.",
+      "expected_output": "The skill subscribes to the barcodeArView.HighlightForBarcodeTapped C# event (the .NET BarcodeArView has no UiListener property), reads args.Barcode.Data inside the handler, and marshals UI work via RunOnUiThread, preserving the existing integration.",
+      "files": [
+        "fixtures/IntegratedActivity.cs"
+      ],
+      "assertions": [
+        {
+          "text": "The handler is wired with barcodeArView.HighlightForBarcodeTapped += "
+        },
+        {
+          "text": "The handler reads the tapped barcode's data via the event args' Barcode.Data property"
+        },
+        {
+          "text": "A UiListener property is NOT assigned on BarcodeArView (the .NET binding exposes the tap as the HighlightForBarcodeTapped event, not a UiListener property)"
+        },
+        {
+          "text": "IBarcodeArViewUiListener is NOT implemented (the .NET binding uses the HighlightForBarcodeTapped event instead of a UI listener interface)"
+        },
+        {
+          "text": "Existing integration code (BarcodeAr, BarcodeArView, SessionUpdated handler, RectangleHighlightProvider) is preserved"
+        }
+      ],
+      "tags": [
+        "highlight-tap"
+      ]
+    },
+    {
+      "id": 9,
+      "prompt": "I'm showing info annotations on tracked barcodes in my MatrixScan AR .NET Android app. I want the whole annotation to be tappable and to log the barcode when it's tapped. Update IntegratedActivity.cs to add an info annotation with a tap handler.",
+      "expected_output": "The skill adds an IBarcodeArAnnotationProvider returning a BarcodeArInfoAnnotation(barcode), sets EntireAnnotationTappable to true, assigns a Listener implementing IBarcodeArInfoAnnotationListener whose OnInfoAnnotationTapped handles the tap, and assigns the provider to barcodeArView.AnnotationProvider while preserving the existing integration.",
+      "files": [
+        "fixtures/IntegratedActivity.cs"
+      ],
+      "assertions": [
+        {
+          "text": "A new BarcodeArInfoAnnotation(barcode) is constructed with only the Barcode argument (no Context)"
+        },
+        {
+          "text": "The annotation's EntireAnnotationTappable property is set to true"
+        },
+        {
+          "text": "The annotation's Listener property is assigned an object implementing IBarcodeArInfoAnnotationListener"
+        },
+        {
+          "text": "IBarcodeArInfoAnnotationListener is implemented with an OnInfoAnnotationTapped(BarcodeArInfoAnnotation annotation) method"
+        },
+        {
+          "text": "IBarcodeArInfoAnnotationListener is imported from Scandit.DataCapture.Barcode.Ar.UI.Annotations.Info"
+        },
+        {
+          "text": "barcodeArView.AnnotationProvider is assigned to the new provider instance"
+        },
+        {
+          "text": "Existing integration code (BarcodeAr, BarcodeArView, SessionUpdated handler, RectangleHighlightProvider) is preserved"
+        }
+      ],
+      "tags": [
+        "annotation-tap"
+      ]
+    },
+    {
+      "id": 10,
+      "prompt": "In my MatrixScan AR .NET Android app I add status-icon annotations to tracked barcodes (IntegratedActivity.cs). By default they appear as soon as the barcode is scanned, but I only want each annotation to appear when the user taps its highlight. How do I change that?",
+      "expected_output": "The skill sets the annotation's AnnotationTrigger property to BarcodeArAnnotationTrigger.HighlightTap (instead of the default HighlightTapAndBarcodeScan), preserving the existing integration.",
+      "files": [
+        "fixtures/IntegratedActivity.cs"
+      ],
+      "assertions": [
+        {
+          "text": "The annotation's AnnotationTrigger property is assigned BarcodeArAnnotationTrigger.HighlightTap"
+        },
+        {
+          "text": "BarcodeArAnnotationTrigger is imported from Scandit.DataCapture.Barcode.Ar.UI.Annotations"
+        },
+        {
+          "text": "The skill explains that the default trigger is BarcodeArAnnotationTrigger.HighlightTapAndBarcodeScan"
+        },
+        {
+          "text": "Existing integration code (BarcodeAr, BarcodeArView, SessionUpdated handler, RectangleHighlightProvider) is preserved"
+        }
+      ],
+      "tags": [
+        "annotation-trigger"
       ]
     }
   ]

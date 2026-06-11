@@ -540,6 +540,263 @@ barcodeArView.uiListener = object : BarcodeArViewUiListener {
 }
 ```
 
+## Advanced overlays and configuration
+
+### Customizing a highlight brush and icon
+
+Both `BarcodeArRectangleHighlight` and `BarcodeArCircleHighlight` expose a `brush` (`com.scandit.datacapture.core.ui.style.Brush`) and an `icon` (`ScanditIcon?`). Build a `ScanditIcon` with `ScanditIconBuilder`:
+
+```kotlin
+import com.scandit.datacapture.barcode.ar.ui.highlight.BarcodeArRectangleHighlight
+import com.scandit.datacapture.core.ui.style.Brush
+import com.scandit.datacapture.core.ui.icon.ScanditIcon
+import com.scandit.datacapture.core.ui.icon.ScanditIconBuilder
+import com.scandit.datacapture.core.ui.icon.ScanditIconType
+
+val highlight = BarcodeArRectangleHighlight(context, barcode).apply {
+    brush = Brush(Color.argb(75, 0, 200, 0), Color.GREEN, 2f)
+    icon = ScanditIconBuilder()
+        .withIcon(ScanditIconType.CHECKMARK)
+        .withIconColor(Color.WHITE)
+        .build()
+}
+```
+
+`ScanditIconType` values are SCREAMING_SNAKE_CASE on Android (e.g. `CHECKMARK`, `STAR_FILLED`, `EXCLAMATION_MARK`).
+
+### BarcodeArCircleHighlight
+
+`BarcodeArCircleHighlight(context, barcode, preset)` takes a `BarcodeArCircleHighlightPreset` (`DOT` or `ICON`) and exposes `brush`, `icon`, `size` (`Float`, min 18), and `isPulsing` (`Boolean`):
+
+```kotlin
+import com.scandit.datacapture.barcode.ar.ui.highlight.BarcodeArCircleHighlight
+import com.scandit.datacapture.barcode.ar.ui.highlight.BarcodeArCircleHighlightPreset
+
+val highlight = BarcodeArCircleHighlight(context, barcode, BarcodeArCircleHighlightPreset.DOT).apply {
+    size = 24f
+    isPulsing = true
+}
+```
+
+### BarcodeArStatusIconAnnotation
+
+A compact icon that expands to text on tap. Set `icon`, `text` (max 20 chars; `null` = no expand), `annotationTrigger`, and `anchor` (`BarcodeArStatusIconAnnotationAnchor`):
+
+```kotlin
+import com.scandit.datacapture.barcode.ar.ui.annotations.BarcodeArStatusIconAnnotation
+import com.scandit.datacapture.barcode.ar.ui.annotations.BarcodeArStatusIconAnnotationAnchor
+import com.scandit.datacapture.barcode.ar.ui.annotations.BarcodeArAnnotationTrigger
+
+val annotation = BarcodeArStatusIconAnnotation(context, barcode).apply {
+    text = "In stock"
+    anchor = BarcodeArStatusIconAnnotationAnchor.TOP
+    annotationTrigger = BarcodeArAnnotationTrigger.BARCODE_SCAN
+}
+```
+
+### BarcodeArInfoAnnotation header and footer
+
+In addition to `body`, an info annotation accepts an optional `header` (`BarcodeArInfoAnnotationHeader`) and `footer` (`BarcodeArInfoAnnotationFooter`), both with `text` and `icon`:
+
+```kotlin
+import com.scandit.datacapture.barcode.ar.ui.annotations.BarcodeArInfoAnnotation
+import com.scandit.datacapture.barcode.ar.ui.annotations.info.BarcodeArInfoAnnotationBodyComponent
+import com.scandit.datacapture.barcode.ar.ui.annotations.info.BarcodeArInfoAnnotationHeader
+import com.scandit.datacapture.barcode.ar.ui.annotations.info.BarcodeArInfoAnnotationFooter
+import com.scandit.datacapture.barcode.ar.ui.annotations.info.BarcodeArInfoAnnotationWidthPreset
+
+val annotation = BarcodeArInfoAnnotation(context, barcode).apply {
+    width = BarcodeArInfoAnnotationWidthPreset.MEDIUM
+    header = BarcodeArInfoAnnotationHeader().apply { text = "Product" }
+    body = listOf(
+        BarcodeArInfoAnnotationBodyComponent().apply { text = barcode.data ?: "" }
+    )
+    footer = BarcodeArInfoAnnotationFooter().apply { text = "Tap for details" }
+}
+```
+
+### BarcodeArPopoverAnnotation
+
+A set of icon+text action buttons shown when the user taps the highlight. Construct with a list of `BarcodeArPopoverAnnotationButton(icon, text)` and receive taps via a `BarcodeArPopoverAnnotationListener`:
+
+```kotlin
+import com.scandit.datacapture.barcode.ar.ui.annotations.BarcodeArPopoverAnnotation
+import com.scandit.datacapture.barcode.ar.ui.annotations.BarcodeArPopoverAnnotationButton
+import com.scandit.datacapture.barcode.ar.ui.annotations.BarcodeArPopoverAnnotationListener
+import com.scandit.datacapture.core.ui.icon.ScanditIconBuilder
+import com.scandit.datacapture.core.ui.icon.ScanditIconType
+
+val pickButton = BarcodeArPopoverAnnotationButton(
+    ScanditIconBuilder().withIcon(ScanditIconType.TO_PICK).build(),
+    "Pick"
+)
+val annotation = BarcodeArPopoverAnnotation(context, barcode, listOf(pickButton)).apply {
+    isEntirePopoverTappable = false
+    listener = object : BarcodeArPopoverAnnotationListener {
+        override fun onPopoverButtonTapped(
+            popover: BarcodeArPopoverAnnotation,
+            button: BarcodeArPopoverAnnotationButton,
+            buttonIndex: Int
+        ) {
+            // React to the tapped button.
+        }
+
+        override fun onPopoverTapped(popover: BarcodeArPopoverAnnotation) {}
+    }
+}
+```
+
+`BarcodeArPopoverAnnotation`'s default `annotationTrigger` is `BarcodeArAnnotationTrigger.HIGHLIGHT_TAP`.
+
+### BarcodeArResponsiveAnnotation
+
+Switches between two `BarcodeArInfoAnnotation` variations based on how large the barcode appears. The constructor takes a close-up annotation and a far-away annotation (either may be `null`). The switch point is the class-level `BarcodeArResponsiveAnnotation.threshold` (barcode-area / screen-area ratio, default `0.05`):
+
+```kotlin
+import com.scandit.datacapture.barcode.ar.ui.annotations.BarcodeArResponsiveAnnotation
+import com.scandit.datacapture.barcode.ar.ui.annotations.BarcodeArInfoAnnotation
+
+BarcodeArResponsiveAnnotation.threshold = 0.1f
+
+val closeUp = BarcodeArInfoAnnotation(context, barcode)
+val farAway = BarcodeArInfoAnnotation(context, barcode)
+val annotation = BarcodeArResponsiveAnnotation(context, barcode, closeUp, farAway)
+```
+
+### BarcodeArAnnotationTrigger
+
+Every annotation exposes `annotationTrigger: BarcodeArAnnotationTrigger`, controlling when it appears:
+
+| Value | Behavior |
+|-------|----------|
+| `HIGHLIGHT_TAP` | Shown only when the user taps the highlight. |
+| `HIGHLIGHT_TAP_AND_BARCODE_SCAN` | Shown on scan; can be toggled by tapping the highlight. Default for info, status-icon, responsive. |
+| `BARCODE_SCAN` | Shown on scan and stays visible; not toggleable by tap. |
+
+### Highlight tap interactions (BarcodeArViewUiListener)
+
+Assign a `BarcodeArViewUiListener` to `barcodeArView.uiListener` to react to highlight taps. The callback `onHighlightForBarcodeTapped` delivers the `BarcodeAr`, the `Barcode`, the `BarcodeArHighlight`, and the highlight `View`:
+
+```kotlin
+import com.scandit.datacapture.barcode.ar.ui.BarcodeArViewUiListener
+import com.scandit.datacapture.barcode.ar.ui.highlight.BarcodeArHighlight
+import android.view.View
+
+barcodeArView.uiListener = object : BarcodeArViewUiListener {
+    override fun onHighlightForBarcodeTapped(
+        barcodeAr: BarcodeAr,
+        barcode: Barcode,
+        highlight: BarcodeArHighlight,
+        highlightView: View
+    ) {
+        // React to the user tapping a highlight.
+    }
+}
+```
+
+### BarcodeArView UI controls
+
+`BarcodeArView` can show built-in torch, zoom, and camera-switch controls. Each has a `shouldShow*Control` flag and a `*ControlPosition` (`Anchor`):
+
+```kotlin
+import com.scandit.datacapture.core.common.geometry.Anchor
+
+barcodeArView.apply {
+    shouldShowTorchControl = true
+    torchControlPosition = Anchor.TOP_LEFT
+    shouldShowZoomControl = true
+    zoomControlPosition = Anchor.BOTTOM_LEFT
+    shouldShowCameraSwitchControl = true
+    cameraSwitchControlPosition = Anchor.TOP_RIGHT
+}
+```
+
+### Custom highlight (subclass BarcodeArHighlight)
+
+On Android there is no `BarcodeArCustomHighlight` type — create a custom highlight by implementing `BarcodeArHighlight` and overriding `createView()` (returns the `View`) and `update(view, barcodeLocation)` (positions it). Return the instance from `highlightForBarcode` via `callback.onData(...)`:
+
+```kotlin
+import com.scandit.datacapture.barcode.ar.ui.highlight.BarcodeArHighlight
+import com.scandit.datacapture.core.common.geometry.Quadrilateral
+import android.view.View
+import android.widget.ImageView
+
+private class CustomHighlight(private val context: Context) : BarcodeArHighlight {
+    override fun createView(): View =
+        ImageView(context).apply { setImageResource(R.drawable.custom_highlight) }
+
+    override fun update(view: View, barcodeLocation: Quadrilateral) {
+        view.x = barcodeLocation.center.x - view.width / 2f
+        view.y = barcodeLocation.center.y - view.height / 2f
+    }
+}
+```
+
+### Custom annotation (subclass BarcodeArAnnotation)
+
+On Android there is no `BarcodeArCustomAnnotation` type — implement `BarcodeArAnnotation`, set `annotationTrigger`, and override `createView()` and `update(barcodeLocation, highlightViewLocation, view)`:
+
+```kotlin
+import com.scandit.datacapture.barcode.ar.ui.annotations.BarcodeArAnnotation
+import com.scandit.datacapture.barcode.ar.ui.annotations.BarcodeArAnnotationTrigger
+import com.scandit.datacapture.core.common.geometry.Quadrilateral
+import android.view.View
+import android.view.ViewGroup
+import android.widget.ImageView
+
+private class CustomAnnotation(private val context: Context) : BarcodeArAnnotation {
+    override var annotationTrigger: BarcodeArAnnotationTrigger =
+        BarcodeArAnnotationTrigger.HIGHLIGHT_TAP_AND_BARCODE_SCAN
+
+    override fun createView(): View =
+        ImageView(context).apply {
+            layoutParams = ViewGroup.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            )
+            setImageResource(R.drawable.custom_annotation)
+        }
+
+    override fun update(
+        barcodeLocation: Quadrilateral,
+        highlightViewLocation: Quadrilateral?,
+        view: View
+    ) {
+        val location = highlightViewLocation ?: barcodeLocation
+        view.x = location.center.x - view.width / 2f
+        view.y = location.topCenter.y - view.height
+    }
+}
+```
+
+### Filtering tracked barcodes (BarcodeArFilter)
+
+Implement `BarcodeArFilter` and register it with `barcodeAr.setBarcodeFilter(filter)` (pass `null` to clear) to restrict which barcodes appear in the session. `filterBarcodes` runs on a recognition thread and must return quickly:
+
+```kotlin
+import com.scandit.datacapture.barcode.ar.capture.BarcodeArFilter
+
+private class PrefixFilter : BarcodeArFilter {
+    override fun filterBarcodes(barcodes: List<Barcode>): List<Barcode> =
+        barcodes.filter { it.data?.startsWith("PROD-") == true }
+}
+
+barcodeAr.setBarcodeFilter(PrefixFilter())
+```
+
+`setBarcodeFilter` was added in SDK 8.1.
+
+### Migrating from BarcodeBatch / BarcodeTracking (MatrixScan)
+
+When moving from the older MatrixScan mode (`BarcodeBatch`, formerly `BarcodeTracking`) to MatrixScan AR (`BarcodeAr`), the main structural changes are:
+
+- Replace the `BarcodeBatch` / `BarcodeTracking` mode with `BarcodeAr(dataCaptureContext, settings)` — a direct constructor, not a `forDataCaptureContext()` factory.
+- Replace `BarcodeBatchSettings` / `BarcodeTrackingSettings` with `BarcodeArSettings`; symbology enabling via `enableSymbology(...)` carries over.
+- BarcodeAr does not use a separate `Camera` / `DataCaptureView` / `BarcodeBatchBasicOverlay`. Replace all of that with a single `BarcodeArView`, which manages the camera internally — remove any `Camera`, `setFrameSource`, `DataCaptureView`, and overlay setup.
+- Replace `BarcodeBatchListener` / `BarcodeTrackingListener` with `BarcodeArListener` (`onSessionUpdated(barcodeAr, session, frameData)`).
+- AR overlays are no longer driven by a basic overlay + brush. Supply visuals through `barcodeArView.highlightProvider` (`BarcodeArHighlightProvider`) and `barcodeArView.annotationProvider` (`BarcodeArAnnotationProvider`).
+- Drive the lifecycle from `barcodeArView.onResume()`, `barcodeArView.onPause()`, and `barcodeArView.onDestroy()` instead of the camera's `switchToDesiredState(...)`.
+
 ## Key Rules
 
 1. **Constructor, not factory** — `BarcodeAr(dataCaptureContext, settings)` is a direct constructor, not `forDataCaptureContext()`.

@@ -17,7 +17,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from common import REPO_ROOT, load_taxonomy
+from common import REPO_ROOT, load_taxonomy, load_manifest
 
 
 def eval_text(e: dict) -> str:
@@ -51,9 +51,17 @@ def main():
     prefix = tax["skill_prefix"]
     features = tax["features"]
     skills_dir = args.repo_root / "skills"
-    platforms = sorted(
-        d.name[len(prefix):] for d in skills_dir.glob(f"{prefix}*") if d.is_dir()
-    )
+    # platform_aliases (manifest): map a skill dir name -> a canonical skill dir name so that
+    # several skills fold into one logical platform whose evals are aggregated. Empty for most
+    # products (then this is a no-op). e.g. matrixscan-ar-{annotation,highlight}-ios -> matrixscan-ar-ios.
+    aliases = load_manifest().get("platform_aliases", {})
+    plat_dirs: dict[str, list] = {}  # platform suffix -> source skill dirs (aggregated)
+    for d in skills_dir.glob(f"{prefix}*"):
+        if not d.is_dir():
+            continue
+        canon = aliases.get(d.name, d.name)
+        plat_dirs.setdefault(canon[len(prefix):], []).append(d)
+    platforms = sorted(plat_dirs)
     if not platforms:
         sys.exit(f"no skills matching {prefix}* under {skills_dir}")
 
@@ -69,15 +77,19 @@ def main():
 
     totals = {p: 0 for p in platforms}
     for plat in platforms:
-        for fname, e in load_evals(skills_dir / f"{prefix}{plat}"):
-            totals[plat] += 1
-            text = eval_text(e)
-            tags = set(e.get("tags", []))
-            ref = f"{fname}#{e.get('id', '?')}"
-            for feat in features:
-                fid = feat["id"]
-                if fid in tags or any(rx.search(text) for rx in compiled[fid]):
-                    matrix[fid][plat].append(ref)
+        for d in plat_dirs[plat]:
+            # When aggregated (>1 source dir), prefix the ref with the source skill so evidence
+            # stays traceable to the right iOS sub-skill.
+            tag = f"{d.name}/" if len(plat_dirs[plat]) > 1 else ""
+            for fname, e in load_evals(d):
+                totals[plat] += 1
+                text = eval_text(e)
+                tags = set(e.get("tags", []))
+                ref = f"{tag}{fname}#{e.get('id', '?')}"
+                for feat in features:
+                    fid = feat["id"]
+                    if fid in tags or any(rx.search(text) for rx in compiled[fid]):
+                        matrix[fid][plat].append(ref)
 
     gaps = [
         {"feature": feat["id"], "platform": plat, "required": feat["required"]}

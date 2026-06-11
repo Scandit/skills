@@ -1,0 +1,173 @@
+{
+  "skill_name": "matrixscan-ar-android",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "In my MatrixScan AR Android Activity I currently draw rectangle highlights. Switch to circle highlights instead — use the dot preset and make them pulse. Here is my Activity: IntegratedActivity.kt",
+      "expected_output": "The skill changes the highlight provider to return a BarcodeArCircleHighlight built with the DOT preset and sets isPulsing = true, keeping the rest of the integration intact.",
+      "files": [
+        "fixtures/IntegratedActivity.kt"
+      ],
+      "assertions": [
+        {"text": "highlightForBarcode returns a BarcodeArCircleHighlight"},
+        {"text": "BarcodeArCircleHighlightPreset.DOT is passed to the BarcodeArCircleHighlight constructor"},
+        {"text": "isPulsing is set to true on the circle highlight"},
+        {"text": "BarcodeArRectangleHighlight is NOT returned from highlightForBarcode (semantic)"},
+        {"text": "callback.onData( is used to deliver the highlight"},
+        {"text": "Existing integration code (BarcodeAr, BarcodeArView, listener) is preserved"}
+      ],
+      "tags": ["circle-highlight"]
+    },
+    {
+      "id": 2,
+      "prompt": "Customize the rectangle highlight in my MatrixScan AR Android app: give it a green brush and show a checkmark icon on top of each barcode. Here is my Activity: IntegratedActivity.kt",
+      "expected_output": "The skill sets the brush property of the BarcodeArRectangleHighlight to a green Brush and sets the icon property to a ScanditIcon built with ScanditIconBuilder using the checkmark icon type.",
+      "files": [
+        "fixtures/IntegratedActivity.kt"
+      ],
+      "assertions": [
+        {"text": "The brush property of the BarcodeArRectangleHighlight is assigned a Brush"},
+        {"text": "The icon property of the BarcodeArRectangleHighlight is assigned a ScanditIcon"},
+        {"text": "ScanditIconBuilder is used to build the icon"},
+        {"text": ".withIcon( is called on the ScanditIconBuilder"},
+        {"text": "ScanditIconType.CHECKMARK is used"},
+        {"text": ".build() is called on the ScanditIconBuilder"},
+        {"text": "callback.onData( is used to deliver the highlight"}
+      ],
+      "tags": ["highlight-brush-icon"]
+    },
+    {
+      "id": 3,
+      "prompt": "Replace the info annotation in my MatrixScan AR Android Activity with a status icon annotation that shows a short status and is anchored above the barcode. Here is my Activity: IntegratedActivity.kt",
+      "expected_output": "The skill returns a BarcodeArStatusIconAnnotation from annotationForBarcode, sets its text and anchors it to the top via BarcodeArStatusIconAnnotationAnchor.TOP.",
+      "files": [
+        "fixtures/IntegratedActivity.kt"
+      ],
+      "assertions": [
+        {"text": "annotationForBarcode returns a BarcodeArStatusIconAnnotation"},
+        {"text": "BarcodeArStatusIconAnnotation is constructed with context and barcode"},
+        {"text": "The text property of the BarcodeArStatusIconAnnotation is set"},
+        {"text": "BarcodeArStatusIconAnnotationAnchor.TOP is assigned to the anchor property"},
+        {"text": "callback.onData( is used to deliver the annotation"}
+      ],
+      "tags": ["status-icon-annotation"]
+    },
+    {
+      "id": 4,
+      "prompt": "Make the info annotation in my MatrixScan AR Android app richer: add a header with the text 'Product', keep the barcode data as a body row, and add a footer that says 'Tap for details'. Use the medium width. Here is my Activity: IntegratedActivity.kt",
+      "expected_output": "The skill builds a BarcodeArInfoAnnotation with a BarcodeArInfoAnnotationHeader, a BarcodeArInfoAnnotationBodyComponent for the barcode data, and a BarcodeArInfoAnnotationFooter, setting width to MEDIUM.",
+      "files": [
+        "fixtures/IntegratedActivity.kt"
+      ],
+      "assertions": [
+        {"text": "A BarcodeArInfoAnnotationHeader is constructed and its text is set to Product"},
+        {"text": "The header property of the BarcodeArInfoAnnotation is assigned the BarcodeArInfoAnnotationHeader"},
+        {"text": "A BarcodeArInfoAnnotationFooter is constructed and its text is set to Tap for details"},
+        {"text": "The footer property of the BarcodeArInfoAnnotation is assigned the BarcodeArInfoAnnotationFooter"},
+        {"text": "A BarcodeArInfoAnnotationBodyComponent holds the barcode data (barcode.data)"},
+        {"text": "BarcodeArInfoAnnotationWidthPreset.MEDIUM is assigned to the width property"},
+        {"text": "BarcodeArInfoAnnotationHeader is imported from com.scandit.datacapture.barcode.ar.ui.annotations.info"},
+        {"text": "BarcodeArInfoAnnotationFooter is imported from com.scandit.datacapture.barcode.ar.ui.annotations.info"}
+      ],
+      "tags": ["info-annotation-content"]
+    },
+    {
+      "id": 5,
+      "prompt": "In my MatrixScan AR Android app I want a popover with action buttons on each barcode — one 'Pick' button — and I need to know which button was tapped. Here is my Activity: IntegratedActivity.kt",
+      "expected_output": "The skill returns a BarcodeArPopoverAnnotation built with a list of BarcodeArPopoverAnnotationButton(icon, text) and wires a listener whose onPopoverButtonTapped receives the tapped button and index.",
+      "files": [
+        "fixtures/IntegratedActivity.kt"
+      ],
+      "assertions": [
+        {"text": "annotationForBarcode returns a BarcodeArPopoverAnnotation"},
+        {"text": "A BarcodeArPopoverAnnotationButton is constructed with an icon and a text label"},
+        {"text": "The BarcodeArPopoverAnnotationButton list is passed to the BarcodeArPopoverAnnotation constructor"},
+        {"text": "A listener is assigned to the BarcodeArPopoverAnnotation"},
+        {"text": "onPopoverButtonTapped is overridden"},
+        {"text": "The buttonIndex parameter is used to identify which button was tapped (semantic)"},
+        {"text": "callback.onData( is used to deliver the annotation"}
+      ],
+      "tags": ["popover-annotation"]
+    },
+    {
+      "id": 6,
+      "prompt": "I want the annotation in my MatrixScan AR Android app to show a compact tooltip when the barcode is far away and a detailed one when it's close up. Here is my Activity: IntegratedActivity.kt",
+      "expected_output": "The skill returns a BarcodeArResponsiveAnnotation constructed with a close-up BarcodeArInfoAnnotation and a far-away BarcodeArInfoAnnotation, optionally tuning the static threshold.",
+      "files": [
+        "fixtures/IntegratedActivity.kt"
+      ],
+      "assertions": [
+        {"text": "annotationForBarcode returns a BarcodeArResponsiveAnnotation"},
+        {"text": "A close-up BarcodeArInfoAnnotation is constructed"},
+        {"text": "A far-away BarcodeArInfoAnnotation is constructed"},
+        {"text": "Both BarcodeArInfoAnnotation instances are passed to the BarcodeArResponsiveAnnotation constructor"},
+        {"text": "The close-up annotation is shown when the barcode area exceeds the threshold (semantic)"},
+        {"text": "callback.onData( is used to deliver the annotation"}
+      ],
+      "tags": ["responsive-annotation"]
+    },
+    {
+      "id": 7,
+      "prompt": "My MatrixScan AR Android info annotations pop up automatically as soon as a barcode is scanned. I only want them to appear when the user taps the highlight. Here is my Activity: IntegratedActivity.kt",
+      "expected_output": "The skill sets the annotationTrigger property of the info annotation to BarcodeArAnnotationTrigger.HIGHLIGHT_TAP.",
+      "files": [
+        "fixtures/IntegratedActivity.kt"
+      ],
+      "assertions": [
+        {"text": "BarcodeArAnnotationTrigger.HIGHLIGHT_TAP is assigned to the annotationTrigger property"},
+        {"text": "The annotationTrigger is set on the BarcodeArInfoAnnotation"},
+        {"text": "Existing annotation provider code is preserved"}
+      ],
+      "tags": ["annotation-trigger"]
+    },
+    {
+      "id": 8,
+      "prompt": "Show the built-in torch and camera-switch controls in my MatrixScan AR Android view. Put the torch control in the top-left and the camera switch in the top-right. Here is my Activity: IntegratedActivity.kt",
+      "expected_output": "The skill sets shouldShowTorchControl and shouldShowCameraSwitchControl to true on the BarcodeArView and assigns their positions via Anchor.",
+      "files": [
+        "fixtures/IntegratedActivity.kt"
+      ],
+      "assertions": [
+        {"text": "shouldShowTorchControl is set to true on the BarcodeArView"},
+        {"text": "Anchor.TOP_LEFT is assigned to torchControlPosition"},
+        {"text": "shouldShowCameraSwitchControl is set to true on the BarcodeArView"},
+        {"text": "Anchor.TOP_RIGHT is assigned to cameraSwitchControlPosition"},
+        {"text": "Anchor is imported from com.scandit.datacapture.core.common.geometry"}
+      ],
+      "tags": ["view-controls"]
+    },
+    {
+      "id": 9,
+      "prompt": "I need a fully custom highlight in my MatrixScan AR Android app — a custom View drawn over each barcode rather than the built-in rectangle or circle. Here is my Activity: IntegratedActivity.kt",
+      "expected_output": "The skill implements a class conforming to BarcodeArHighlight, overriding createView() to return the custom View and update(view, barcodeLocation) to position it, and returns it from highlightForBarcode.",
+      "files": [
+        "fixtures/IntegratedActivity.kt"
+      ],
+      "assertions": [
+        {"text": "A class implements the BarcodeArHighlight interface"},
+        {"text": "createView() is overridden and returns a View"},
+        {"text": "update is overridden with a View parameter and a Quadrilateral barcodeLocation parameter"},
+        {"text": "The custom BarcodeArHighlight is delivered via callback.onData("},
+        {"text": "No BarcodeArCustomHighlight type is used (semantic)"}
+      ],
+      "tags": ["custom-highlight"]
+    },
+    {
+      "id": 10,
+      "prompt": "I want a completely custom annotation View in my MatrixScan AR Android app instead of the built-in info or status annotations. Here is my Activity: IntegratedActivity.kt",
+      "expected_output": "The skill implements a class conforming to BarcodeArAnnotation, sets annotationTrigger, overrides createView() and update(barcodeLocation, highlightViewLocation, view), and returns it from annotationForBarcode.",
+      "files": [
+        "fixtures/IntegratedActivity.kt"
+      ],
+      "assertions": [
+        {"text": "A class implements the BarcodeArAnnotation interface"},
+        {"text": "The annotationTrigger property is overridden with a BarcodeArAnnotationTrigger value"},
+        {"text": "createView() is overridden and returns a View"},
+        {"text": "update is overridden with a barcodeLocation parameter and a highlightViewLocation parameter and a view parameter"},
+        {"text": "The custom BarcodeArAnnotation is delivered via callback.onData("},
+        {"text": "No BarcodeArCustomAnnotation type is used (semantic)"}
+      ],
+      "tags": ["custom-annotation"]
+    }
+  ]
+}

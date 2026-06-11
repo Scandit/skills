@@ -43,7 +43,7 @@ Before rewriting anything, ask the user three quick questions:
 
    Are the bubbles showing structured text fields (title, rows, footer)? → Use `BarcodeArInfoAnnotation`, which handles layout natively with no custom DOM.
 
-3. **Filtering**: Are they relying on per-barcode rejection at the mode level? Note that `BarcodeArFilter` is **not available on Cordova**. If filtering is needed, return `null` from the `highlightProvider` or `annotationProvider` for unwanted barcodes, or filter inside the `BarcodeArListener.didUpdateSession` callback.
+3. **Filtering**: Are they relying on per-barcode rejection at the mode level? `BarcodeArFilter` is documented for Cordova at SDK 8.5, but it is **not yet in the published `scandit-cordova-datacapture-*` plugin** (latest is 8.4.0), so do not generate it today. To limit which barcodes are shown, return `null` from the `highlightProvider` or `annotationProvider` for unwanted barcodes to suppress their AR UI.
 
 ---
 

@@ -9,42 +9,114 @@
         "fixtures/EmptyViewController.cs"
       ],
       "assertions": [
-        {"text": "Setup checklist is shown and mentions adding the Scandit.DataCapture.Barcode and Scandit.DataCapture.Core NuGet packages"},
-        {"text": "Setup checklist mentions adding NSCameraUsageDescription to Info.plist"},
-        {"text": "Setup checklist mentions adding ScanditCaptureCore.Initialize() and ScanditBarcodeCapture.Initialize() in AppDelegate.FinishedLaunching (required for SDK 8.0+)"},
-        {"text": "Setup checklist mentions setting <SupportedOSPlatformVersion>15.0</SupportedOSPlatformVersion> (or higher) in the .csproj"},
-        {"text": "A license key placeholder string is present"},
-        {"text": "DataCaptureContext.ForLicenseKey( is used to create the context"},
-        {"text": "new BarcodeArSettings() is used (not BarcodeArSettings.Create(), which does not exist)"},
-        {"text": "new BarcodeAr(context, settings) is used as the constructor (not BarcodeAr.Create(...) or BarcodeAr.ForDataCaptureContext(...), which do not exist)"},
-        {"text": "Symbology.Ean13Upca is enabled"},
-        {"text": "Symbology.Qr is enabled"},
-        {"text": "No symbologies other than Ean13Upca and Qr are enabled"},
-        {"text": "Swift-style camelCase symbology names (Symbology.ean13UPCA, Symbology.qr) are NOT used"},
-        {"text": "BarcodeArView.Create( is called (not new BarcodeArView(...), which is not a public constructor)"},
-        {"text": "BarcodeArView.Create( receives a UIView (this.View or a UIView outlet) as the parentView argument"},
-        {"text": "BarcodeArView.Create( receives the BarcodeAr instance as the barcodeAr argument"},
-        {"text": "BarcodeArView.Create( receives the DataCaptureContext as the dataCaptureContext argument"},
-        {"text": "BarcodeArView.Create( receives a BarcodeArViewSettings as the settings argument"},
-        {"text": "BarcodeArView.Create( receives null (or a CameraSettings) as the cameraSettings argument"},
-        {"text": "this.View.AddSubview(barcodeArView) is NOT called (BarcodeArView.Create attaches the view automatically)"},
-        {"text": "IBarcodeArHighlightProvider is implemented"},
-        {"text": "HighlightForBarcodeAsync is implemented and returns a Task<IBarcodeArHighlight?> (the async/Task-based provider, not a delegate)"},
-        {"text": "A new BarcodeArRectangleHighlight(barcode) is constructed with only the Barcode argument (no context argument is passed)"},
-        {"text": "completionHandler / delegate-based highlight provider pattern is NOT used (that is the Swift pattern, not the .NET pattern)"},
-        {"text": "barcodeArView.HighlightProvider is assigned to the provider instance"},
-        {"text": "Either barcodeAr.SessionUpdated += handler or barcodeAr.AddListener(IBarcodeArListener) is wired"},
-        {"text": "OnObservationStarted and OnObservationStopped are NOT declared (the .NET IBarcodeArListener has only one method)"},
-        {"text": "barcodeArView.Start() is called from ViewWillAppear"},
-        {"text": "barcodeArView.Stop() is called from ViewWillDisappear"},
-        {"text": "barcodeArView.OnResume() is NOT called (that method does not exist on the iOS BarcodeArView — it is Android-only)"},
-        {"text": "barcodeArView.OnPause() is NOT called (that method does not exist on the iOS BarcodeArView — it is Android-only)"},
-        {"text": "barcodeArView.Dispose() is called on teardown (NOT barcodeArView.OnDestroy(), which does not exist in the .NET binding)"},
-        {"text": "No call to BarcodeCapture.Create or barcodeCapture.AddListener appears (BarcodeAr is not BarcodeCapture)"},
-        {"text": "No DataCaptureView, BarcodeCaptureOverlay, or BarcodeBatchBasicOverlay is created (BarcodeArView is the only view needed)"},
-        {"text": "No Camera.GetDefaultCamera() or dataCaptureContext.SetFrameSourceAsync(...) call is present (BarcodeArView manages its own camera internally)"},
-        {"text": "DispatchQueue.MainQueue.DispatchAsync (or InvokeOnMainThread) is used to dispatch UI work from the session-updated handler"},
-        {"text": "No Android-style RequestPermissions / CameraPermissionActivity is referenced (iOS handles the prompt via NSCameraUsageDescription)"}
+        {
+          "text": "Setup checklist is shown and mentions adding the Scandit.DataCapture.Barcode and Scandit.DataCapture.Core NuGet packages"
+        },
+        {
+          "text": "Setup checklist mentions adding NSCameraUsageDescription to Info.plist"
+        },
+        {
+          "text": "Setup checklist mentions adding ScanditCaptureCore.Initialize() and ScanditBarcodeCapture.Initialize() in AppDelegate.FinishedLaunching (required for SDK 8.0+)"
+        },
+        {
+          "text": "Setup checklist mentions setting <SupportedOSPlatformVersion>15.0</SupportedOSPlatformVersion> (or higher) in the .csproj"
+        },
+        {
+          "text": "A license key placeholder string is present"
+        },
+        {
+          "text": "DataCaptureContext.ForLicenseKey( is used to create the context"
+        },
+        {
+          "text": "new BarcodeArSettings() is used (not BarcodeArSettings.Create(), which does not exist)"
+        },
+        {
+          "text": "new BarcodeAr(context, settings) is used as the constructor (not BarcodeAr.Create(...) or BarcodeAr.ForDataCaptureContext(...), which do not exist)"
+        },
+        {
+          "text": "Symbology.Ean13Upca is enabled"
+        },
+        {
+          "text": "Symbology.Qr is enabled"
+        },
+        {
+          "text": "No symbologies other than Ean13Upca and Qr are enabled"
+        },
+        {
+          "text": "Swift-style camelCase symbology names (Symbology.ean13UPCA, Symbology.qr) are NOT used"
+        },
+        {
+          "text": "BarcodeArView.Create( is called (not new BarcodeArView(...), which is not a public constructor)"
+        },
+        {
+          "text": "BarcodeArView.Create( receives a UIView (this.View or a UIView outlet) as the parentView argument"
+        },
+        {
+          "text": "BarcodeArView.Create( receives the BarcodeAr instance as the barcodeAr argument"
+        },
+        {
+          "text": "BarcodeArView.Create( receives the DataCaptureContext as the dataCaptureContext argument"
+        },
+        {
+          "text": "BarcodeArView.Create( receives a BarcodeArViewSettings as the settings argument"
+        },
+        {
+          "text": "BarcodeArView.Create( receives null (or a CameraSettings) as the cameraSettings argument"
+        },
+        {
+          "text": "this.View.AddSubview(barcodeArView) is NOT called (BarcodeArView.Create attaches the view automatically)"
+        },
+        {
+          "text": "IBarcodeArHighlightProvider is implemented"
+        },
+        {
+          "text": "HighlightForBarcodeAsync is implemented and returns a Task<IBarcodeArHighlight?> (the async/Task-based provider, not a delegate)"
+        },
+        {
+          "text": "A new BarcodeArRectangleHighlight(barcode) is constructed with only the Barcode argument (no context argument is passed)"
+        },
+        {
+          "text": "completionHandler / delegate-based highlight provider pattern is NOT used (that is the Swift pattern, not the .NET pattern)"
+        },
+        {
+          "text": "barcodeArView.HighlightProvider is assigned to the provider instance"
+        },
+        {
+          "text": "Either barcodeAr.SessionUpdated += handler or barcodeAr.AddListener(IBarcodeArListener) is wired"
+        },
+        {
+          "text": "OnObservationStarted and OnObservationStopped are NOT declared (the .NET IBarcodeArListener has only one method)"
+        },
+        {
+          "text": "barcodeArView.Start() is called from ViewWillAppear"
+        },
+        {
+          "text": "barcodeArView.Stop() is called from ViewWillDisappear"
+        },
+        {
+          "text": "barcodeArView.OnResume() is NOT called (that method does not exist on the iOS BarcodeArView — it is Android-only)"
+        },
+        {
+          "text": "barcodeArView.OnPause() is NOT called (that method does not exist on the iOS BarcodeArView — it is Android-only)"
+        },
+        {
+          "text": "barcodeArView.Dispose() is called on teardown (NOT barcodeArView.OnDestroy(), which does not exist in the .NET binding)"
+        },
+        {
+          "text": "No call to BarcodeCapture.Create or barcodeCapture.AddListener appears (BarcodeAr is not BarcodeCapture)"
+        },
+        {
+          "text": "No DataCaptureView, BarcodeCaptureOverlay, or BarcodeBatchBasicOverlay is created (BarcodeArView is the only view needed)"
+        },
+        {
+          "text": "No Camera.GetDefaultCamera() or dataCaptureContext.SetFrameSourceAsync(...) call is present (BarcodeArView manages its own camera internally) (semantic)"
+        },
+        {
+          "text": "DispatchQueue.MainQueue.DispatchAsync (or InvokeOnMainThread) is used to dispatch UI work from the session-updated handler"
+        },
+        {
+          "text": "No Android-style RequestPermissions / CameraPermissionActivity is referenced (iOS handles the prompt via NSCameraUsageDescription)"
+        }
       ]
     },
     {
@@ -55,15 +127,33 @@
         "fixtures/IntegratedViewController.cs"
       ],
       "assertions": [
-        {"text": "IBarcodeArAnnotationProvider is implemented"},
-        {"text": "AnnotationForBarcodeAsync is implemented and returns Task<IBarcodeArAnnotation?>"},
-        {"text": "A new BarcodeArInfoAnnotation(barcode) is constructed with only the Barcode argument (no context)"},
-        {"text": "BarcodeArInfoAnnotationBodyComponent is used and its Text is set to barcode.Data"},
-        {"text": "The BarcodeArInfoAnnotationBodyComponent is imported from the Scandit.DataCapture.Barcode.Ar.UI.Annotations.Info sub-namespace"},
-        {"text": "barcodeArView.AnnotationProvider is assigned to the new provider instance"},
-        {"text": "Delegate-based / completionHandler annotation provider pattern is NOT used (the .NET annotation provider is async/Task-based, not delegate-based)"},
-        {"text": "Existing integration code (BarcodeAr, BarcodeArView, SessionUpdated handler, RectangleHighlightProvider) is preserved"},
-        {"text": "ViewWillAppear continues to call barcodeArView.Start() and ViewWillDisappear continues to call barcodeArView.Stop()"}
+        {
+          "text": "IBarcodeArAnnotationProvider is implemented"
+        },
+        {
+          "text": "AnnotationForBarcodeAsync is implemented and returns Task<IBarcodeArAnnotation?>"
+        },
+        {
+          "text": "A new BarcodeArInfoAnnotation(barcode) is constructed with only the Barcode argument (no context)"
+        },
+        {
+          "text": "BarcodeArInfoAnnotationBodyComponent is used and its Text is set to barcode.Data"
+        },
+        {
+          "text": "The BarcodeArInfoAnnotationBodyComponent is imported from the Scandit.DataCapture.Barcode.Ar.UI.Annotations.Info sub-namespace"
+        },
+        {
+          "text": "barcodeArView.AnnotationProvider is assigned to the new provider instance"
+        },
+        {
+          "text": "Delegate-based / completionHandler annotation provider pattern is NOT used (the .NET annotation provider is async/Task-based, not delegate-based)"
+        },
+        {
+          "text": "Existing integration code (BarcodeAr, BarcodeArView, SessionUpdated handler, RectangleHighlightProvider) is preserved"
+        },
+        {
+          "text": "ViewWillAppear continues to call barcodeArView.Start() and ViewWillDisappear continues to call barcodeArView.Stop()"
+        }
       ]
     },
     {
@@ -74,10 +164,220 @@
         "fixtures/IntegratedViewController.cs"
       ],
       "assertions": [
-        {"text": "barcodeAr.Feedback is reassigned to a new BarcodeArFeedback() (empty constructor)"},
-        {"text": "BarcodeArFeedback is imported from Scandit.DataCapture.Barcode.Ar.Feedback"},
-        {"text": "BarcodeArFeedback.DefaultFeedback is NOT called as a method (BarcodeArFeedback.DefaultFeedback() with parentheses) — it is a static property in .NET"},
-        {"text": "Existing integration code (BarcodeAr, BarcodeArView, SessionUpdated handler, RectangleHighlightProvider) is preserved"}
+        {
+          "text": "barcodeAr.Feedback is reassigned to a new BarcodeArFeedback() (empty constructor)"
+        },
+        {
+          "text": "BarcodeArFeedback is imported from Scandit.DataCapture.Barcode.Ar.Feedback"
+        },
+        {
+          "text": "BarcodeArFeedback.DefaultFeedback is NOT called as a method (BarcodeArFeedback.DefaultFeedback() with parentheses) — it is a static property in .NET"
+        },
+        {
+          "text": "Existing integration code (BarcodeAr, BarcodeArView, SessionUpdated handler, RectangleHighlightProvider) is preserved"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "In my MatrixScan AR .NET iOS view controller (IntegratedViewController.cs) I want to style the rectangle highlights: give each tracked barcode a custom brush color and show an icon inside the highlight. Update the highlight provider.",
+      "expected_output": "The skill keeps the IBarcodeArHighlightProvider returning a BarcodeArRectangleHighlight(barcode) and sets the highlight's Brush and Icon properties before returning it. The Brush is built with the iOS UIColor-based Brush constructor (the .NET binding's Brush takes platform UIColor values, not a managed Color type), and the Icon is a ScanditIcon. The existing BarcodeArView wiring and lifecycle are preserved.",
+      "files": [
+        "fixtures/IntegratedViewController.cs"
+      ],
+      "assertions": [
+        {
+          "text": "The returned highlight is a new BarcodeArRectangleHighlight(barcode) constructed with only the Barcode argument"
+        },
+        {
+          "text": "The highlight's Brush property is assigned"
+        },
+        {
+          "text": "The highlight's Icon property is assigned a ScanditIcon"
+        },
+        {
+          "text": "Brush is imported from Scandit.DataCapture.Core.UI.Style"
+        },
+        {
+          "text": "HighlightForBarcodeAsync still returns Task<IBarcodeArHighlight?>"
+        },
+        {
+          "text": "The provider is assigned to barcodeArView.HighlightProvider"
+        },
+        {
+          "text": "A managed Scandit.DataCapture.Core.Color type is NOT used to build the Brush (the .NET iOS Brush constructor takes UIColor values)"
+        },
+        {
+          "text": "barcodeArView.Start() in ViewWillAppear and barcodeArView.Stop() in ViewWillDisappear are preserved"
+        }
+      ],
+      "tags": [
+        "highlight-brush-icon"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "Add a status icon annotation to each tracked barcode in my MatrixScan AR .NET iOS app. It should show a compact icon that expands to show the short text 'In stock' when the user taps the highlight. Update IntegratedViewController.cs.",
+      "expected_output": "The skill adds an IBarcodeArAnnotationProvider that returns a BarcodeArStatusIconAnnotation(barcode), sets its Text to 'In stock' and optionally its Icon, sets AnnotationTrigger to HighlightTap so it expands on tap, and assigns the provider to barcodeArView.AnnotationProvider.",
+      "files": [
+        "fixtures/IntegratedViewController.cs"
+      ],
+      "assertions": [
+        {
+          "text": "IBarcodeArAnnotationProvider is implemented and AnnotationForBarcodeAsync returns Task<IBarcodeArAnnotation?>"
+        },
+        {
+          "text": "A new BarcodeArStatusIconAnnotation(barcode) is constructed with only the Barcode argument (no context)"
+        },
+        {
+          "text": "The annotation's Text property is set to the In stock string"
+        },
+        {
+          "text": "BarcodeArStatusIconAnnotation is imported from Scandit.DataCapture.Barcode.Ar.UI.Annotations"
+        },
+        {
+          "text": "barcodeArView.AnnotationProvider is assigned to the new provider instance"
+        },
+        {
+          "text": "Delegate-based / completionHandler annotation provider pattern is NOT used (the .NET provider is async/Task-based)"
+        },
+        {
+          "text": "Existing BarcodeAr, BarcodeArView, SessionUpdated handler, and RectangleHighlightProvider wiring is preserved"
+        }
+      ],
+      "tags": [
+        "status-icon-annotation"
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "I want a popover with two action buttons ('Details' and 'Remove') to appear when the user taps a tracked barcode's highlight in my MatrixScan AR .NET iOS app, and I need to know which button was tapped. Update IntegratedViewController.cs.",
+      "expected_output": "The skill adds an IBarcodeArAnnotationProvider that returns a BarcodeArPopoverAnnotation(barcode, buttons), where buttons is an IList<BarcodeArPopoverAnnotationButton> each built from a ScanditIcon and text. It assigns a Listener implementing IBarcodeArPopoverAnnotationListener whose OnPopoverButtonTapped(popover, button, buttonIndex) identifies the tapped button, leaves EntirePopoverTappable false so per-button taps fire, and assigns the provider to barcodeArView.AnnotationProvider.",
+      "files": [
+        "fixtures/IntegratedViewController.cs"
+      ],
+      "assertions": [
+        {
+          "text": "A new BarcodeArPopoverAnnotation(barcode, buttons) is constructed taking the Barcode and an IList<BarcodeArPopoverAnnotationButton>"
+        },
+        {
+          "text": "Each button is a new BarcodeArPopoverAnnotationButton(icon, text) constructed from a ScanditIcon and a text string"
+        },
+        {
+          "text": "BarcodeArPopoverAnnotationButton is imported from Scandit.DataCapture.Barcode.Ar.UI.Annotations.Popover"
+        },
+        {
+          "text": "An IBarcodeArPopoverAnnotationListener implementation is provided and assigned to the annotation's Listener property"
+        },
+        {
+          "text": "OnPopoverButtonTapped is implemented with the signature taking the BarcodeArPopoverAnnotation, the BarcodeArPopoverAnnotationButton, and an int buttonIndex"
+        },
+        {
+          "text": "EntirePopoverTappable is left false (or not set to true) so individual button taps are delivered"
+        },
+        {
+          "text": "barcodeArView.AnnotationProvider is assigned to the provider instance"
+        },
+        {
+          "text": "Existing BarcodeAr, BarcodeArView, and lifecycle wiring is preserved"
+        }
+      ],
+      "tags": [
+        "popover-annotation",
+        "annotation-tap"
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "Add a responsive annotation in my MatrixScan AR .NET iOS app: when a tracked barcode is close (large on screen) show its full data, and when it is far away show a compact 'Scan closer' hint. Update IntegratedViewController.cs.",
+      "expected_output": "The skill returns a BarcodeArResponsiveAnnotation(barcode, closeUpAnnotation, farAwayAnnotation) from AnnotationForBarcodeAsync, where closeUpAnnotation and farAwayAnnotation are BarcodeArInfoAnnotation instances. It sets the static BarcodeArResponsiveAnnotation.Threshold to control the close-up vs far-away switch point, and assigns the provider to barcodeArView.AnnotationProvider.",
+      "files": [
+        "fixtures/IntegratedViewController.cs"
+      ],
+      "assertions": [
+        {
+          "text": "A new BarcodeArResponsiveAnnotation(barcode, closeUpAnnotation, farAwayAnnotation) is constructed taking the Barcode and two BarcodeArInfoAnnotation arguments"
+        },
+        {
+          "text": "The close-up and far-away arguments are both BarcodeArInfoAnnotation instances"
+        },
+        {
+          "text": "BarcodeArResponsiveAnnotation.Threshold is set as a static property (not an instance property)"
+        },
+        {
+          "text": "BarcodeArResponsiveAnnotation is imported from Scandit.DataCapture.Barcode.Ar.UI.Annotations"
+        },
+        {
+          "text": "AnnotationForBarcodeAsync returns Task<IBarcodeArAnnotation?>"
+        },
+        {
+          "text": "barcodeArView.AnnotationProvider is assigned to the provider instance"
+        },
+        {
+          "text": "Existing BarcodeAr, BarcodeArView, and lifecycle wiring is preserved"
+        }
+      ],
+      "tags": [
+        "responsive-annotation"
+      ]
+    },
+    {
+      "id": 8,
+      "prompt": "In my MatrixScan AR .NET iOS app I want to open a product detail screen when the user taps a barcode's highlight. Wire up the highlight tap in IntegratedViewController.cs.",
+      "expected_output": "The skill subscribes to barcodeArView.HighlightForBarcodeTapped (a C# event on BarcodeArView, not a UiListener/UIDelegate property), reads args.Barcode.Data from the HighlightForBarcodeTappedEventArgs, and dispatches the navigation onto the main queue. It does NOT add a UiListener property.",
+      "files": [
+        "fixtures/IntegratedViewController.cs"
+      ],
+      "assertions": [
+        {
+          "text": "The handler subscribes to barcodeArView.HighlightForBarcodeTapped using the += event-subscription syntax"
+        },
+        {
+          "text": "The handler reads the tapped barcode from the event args (args.Barcode)"
+        },
+        {
+          "text": "HighlightForBarcodeTappedEventArgs is imported from Scandit.DataCapture.Barcode.Ar.UI"
+        },
+        {
+          "text": "A barcodeArView.UiListener property is NOT assigned (the .NET iOS BarcodeArView exposes the HighlightForBarcodeTapped event instead of a UiListener / UIDelegate)"
+        },
+        {
+          "text": "DispatchQueue.MainQueue.DispatchAsync (or InvokeOnMainThread) is used to run UI work from the tap handler"
+        },
+        {
+          "text": "Existing BarcodeAr, BarcodeArView, and lifecycle wiring is preserved"
+        }
+      ],
+      "tags": [
+        "highlight-tap"
+      ]
+    },
+    {
+      "id": 9,
+      "prompt": "I want the info annotations in my MatrixScan AR .NET iOS app to appear automatically as soon as a barcode is scanned, instead of only when the user taps the highlight. Update the annotation provider in IntegratedViewController.cs.",
+      "expected_output": "The skill sets the annotation's AnnotationTrigger property to BarcodeArAnnotationTrigger.HighlightTapAndBarcodeScan so the annotation shows immediately on scan (and can still be toggled by tapping the highlight), rather than the default-for-tap-only HighlightTap. The provider continues to return the annotation from AnnotationForBarcodeAsync.",
+      "files": [
+        "fixtures/IntegratedViewController.cs"
+      ],
+      "assertions": [
+        {
+          "text": "The annotation's AnnotationTrigger property is set to BarcodeArAnnotationTrigger.HighlightTapAndBarcodeScan"
+        },
+        {
+          "text": "BarcodeArAnnotationTrigger is imported from Scandit.DataCapture.Barcode.Ar.UI.Annotations"
+        },
+        {
+          "text": "BarcodeArAnnotationTrigger is used as an enum value (PascalCase member access), not a Swift-style camelCase .highlightTapAndBarcodeScan"
+        },
+        {
+          "text": "AnnotationForBarcodeAsync still returns Task<IBarcodeArAnnotation?>"
+        },
+        {
+          "text": "Existing BarcodeAr, BarcodeArView, and lifecycle wiring is preserved"
+        }
+      ],
+      "tags": [
+        "annotation-trigger"
       ]
     }
   ]

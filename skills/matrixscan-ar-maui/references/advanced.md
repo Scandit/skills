@@ -10,6 +10,7 @@ This file covers AR features beyond a basic rectangle highlight + info annotatio
 2. [Tap routing on `BarcodeArInfoAnnotation`](#2-tap-routing-on-barcodearinfoannotation)
 3. [Custom `BarcodeArFeedback` compositions](#3-custom-barcodearfeedback-compositions)
 4. [Putting it together — a richer `AnnotationProvider`](#4-putting-it-together--a-richer-annotationprovider)
+5. [Responsive annotations (close-up vs far-away)](#5-responsive-annotations-close-up-vs-far-away)
 
 ---
 
@@ -32,9 +33,9 @@ public sealed class PopoverAnnotationProvider : IBarcodeArAnnotationProvider, IB
 {
     public Task<IBarcodeArAnnotation?> AnnotationForBarcodeAsync(Barcode barcode)
     {
-        var infoIcon  = new ScanditIconBuilder().WithIcon(ScanditIconType.Information).Build();
+        var infoIcon  = new ScanditIconBuilder().WithIcon(ScanditIconType.InspectItem).Build();
         var checkIcon = new ScanditIconBuilder().WithIcon(ScanditIconType.Checkmark).Build();
-        var cartIcon  = new ScanditIconBuilder().WithIcon(ScanditIconType.ShoppingCart).Build();
+        var cartIcon  = new ScanditIconBuilder().WithIcon(ScanditIconType.ToPick).Build();
 
         var buttons = new List<BarcodeArPopoverAnnotationButton>
         {
@@ -133,7 +134,7 @@ public sealed class StockInfoAnnotationProvider : IBarcodeArAnnotationProvider, 
 {
     public Task<IBarcodeArAnnotation?> AnnotationForBarcodeAsync(Barcode barcode)
     {
-        var infoIcon = new ScanditIconBuilder().WithIcon(ScanditIconType.Information).Build();
+        var infoIcon = new ScanditIconBuilder().WithIcon(ScanditIconType.InspectItem).Build();
 
         var annotation = new BarcodeArInfoAnnotation(barcode)
         {
@@ -347,9 +348,9 @@ public sealed class StockAnnotationProvider :
     IBarcodeArInfoAnnotationListener,
     IBarcodeArPopoverAnnotationListener
 {
-    private readonly ScanditIcon infoIcon  = new ScanditIconBuilder().WithIcon(ScanditIconType.Information).Build();
+    private readonly ScanditIcon infoIcon  = new ScanditIconBuilder().WithIcon(ScanditIconType.InspectItem).Build();
     private readonly ScanditIcon checkIcon = new ScanditIconBuilder().WithIcon(ScanditIconType.Checkmark).Build();
-    private readonly ScanditIcon cartIcon  = new ScanditIconBuilder().WithIcon(ScanditIconType.ShoppingCart).Build();
+    private readonly ScanditIcon cartIcon  = new ScanditIconBuilder().WithIcon(ScanditIconType.ToPick).Build();
 
     public Task<IBarcodeArAnnotation?> AnnotationForBarcodeAsync(Barcode barcode)
     {
@@ -436,6 +437,67 @@ this.BarcodeArView.AnnotationProvider = new StockAnnotationProvider();
 ```
 
 > The provider is invoked on a background recognition thread (via `AnnotationForBarcodeAsync`), but the tap callbacks (`OnInfoAnnotation*Tapped`, `OnPopover*Tapped`) fire on the main thread. There is no need for `MainThread.BeginInvokeOnMainThread` inside the tap handlers, but there **is** a need to keep the `AnnotationForBarcodeAsync` body cheap — it runs on every newly-tracked barcode, and blocking it stalls the recognition pipeline.
+
+## 5. Responsive annotations (close-up vs far-away)
+
+`BarcodeArResponsiveAnnotation` wraps **two** `BarcodeArInfoAnnotation` variations and switches between them automatically based on how large the barcode appears on screen. When the barcode area (as a percentage of the screen area) exceeds the threshold, the **close-up** annotation is shown; otherwise the **far-away** annotation is shown. Either variation may be `null` to show nothing for that case.
+
+Available on MAUI since `dotnet.android=8.0` / `dotnet.ios=8.0`. It lives in the `Scandit.DataCapture.Barcode.Ar.UI.Annotations` namespace, like the other annotation types.
+
+**Constructor:** `new BarcodeArResponsiveAnnotation(Barcode barcode, BarcodeArInfoAnnotation? closeUpAnnotation, BarcodeArInfoAnnotation? farAwayAnnotation)`.
+
+```csharp
+using Scandit.DataCapture.Barcode.Ar.UI.Annotations;
+using Scandit.DataCapture.Barcode.Ar.UI.Annotations.Info;
+using Scandit.DataCapture.Barcode.Data;
+
+public sealed class ResponsiveAnnotationProvider : IBarcodeArAnnotationProvider
+{
+    public Task<IBarcodeArAnnotation?> AnnotationForBarcodeAsync(Barcode barcode)
+    {
+        // Detailed annotation when the barcode is close to the camera.
+        var closeUp = new BarcodeArInfoAnnotation(barcode)
+        {
+            Width = BarcodeArInfoAnnotationWidthPreset.Large,
+            Header = new BarcodeArInfoAnnotationHeader { Text = "In stock" },
+            Body = new List<BarcodeArInfoAnnotationBodyComponent>
+            {
+                new() { Text = barcode.Data ?? string.Empty },
+            },
+        };
+
+        // Compact annotation when the barcode is far away.
+        var farAway = new BarcodeArInfoAnnotation(barcode)
+        {
+            Width = BarcodeArInfoAnnotationWidthPreset.Small,
+            Body = new List<BarcodeArInfoAnnotationBodyComponent>
+            {
+                new() { Text = barcode.Data ?? string.Empty },
+            },
+        };
+
+        var annotation = new BarcodeArResponsiveAnnotation(barcode, closeUp, farAway);
+        return Task.FromResult<IBarcodeArAnnotation?>(annotation);
+    }
+}
+
+// The switch point is a CLASS-LEVEL static property — it applies to every instance.
+// 0.1 means the barcode covers 10% of the screen area. Default is 0.05.
+BarcodeArResponsiveAnnotation.Threshold = 0.1f;
+```
+
+| Member | Type | Description |
+|--------|------|-------------|
+| `BarcodeArResponsiveAnnotation(Barcode, BarcodeArInfoAnnotation?, BarcodeArInfoAnnotation?)` | constructor | `closeUpAnnotation` then `farAwayAnnotation`. Either may be `null`. |
+| `Threshold` | `static float` (get/set) | **Static** — applies to all instances. Barcode-area / screen-area ratio (0.0–1.0). Default `0.05`. |
+| `CloseUpAnnotation` | `BarcodeArInfoAnnotation?` (get) | Shown when the barcode area exceeds `Threshold`. |
+| `FarAwayAnnotation` | `BarcodeArInfoAnnotation?` (get) | Shown when the barcode area is below or equal to `Threshold`. |
+| `AnnotationTrigger` | `BarcodeArAnnotationTrigger` (get/set) | Default `HighlightTapAndBarcodeScan`. |
+| `Barcode` | `Barcode` (get) | |
+
+> `Threshold` is a **static** property — assign it once (`BarcodeArResponsiveAnnotation.Threshold = …`), not per-annotation. The close-up and far-away variations are themselves ordinary `BarcodeArInfoAnnotation` instances, so everything you can do to an info annotation (header, body rows, footer, width preset) applies to each variation independently.
+
+---
 
 ## Key rules
 

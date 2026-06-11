@@ -33,7 +33,8 @@
         {"text": "barcodeArView.start() is called after providers are assigned"},
         {"text": "barcodeAr.removeListener( is called in onDestroy"},
         {"text": "No Camera object is constructed and no setFrameSource is called"}
-      ]
+      ],
+      "tags": ["rectangle-highlight"]
     },
     {
       "id": 2,
@@ -50,7 +51,8 @@
         {"text": "callback.onData( is used to deliver the annotation"},
         {"text": "barcodeArView.annotationProvider is assigned"},
         {"text": "Existing integration code (BarcodeAr, BarcodeArView, listener, highlight provider) is preserved"}
-      ]
+      ],
+      "tags": ["info-annotation-content"]
     },
     {
       "id": 3,
@@ -62,7 +64,8 @@
       "assertions": [
         {"text": "barcodeAr.feedback is reassigned to suppress audio and haptic feedback (BarcodeArFeedback() empty constructor or equivalent)"},
         {"text": "Existing integration code (BarcodeAr, BarcodeArView, listener, highlight provider) is preserved"}
-      ]
+      ],
+      "tags": ["feedback"]
     }
   ]
 }

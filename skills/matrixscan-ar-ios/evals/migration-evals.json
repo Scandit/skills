@@ -6,7 +6,7 @@
       "prompt": "Migrate my MatrixScan Batch code to MatrixScan AR. File: BarcodeBatchViewController.swift",
       "expected_output": "The skill replaces the BarcodeBatch / DataCaptureView / BarcodeBatchBasicOverlay pipeline with a BarcodeArView. BarcodeBatch → BarcodeAr, BarcodeBatchSettings → BarcodeArSettings, the manual Camera + DataCaptureView + overlay setup is replaced with a single BarcodeArView(parentView:barcodeAr:settings:cameraSettings:) call. Lifecycle moves from camera.switch(toDesiredState:) to barcodeArView.start()/stop(). The BarcodeBatchListener is replaced with BarcodeArListener. The existing `results` accumulation logic is preserved.",
       "files": [
-        "eval-fixtures/BarcodeBatchViewController.swift"
+        "fixtures/BarcodeBatchViewController.swift"
       ],
       "assertions": [
         {"text": "BarcodeBatch is replaced with BarcodeAr everywhere in the file (no occurrence of `BarcodeBatch` or `BarcodeBatchSettings` or `BarcodeBatchSession` or `BarcodeBatchListener` or `BarcodeBatchBasicOverlay` remains)"},
@@ -29,7 +29,7 @@
       "prompt": "Migrate my MatrixScan code to use BarcodeAr. File: BarcodeTrackingViewController.swift",
       "expected_output": "The fixture uses the legacy v6 API names (BarcodeTracking, BarcodeTrackingSettings, BarcodeTrackingBasicOverlay, BarcodeTrackingListener, BarcodeTrackingSession). The skill recognizes this, flags that BarcodeAr is available from SDK 7.1.0 so the project must be on that version or later, and migrates all of those names to the BarcodeAr equivalents plus rewrites the view / camera / listener layers the same way as the v7+ path.",
       "files": [
-        "eval-fixtures/BarcodeTrackingViewController.swift"
+        "fixtures/BarcodeTrackingViewController.swift"
       ],
       "assertions": [
         {"text": "The response mentions that BarcodeAr requires SDK 7.1.0 or later (flagging this as a prerequisite before the code migration)"},
@@ -49,7 +49,7 @@
       "prompt": "Migrate my MatrixScan Batch code with the advanced overlay to MatrixScan AR. File: BarcodeBatchAdvancedOverlayViewController.swift",
       "expected_output": "The skill migrates the pipeline (BarcodeBatch → BarcodeAr, DataCaptureView + basic overlay + advanced overlay → BarcodeArView, camera lifecycle → view-managed, BarcodeBatchListener → removed or trivially preserved). It removes the BarcodeBatchAdvancedOverlay instantiation, the BarcodeBatchAdvancedOverlayDelegate conformance, and the three delegate methods (viewFor / anchorFor / offsetFor) because no equivalent exists in AR. It preserves the user-owned StockOverlay / StockModel / Constants / stockOverlay(for:) / canShowOverlay(of:) code untouched — those belong to the app. The response tells the user that rebuilding the per-barcode UIView layer requires the matrixscan-ar-annotation-ios sibling skill, and leaves a clear TODO in the file marking where the annotation provider needs to be wired.",
       "files": [
-        "eval-fixtures/BarcodeBatchAdvancedOverlayViewController.swift"
+        "fixtures/BarcodeBatchAdvancedOverlayViewController.swift"
       ],
       "assertions": [
         {"text": "BarcodeBatch, BarcodeBatchSettings, BarcodeBatchSession, BarcodeBatchListener, BarcodeBatchBasicOverlay, BarcodeBatchAdvancedOverlay, and BarcodeBatchAdvancedOverlayDelegate are ALL absent from the final file"},
