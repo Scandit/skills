@@ -235,6 +235,18 @@
         {"text": "It does NOT invent a settings flag or toggle (no settings.scanPreviewEnabled = true assignment, no enableScanPreview()); the existing enabled symbologies are preserved"},
         {"text": "The BarcodeCount mode, BarcodeCountView, listener, uiDelegate and the view lifecycle (prepareScanning/stopScanning) are otherwise unchanged"}
       ]
+    },
+    {
+      "id": 20,
+      "prompt": "Enable scan preview in my MatrixScan Count app and also turn on clustering so the previewed barcodes get grouped into clusters. File: IntegratedBarcodeCountViewController.swift",
+      "expected_output": "The skill explains that scan preview and clustering are NOT compatible — they cannot be enabled together — so it does not produce code that combines them. It does not invent a workaround or a guessed API to make them coexist; at most it offers to set up one or the other. The existing integration is left intact.",
+      "files": ["fixtures/IntegratedBarcodeCountViewController.swift"],
+      "assertions": [
+        {"text": "It states that scan preview and clustering are NOT compatible / cannot be combined"},
+        {"text": "It does NOT emit code enabling both at once (no BarcodeCountSettings(scanPreviewEnabled: true) together with settings.clusteringMode = ...)"},
+        {"text": "It does not invent a workaround or guessed API to make scan preview and clustering coexist"},
+        {"text": "It does not silently pick one and implement it as if the combination were fine — the incompatibility is called out (it may offer to do one or the other)"}
+      ]
     }
   ]
 }

@@ -10,6 +10,10 @@ here we only add clustering on top — do not re-create the context, mode, view,
 > into separate batches the user advances through (e.g. one per pallet), that is **group scanning** — see
 > `group-scanning.md`.
 
+> **Not compatible with scan preview.** Clustering cannot be combined with scan preview
+> (`BarcodeCountSettings(scanPreviewEnabled:)`). If the user asks for both, do **not** write code enabling
+> them together — say the combination isn't supported and ask which one they want.
+
 > If a clustering API doesn't resolve, verify the symbol against the
 > [BarcodeCount API reference](https://docs.scandit.com/data-capture-sdk/ios/barcode-capture/api.html)
 > before guessing.

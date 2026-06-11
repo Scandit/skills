@@ -426,7 +426,9 @@ API reference for exact signatures before writing code.
     must manage the camera yourself.)
 
   It works with **list scanning**, **status mode**, and **group scanning**, but is **not** compatible with
-  **clustering**, the **not-in-list action**, or **filtering** — don't combine those with scan preview.
+  **clustering**, the **not-in-list action**, or **filtering**. If the user asks to enable scan preview
+  *together with* any of those, do **not** write code that turns on both — the combination isn't supported.
+  Say so up front and ask which one they want, rather than emitting combined code with a caveat after it.
   (The centered text guidance isn't shown in this mode.)
 - **Group scanning**: let the user split a long count into groups (e.g. one per pallet) — set
   `settings.groupScanningEnabled = true` to add the Next Group / Redo controls. Results still come back as
