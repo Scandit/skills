@@ -176,6 +176,8 @@ What this code does **not** do:
   → see **`clustering.md`**.
 - It does not enable **status mode** (per-barcode status icons) or customize the toolbar — defaults are
   used. → see **`status-mode.md`** for status mode.
+- It does not enable **group scanning** (split the count into batches with Next Group / Redo controls) —
+  `groupScanningEnabled` is off. → see **`group-scanning.md`**.
 
 ## Step 1 — Data Capture Context
 
@@ -426,6 +428,9 @@ API reference for exact signatures before writing code.
   It works with **list scanning**, **status mode**, and **group scanning**, but is **not** compatible with
   **clustering**, the **not-in-list action**, or **filtering** — don't combine those with scan preview.
   (The centered text guidance isn't shown in this mode.)
+- **Group scanning**: let the user split a long count into groups (e.g. one per pallet) — set
+  `settings.groupScanningEnabled = true` to add the Next Group / Redo controls. Results still come back as
+  a flat list via the listener (no grouped-result callback). → **full guide: `group-scanning.md`**.
 - **Reset the mode**: when a counting process is over and you want to start fresh, call
   `barcodeCount.reset()` to clear the scanned list and the AR overlays (e.g. from your Exit/summary
   flow). The minimal example above doesn't call it — add it where your app begins a new count.
