@@ -5,180 +5,372 @@
       "id": 1,
       "prompt": "Add ID Capture to my Flutter app so I can scan passports, driver's licenses and national ID cards and read the holder's name and date of birth. Here's my screen file: EmptyPage.dart.",
       "expected_output": "The skill writes a complete ID Capture integration: plugin init in main(), context with license key, IdCaptureSettings with acceptedDocuments and a FullDocumentScanner wrapped in IdCaptureScanner, IdCapture + IdCaptureListener (didCaptureId/didRejectId), DataCaptureView + IdCaptureOverlay, recommended camera settings, and a camera lifecycle via WidgetsBindingObserver. Setup checklist included.",
-      "files": ["fixtures/EmptyPage.dart"],
+      "files": [
+        "fixtures/EmptyPage.dart"
+      ],
       "assertions": [
-        {"text": "await ScanditFlutterDataCaptureId.initialize() is called in main before runApp"},
-        {"text": "DataCaptureContext.forLicenseKey( is present"},
-        {"text": "'-- ENTER YOUR SCANDIT LICENSE KEY HERE --' is present"},
-        {"text": "IdCaptureSettings( is present"},
-        {"text": "settings.acceptedDocuments is configured with document objects like Passport, DriverLicense, IdCard (semantic)"},
-        {"text": "IdCaptureScanner( is present"},
-        {"text": "physicalDocumentScanner: is present"},
-        {"text": "FullDocumentScanner( is present"},
-        {"text": "= IdCapture( is present"},
-        {"text": "addListener( is called"},
-        {"text": "didCaptureId( is present"},
-        {"text": "didRejectId( is present"},
-        {"text": "DataCaptureView.forContext( is present"},
-        {"text": "IdCaptureOverlay( is present"},
-        {"text": "IdCapture.createRecommendedCameraSettings( is called"},
-        {"text": "WidgetsBindingObserver is present"},
-        {"text": "capturedId.fullName is read (semantic)"},
-        {"text": "capturedId.dateOfBirth is read (semantic)"},
-        {"text": "Setup checklist mentions scandit_flutter_datacapture_id (semantic)"},
-        {"text": "Setup checklist mentions NSCameraUsageDescription for iOS (semantic)"},
-        {"text": "settings.scannerType is NOT used in the final code (semantic)"}
+        {
+          "text": "await ScanditFlutterDataCaptureId.initialize() is called in main before runApp"
+        },
+        {
+          "text": "DataCaptureContext.forLicenseKey( is present"
+        },
+        {
+          "text": "'-- ENTER YOUR SCANDIT LICENSE KEY HERE --' is present"
+        },
+        {
+          "text": "IdCaptureSettings( is present"
+        },
+        {
+          "text": "settings.acceptedDocuments is configured with document objects like Passport, DriverLicense, IdCard (semantic)"
+        },
+        {
+          "text": "IdCaptureScanner( is present"
+        },
+        {
+          "text": "physicalDocumentScanner: is present"
+        },
+        {
+          "text": "FullDocumentScanner( is present"
+        },
+        {
+          "text": "= IdCapture( is present"
+        },
+        {
+          "text": "addListener( is called"
+        },
+        {
+          "text": "didCaptureId( is present"
+        },
+        {
+          "text": "didRejectId( is present"
+        },
+        {
+          "text": "DataCaptureView.forContext( is present"
+        },
+        {
+          "text": "IdCaptureOverlay( is present"
+        },
+        {
+          "text": "IdCapture.createRecommendedCameraSettings( is called"
+        },
+        {
+          "text": "WidgetsBindingObserver is present"
+        },
+        {
+          "text": "capturedId.fullName is read (semantic)"
+        },
+        {
+          "text": "capturedId.dateOfBirth is read (semantic)"
+        },
+        {
+          "text": "Setup checklist mentions scandit_flutter_datacapture_id (semantic)"
+        },
+        {
+          "text": "Setup checklist mentions NSCameraUsageDescription for iOS (semantic)"
+        },
+        {
+          "text": "settings.scannerType is NOT used in the final code (semantic)"
+        }
       ]
     },
     {
       "id": 2,
-      "prompt": "I only need to read the PDF417 barcode on the back of US driver's licenses — nothing else. Set up ID Capture for that in EmptyPage.dart.",
+      "prompt": "I only need to read the PDF417 barcode on the back of US driver's licenses \u2014 nothing else. Set up ID Capture for that in EmptyPage.dart.",
       "expected_output": "The skill accepts only DriverLicense for the US region and uses a SingleSideScanner with only the barcode flag enabled, wrapped in IdCaptureScanner.",
-      "files": ["fixtures/EmptyPage.dart"],
+      "files": [
+        "fixtures/EmptyPage.dart"
+      ],
       "assertions": [
-        {"text": "DriverLicense(IdCaptureRegion.us) is present"},
-        {"text": "SingleSideScanner( is present"},
-        {"text": "the SingleSideScanner enables only the barcode flag, i.e. SingleSideScanner(true, false, false) (semantic)"},
-        {"text": "physicalDocumentScanner: is present"},
-        {"text": "didCaptureId( is present"},
-        {"text": "capturedId.barcode is read (semantic)"}
+        {
+          "text": "DriverLicense(IdCaptureRegion.us) is present"
+        },
+        {
+          "text": "SingleSideScanner( is present"
+        },
+        {
+          "text": "the SingleSideScanner enables only the barcode flag, i.e. SingleSideScanner(true, false, false) (semantic)"
+        },
+        {
+          "text": "physicalDocumentScanner: is present"
+        },
+        {
+          "text": "didCaptureId( is present"
+        },
+        {
+          "text": "capturedId.barcode is read (semantic)"
+        }
       ]
     },
     {
       "id": 3,
       "prompt": "Set up ID Capture to scan passports and extract the MRZ data (full name, document number, date of expiry). Use EmptyPage.dart.",
       "expected_output": "The skill accepts Passport, uses a scanner that reads the MRZ (FullDocumentScanner or SingleSideScanner with machineReadableZone enabled), and reads fields from the captured id / mrz result.",
-      "files": ["fixtures/EmptyPage.dart"],
+      "files": [
+        "fixtures/EmptyPage.dart"
+      ],
       "assertions": [
-        {"text": "Passport( is present"},
-        {"text": "the scanner reads the MRZ, via FullDocumentScanner or a SingleSideScanner with machineReadableZone enabled (semantic)"},
-        {"text": "capturedId.mrz is referenced or MRZ fields are read from the captured id (semantic)"},
-        {"text": "capturedId.documentNumber is read (semantic)"},
-        {"text": "capturedId.dateOfExpiry is read (semantic)"},
-        {"text": "didCaptureId( is present"}
+        {
+          "text": "Passport( is present"
+        },
+        {
+          "text": "the scanner reads the MRZ, via FullDocumentScanner or a SingleSideScanner with machineReadableZone enabled (semantic)"
+        },
+        {
+          "text": "capturedId.mrz is referenced or MRZ fields are read from the captured id (semantic)"
+        },
+        {
+          "text": "capturedId.documentNumber is read (semantic)"
+        },
+        {
+          "text": "capturedId.dateOfExpiry is read (semantic)"
+        },
+        {
+          "text": "didCaptureId( is present"
+        }
       ]
     },
     {
       "id": 4,
-      "prompt": "Add ID Capture but anonymize sensitive data — I don't want document images or sensitive fields in the result. Use EmptyPage.dart.",
+      "prompt": "Add ID Capture but anonymize sensitive data \u2014 I don't want document images or sensitive fields in the result. Use EmptyPage.dart.",
       "expected_output": "The skill sets IdCaptureSettings.anonymizationMode to an IdAnonymizationMode value that covers fields and images.",
-      "files": ["fixtures/EmptyPage.dart"],
+      "files": [
+        "fixtures/EmptyPage.dart"
+      ],
       "assertions": [
-        {"text": "anonymizationMode is present"},
-        {"text": "IdAnonymizationMode is present"},
-        {"text": "an anonymization mode covering fields and images is chosen, e.g. IdAnonymizationMode.fieldsAndImages (semantic)"},
-        {"text": "IdCapture(settings) is present"}
+        {
+          "text": "anonymizationMode is present"
+        },
+        {
+          "text": "IdAnonymizationMode is present"
+        },
+        {
+          "text": "an anonymization mode covering fields and images is chosen, e.g. IdAnonymizationMode.fieldsAndImages (semantic)"
+        },
+        {
+          "text": "IdCapture(settings) is present"
+        }
       ]
     },
     {
       "id": 5,
       "prompt": "I need the cropped document image and the face image back from each scanned ID. Set that up in EmptyPage.dart.",
       "expected_output": "The skill enables image extraction via setShouldPassImageTypeToResult for IdImageType.face and IdImageType.croppedDocument and reads capturedId.images.",
-      "files": ["fixtures/EmptyPage.dart"],
+      "files": [
+        "fixtures/EmptyPage.dart"
+      ],
       "assertions": [
-        {"text": "setShouldPassImageTypeToResult( is called"},
-        {"text": "IdImageType.face is present"},
-        {"text": "IdImageType.croppedDocument is present"},
-        {"text": "capturedId.images is read (semantic)"}
+        {
+          "text": "setShouldPassImageTypeToResult( is called"
+        },
+        {
+          "text": "IdImageType.face is present"
+        },
+        {
+          "text": "IdImageType.croppedDocument is present"
+        },
+        {
+          "text": "capturedId.images is read (semantic)"
+        }
       ]
     },
     {
       "id": 6,
       "prompt": "We want to reject voided / cancelled US driver's licenses during ID Capture. How do I enable that? My screen is EmptyPage.dart.",
       "expected_output": "The skill adds the scandit_flutter_datacapture_id_voided_detection package, sets settings.rejectVoidedIds = true, and handles RejectionReason.documentVoided in didRejectId.",
-      "files": ["fixtures/EmptyPage.dart"],
+      "files": [
+        "fixtures/EmptyPage.dart"
+      ],
       "assertions": [
-        {"text": "settings.rejectVoidedIds is enabled"},
-        {"text": "RejectionReason.documentVoided is present"},
-        {"text": "didRejectId( is present"},
-        {"text": "the scandit_flutter_datacapture_id_voided_detection package is added as a dependency (semantic)"}
+        {
+          "text": "settings.rejectVoidedIds is enabled"
+        },
+        {
+          "text": "RejectionReason.documentVoided is present"
+        },
+        {
+          "text": "didRejectId( is present"
+        },
+        {
+          "text": "the scandit_flutter_datacapture_id_voided_detection package is added as a dependency (semantic)"
+        }
       ]
     },
     {
       "id": 7,
       "prompt": "We scan European driving licenses and need the vehicle categories from the back of the card. Set up ID Capture for that in EmptyPage.dart.",
       "expected_output": "The skill adds the scandit_flutter_datacapture_id_europe_driving_license package, sets settings.decodeBackOfEuropeanDrivingLicense = true with a scanner that reads the back, and reads capturedId.viz.drivingLicenseDetails.drivingLicenseCategories.",
-      "files": ["fixtures/EmptyPage.dart"],
+      "files": [
+        "fixtures/EmptyPage.dart"
+      ],
       "assertions": [
-        {"text": "settings.decodeBackOfEuropeanDrivingLicense is enabled"},
-        {"text": "drivingLicenseDetails is present"},
-        {"text": "drivingLicenseCategories is read (semantic)"},
-        {"text": "each category's data is read via the .code getter, not a non-existent .categoryCode (semantic)"},
-        {"text": "a scanner that reads the back of the card is used, e.g. FullDocumentScanner (semantic)"},
-        {"text": "the scandit_flutter_datacapture_id_europe_driving_license package is added as a dependency (semantic)"}
+        {
+          "text": "settings.decodeBackOfEuropeanDrivingLicense is enabled"
+        },
+        {
+          "text": "drivingLicenseDetails is present"
+        },
+        {
+          "text": "drivingLicenseCategories is read (semantic)"
+        },
+        {
+          "text": "each category's data is read via the .code getter, not a non-existent .categoryCode (semantic)"
+        },
+        {
+          "text": "a scanner that reads the back of the card is used, e.g. FullDocumentScanner (semantic)"
+        },
+        {
+          "text": "the scandit_flutter_datacapture_id_europe_driving_license package is added as a dependency (semantic)"
+        }
       ]
     },
     {
       "id": 8,
       "prompt": "Add forged-barcode detection for US driver's licenses (AAMVA) to my ID Capture setup so we can flag likely-forged IDs. Use EmptyPage.dart.",
       "expected_output": "The skill adds the scandit_flutter_datacapture_id_aamva_barcode_verification package, sets settings.rejectForgedAamvaBarcodes = true, and/or reads capturedId.verificationResult.aamvaBarcodeVerification with AamvaBarcodeVerificationStatus. It does NOT use a standalone AamvaBarcodeVerifier class (removed on Flutter).",
-      "files": ["fixtures/EmptyPage.dart"],
+      "files": [
+        "fixtures/EmptyPage.dart"
+      ],
       "assertions": [
-        {"text": "settings.rejectForgedAamvaBarcodes is enabled"},
-        {"text": "verificationResult.aamvaBarcodeVerification is referenced, or RejectionReason.forgedAamvaBarcode is handled (semantic)"},
-        {"text": "AamvaBarcodeVerificationStatus is referenced when inspecting the result (semantic)"},
-        {"text": "the scandit_flutter_datacapture_id_aamva_barcode_verification package is added as a dependency (semantic)"},
-        {"text": "a standalone AamvaBarcodeVerifier class is NOT used in the code (semantic)"}
+        {
+          "text": "settings.rejectForgedAamvaBarcodes is enabled"
+        },
+        {
+          "text": "verificationResult.aamvaBarcodeVerification is referenced, or RejectionReason.forgedAamvaBarcode is handled (semantic)"
+        },
+        {
+          "text": "AamvaBarcodeVerificationStatus is referenced when inspecting the result (semantic)"
+        },
+        {
+          "text": "the scandit_flutter_datacapture_id_aamva_barcode_verification package is added as a dependency (semantic)"
+        },
+        {
+          "text": "a standalone AamvaBarcodeVerifier class is NOT used in the code (semantic)"
+        }
       ]
     },
     {
       "id": 9,
       "prompt": "How should I handle the case where a document is detected but can't be captured? I want to show the user a clear message. My screen is EmptyPage.dart and I accept passports and driver's licenses.",
       "expected_output": "The skill implements didRejectId and maps RejectionReason values (timeout, notAcceptedDocumentType, etc.) to user-facing messages, disabling capture while the message is shown.",
-      "files": ["fixtures/EmptyPage.dart"],
+      "files": [
+        "fixtures/EmptyPage.dart"
+      ],
       "assertions": [
-        {"text": "didRejectId( is present"},
-        {"text": "RejectionReason is present"},
-        {"text": "rejection reasons are mapped to user-facing messages, e.g. via a switch on RejectionReason (semantic)"},
-        {"text": "idCapture.isEnabled is set to false while the rejection message is shown (semantic)"},
-        {"text": "RejectionReason.timeout is present"}
+        {
+          "text": "didRejectId( is present"
+        },
+        {
+          "text": "RejectionReason is present"
+        },
+        {
+          "text": "rejection reasons are mapped to user-facing messages, e.g. via a switch on RejectionReason (semantic)"
+        },
+        {
+          "text": "idCapture.isEnabled is set to false while the rejection message is shown (semantic)"
+        },
+        {
+          "text": "RejectionReason.timeout is present"
+        }
       ]
     },
     {
       "id": 10,
       "prompt": "We want to reject IDs whose printed data doesn't match the data in the MRZ or barcode, to catch tampered documents. Set that up in ID Capture and let me inspect what failed. My screen is EmptyPage.dart.",
       "expected_output": "The skill sets settings.rejectInconsistentData = true, handles RejectionReason.inconsistentData in didRejectId, and reads capturedId.verificationResult.dataConsistency to inspect the consistency checks.",
-      "files": ["fixtures/EmptyPage.dart"],
-      "assertions": [
-        {"text": "settings.rejectInconsistentData is enabled"},
-        {"text": "RejectionReason.inconsistentData is present"},
-        {"text": "didRejectId( is present"},
-        {"text": "capturedId.verificationResult.dataConsistency is read (semantic)"},
-        {"text": "DataConsistencyResult fields such as allChecksPassed or failedChecks are inspected (semantic)"}
+      "files": [
+        "fixtures/EmptyPage.dart"
       ],
-      "tags": ["data-consistency-verification"]
+      "assertions": [
+        {
+          "text": "settings.rejectInconsistentData is enabled"
+        },
+        {
+          "text": "RejectionReason.inconsistentData is present"
+        },
+        {
+          "text": "didRejectId( is present"
+        },
+        {
+          "text": "capturedId.verificationResult.dataConsistency is read (semantic)"
+        },
+        {
+          "text": "DataConsistencyResult fields such as allChecksPassed or failedChecks are inspected (semantic)"
+        }
+      ],
+      "tags": [
+        "data-consistency-verification"
+      ]
+    },
+    {
+      "id": 11,
+      "prompt": "I need to scan mobile driver's licenses (mDL, ISO 18013-5) in my Flutter app and read the holder's name and date of birth. Set that up in EmptyPage.dart.",
+      "expected_output": "The skill configures settings.scanner = IdCaptureScanner(mobileDocumentScanner: MobileDocumentScanner(iso180135: true, ocr: false)) for mobile documents, and reads the mobile-document data via capturedId.mobileDocument (or the harmonized top-level fields). MobileDocumentScanner ships in the base scandit_flutter_datacapture_id module, with no add-on package.",
+      "files": [
+        "fixtures/EmptyPage.dart"
+      ],
+      "assertions": [
+        {
+          "text": "MobileDocumentScanner( is present"
+        },
+        {
+          "text": "IdCaptureScanner( is present"
+        },
+        {
+          "text": "the MobileDocumentScanner is supplied to IdCaptureScanner via the named mobileDocumentScanner: argument, with iso180135: true (semantic)"
+        },
+        {
+          "text": "capturedId.mobileDocument is read, or the harmonized top-level fields the mobile document populates are read (semantic)"
+        },
+        {
+          "text": "didCaptureId is present"
+        },
+        {
+          "text": "no separate add-on package is added for mobile documents \u2014 MobileDocumentScanner is in the base module (semantic)"
+        },
+        {
+          "text": "no AamvaBarcodeVerifier and no IdDocumentType bitmask are used for mobile documents (semantic)"
+        }
+      ],
+      "tags": [
+        "mobile-document-mdl"
+      ]
     },
     {
       "id": 12,
-      "prompt": "I need to scan mobile driver's licenses (mDL, ISO 18013-5) in my Flutter app and read the holder's name and date of birth. Set that up in EmptyPage.dart.",
-      "expected_output": "The skill configures settings.scanner = IdCaptureScanner(mobileDocumentScanner: MobileDocumentScanner(iso180135: true, ocr: false)) for mobile documents, and reads the mobile-document data via capturedId.mobileDocument (or the harmonized top-level fields). MobileDocumentScanner ships in the base scandit_flutter_datacapture_id module, with no add-on package.",
-      "files": ["fixtures/EmptyPage.dart"],
-      "assertions": [
-        {"text": "MobileDocumentScanner( is present"},
-        {"text": "IdCaptureScanner( is present"},
-        {"text": "the MobileDocumentScanner is supplied to IdCaptureScanner via the named mobileDocumentScanner: argument, with iso180135: true (semantic)"},
-        {"text": "capturedId.mobileDocument is read, or the harmonized top-level fields the mobile document populates are read (semantic)"},
-        {"text": "didCaptureId is present"},
-        {"text": "no separate add-on package is added for mobile documents — MobileDocumentScanner is in the base module (semantic)"},
-        {"text": "no AamvaBarcodeVerifier and no IdDocumentType bitmask are used for mobile documents (semantic)"}
+      "prompt": "I'm building an airport check-in screen in my Flutter app. On one screen I need to scan the PDF417 barcode on a boarding pass AND scan the passenger's passport \u2014 both with the same camera preview. Set that up in EmptyPage.dart.",
+      "expected_output": "The skill keeps one DataCaptureContext, one DataCaptureView and one camera, and runs IdCapture and BarcodeCapture together. It attaches BOTH modes with context.addMode(idCapture) and context.addMode(barcodeCapture) \u2014 NOT context.setMode (which replaces the current mode). Each mode gets its own listener (IdCaptureListener's didCaptureId/didRejectId; BarcodeCaptureListener's didScan reading session.newlyRecognizedBarcode), BarcodeCaptureSettings enables Symbology.pdf417, and both modes are toggled via isEnabled. Co-existence is presented as supported.",
+      "files": [
+        "fixtures/EmptyPage.dart"
       ],
-      "tags": ["mobile-document-mdl"]
-    },
-    {
-      "id": 13,
-      "prompt": "I'm building an airport check-in screen in my Flutter app. On one screen I need to scan the PDF417 barcode on a boarding pass AND scan the passenger's passport — both with the same camera preview. Set that up in EmptyPage.dart.",
-      "expected_output": "The skill keeps one DataCaptureContext, one DataCaptureView and one camera, and runs IdCapture and BarcodeCapture together. It attaches BOTH modes with context.addMode(idCapture) and context.addMode(barcodeCapture) — NOT context.setMode (which replaces the current mode). Each mode gets its own listener (IdCaptureListener's didCaptureId/didRejectId; BarcodeCaptureListener's didScan reading session.newlyRecognizedBarcode), BarcodeCaptureSettings enables Symbology.pdf417, and both modes are toggled via isEnabled. Co-existence is presented as supported.",
-      "files": ["fixtures/EmptyPage.dart"],
-      "tags": ["barcode-coexistence"],
+      "tags": [
+        "barcode-coexistence"
+      ],
       "assertions": [
-        {"text": "context.addMode(idCapture) is called to attach the ID Capture mode"},
-        {"text": "context.addMode(barcodeCapture) is called to attach the Barcode Capture mode to the SAME context"},
-        {"text": "context.setMode( is NOT used to attach these two modes — setMode replaces the current mode rather than adding, so it cannot run both together (semantic)"},
-        {"text": "IdCapture( and BarcodeCapture( are both constructed"},
-        {"text": "the IdCapture mode has its own listener with didCaptureId"},
-        {"text": "the BarcodeCapture mode has its own listener with didScan that reads session.newlyRecognizedBarcode"},
-        {"text": "BarcodeCaptureSettings enables Symbology.pdf417 (the IATA boarding-pass symbology)"},
-        {"text": "running IdCapture and BarcodeCapture together on one DataCaptureContext is presented as supported, not as something that must be avoided (semantic)"}
+        {
+          "text": "context.addMode(idCapture) is called to attach the ID Capture mode"
+        },
+        {
+          "text": "context.addMode(barcodeCapture) is called to attach the Barcode Capture mode to the SAME context"
+        },
+        {
+          "text": "context.setMode( is NOT used to attach these two modes \u2014 setMode replaces the current mode rather than adding, so it cannot run both together (semantic)"
+        },
+        {
+          "text": "IdCapture( and BarcodeCapture( are both constructed"
+        },
+        {
+          "text": "the IdCapture mode has its own listener with didCaptureId"
+        },
+        {
+          "text": "the BarcodeCapture mode has its own listener with didScan that reads session.newlyRecognizedBarcode"
+        },
+        {
+          "text": "BarcodeCaptureSettings enables Symbology.pdf417 (the IATA boarding-pass symbology)"
+        },
+        {
+          "text": "running IdCapture and BarcodeCapture together on one DataCaptureContext is presented as supported, not as something that must be avoided (semantic)"
+        }
       ]
     }
   ]
