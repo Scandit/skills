@@ -740,6 +740,94 @@ overlay.Viewfinder = new RectangularViewfinder(
     RectangularViewfinderLineStyle.Light);
 ```
 
+For a crosshair-style aiming reticle (a small frame with a center dot) instead of a rectangle — useful for aiming at one code at a time — use `AimerViewfinder` (no constructor arguments):
+
+```csharp
+using Scandit.DataCapture.Core.UI.Viewfinder;
+
+overlay.Viewfinder = new AimerViewfinder();
+```
+
+### Per-symbology settings
+
+`settings.GetSymbologySettings(Symbology.X)` returns the mutable `SymbologySettings` for one symbology (it is **not** `SettingsForSymbology`). Mutate the returned object in place, then apply the settings — set them before `BarcodeCapture.Create(context, settings)`, or call `barcodeCapture.ApplySettingsAsync(settings)` to change them at runtime. The symbology must already be enabled (`settings.EnableSymbology(...)`) for these to take effect.
+
+**Symbology extensions** — toggle named decoder extensions such as Code 39 `full_ascii` (so lowercase and control characters decode). The method is `SetExtensionEnabled(string, bool)` — there is no `IsExtensionEnabled` setter:
+
+```csharp
+SymbologySettings code39Settings = settings.GetSymbologySettings(Symbology.Code39);
+code39Settings.SetExtensionEnabled("full_ascii", true);
+```
+
+**Checksums** — require an optional checksum (e.g. Code 39 Mod 43) to reduce misreads. The property is `Checksums` and the enum is `Checksum` — **not** `ChecksumType` / `ChecksumType.Mod43`:
+
+```csharp
+using Scandit.DataCapture.Barcode.Data;
+
+SymbologySettings code39Settings = settings.GetSymbologySettings(Symbology.Code39);
+code39Settings.Checksums = Checksum.Mod43;
+```
+
+**Active symbol counts** — restrict a variable-length symbology (Code 128, Code 39, ITF, …) to specific code lengths. Assign a `HashSet<short>` — the values must be typed as `short`, not `int`:
+
+```csharp
+SymbologySettings code128Settings = settings.GetSymbologySettings(Symbology.Code128);
+code128Settings.ActiveSymbolCounts = new HashSet<short>(new short[] { 6, 7, 8 });
+```
+
+**Color-inverted decoding** — decode light-on-dark codes (e.g. white QR on a dark background). The property is `ColorInvertedEnabled` — **not** `IsColorInvertedEnabled`. The symbology itself must stay enabled in addition to this flag:
+
+```csharp
+settings.EnableSymbology(Symbology.Qr, true); // QR must remain enabled
+SymbologySettings qrSettings = settings.GetSymbologySettings(Symbology.Qr);
+qrSettings.ColorInvertedEnabled = true;
+```
+
+### Overlay highlight brush
+
+`overlay.Brush` controls the fill/stroke drawn over recognized barcodes; `BarcodeCaptureOverlay.DefaultBrush` is the Scandit-blue default. A custom highlight is `new Brush(fillColor, strokeColor, strokeWidth)` (the three-argument constructor — there is no public `Brush` factory). The color arguments are the SDK's abstract `Scandit.DataCapture.Core.Common.Color`, which has **no `FromRGBA` / constructor of its own**: on .NET for Android you build colors with the platform `Android.Graphics.Color` factory (implicitly converted to the SDK `Color`), e.g. `Android.Graphics.Color.Argb(a, r, g, b)`:
+
+```csharp
+using Scandit.DataCapture.Core.UI.Style;
+
+// Semi-transparent green fill, solid green stroke, 2px stroke.
+overlay.Brush = new Brush(
+    Android.Graphics.Color.Argb(80, 0, 255, 0),  // fill (a, r, g, b)
+    Android.Graphics.Color.Argb(255, 0, 255, 0), // stroke
+    2.0f);                                        // stroke width
+```
+
+### Reject barcodes that don't match
+
+BarcodeCapture has no built-in filter callback — implement rejection inside the scan callback. Read `barcode.Data`, and when it does not match the accept rule, clear the highlight by setting `overlay.Brush = Brush.TransparentBrush` and `return` early **without** running the success flow. Matching codes proceed normally:
+
+```csharp
+using Scandit.DataCapture.Core.UI.Style;
+
+public void OnBarcodeScanned(
+    BarcodeCapture barcodeCapture,
+    BarcodeCaptureSession session,
+    IFrameData frameData)
+{
+    var barcode = session.NewlyRecognizedBarcode;
+    if (barcode == null) return;
+
+    if (barcode.Data == null || !barcode.Data.StartsWith("98"))
+    {
+        // Rejected: don't highlight, don't run the success flow.
+        this.overlay.Brush = Brush.TransparentBrush;
+        return;
+    }
+
+    // Accepted: restore the normal highlight and handle the code.
+    this.overlay.Brush = BarcodeCaptureOverlay.DefaultBrush;
+    barcodeCapture.Enabled = false;
+    RunOnUiThread(() => this.ShowResults($"Scanned: {barcode.Data}"));
+}
+```
+
+`Brush.TransparentBrush` is a static property.
+
 ### CodeDuplicateFilter
 
 Suppress duplicate scans of the same code within a time window. The .NET API uses `TimeSpan` plus two sentinel helpers from `Scandit.DataCapture.Barcode.Data.CodeDuplicate`.
@@ -819,6 +907,7 @@ ICollection<Symbology>? licensed = licenseInfo?.LicensedSymbologies;
 5. **Camera lifecycle** — turn the camera off in `OnPause()`, back on in `OnResume()`. Call `barcodeCapture.RemoveListener(this)` in `OnDestroy()`.
 6. **Overlay is explicit** — `BarcodeCaptureOverlay.Create(barcodeCapture, dataCaptureView)` adds the overlay to the view in one step. There is no implicit overlay.
 7. **Runtime permission** — add `CAMERA` to `AndroidManifest.xml` and request it at runtime before the first scan.
-8. **Symbologies** — enable only what's needed. Variable-length 1D symbologies (Code39, Code128, ITF) may need `ActiveSymbolCounts` adjusted (use `ICollection<short>`).
+8. **Symbologies** — enable only what's needed. Per-symbology tuning goes through `settings.GetSymbologySettings(Symbology.X)` (**not** `SettingsForSymbology`): `SetExtensionEnabled("full_ascii", true)` (not `IsExtensionEnabled`), `Checksums = Checksum.Mod43` (not `ChecksumType`), `ColorInvertedEnabled = true` (not `IsColorInvertedEnabled`), and `ActiveSymbolCounts = new HashSet<short>(...)` (values typed as `short`).
 9. **Settings before construction** — configure `BarcodeCaptureSettings` before passing to `Create`. To change at runtime, use `barcodeCapture.ApplySettingsAsync(newSettings)`.
 10. **`TimeSpan`, not `TimeInterval`** — `CodeDuplicateFilter` is `TimeSpan`. Use `CodeDuplicate.DefaultDuplicateFilter` / `CodeDuplicate.ReportDataAndSymbologyOnlyOnce` / `TimeSpan.FromMilliseconds(...)` / `TimeSpan.Zero`.
+11. **Brush colors are native** — `new Brush(fillColor, strokeColor, strokeWidth)` takes the SDK's `Color`, which has **no `FromRGBA`/constructor**. On Android build colors with `Android.Graphics.Color.Argb(a, r, g, b)` (implicitly converted). Reject a code by setting `overlay.Brush = Brush.TransparentBrush` and returning early; restore with `BarcodeCaptureOverlay.DefaultBrush`.
