@@ -33,9 +33,9 @@ Before rewriting anything, ask the user three quick questions:
 
 2. **Overlay type**: Are they using `BarcodeBatchAdvancedOverlay` with fully custom per-barcode React components (like `setViewForTrackedBarcode`)? → Suggest `BarcodeArCustomAnnotation`. Are the bubbles showing structured text fields (title, rows, footer)? → Suggest `BarcodeArInfoAnnotation` instead, which is less code to maintain.
 
-3. **Filtering**: Are they relying on per-barcode rejection / filtering tracked barcodes at the mode level? Note this caveat from the integration reference:
+3. **Filtering**: Are they relying on per-barcode rejection / filtering tracked barcodes at the mode level? Note this caveat:
 
-   > **Note**: `BarcodeArFilter` is only available on iOS 8.1+ and Android 8.1+ — it is **not available on React Native** in the current API reference. Do not use this API in React Native integrations. If filtering is needed, return `null` from the `highlightProvider` or `annotationProvider` for unwanted barcodes, or filter inside the `BarcodeArListener.didUpdateSession` callback.
+   > **Note**: `BarcodeArFilter` is documented for React Native at SDK 8.5, but that version is **not yet published** in the `scandit-react-native-datacapture-*` packages (latest published is 8.4.0). Do not generate `BarcodeArFilter` / `setBarcodeFilter(...)` code yet. In the meantime, return `null` from the `highlightProvider` or `annotationProvider` for unwanted barcodes to hide their visuals. See the integration reference Step 9 for details.
 
 ---
 
