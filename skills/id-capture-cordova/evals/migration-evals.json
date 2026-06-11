@@ -5,41 +5,125 @@
       "id": 1,
       "prompt": "Upgrade my ID Capture integration to the latest SDK (v8). It stopped compiling/running. Here's my file: before-v7-idcapture.js and config_v7.xml.",
       "expected_output": "The skill replaces the removed Scandit.AamvaBarcodeVerifier with settings.rejectForgedAamvaBarcodes + reading verificationResult.aamvaBarcodeVerification, bumps the Scandit plugin versions in config.xml to 8.x, and adds the AAMVA add-on plugin via cordova plugin add. Listener, deviceready handler, and lifecycle are preserved.",
-      "files": ["fixtures/before-v7-idcapture.js", "fixtures/config_v7.xml"],
+      "files": [
+        "fixtures/before-v7-idcapture.js",
+        "fixtures/config_v7.xml"
+      ],
       "assertions": [
-        {"text": "settings.rejectForgedAamvaBarcodes is enabled"},
-        {"text": "verificationResult.aamvaBarcodeVerification is read instead of calling a verifier (semantic)"},
-        {"text": "Scandit.AamvaBarcodeVerifier is no longer used in the migrated code (semantic)"},
-        {"text": "Scandit.AamvaBarcodeVerifier.create is not called in the final migrated code, though it may appear in before/after explanation prose (semantic)"},
-        {"text": "config.xml is bumped to an 8.x version for the scandit-cordova-datacapture-* plugins (semantic)"},
-        {"text": "the scandit-cordova-datacapture-id-aamva-barcode-verification plugin is added via cordova plugin add (semantic)"},
-        {"text": "the existing didCaptureId and didRejectId callbacks are preserved (semantic)"},
-        {"text": "new Scandit.DriverLicense(Scandit.IdCaptureRegion.Us) is present"},
-        {"text": "the deviceready handler is preserved at the start of the bootstrap (semantic)"}
+        {
+          "text": "settings.rejectForgedAamvaBarcodes is enabled"
+        },
+        {
+          "text": "verificationResult.aamvaBarcodeVerification is read instead of calling a verifier (semantic)"
+        },
+        {
+          "text": "Scandit.AamvaBarcodeVerifier is no longer used in the migrated code (semantic)"
+        },
+        {
+          "text": "Scandit.AamvaBarcodeVerifier.create is not called in the final migrated code, though it may appear in before/after explanation prose (semantic)"
+        },
+        {
+          "text": "config.xml is bumped to an 8.x version for the scandit-cordova-datacapture-* plugins (semantic)"
+        },
+        {
+          "text": "the scandit-cordova-datacapture-id-aamva-barcode-verification plugin is added via cordova plugin add (semantic)"
+        },
+        {
+          "text": "the existing didCaptureId and didRejectId callbacks are preserved (semantic)"
+        },
+        {
+          "text": "new Scandit.DriverLicense(Scandit.IdCaptureRegion.Us) is present"
+        },
+        {
+          "text": "the deviceready handler is preserved at the start of the bootstrap (semantic)"
+        }
       ]
     },
     {
       "id": 2,
       "prompt": "After upgrading to v8 I also want to reject expired documents and anyone under 18, using the new declarative settings rather than checking manually. Here's before-v7-idcapture.js.",
       "expected_output": "The skill completes the v8 AamvaBarcodeVerifier migration and additionally sets settings.rejectExpiredIds = true and settings.rejectHolderBelowAge = 18, noting these surface DocumentExpired and HolderUnderage in didRejectId.",
-      "files": ["fixtures/before-v7-idcapture.js"],
+      "files": [
+        "fixtures/before-v7-idcapture.js"
+      ],
       "assertions": [
-        {"text": "settings.rejectExpiredIds is enabled"},
-        {"text": "settings.rejectHolderBelowAge is present"},
-        {"text": "settings.rejectForgedAamvaBarcodes is enabled"},
-        {"text": "these flags are described as surfacing reasons in didRejectId, e.g. DocumentExpired and HolderUnderage (semantic)"},
-        {"text": "Scandit.AamvaBarcodeVerifier is no longer used in the migrated code (semantic)"}
+        {
+          "text": "settings.rejectExpiredIds is enabled"
+        },
+        {
+          "text": "settings.rejectHolderBelowAge is present"
+        },
+        {
+          "text": "settings.rejectForgedAamvaBarcodes is enabled"
+        },
+        {
+          "text": "these flags are described as surfacing reasons in didRejectId, e.g. DocumentExpired and HolderUnderage (semantic)"
+        },
+        {
+          "text": "Scandit.AamvaBarcodeVerifier is no longer used in the migrated code (semantic)"
+        }
       ]
     },
     {
       "id": 3,
-      "prompt": "Just remove the AamvaBarcodeVerifier usage for the v8 upgrade — I'll deal with the rest later. Here's before-v7-idcapture.js.",
+      "prompt": "Just remove the AamvaBarcodeVerifier usage for the v8 upgrade \u2014 I'll deal with the rest later. Here's before-v7-idcapture.js.",
       "expected_output": "The skill changes the AamvaBarcodeVerifier.create + verify flow into settings.rejectForgedAamvaBarcodes plus an optional read of capturedId.verificationResult.aamvaBarcodeVerification.",
-      "files": ["fixtures/before-v7-idcapture.js"],
+      "files": [
+        "fixtures/before-v7-idcapture.js"
+      ],
       "assertions": [
-        {"text": "settings.rejectForgedAamvaBarcodes is enabled"},
-        {"text": "Scandit.AamvaBarcodeVerifier is no longer used in the migrated code (semantic)"},
-        {"text": "verificationResult.aamvaBarcodeVerification is read or the rejection reason ForgedAamvaBarcode is handled (semantic)"}
+        {
+          "text": "settings.rejectForgedAamvaBarcodes is enabled"
+        },
+        {
+          "text": "Scandit.AamvaBarcodeVerifier is no longer used in the migrated code (semantic)"
+        },
+        {
+          "text": "verificationResult.aamvaBarcodeVerification is read or the rejection reason ForgedAamvaBarcode is handled (semantic)"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "This ID Capture code is from an old v6 SDK and no longer compiles on v8. Migrate it to the current API. Here's before-v6-idcapture.js.",
+      "expected_output": "The skill replaces the removed v6 supportedDocuments bitmask and supportedSides with settings.acceptedDocuments plus settings.scanner = new Scandit.IdCaptureScanner(new Scandit.FullDocumentScanner()), reads the document type via capturedId.document?.documentType instead of capturedId.documentType, and moves the removed onIdCaptureTimedOut callback to a Scandit.RejectionReason.Timeout branch in didRejectId.",
+      "files": [
+        "fixtures/before-v6-idcapture.js"
+      ],
+      "tags": [
+        "migration-v6-to-v7"
+      ],
+      "assertions": [
+        {
+          "text": "settings.acceptedDocuments is configured with document objects via the Scandit.* namespace (semantic)"
+        },
+        {
+          "text": "settings.scanner = new Scandit.IdCaptureScanner( is present in a code block"
+        },
+        {
+          "text": "new Scandit.FullDocumentScanner( is present in a code block"
+        },
+        {
+          "text": "the document type is read via capturedId.document?.documentType or a capturedId.document convenience method like isPassport, not capturedId.documentType (semantic)"
+        },
+        {
+          "text": "a Scandit.RejectionReason.Timeout branch in didRejectId replaces the old onIdCaptureTimedOut callback (semantic)"
+        },
+        {
+          "text": "settings.supportedDocuments is NOT present in any migrated code block (semantic)"
+        },
+        {
+          "text": "settings.supportedSides is NOT present in any migrated code block (semantic)"
+        },
+        {
+          "text": "Scandit.IdDocumentType is NOT present in any migrated code block (semantic)"
+        },
+        {
+          "text": "The old flat capturedId.documentType accessor (without .document?.) is not used in executable migrated code \u2014 capturedId.document?.documentType is the correct v8 form (semantic)"
+        },
+        {
+          "text": "onIdCaptureTimedOut is not used in executable migrated code (explanatory comments/prose may reference it) (semantic)"
+        }
       ]
     }
   ]

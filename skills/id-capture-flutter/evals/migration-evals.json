@@ -5,45 +5,134 @@
       "id": 1,
       "prompt": "Upgrade my ID Capture integration to the latest SDK (v8). It stopped compiling. Here's my screen file: before-v7-idcapture.dart and pubspec_v7.yaml.",
       "expected_output": "The skill migrates the v7 scanner assignment (settings.scannerType = FullDocumentScanner()) to the v8 wrapped form (settings.scanner = IdCaptureScanner(physicalDocumentScanner: FullDocumentScanner())), replaces the removed AamvaBarcodeVerifier with settings.rejectForgedAamvaBarcodes + reading verificationResult.aamvaBarcodeVerification, bumps pubspec to 8.x, and adds the AAMVA add-on package. Listener and lifecycle are preserved.",
-      "files": ["fixtures/before-v7-idcapture.dart", "fixtures/pubspec_v7.yaml"],
+      "files": [
+        "fixtures/before-v7-idcapture.dart",
+        "fixtures/pubspec_v7.yaml"
+      ],
       "assertions": [
-        {"text": "physicalDocumentScanner: is present"},
-        {"text": ".scanner = is present"},
-        {"text": "FullDocumentScanner( is present"},
-        {"text": "settings.scannerType is no longer used in the migrated code (semantic)"},
-        {"text": "settings.rejectForgedAamvaBarcodes is enabled"},
-        {"text": "verificationResult.aamvaBarcodeVerification is read instead of calling a verifier (semantic)"},
-        {"text": "AamvaBarcodeVerifier is no longer used in the migrated code (semantic)"},
-        {"text": "AamvaBarcodeVerifier.create is not called in the final migrated code, though it may appear in before/after explanation prose (semantic)"},
-        {"text": "pubspec is bumped to an 8.x version for the scandit packages (semantic)"},
-        {"text": "the scandit_flutter_datacapture_id_aamva_barcode_verification package is added (semantic)"},
-        {"text": "the existing didCaptureId and didRejectId callbacks are preserved (semantic)"},
-        {"text": "DriverLicense(IdCaptureRegion.us) is present"}
+        {
+          "text": "physicalDocumentScanner: is present"
+        },
+        {
+          "text": ".scanner = is present"
+        },
+        {
+          "text": "FullDocumentScanner( is present"
+        },
+        {
+          "text": "settings.scannerType is no longer used in the migrated code (semantic)"
+        },
+        {
+          "text": "settings.rejectForgedAamvaBarcodes is enabled"
+        },
+        {
+          "text": "verificationResult.aamvaBarcodeVerification is read instead of calling a verifier (semantic)"
+        },
+        {
+          "text": "AamvaBarcodeVerifier is no longer used in the migrated code (semantic)"
+        },
+        {
+          "text": "AamvaBarcodeVerifier.create is not called in the final migrated code, though it may appear in before/after explanation prose (semantic)"
+        },
+        {
+          "text": "pubspec is bumped to an 8.x version for the scandit packages (semantic)"
+        },
+        {
+          "text": "the scandit_flutter_datacapture_id_aamva_barcode_verification package is added (semantic)"
+        },
+        {
+          "text": "the existing didCaptureId and didRejectId callbacks are preserved (semantic)"
+        },
+        {
+          "text": "DriverLicense(IdCaptureRegion.us) is present"
+        }
       ]
     },
     {
       "id": 2,
-      "prompt": "Just fix the scanner API in this file for the v8 upgrade — I'll deal with the rest later. Here's before-v7-idcapture.dart.",
+      "prompt": "Just fix the scanner API in this file for the v8 upgrade \u2014 I'll deal with the rest later. Here's before-v7-idcapture.dart.",
       "expected_output": "The skill changes settings.scannerType = FullDocumentScanner() into settings.scanner = IdCaptureScanner(physicalDocumentScanner: FullDocumentScanner()).",
-      "files": ["fixtures/before-v7-idcapture.dart"],
+      "files": [
+        "fixtures/before-v7-idcapture.dart"
+      ],
       "assertions": [
-        {"text": "physicalDocumentScanner: is present"},
-        {"text": "FullDocumentScanner( is present"},
-        {"text": "settings.scannerType is no longer used in the migrated code (semantic)"},
-        {"text": ".scanner = is present"}
+        {
+          "text": "physicalDocumentScanner: is present"
+        },
+        {
+          "text": "FullDocumentScanner( is present"
+        },
+        {
+          "text": "settings.scannerType is no longer used in the migrated code (semantic)"
+        },
+        {
+          "text": ".scanner = is present"
+        }
       ]
     },
     {
       "id": 3,
       "prompt": "After upgrading to v8 I also want to reject expired documents and anyone under 18, using the new declarative settings rather than checking manually. Here's before-v7-idcapture.dart.",
       "expected_output": "The skill completes the v8 scanner/verifier migration and additionally sets settings.rejectExpiredIds = true and settings.rejectHolderBelowAge = 18, noting these surface documentExpired and holderUnderage in didRejectId.",
-      "files": ["fixtures/before-v7-idcapture.dart"],
+      "files": [
+        "fixtures/before-v7-idcapture.dart"
+      ],
       "assertions": [
-        {"text": "settings.rejectExpiredIds is enabled"},
-        {"text": "settings.rejectHolderBelowAge is present"},
-        {"text": "physicalDocumentScanner: is present"},
-        {"text": "these flags are described as surfacing reasons in didRejectId, e.g. documentExpired and holderUnderage (semantic)"},
-        {"text": "settings.scannerType is no longer used in the migrated code (semantic)"}
+        {
+          "text": "settings.rejectExpiredIds is enabled"
+        },
+        {
+          "text": "settings.rejectHolderBelowAge is present"
+        },
+        {
+          "text": "physicalDocumentScanner: is present"
+        },
+        {
+          "text": "these flags are described as surfacing reasons in didRejectId, e.g. documentExpired and holderUnderage (semantic)"
+        },
+        {
+          "text": "settings.scannerType is no longer used in the migrated code (semantic)"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "This old ID Capture screen uses supportedDocuments and supportedSides and won't compile anymore. Migrate it to the current API. Here's before-v6-idcapture.dart.",
+      "expected_output": "The skill replaces the removed v6 supportedDocuments bitmask with a list-based settings.acceptedDocuments of document classes (IdCard, Passport), replaces supportedSides with a scanner set via settings.scanner = IdCaptureScanner(physicalDocumentScanner: FullDocumentScanner()), and replaces capturedId.documentType with capturedId.document?.documentType. No supportedDocuments, supportedSides, IdDocumentType, or capturedId.documentType remain in the migrated code.",
+      "files": [
+        "fixtures/before-v6-idcapture.dart"
+      ],
+      "assertions": [
+        {
+          "text": "settings.acceptedDocuments is configured with document objects like IdCard and Passport (semantic)"
+        },
+        {
+          "text": ".scanner = is present"
+        },
+        {
+          "text": "IdCaptureScanner( is present"
+        },
+        {
+          "text": "physicalDocumentScanner: is present"
+        },
+        {
+          "text": "FullDocumentScanner( is present"
+        },
+        {
+          "text": "supportedDocuments is not used in executable migrated code (explanatory comments may reference it) (semantic)"
+        },
+        {
+          "text": "supportedSides is not used in executable migrated code (explanatory comments may reference it) (semantic)"
+        },
+        {
+          "text": "IdDocumentType is not used in executable migrated code (explanatory comments may reference it) (semantic)"
+        },
+        {
+          "text": "the document type is read via capturedId.document?.documentType, not capturedId.documentType, in the migrated code blocks (semantic)"
+        }
+      ],
+      "tags": [
+        "migration-v6-to-v7"
       ]
     }
   ]

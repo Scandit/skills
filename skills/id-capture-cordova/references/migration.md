@@ -9,7 +9,7 @@ Do not guess at the old or new signatures — follow the concrete before/after b
 Check `config.xml` (or the installed plugin versions via `cordova plugin list`) for the `scandit-cordova-datacapture-*` versions, and look at the code:
 
 - Uses `Scandit.AamvaBarcodeVerifier` → **pre-v8 (v7) code**; migrate per Step 2.
-- Uses `settings.supportedDocuments` / `Scandit.IdDocumentType` → **pre-v7 (v6) code**; see Step 6 first, then continue.
+- Uses `settings.supportedDocuments` / `Scandit.IdDocumentType` / `settings.supportedSides` / `capturedId.documentType` / an `onIdCaptureTimedOut` callback → **pre-v7 (v6) code**; see Step 6 first, then continue.
 - Already uses `settings.scanner = new Scandit.IdCaptureScanner(...)` and no `AamvaBarcodeVerifier` references → on v8; only Steps 3–5 (optional adoption) apply.
 
 ## Step 2 — Replace `AamvaBarcodeVerifier` with the settings flag
@@ -76,23 +76,57 @@ settings.rejectVoidedIds = true;                                   // -> Documen
 
 ## Step 6 — If you are coming from v6 (`supportedDocuments`)
 
-In v6, documents were selected with a `supportedDocuments` bitmask of `IdDocumentType` and the scanner was implied by `supportedSides`. That API was removed at v7. Move to the list-based model:
+In v6, documents were selected with a `supportedDocuments` bitmask of `IdDocumentType`, and which side(s) were read was set with `supportedSides`. Both were removed at v7 in favour of an explicit `acceptedDocuments` list plus a `scanner`. The `capturedId.documentType` getter and the `onIdCaptureTimedOut` listener callback were also removed.
+
+**Replace `supportedDocuments` + `supportedSides` with `acceptedDocuments` + `scanner`:**
 
 ```js
-// v6 (removed): settings.supportedDocuments = Scandit.IdDocumentType.IdCardViz | Scandit.IdDocumentType.PassportMrz;
+// v6 (removed):
+// settings.supportedDocuments = Scandit.IdDocumentType.IdCardViz | Scandit.IdDocumentType.PassportMrz;
+// settings.supportedSides = Scandit.SupportedSides.FrontAndBack;
+
 // v7+: declare documents and a scanner explicitly
 settings.acceptedDocuments.push(
   new Scandit.IdCard(Scandit.IdCaptureRegion.Any),
   new Scandit.Passport(Scandit.IdCaptureRegion.Any),
 );
-settings.scanner = new Scandit.IdCaptureScanner(new Scandit.FullDocumentScanner()); // v8 form
+settings.scanner = new Scandit.IdCaptureScanner(new Scandit.FullDocumentScanner()); // reads front + back
+```
+
+`FullDocumentScanner` replaces `SupportedSides.FrontAndBack`; for a single side use `new Scandit.SingleSideScanner(barcode, machineReadableZone, visualInspectionZone)`.
+
+**Replace the `capturedId.documentType` getter** — the type now lives on `capturedId.document`:
+
+```js
+// v6 (removed): const type = capturedId.documentType;
+
+// v7+:
+const documentType = capturedId.document && capturedId.document.documentType; // capturedId.document?.documentType
+// or the convenience methods: capturedId.document?.isPassport(), isDriverLicense(), isIdCard(), ...
+```
+
+There is no `capturedId.documentType` getter on v7+, and there is no `IdDocumentType` enum any more.
+
+**Replace the `onIdCaptureTimedOut` callback** — a timeout is now an ordinary rejection delivered to `didRejectId`:
+
+```js
+// v6 (removed): listener had an onIdCaptureTimedOut callback.
+
+// v7+: handle the timeout as a RejectionReason in didRejectId
+const listener = {
+  didRejectId: (_, rejectedId, reason) => {
+    if (reason === Scandit.RejectionReason.Timeout) {
+      // capture timed out
+    }
+  },
+};
 ```
 
 For the full v6 → v7 details, see the [6 → 7 migration guide](https://docs.scandit.com/sdks/cordova/migrate-6-to-7/) and the [ID Capture API reference](https://docs.scandit.com/data-capture-sdk/cordova/id-capture/api.html).
 
 ## Step 7 — Verify
 
-- The project has no references to `Scandit.AamvaBarcodeVerifier`, `supportedDocuments`, `IdDocumentType`, or `settings.scannerType`.
+- The project has no references to `Scandit.AamvaBarcodeVerifier`, `supportedDocuments`, `supportedSides`, `IdDocumentType`, `capturedId.documentType`, `onIdCaptureTimedOut`, or `settings.scannerType`.
 - `acceptedDocuments` and `scanner` are both set explicitly.
 - The bootstrap is still wrapped in `document.addEventListener('deviceready', …)`.
 - A test scan delivers a `CapturedId` in `didCaptureId`, and an out-of-scope document triggers `didRejectId`.

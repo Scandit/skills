@@ -9,31 +9,142 @@
         "fixtures/IntegratedViewController.cs"
       ],
       "assertions": [
-        {"text": "RejectForgedAamvaBarcodes = true is set on the IdCaptureSettings"},
-        {"text": "RejectInconsistentData = true is set on the IdCaptureSettings"},
-        {"text": "No standalone AamvaBarcodeVerifier or DataConsistencyVerifier class is instantiated or referenced (these do not exist on .NET; verification is settings-driven)"},
-        {"text": "capturedId.VerificationResult is read in OnIdCaptured"},
-        {"text": "The AAMVA outcome is read via VerificationResult.AamvaBarcodeVerification and its Status (AamvaBarcodeVerificationStatus.Authentic / LikelyForged / Forged)"},
-        {"text": "The data-consistency outcome is read via VerificationResult.DataConsistency (e.g. AllChecksPassed)"},
-        {"text": "It explains that hard failures surface via OnIdRejected with RejectionReason.ForgedAamvaBarcode (and/or InconsistentData)"},
-        {"text": "The existing integration (camera, IdCapture.Create, DataCaptureView, overlay, accepted documents, scanner, OnIdCaptured/OnIdRejected, ViewWillAppear/ViewWillDisappear) is preserved"}
+        {
+          "text": "RejectForgedAamvaBarcodes = true is set on the IdCaptureSettings"
+        },
+        {
+          "text": "RejectInconsistentData = true is set on the IdCaptureSettings"
+        },
+        {
+          "text": "No standalone AamvaBarcodeVerifier or DataConsistencyVerifier class is instantiated or referenced (these do not exist on .NET; verification is settings-driven)"
+        },
+        {
+          "text": "capturedId.VerificationResult is read in OnIdCaptured"
+        },
+        {
+          "text": "The AAMVA outcome is read via VerificationResult.AamvaBarcodeVerification and its Status (AamvaBarcodeVerificationStatus.Authentic / LikelyForged / Forged)"
+        },
+        {
+          "text": "The data-consistency outcome is read via VerificationResult.DataConsistency (e.g. AllChecksPassed)"
+        },
+        {
+          "text": "It explains that hard failures surface via OnIdRejected with RejectionReason.ForgedAamvaBarcode (and/or InconsistentData)"
+        },
+        {
+          "text": "The existing integration (camera, IdCapture.Create, DataCaptureView, overlay, accepted documents, scanner, OnIdCaptured/OnIdRejected, ViewWillAppear/ViewWillDisappear) is preserved"
+        }
       ]
     },
     {
       "id": 2,
-      "prompt": "In my .NET iOS app I only care about the PDF417 barcode on the back of US driver's licenses (see IntegratedViewController.cs) — I don't need to scan the front. I also want to pull the document images (the cropped document and the holder's face photo) out of the result so I can display them. How do I configure this in C#?",
-      "expected_output": "The skill switches the scanner to a SingleSideScanner with only the barcode zone enabled (new SingleSideScanner(barcode: true, machineReadableZone: false, visualInspectionZone: false)) wrapped in IdCaptureScanner, narrows AcceptedDocuments to new DriverLicense(IdCaptureRegion.Us), and reads capturedId.Images (Face / GetCroppedDocument(IdSide)) — noting the images are UIImage? on iOS (NOT Android.Graphics.Bitmap). It can also read AAMVA fields from capturedId.Barcode. The rest of the integration is preserved.",
+      "prompt": "In my .NET iOS app I only care about the PDF417 barcode on the back of US driver's licenses (see IntegratedViewController.cs) \u2014 I don't need to scan the front. I also want to pull the document images (the cropped document and the holder's face photo) out of the result so I can display them. How do I configure this in C#?",
+      "expected_output": "The skill switches the scanner to a SingleSideScanner with only the barcode zone enabled (new SingleSideScanner(barcode: true, machineReadableZone: false, visualInspectionZone: false)) wrapped in IdCaptureScanner, narrows AcceptedDocuments to new DriverLicense(IdCaptureRegion.Us), and reads capturedId.Images (Face / GetCroppedDocument(IdSide)) \u2014 noting the images are UIImage? on iOS (NOT Android.Graphics.Bitmap). It can also read AAMVA fields from capturedId.Barcode. The rest of the integration is preserved.",
       "files": [
         "fixtures/IntegratedViewController.cs"
       ],
       "assertions": [
-        {"text": "The scanner is changed to a SingleSideScanner with the barcode zone enabled and the MRZ/VIZ zones disabled (e.g. new SingleSideScanner(barcode: true, machineReadableZone: false, visualInspectionZone: false))"},
-        {"text": "The SingleSideScanner is wrapped in new IdCaptureScanner(physicalDocument: ..., mobileDocument: null) and assigned to settings.Scanner"},
-        {"text": "AcceptedDocuments is narrowed to a US driver's license (new DriverLicense(IdCaptureRegion.Us))"},
-        {"text": "Document images are read from capturedId.Images (e.g. Face and/or GetCroppedDocument(IdSide.Front))"},
-        {"text": "The images are treated as UIImage? (iOS), NOT Android.Graphics.Bitmap"},
-        {"text": "No FullDocumentScanner is used (the user only wants the back barcode), and no front-only zones are enabled"},
-        {"text": "The existing integration (camera, IdCapture.Create, DataCaptureView, overlay, OnIdCaptured/OnIdRejected, lifecycle) is preserved"}
+        {
+          "text": "The scanner is changed to a SingleSideScanner with the barcode zone enabled and the MRZ/VIZ zones disabled (e.g. new SingleSideScanner(barcode: true, machineReadableZone: false, visualInspectionZone: false))"
+        },
+        {
+          "text": "The SingleSideScanner is wrapped in new IdCaptureScanner(physicalDocument: ..., mobileDocument: null) and assigned to settings.Scanner"
+        },
+        {
+          "text": "AcceptedDocuments is narrowed to a US driver's license (new DriverLicense(IdCaptureRegion.Us))"
+        },
+        {
+          "text": "Document images are read from capturedId.Images via Face and/or GetCroppedDocument(IdSide.Front or IdSide.Back) (semantic)"
+        },
+        {
+          "text": "The images are treated as UIImage? (iOS), NOT Android.Graphics.Bitmap"
+        },
+        {
+          "text": "No FullDocumentScanner is used (the user only wants the back barcode), and no front-only zones are enabled"
+        },
+        {
+          "text": "The existing integration (camera, IdCapture.Create, DataCaptureView, overlay, OnIdCaptured/OnIdRejected, lifecycle) is preserved"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "In my .NET iOS app (see IntegratedViewController.cs) I have a privacy requirement: I must not receive sensitive personal fields, and any sensitive data printed on the returned images must be covered. I'm scanning passports. How do I configure ID Capture in C# so both the field data and the images are anonymized?",
+      "expected_output": "The skill sets settings.AnonymizationMode = IdAnonymizationMode.FieldsAndImages on the IdCaptureSettings, explaining that IdAnonymizationMode has the values None, FieldsOnly, ImagesOnly, FieldsAndImages and that FieldsAndImages both withholds sensitive fields and covers them on the returned images. It may also mention AddAnonymizedField(doc, IdFieldType) for per-field anonymization and capturedId.IsAnonymized(IdFieldType) to check the result. The rest of the integration is preserved.",
+      "files": [
+        "fixtures/IntegratedViewController.cs"
+      ],
+      "assertions": [
+        {
+          "text": "settings.AnonymizationMode is set to IdAnonymizationMode.FieldsAndImages"
+        },
+        {
+          "text": "IdAnonymizationMode is identified as the enum controlling anonymization"
+        },
+        {
+          "text": "It explains that FieldsAndImages both withholds sensitive fields and covers them on the returned images"
+        },
+        {
+          "text": "The existing integration (camera, IdCapture.Create, DataCaptureView, overlay, OnIdCaptured/OnIdRejected, lifecycle) is preserved"
+        }
+      ],
+      "tags": [
+        "data-anonymization"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "In my .NET iOS app (see IntegratedViewController.cs) I need to reject punched / cancelled (voided) documents so they can't be used. How do I enable that in C#, and how do I detect when a document was rejected for being voided?",
+      "expected_output": "The skill sets settings.RejectVoidedIds = true on the IdCaptureSettings and explains that a voided document then surfaces via OnIdRejected with RejectionReason.DocumentVoided, where the app should show a user-facing message. The rest of the integration is preserved.",
+      "files": [
+        "fixtures/IntegratedViewController.cs"
+      ],
+      "assertions": [
+        {
+          "text": "settings.RejectVoidedIds = true is set on the IdCaptureSettings"
+        },
+        {
+          "text": "It explains that a voided document is reported via OnIdRejected with RejectionReason.DocumentVoided"
+        },
+        {
+          "text": "The existing integration (camera, IdCapture.Create, DataCaptureView, overlay, OnIdCaptured/OnIdRejected, lifecycle) is preserved"
+        }
+      ],
+      "tags": [
+        "voided-detection"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "I'm building an airport check-in screen in my .NET iOS app (start from EmptyViewController.cs). On one screen I need to scan the PDF417 barcode on a boarding pass AND scan the passenger's passport, sharing one camera preview. How do I run both ID Capture and Barcode Capture at the same time in C#?",
+      "expected_output": "The skill keeps one DataCaptureContext, one DataCaptureView and one camera, and runs IdCapture and BarcodeCapture together. It creates BOTH modes against the SAME context via the static factories IdCapture.Create(context, idSettings) and BarcodeCapture.Create(context, bcSettings) (the .NET equivalent of addMode; there is no setMode and no public constructor). Each mode gets its own listener/event: IdCapture via IdCaptured/IdRejected, BarcodeCapture via BarcodeScanned reading args.Session.NewlyRecognizedBarcode. BarcodeCaptureSettings enables Symbology.Pdf417, and each mode is toggled with its Enabled property. It does not create a second context or remove one mode to add the other. No separate Barcode NuGet package is needed (the reader ships in Scandit.DataCapture.IdCapture).",
+      "files": [
+        "fixtures/EmptyViewController.cs"
+      ],
+      "assertions": [
+        {
+          "text": "IdCapture.Create(context, ...) is called with the shared DataCaptureContext to attach the ID Capture mode"
+        },
+        {
+          "text": "BarcodeCapture.Create(context, ...) is called with the SAME DataCaptureContext to attach the Barcode Capture mode"
+        },
+        {
+          "text": "No setMode call and no attempt to remove/replace one mode to add the other — both modes stay attached to the one context (semantic)"
+        },
+        {
+          "text": "The IdCapture mode is wired to its own IdCaptured (and IdRejected) handler"
+        },
+        {
+          "text": "The BarcodeCapture mode is wired to its own BarcodeScanned handler (or IBarcodeCaptureListener.OnBarcodeScanned) that reads Session.NewlyRecognizedBarcode"
+        },
+        {
+          "text": "BarcodeCaptureSettings enables Symbology.Pdf417 (the IATA boarding-pass symbology)"
+        },
+        {
+          "text": "running IdCapture and BarcodeCapture together on one DataCaptureContext is presented as supported, not as something that must be avoided (semantic)"
+        }
+      ],
+      "tags": [
+        "barcode-coexistence"
       ]
     }
   ]

@@ -255,7 +255,7 @@ const handle = await App.addListener('appStateChange', async ({ isActive }) => {
 - Document: `documentNumber`, `documentAdditionalNumber`, `dateOfExpiry`, `dateOfIssue`, `isExpired`, `issuingCountry` / `issuingCountryIso`. The document **type** is on `capturedId.document` (an `IdCaptureDocument | null`): use `capturedId.document?.documentType` (an `IdCaptureDocumentType`) or the convenience methods `isIdCard()`, `isDriverLicense()`, `isPassport()`, `isResidencePermit()`, `isHealthInsuranceCard()`, `isVisaIcao()`, `isRegionSpecific(subtype)`. There is **no** `capturedId.documentType` getter, **no** `isVisa()`, **no** `isVisaLetter()`.
 - Source-specific results (nullable): `mrzResult` (`MRZResult | null`), `vizResult` (`VIZResult | null`), `barcode` (`BarcodeResult | null`), `mobileDocument` (`MobileDocumentResult | null`), `mobileDocumentOcr` (`MobileDocumentOCRResult | null`).
 - `images` (`IdImages`) — read images with `images.face`, `images.frame`, `images.getCroppedDocument(IdSide.Front)`, `images.getFrame(IdSide.Front)`. **Each returns a base64 `string | null`**, e.g. `<img src="data:image/png;base64,${face}">` or `imgEl.src = 'data:image/png;base64,' + face`. There is no `images.croppedDocument` getter — use `getCroppedDocument(IdSide.Front)` / `IdSide.Back`. Images are only populated for the `IdImageType`s you opted into via `setShouldPassImageTypeToResult(...)`.
-- `verificationResult` (`VerificationResult`) — contains `dataConsistency` and `aamvaBarcodeVerification` (see `references/supplementary-modules.md`).
+- `verificationResult` (`VerificationResult`) — contains `dataConsistency` (`DataConsistencyResult | null`, populated when `settings.rejectInconsistentData = true`; read `dataConsistency.allChecksPassed`) and `aamvaBarcodeVerification` (see `references/supplementary-modules.md`).
 
 Date fields are `DateResult | null` with `{ year, month, day }`. Format e.g. with `new Date(Date.UTC(d.year, d.month - 1, d.day)).toLocaleDateString('en-GB', { timeZone: 'UTC' })`. Branch on the source when you need zone-specific data:
 
@@ -267,6 +267,38 @@ if (capturedId.mrzResult) {
 } else if (capturedId.barcode) {
   // barcode specifics (e.g. US DL PDF417)
 }
+```
+
+## Co-existence with Barcode Capture
+
+`IdCapture` and `BarcodeCapture` can run **together on one `DataCaptureContext`** — one context, one `DataCaptureView`, one camera. A common case is an airport screen that reads a boarding-pass PDF417 barcode **and** a passport/ID at the same time.
+
+Attach **both** modes with `context.addMode(idCapture)` **and** `context.addMode(barcodeCapture)`. Do **not** use `context.setMode(...)` here — `setMode` **replaces** the context's current mode (it removes whatever was there first), so calling it twice would leave only the last mode. `setMode` is fine for a single-mode screen; for co-existence use `addMode` for each. Give each mode its own listener and toggle each independently with `mode.isEnabled` — both can be enabled at once and the native layer runs them together.
+
+```ts
+// ID Capture mode (passport / ID)
+const idSettings = new IdCaptureSettings();
+idSettings.acceptedDocuments.push(new Passport(IdCaptureRegion.Any));
+idSettings.scanner = new IdCaptureScanner(new FullDocumentScanner());
+const idCapture = new IdCapture(idSettings);
+idCapture.addListener({ didCaptureId: (_, capturedId) => { /* ... */ } });
+await context.addMode(idCapture);
+
+// Barcode Capture mode (IATA boarding pass = PDF417), same context
+const bcSettings = new BarcodeCaptureSettings();
+bcSettings.enableSymbologies([Symbology.PDF417]);
+const barcodeCapture = new BarcodeCapture(bcSettings);
+barcodeCapture.addListener({
+  didScan: (_, session) => {
+    const barcode = session.newlyRecognizedBarcode;
+    if (barcode) { /* ... */ }
+  },
+});
+await context.addMode(barcodeCapture);
+
+// Both can be enabled at once — they run together.
+idCapture.isEnabled = true;
+barcodeCapture.isEnabled = true;
 ```
 
 ## Common pitfalls

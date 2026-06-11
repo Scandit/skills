@@ -8,15 +8,220 @@
       "files": [
         "fixtures/IntegratedActivity.cs"
       ],
+      "tags": [
+        "verification"
+      ],
       "assertions": [
-        {"text": "RejectForgedAamvaBarcodes = true is set on the IdCaptureSettings"},
-        {"text": "RejectInconsistentData = true is set on the IdCaptureSettings"},
-        {"text": "No standalone AamvaBarcodeVerifier or DataConsistencyVerifier class is instantiated or referenced (these do not exist on .NET; verification is settings-driven)"},
-        {"text": "capturedId.VerificationResult is read in OnIdCaptured"},
-        {"text": "The AAMVA outcome is read via VerificationResult.AamvaBarcodeVerification and its Status (AamvaBarcodeVerificationStatus.Authentic / LikelyForged / Forged)"},
-        {"text": "The data-consistency outcome is read via VerificationResult.DataConsistency (e.g. AllChecksPassed)"},
-        {"text": "It explains that hard failures surface via OnIdRejected with RejectionReason.ForgedAamvaBarcode (and/or InconsistentData)"},
-        {"text": "The existing integration (camera, IdCapture.Create, DataCaptureView, overlay, accepted documents, scanner, OnIdCaptured/OnIdRejected) is preserved"}
+        {
+          "text": "RejectForgedAamvaBarcodes = true is set on the IdCaptureSettings"
+        },
+        {
+          "text": "RejectInconsistentData = true is set on the IdCaptureSettings"
+        },
+        {
+          "text": "No standalone AamvaBarcodeVerifier or DataConsistencyVerifier class is instantiated or referenced (these do not exist on .NET; verification is settings-driven)"
+        },
+        {
+          "text": "capturedId.VerificationResult is read in OnIdCaptured"
+        },
+        {
+          "text": "The AAMVA outcome is read via VerificationResult.AamvaBarcodeVerification and its Status (AamvaBarcodeVerificationStatus.Authentic / LikelyForged / Forged)"
+        },
+        {
+          "text": "The data-consistency outcome is read via VerificationResult.DataConsistency (e.g. AllChecksPassed)"
+        },
+        {
+          "text": "It explains that hard failures surface via OnIdRejected with RejectionReason.ForgedAamvaBarcode (and/or InconsistentData)"
+        },
+        {
+          "text": "The existing integration (camera, IdCapture.Create, DataCaptureView, overlay, accepted documents, scanner, OnIdCaptured/OnIdRejected) is preserved"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "In my .NET Android app (see IntegratedActivity.cs) we handle a lot of personal data and our compliance team wants document images redacted with black boxes over sensitive areas. I also want the holder's document number kept out of the result entirely. How do I configure anonymization in C#, and how do I check at capture time whether the document number was anonymized?",
+      "expected_output": "The skill sets IdCaptureSettings.AnonymizationMode = IdAnonymizationMode.FieldsAndImages so sensitive fields are dropped and images get black boxes, and uses settings.AddAnonymizedField(document, IdFieldType.DocumentNumber) to anonymize a specific field for a specific accepted document. In OnIdCaptured it checks capturedId.IsAnonymized(IdFieldType.DocumentNumber). It notes IdAnonymizationMode values (None / FieldsOnly / ImagesOnly / FieldsAndImages). The rest of the integration is preserved.",
+      "files": [
+        "fixtures/IntegratedActivity.cs"
+      ],
+      "tags": [
+        "data-anonymization"
+      ],
+      "assertions": [
+        {
+          "text": "IdCaptureSettings.AnonymizationMode is set to IdAnonymizationMode.FieldsAndImages"
+        },
+        {
+          "text": "settings.AddAnonymizedField is called with an accepted document and IdFieldType.DocumentNumber"
+        },
+        {
+          "text": "capturedId.IsAnonymized(IdFieldType.DocumentNumber) is read in OnIdCaptured"
+        },
+        {
+          "text": "The IdAnonymizationMode enum values None, FieldsOnly, ImagesOnly, and FieldsAndImages are described"
+        },
+        {
+          "text": "No standalone anonymizer or verifier class is invented; anonymization is configured purely on IdCaptureSettings"
+        },
+        {
+          "text": "The existing integration (camera, IdCapture.Create, DataCaptureView, overlay, accepted documents, scanner, OnIdCaptured/OnIdRejected) is preserved"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "In my .NET Android app (see IntegratedActivity.cs) I need to pull images out of the scan so I can display them: the holder's face photo and a cropped picture of the front of the document. I also want the full-frame image of the document passed through to the result. How do I configure this and read the images in C#?",
+      "expected_output": "The skill enables the frame image via settings.SetShouldPassImageTypeToResult(IdImageType.Frame, true) and reads capturedId.Images in OnIdCaptured: Images.Face and Images.GetCroppedDocument(IdSide.Front). It notes the images are Android.Graphics.Bitmap on Android and that IdImageType values are Face / CroppedDocument / Frame and IdSide is Front / Back. The rest of the integration is preserved.",
+      "files": [
+        "fixtures/IntegratedActivity.cs"
+      ],
+      "tags": [
+        "image-extraction"
+      ],
+      "assertions": [
+        {
+          "text": "settings.SetShouldPassImageTypeToResult is called with IdImageType.Frame and true"
+        },
+        {
+          "text": "capturedId.Images is read in OnIdCaptured"
+        },
+        {
+          "text": "The holder's face photo is read via Images.Face"
+        },
+        {
+          "text": "The cropped front of the document is read via Images.GetCroppedDocument(IdSide.Front)"
+        },
+        {
+          "text": "The images are treated as Android.Graphics.Bitmap (Android), NOT UIImage"
+        },
+        {
+          "text": "The existing integration (camera, IdCapture.Create, DataCaptureView, overlay, accepted documents, scanner, OnIdCaptured/OnIdRejected) is preserved"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "I'm building a passport reader in my .NET Android app (see IntegratedActivity.cs). I only need the machine-readable zone (MRZ) at the bottom of the passport \u2014 I don't need to read the rest of the front. After scanning I want the raw MRZ string and the personal ID number. How do I set this up in C#?",
+      "expected_output": "The skill switches the scanner to a SingleSideScanner with only the MRZ zone enabled (new SingleSideScanner(barcode: false, machineReadableZone: true, visualInspectionZone: false)) wrapped in IdCaptureScanner, narrows AcceptedDocuments to a passport, and reads capturedId.Mrz in OnIdCaptured: Mrz.CapturedMrz for the raw MRZ string and Mrz.PersonalIdNumber. It uses the property name Mrz (NOT MrzResult). The rest of the integration is preserved.",
+      "files": [
+        "fixtures/IntegratedActivity.cs"
+      ],
+      "tags": [
+        "mrz-scanning"
+      ],
+      "assertions": [
+        {
+          "text": "The scanner is changed to a SingleSideScanner with the MRZ zone enabled and the barcode/VIZ zones disabled (e.g. new SingleSideScanner(barcode: false, machineReadableZone: true, visualInspectionZone: false))"
+        },
+        {
+          "text": "The SingleSideScanner is wrapped in new IdCaptureScanner and assigned to settings.Scanner"
+        },
+        {
+          "text": "AcceptedDocuments is narrowed to a Passport (e.g. new Passport(IdCaptureRegion.Any))"
+        },
+        {
+          "text": "The MRZ sub-result is read via capturedId.Mrz (NOT capturedId.MrzResult)"
+        },
+        {
+          "text": "The raw MRZ string is read via Mrz.CapturedMrz"
+        },
+        {
+          "text": "Mrz.PersonalIdNumber is read"
+        },
+        {
+          "text": "The existing integration (camera, IdCapture.Create, DataCaptureView, overlay, OnIdCaptured/OnIdRejected) is preserved"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "In my .NET Android app (see IntegratedActivity.cs) I'm scanning the printed front of national ID cards and I need the issuing authority and the holder's place of birth from the visual inspection zone. How do I read the VIZ in C#? I keep trying capturedId.Viz.DateOfBirth and it isn't there.",
+      "expected_output": "The skill reads capturedId.Viz in OnIdCaptured: Viz.IssuingAuthority and Viz.PlaceOfBirth. It uses the property name Viz (NOT VizResult) and explains that name / date of birth / nationality / document number are NOT on VizResult in .NET \u2014 they must be read from the top-level capturedId instead. To read only the VIZ it can use a SingleSideScanner with visualInspectionZone: true. The rest of the integration is preserved.",
+      "files": [
+        "fixtures/IntegratedActivity.cs"
+      ],
+      "tags": [
+        "viz-scanning"
+      ],
+      "assertions": [
+        {
+          "text": "The VIZ sub-result is read via capturedId.Viz (NOT capturedId.VizResult)"
+        },
+        {
+          "text": "Viz.IssuingAuthority is read"
+        },
+        {
+          "text": "Viz.PlaceOfBirth is read"
+        },
+        {
+          "text": "It explains that DateOfBirth / Nationality / DocumentNumber are NOT on VizResult in .NET and must be read from the top-level capturedId"
+        },
+        {
+          "text": "A VIZ-capable scanner is configured: a SingleSideScanner with visualInspectionZone enabled, or a FullDocumentScanner (which also reads the VIZ) (semantic)"
+        },
+        {
+          "text": "The existing integration (camera, IdCapture.Create, DataCaptureView, overlay, OnIdCaptured/OnIdRejected) is preserved"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "In my .NET Android app (see IntegratedActivity.cs) we keep accepting driver's licenses that have been physically voided (hole-punched / cancelled by the issuing authority). I want the SDK to reject those automatically and show the user a message telling them the document was voided. How do I do this in C#?",
+      "expected_output": "The skill sets RejectVoidedIds = true on the IdCaptureSettings and expands the existing OnIdRejected handler to surface a distinct message for RejectionReason.DocumentVoided. No verifier class is invented; voided rejection is a settings flag. The rest of the integration is preserved.",
+      "files": [
+        "fixtures/IntegratedActivity.cs"
+      ],
+      "tags": [
+        "voided-detection"
+      ],
+      "assertions": [
+        {
+          "text": "RejectVoidedIds = true is set on the IdCaptureSettings"
+        },
+        {
+          "text": "The OnIdRejected handler is expanded to surface a distinct message for RejectionReason.DocumentVoided"
+        },
+        {
+          "text": "No verifier class is invented; voided detection is configured purely via the IdCaptureSettings flag"
+        },
+        {
+          "text": "The existing integration (camera, IdCapture.Create, DataCaptureView, overlay, accepted documents, scanner, OnIdCaptured) is preserved"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "I'm building an airport check-in screen in my .NET Android app (start from EmptyActivity.cs). On one screen I need to scan the PDF417 barcode on a boarding pass AND scan the passenger's passport, sharing one camera preview. How do I run both ID Capture and Barcode Capture at the same time in C#?",
+      "expected_output": "The skill keeps one DataCaptureContext, one DataCaptureView and one camera, and runs IdCapture and BarcodeCapture together. It creates BOTH modes against the SAME context via the static factories IdCapture.Create(context, idSettings) and BarcodeCapture.Create(context, bcSettings) (the .NET equivalent of addMode; there is no setMode and no public constructor). Each mode gets its own listener/event: IdCapture via IdCaptured/IdRejected, BarcodeCapture via BarcodeScanned reading args.Session.NewlyRecognizedBarcode. BarcodeCaptureSettings enables Symbology.Pdf417, and each mode is toggled with its Enabled property. It does not create a second context or remove one mode to add the other. No separate Barcode NuGet package is needed (the reader ships in Scandit.DataCapture.IdCapture).",
+      "files": [
+        "fixtures/EmptyActivity.cs"
+      ],
+      "assertions": [
+        {
+          "text": "IdCapture.Create(context, ...) is called with the shared DataCaptureContext to attach the ID Capture mode"
+        },
+        {
+          "text": "BarcodeCapture.Create(context, ...) is called with the SAME DataCaptureContext to attach the Barcode Capture mode"
+        },
+        {
+          "text": "No setMode call and no attempt to remove/replace one mode to add the other — both modes stay attached to the one context (semantic)"
+        },
+        {
+          "text": "The IdCapture mode is wired to its own IdCaptured (and IdRejected) handler"
+        },
+        {
+          "text": "The BarcodeCapture mode is wired to its own BarcodeScanned handler (or IBarcodeCaptureListener.OnBarcodeScanned) that reads Session.NewlyRecognizedBarcode"
+        },
+        {
+          "text": "BarcodeCaptureSettings enables Symbology.Pdf417 (the IATA boarding-pass symbology)"
+        },
+        {
+          "text": "running IdCapture and BarcodeCapture together on one DataCaptureContext is presented as supported, not as something that must be avoided (semantic)"
+        }
+      ],
+      "tags": [
+        "barcode-coexistence"
       ]
     }
   ]

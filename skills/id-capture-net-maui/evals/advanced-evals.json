@@ -12,13 +12,30 @@
         "fixtures/IntegratedMainPage.xaml.cs"
       ],
       "assertions": [
-        {"text": "RejectExpiredIds = true is added to the IdCaptureSettings"},
-        {"text": "RejectIdsExpiringIn is set to a Duration constructed as new Duration(...) representing 3 months"},
-        {"text": "RejectHolderBelowAge is set to 18"},
-        {"text": "The existing OnIdRejected handler is expanded to surface distinct messages for RejectionReason.DocumentExpired, RejectionReason.DocumentExpiresSoon, and RejectionReason.HolderUnderage"},
-        {"text": "No verifier classes are invented; rejection is configured purely via IdCaptureSettings flags"},
-        {"text": "UI work in the rejection handler is dispatched via MainThread.BeginInvokeOnMainThread (or Application.Current.Dispatcher.DispatchAsync), not RunOnUiThread or DispatchQueue.MainQueue"},
-        {"text": "The existing MAUI integration (camera setup, IdCapture.Create, DataCaptureView binding, IdCaptureOverlay in HandlerChanged, OnIdCaptured, AcceptedDocuments, FullDocumentScanner, ResumeAsync/SleepAsync lifecycle) is preserved"}
+        {
+          "text": "RejectExpiredIds = true is added to the IdCaptureSettings"
+        },
+        {
+          "text": "RejectIdsExpiringIn is set to a Duration constructed as new Duration(...) representing 3 months"
+        },
+        {
+          "text": "RejectHolderBelowAge is set to 18"
+        },
+        {
+          "text": "The existing OnIdRejected handler is expanded to surface distinct messages for RejectionReason.DocumentExpired, RejectionReason.DocumentExpiresSoon, and RejectionReason.HolderUnderage"
+        },
+        {
+          "text": "No verifier classes are invented; rejection is configured purely via IdCaptureSettings flags"
+        },
+        {
+          "text": "UI work in the rejection handler is dispatched via MainThread.BeginInvokeOnMainThread (or Application.Current.Dispatcher.DispatchAsync), not RunOnUiThread or DispatchQueue.MainQueue"
+        },
+        {
+          "text": "The existing MAUI integration (camera setup, IdCapture.Create, DataCaptureView binding, IdCaptureOverlay in HandlerChanged, OnIdCaptured, AcceptedDocuments, FullDocumentScanner, ResumeAsync/SleepAsync lifecycle) is preserved"
+        }
+      ],
+      "tags": [
+        "rejection-rules"
       ]
     },
     {
@@ -32,15 +49,228 @@
         "fixtures/IntegratedMainPage.xaml.cs"
       ],
       "assertions": [
-        {"text": "RejectForgedAamvaBarcodes = true is set on the IdCaptureSettings"},
-        {"text": "RejectInconsistentData = true is set on the IdCaptureSettings"},
-        {"text": "No standalone AamvaBarcodeVerifier or DataConsistencyVerifier class is instantiated or referenced (these do not exist on .NET; verification is settings-driven)"},
-        {"text": "capturedId.VerificationResult is read in OnIdCaptured"},
-        {"text": "The AAMVA outcome is read via VerificationResult.AamvaBarcodeVerification and its Status (AamvaBarcodeVerificationStatus.Authentic / LikelyForged / Forged)"},
-        {"text": "The data-consistency outcome is read via VerificationResult.DataConsistency (e.g. AllChecksPassed)"},
-        {"text": "It explains that hard failures surface via OnIdRejected with RejectionReason.ForgedAamvaBarcode (and/or InconsistentData)"},
-        {"text": "Any UI work is dispatched via MainThread.BeginInvokeOnMainThread (or Application.Current.Dispatcher.DispatchAsync), not RunOnUiThread or DispatchQueue.MainQueue"},
-        {"text": "The existing MAUI integration (camera, IdCapture.Create, DataCaptureView binding, HandlerChanged overlay, accepted documents, scanner, OnIdCaptured/OnIdRejected) is preserved"}
+        {
+          "text": "RejectForgedAamvaBarcodes = true is set on the IdCaptureSettings"
+        },
+        {
+          "text": "RejectInconsistentData = true is set on the IdCaptureSettings"
+        },
+        {
+          "text": "No standalone AamvaBarcodeVerifier or DataConsistencyVerifier class is instantiated or referenced (these do not exist on .NET; verification is settings-driven)"
+        },
+        {
+          "text": "capturedId.VerificationResult is read in OnIdCaptured"
+        },
+        {
+          "text": "The AAMVA outcome is read via VerificationResult.AamvaBarcodeVerification and its Status (AamvaBarcodeVerificationStatus.Authentic / LikelyForged / Forged)"
+        },
+        {
+          "text": "The data-consistency outcome is read via VerificationResult.DataConsistency (e.g. AllChecksPassed)"
+        },
+        {
+          "text": "It explains that hard failures surface via OnIdRejected with RejectionReason.ForgedAamvaBarcode (and/or InconsistentData)"
+        },
+        {
+          "text": "Any UI work is dispatched via MainThread.BeginInvokeOnMainThread (or Application.Current.Dispatcher.DispatchAsync), not RunOnUiThread or DispatchQueue.MainQueue"
+        },
+        {
+          "text": "The existing MAUI integration (camera, IdCapture.Create, DataCaptureView binding, HandlerChanged overlay, accepted documents, scanner, OnIdCaptured/OnIdRejected) is preserved"
+        }
+      ],
+      "tags": [
+        "aamva-verification"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "In my .NET MAUI ID Capture app (see IntegratedDataCaptureManager.cs, IntegratedMainPageViewModel.cs, IntegratedMainPage.xaml, IntegratedMainPage.xaml.cs) I scan passports but for privacy reasons I must not retain the document number or any document images. How do I keep that regulated data out of the captured result in C#?",
+      "expected_output": "The skill sets IdCaptureSettings.AnonymizationMode to an IdAnonymizationMode value (FieldsAndImages, or FieldsOnly plus ImagesOnly as appropriate), and/or uses settings.AddAnonymizedField(document, IdFieldType.DocumentNumber) for the document-number field. It notes the result can be checked with capturedId.IsAnonymized(IdFieldType.DocumentNumber) and capturedId.AnonymizedFields. The rest of the MAUI integration is preserved.",
+      "files": [
+        "fixtures/IntegratedDataCaptureManager.cs",
+        "fixtures/IntegratedMainPageViewModel.cs",
+        "fixtures/IntegratedMainPage.xaml",
+        "fixtures/IntegratedMainPage.xaml.cs"
+      ],
+      "assertions": [
+        {
+          "text": "IdCaptureSettings.AnonymizationMode is set to an IdAnonymizationMode value"
+        },
+        {
+          "text": "An IdAnonymizationMode value that redacts images is used (IdAnonymizationMode.FieldsAndImages or IdAnonymizationMode.ImagesOnly)"
+        },
+        {
+          "text": "The document number is anonymized, either via the AnonymizationMode covering fields or via settings.AddAnonymizedField with IdFieldType.DocumentNumber"
+        },
+        {
+          "text": "No invented anonymization API is used; anonymization is configured on IdCaptureSettings (semantic)"
+        },
+        {
+          "text": "The existing MAUI integration (camera, IdCapture.Create, DataCaptureView binding, HandlerChanged overlay, AcceptedDocuments, scanner, OnIdCaptured) is preserved"
+        }
+      ],
+      "tags": [
+        "data-anonymization"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "In my .NET MAUI ID Capture app (see IntegratedDataCaptureManager.cs, IntegratedMainPageViewModel.cs, IntegratedMainPage.xaml, IntegratedMainPage.xaml.cs) I want to pull the document images out of the result so I can display the holder's face photo and a cropped picture of the document. How do I configure this and read the images in C#?",
+      "expected_output": "The skill enables the image types via settings.SetShouldPassImageTypeToResult(IdImageType.Face, true) and SetShouldPassImageTypeToResult(IdImageType.CroppedDocument, true), then reads capturedId.Images.Face and capturedId.Images.GetCroppedDocument(IdSide.Front) (and/or IdSide.Back) in OnIdCaptured. It notes the images are platform-typed (Android.Graphics.Bitmap? on Android, UIKit.UIImage? on iOS) and must be guarded with #if ANDROID / #if IOS. The rest of the MAUI integration is preserved.",
+      "files": [
+        "fixtures/IntegratedDataCaptureManager.cs",
+        "fixtures/IntegratedMainPageViewModel.cs",
+        "fixtures/IntegratedMainPage.xaml",
+        "fixtures/IntegratedMainPage.xaml.cs"
+      ],
+      "assertions": [
+        {
+          "text": "SetShouldPassImageTypeToResult is called to request an ID image type \u2014 IdImageType.Face, .CroppedDocument, or .Frame (semantic)"
+        },
+        {
+          "text": "A requested ID image is read from capturedId.Images (semantic)"
+        },
+        {
+          "text": "capturedId.Images.Face is read in OnIdCaptured"
+        },
+        {
+          "text": "capturedId.Images.GetCroppedDocument is called with an IdSide value such as IdSide.Front"
+        },
+        {
+          "text": "The images are described as platform-typed Android.Graphics.Bitmap on Android and UIKit.UIImage on iOS, guarded with #if ANDROID and #if IOS"
+        },
+        {
+          "text": "No SetIncludeImage method is invented; image inclusion is controlled via SetShouldPassImageTypeToResult (semantic)"
+        },
+        {
+          "text": "The existing MAUI integration (camera, IdCapture.Create, DataCaptureView binding, HandlerChanged overlay, AcceptedDocuments, OnIdCaptured) is preserved"
+        }
+      ],
+      "tags": [
+        "image-extraction"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "In my .NET MAUI ID Capture app (see IntegratedDataCaptureManager.cs, IntegratedMainPageViewModel.cs, IntegratedMainPage.xaml, IntegratedMainPage.xaml.cs) I only need to read the MRZ of passports \u2014 nothing else. How do I configure the scanner for just the MRZ and read the MRZ fields in C#?",
+      "expected_output": "The skill configures a SingleSideScanner with only the MRZ zone enabled (new SingleSideScanner(barcode: false, machineReadableZone: true, visualInspectionZone: false)) wrapped in IdCaptureScanner, and reads the MRZ result via capturedId.Mrz (e.g. CapturedMrz, DocumentCode). It reads name/DOB/nationality from the top-level capturedId, not from Mrz. The rest of the MAUI integration is preserved.",
+      "files": [
+        "fixtures/IntegratedDataCaptureManager.cs",
+        "fixtures/IntegratedMainPageViewModel.cs",
+        "fixtures/IntegratedMainPage.xaml",
+        "fixtures/IntegratedMainPage.xaml.cs"
+      ],
+      "assertions": [
+        {
+          "text": "A SingleSideScanner is configured with machineReadableZone: true"
+        },
+        {
+          "text": "The SingleSideScanner is wrapped in an IdCaptureScanner on IdCaptureSettings.Scanner"
+        },
+        {
+          "text": "The MRZ result is read via capturedId.Mrz"
+        },
+        {
+          "text": "An MrzResult field such as CapturedMrz is read off capturedId.Mrz"
+        },
+        {
+          "text": "The existing MAUI integration (camera, IdCapture.Create, DataCaptureView binding, HandlerChanged overlay, OnIdCaptured) is preserved"
+        }
+      ],
+      "tags": [
+        "mrz-scanning"
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "In my .NET MAUI ID Capture app (see IntegratedDataCaptureManager.cs, IntegratedMainPageViewModel.cs, IntegratedMainPage.xaml, IntegratedMainPage.xaml.cs) I need the printed front-of-card data \u2014 specifically the issuing authority and place of birth on ID cards. How do I configure the scanner for the visual inspection zone and read those fields in C#?",
+      "expected_output": "The skill configures a SingleSideScanner with only the VIZ zone enabled (new SingleSideScanner(barcode: false, machineReadableZone: false, visualInspectionZone: true)) wrapped in IdCaptureScanner, and reads capturedId.Viz for VIZ-specific fields such as IssuingAuthority and PlaceOfBirth. It notes that name/DOB/nationality/documentNumber are read from the top-level capturedId, not from Viz. The rest of the MAUI integration is preserved.",
+      "files": [
+        "fixtures/IntegratedDataCaptureManager.cs",
+        "fixtures/IntegratedMainPageViewModel.cs",
+        "fixtures/IntegratedMainPage.xaml",
+        "fixtures/IntegratedMainPage.xaml.cs"
+      ],
+      "assertions": [
+        {
+          "text": "A VIZ-capable scanner is configured (SingleSideScanner with visualInspectionZone, or FullDocumentScanner) (semantic)"
+        },
+        {
+          "text": "The VIZ result is read via capturedId.Viz"
+        },
+        {
+          "text": "A VizResult field such as IssuingAuthority or PlaceOfBirth is read off capturedId.Viz"
+        },
+        {
+          "text": "The existing MAUI integration (camera, IdCapture.Create, DataCaptureView binding, HandlerChanged overlay, OnIdCaptured) is preserved"
+        }
+      ],
+      "tags": [
+        "viz-scanning"
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "In my .NET MAUI ID Capture app (see IntegratedDataCaptureManager.cs, IntegratedMainPageViewModel.cs, IntegratedMainPage.xaml, IntegratedMainPage.xaml.cs) I want to reject voided documents (punched or cancelled IDs) and show the user a clear message asking them to present a valid document. How do I do this in C#?",
+      "expected_output": "The skill sets RejectVoidedIds = true on the IdCaptureSettings and handles RejectionReason.DocumentVoided in OnIdRejected with a user-facing message dispatched via MainThread.BeginInvokeOnMainThread. No verifier class is invented. The rest of the MAUI integration is preserved.",
+      "files": [
+        "fixtures/IntegratedDataCaptureManager.cs",
+        "fixtures/IntegratedMainPageViewModel.cs",
+        "fixtures/IntegratedMainPage.xaml",
+        "fixtures/IntegratedMainPage.xaml.cs"
+      ],
+      "assertions": [
+        {
+          "text": "RejectVoidedIds = true is set on the IdCaptureSettings"
+        },
+        {
+          "text": "RejectionReason.DocumentVoided is handled in OnIdRejected"
+        },
+        {
+          "text": "A user-facing message for the voided case is dispatched via MainThread.BeginInvokeOnMainThread (or Application.Current.Dispatcher.DispatchAsync), not RunOnUiThread or DispatchQueue.MainQueue"
+        },
+        {
+          "text": "The existing MAUI integration (camera, IdCapture.Create, DataCaptureView binding, HandlerChanged overlay, AcceptedDocuments, scanner, OnIdCaptured/OnIdRejected) is preserved"
+        }
+      ],
+      "tags": [
+        "voided-detection"
+      ]
+    },
+    {
+      "id": 8,
+      "prompt": "I'm building an airport check-in screen in my .NET MAUI app (see IntegratedDataCaptureManager.cs). On one screen I need to scan the PDF417 barcode on a boarding pass AND scan the passenger's passport, sharing one camera preview and one <scandit:DataCaptureView>. How do I run both ID Capture and Barcode Capture at the same time in C#?",
+      "expected_output": "The skill keeps one DataCaptureContext, one DataCaptureView and one camera in the DataCaptureManager, and runs IdCapture and BarcodeCapture together. It creates BOTH modes against the SAME context via the static factories IdCapture.Create(context, idSettings) and BarcodeCapture.Create(context, bcSettings) (the .NET equivalent of addMode; there is no setMode and no public constructor). Each mode gets its own listener/event: IdCapture via IdCaptured/IdRejected, BarcodeCapture via BarcodeScanned reading args.Session.NewlyRecognizedBarcode, with UI work dispatched through MainThread.BeginInvokeOnMainThread. BarcodeCaptureSettings enables Symbology.Pdf417, and each mode is toggled with its Enabled property. It does not create a second context or remove one mode to add the other, and it notes BarcodeCapture ships in the Scandit.DataCapture.IdCapture package (no extra NuGet).",
+      "files": [
+        "fixtures/IntegratedDataCaptureManager.cs"
+      ],
+      "assertions": [
+        {
+          "text": "IdCapture.Create(context, ...) is called with the shared DataCaptureContext to attach the ID Capture mode"
+        },
+        {
+          "text": "BarcodeCapture.Create(context, ...) is called with the SAME DataCaptureContext to attach the Barcode Capture mode"
+        },
+        {
+          "text": "No setMode call and no attempt to remove/replace one mode to add the other — both modes stay attached to the one context (semantic)"
+        },
+        {
+          "text": "The IdCapture mode is wired to its own IdCaptured (and IdRejected) handler"
+        },
+        {
+          "text": "The BarcodeCapture mode is wired to its own BarcodeScanned handler (or IBarcodeCaptureListener.OnBarcodeScanned) that reads Session.NewlyRecognizedBarcode"
+        },
+        {
+          "text": "BarcodeCaptureSettings enables Symbology.Pdf417 (the IATA boarding-pass symbology)"
+        },
+        {
+          "text": "No extra Barcode NuGet package is added — BarcodeCapture ships in Scandit.DataCapture.IdCapture (semantic)"
+        },
+        {
+          "text": "running IdCapture and BarcodeCapture together on one DataCaptureContext is presented as supported, not as something that must be avoided (semantic)"
+        }
+      ],
+      "tags": [
+        "barcode-coexistence"
       ]
     }
   ]

@@ -44,6 +44,23 @@
         {"text": "these flags are described as surfacing reasons in didRejectId, e.g. DocumentExpired and HolderUnderage (semantic)"},
         {"text": "settings.scannerType is no longer used in the migrated code (semantic)"}
       ]
+    },
+    {
+      "id": 4,
+      "prompt": "I'm upgrading an old ID Capture integration from SDK v6 to v7. The old code selects documents with a bitmask:\n\n```tsx\nconst settings = new IdCaptureSettings();\nsettings.supportedDocuments = IdDocumentType.IdCardViz | IdDocumentType.PassportMrz;\nsettings.supportedSides = SupportedSides.FrontAndBack;\n```\n\nThis no longer compiles. Migrate it to the current list-based API.",
+      "expected_output": "The skill replaces the removed supportedDocuments / IdDocumentType bitmask (and supportedSides) with the list-based model: settings.acceptedDocuments.push(new IdCard(IdCaptureRegion.Any), new Passport(IdCaptureRegion.Any)) and an explicit scanner (settings.scanner = new IdCaptureScanner(new FullDocumentScanner())). The removed supportedDocuments, IdDocumentType, and supportedSides names do not appear in the migrated code.",
+      "files": [],
+      "tags": ["migration-v6-to-v7"],
+      "assertions": [
+        {"text": "settings.acceptedDocuments is populated with document classes like IdCard and Passport (semantic)"},
+        {"text": "new IdCard(IdCaptureRegion.Any) is present"},
+        {"text": "new Passport(IdCaptureRegion.Any) is present"},
+        {"text": "settings.scanner = new IdCaptureScanner( is present"},
+        {"text": "new FullDocumentScanner( is present"},
+        {"text": "settings.supportedDocuments is no longer used in the migrated code (semantic)"},
+        {"text": "the IdDocumentType enum is no longer used in the migrated code (semantic)"},
+        {"text": "settings.supportedSides is no longer used in the migrated code (semantic)"}
+      ]
     }
   ]
 }

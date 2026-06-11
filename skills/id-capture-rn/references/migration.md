@@ -88,17 +88,21 @@ If your existing code didn't `await` the Promise-returning APIs (`addListener`, 
 
 ## Step 7 — If you are coming from v6 (`supportedDocuments`)
 
-In v6, documents were selected with a `supportedDocuments` bitmask of `IdDocumentType` and the scanner was implied by `supportedSides`. That API was removed at v7. Move to the list-based model:
+In v6, documents were selected with a `supportedDocuments` bitmask of `IdDocumentType`, and which side(s) to read was a separate `supportedSides` setting. Both were removed at v7. Move to the list-based model — declare documents in `acceptedDocuments` and pick a scanner that reads the side(s) you need (the scanner replaces `supportedSides`):
 
 ```tsx
-// v6 (removed): settings.supportedDocuments = IdDocumentType.IdCardViz | IdDocumentType.PassportMrz;
+// v6 (removed):
+//   settings.supportedDocuments = IdDocumentType.IdCardViz | IdDocumentType.PassportMrz;
+//   settings.supportedSides = SupportedSides.FrontAndBack;
 // v7+: declare documents and a scanner explicitly
 settings.acceptedDocuments.push(
   new IdCard(IdCaptureRegion.Any),
   new Passport(IdCaptureRegion.Any),
 );
-settings.scanner = new IdCaptureScanner(new FullDocumentScanner()); // v8 form
+settings.scanner = new IdCaptureScanner(new FullDocumentScanner()); // v8 form; reads front + back
 ```
+
+The removed `supportedDocuments`, `IdDocumentType`, and `supportedSides` names no longer exist — remove every reference to them.
 
 For the full v6 → v7 details, see the [6 → 7 migration guide](https://docs.scandit.com/sdks/react-native/migrate-6-to-7/) and the [ID Capture API reference](https://docs.scandit.com/data-capture-sdk/react-native/id-capture/api.html).
 

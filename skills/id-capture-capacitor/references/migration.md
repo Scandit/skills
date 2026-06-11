@@ -100,6 +100,34 @@ settings.acceptedDocuments.push(
 settings.scanner = new IdCaptureScanner(new FullDocumentScanner()); // v8 form
 ```
 
+v6 also used different listener and result APIs that were reshaped on the way to v8:
+
+- **Listener callbacks renamed.** v6's `onIdCaptured(idCapture, capturedId)` and the dedicated `onIdCapturedTimedOut(idCapture, capturedId)` became `didCaptureId(idCapture, capturedId)` and `didRejectId(idCapture, rejectedId, reason)`. There is no separate timeout callback any more — a timeout now arrives in `didRejectId` with `RejectionReason.Timeout`.
+
+  ```ts
+  // BEFORE (v6)
+  idCapture.addListener({
+    onIdCaptured: (_, capturedId) => { /* ... */ },
+    onIdCapturedTimedOut: (_, capturedId) => { /* timed out */ },
+  });
+
+  // AFTER (v8)
+  idCapture.addListener({
+    didCaptureId: (_, capturedId) => { /* ... */ },
+    didRejectId: (_, rejectedId, reason) => {
+      if (reason === RejectionReason.Timeout) { /* timed out */ }
+    },
+  });
+  ```
+
+- **Document type moved off `CapturedId`.** v6's `capturedId.documentType` was removed. Read the type via `capturedId.document?.documentType` (an `IdCaptureDocumentType`) or the `capturedId.isPassport()` / `isDriverLicense()` / `isIdCard()` convenience methods.
+
+  ```ts
+  // BEFORE (v6): const type = capturedId.documentType;
+  // AFTER (v8):
+  const type = capturedId.document?.documentType;
+  ```
+
 For the full v6 → v7 details, see the [6 → 7 migration guide](https://docs.scandit.com/sdks/capacitor/migrate-6-to-7/) and the [ID Capture API reference](https://docs.scandit.com/data-capture-sdk/capacitor/id-capture/api.html).
 
 ## Step 8 — Verify

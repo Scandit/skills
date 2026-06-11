@@ -105,7 +105,60 @@
         {"text": "Sets up IdCaptureSettings with acceptedDocuments and scanner"},
         {"text": "Implements IdCaptureListener with didCapture and didReject"},
         {"text": "Manages camera lifecycle in viewWillAppear / viewDidDisappear"}
-      ]
+      ],
+      "tags": ["barcode-coexistence"]
+    },
+    {
+      "id": 8,
+      "prompt": "Configure this ID Capture integration so that sensitive fields are redacted AND obscured with black boxes on the returned document images, not just removed from the data.",
+      "expected_output": "IdCaptureSettings with anonymizationMode set to .fieldsAndImages so that anonymized fields are both nulled in the CapturedId and covered on the returned images.",
+      "files": ["evals/fixtures/IntegratedViewController.swift"],
+      "assertions": [
+        {"text": "Sets settings.anonymizationMode = .fieldsAndImages"},
+        {"text": "Uses the IdAnonymizationMode enum case .fieldsAndImages — does NOT use a string literal"},
+        {"text": "Does NOT set anonymizationMode to .none, .fieldsOnly, or .imagesOnly (semantic)"}
+      ],
+      "tags": ["data-anonymization"]
+    },
+    {
+      "id": 9,
+      "prompt": "Update ID Capture to reject voided documents (for example a hole-punched or VOID-stamped US driver's license) and show a distinct message when that happens.",
+      "expected_output": "IdCaptureSettings with rejectVoidedIds = true and a didReject switch that handles RejectionReason.documentVoided with a distinct voided-document message.",
+      "files": ["evals/fixtures/IntegratedViewController.swift"],
+      "assertions": [
+        {"text": "Sets settings.rejectVoidedIds = true"},
+        {"text": "Handles the RejectionReason case .documentVoided in didReject"},
+        {"text": "Shows a distinct user-facing message about the document being voided"},
+        {"text": "Does NOT use a standalone verifier class for voided detection — rejection is settings-driven (semantic)"}
+      ],
+      "tags": ["voided-detection"]
+    },
+    {
+      "id": 10,
+      "prompt": "I need the vehicle category data from the back of European driving licenses. Enable extraction of that data, and in didCapture iterate over the driving license categories and log each category's code.",
+      "expected_output": "IdCaptureSettings with decodeBackOfEuropeanDrivingLicense = true, and didCapture reading capturedId.vizResult?.drivingLicenseDetails?.drivingLicenseCategories and accessing each category's .code.",
+      "files": ["evals/fixtures/IntegratedViewController.swift"],
+      "assertions": [
+        {"text": "Sets settings.decodeBackOfEuropeanDrivingLicense = true"},
+        {"text": "Reads capturedId.vizResult?.drivingLicenseDetails?.drivingLicenseCategories"},
+        {"text": "Accesses the category code as .code on each DrivingLicenseCategory"},
+        {"text": "Does NOT use .categoryCode — the property is named code"}
+      ],
+      "tags": ["europe-driving-license"]
+    },
+    {
+      "id": 11,
+      "prompt": "I need to scan mobile driver's licenses (mDL, ISO 18013-5) and read the holder's name and date of birth. Set that up in IntegratedViewController.swift.",
+      "expected_output": "IdCaptureSettings whose scanner is an IdCaptureScanner built with a MobileDocumentScanner (enablingIso180135: true), and didCapture reading capturedId.mobileDocumentResult (or the harmonized top-level fields). MobileDocumentScanner ships in the base ScanditIdCapture framework with no add-on pod.",
+      "files": ["evals/fixtures/IntegratedViewController.swift"],
+      "assertions": [
+        {"text": "Builds an IdCaptureScanner that includes a MobileDocumentScanner(enablingIso180135: true, ...) (semantic)"},
+        {"text": "The MobileDocumentScanner is supplied to IdCaptureScanner via the mobileDocument: argument (semantic)"},
+        {"text": "didCapture reads capturedId.mobileDocumentResult, or the harmonized top-level fields the mobile document populates (semantic)"},
+        {"text": "Does NOT use a separate add-on pod for mobile documents — MobileDocumentScanner is in the base framework (semantic)"},
+        {"text": "Does NOT use an IdDocumentType bitmask or an AamvaBarcodeVerifier for mobile documents (semantic)"}
+      ],
+      "tags": ["mobile-document-mdl"]
     }
   ]
 }
