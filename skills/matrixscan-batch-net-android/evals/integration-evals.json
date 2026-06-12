@@ -76,6 +76,83 @@
         {"text": "Existing BarcodeBatch.Create / Camera / DataCaptureView / BarcodeBatchBasicOverlay setup is preserved"},
         {"text": "Existing OnResume / OnPause / OnDestroy lifecycle is preserved"}
       ]
+    },
+    {
+      "id": 4,
+      "prompt": "In my MatrixScan Batch Activity I'd rather have the highlight on each tracked barcode shown as a dot instead of the default rectangular frame. Here is my Activity: IntegratedActivity.cs.",
+      "expected_output": "The skill changes the BarcodeBatchBasicOverlay.Create call to pass BarcodeBatchBasicOverlayStyle.Dot as the style argument (replacing BarcodeBatchBasicOverlayStyle.Frame). It explains that the style is fixed at creation time (the Style property is read-only) and that Frame is the default. All other integration code (BarcodeBatch.Create, Camera, DataCaptureView, IBarcodeBatchListener, lifecycle) is preserved.",
+      "files": [
+        "fixtures/IntegratedActivity.cs"
+      ],
+      "assertions": [
+        {"text": "BarcodeBatchBasicOverlay.Create is called with BarcodeBatchBasicOverlayStyle.Dot as the style argument"},
+        {"text": "BarcodeBatchBasicOverlayStyle.Frame is no longer passed to BarcodeBatchBasicOverlay.Create (it is replaced by .Dot, since the answer asked for the dot style)"},
+        {"text": "The style enum value is named BarcodeBatchBasicOverlayStyle.Dot (semantic) — not a string, not a 'dotRadius' setting, and not a Kotlin/Swift-style .dot lowercase token"},
+        {"text": "The using Scandit.DataCapture.Barcode.Batch.UI.Overlay; directive is present for the overlay and style types"},
+        {"text": "The answer notes the overlay style is chosen at Create time / the Style property is read-only (the style cannot be changed on an existing overlay) (semantic)"},
+        {"text": "Existing BarcodeBatch.Create call is preserved (not rewritten as new BarcodeBatch)"},
+        {"text": "Existing IBarcodeBatchListener implementation (OnSessionUpdated, OnObservationStarted, OnObservationStopped) is preserved"},
+        {"text": "Existing OnResume / OnPause / OnDestroy camera lifecycle is preserved"}
+      ],
+      "tags": ["basic-overlay-style"]
+    },
+    {
+      "id": 5,
+      "prompt": "In my MatrixScan Batch Activity I want to anchor a small custom label (a TextView showing the barcode's data) on top of each tracked barcode, and have it move with the barcode. I have the MatrixScan AR add-on. Here is my Activity: IntegratedActivity.cs.",
+      "expected_output": "The skill adds a BarcodeBatchAdvancedOverlay: creates it with BarcodeBatchAdvancedOverlay.Create(barcodeBatch, dataCaptureView), makes the Activity implement IBarcodeBatchAdvancedOverlayListener, assigns the overlay's Listener, and implements ViewForTrackedBarcode to return an Android TextView whose text is the tracked barcode's data. It notes the advanced overlay requires the MatrixScan AR add-on and that ViewForTrackedBarcode is called on the main thread. The existing BarcodeBatchBasicOverlay and integration code are preserved.",
+      "files": [
+        "fixtures/IntegratedActivity.cs"
+      ],
+      "assertions": [
+        {"text": "BarcodeBatchAdvancedOverlay.Create( is called with the BarcodeBatch and the DataCaptureView (not new BarcodeBatchAdvancedOverlay(...))"},
+        {"text": "The Activity declares it implements IBarcodeBatchAdvancedOverlayListener"},
+        {"text": "The advanced overlay's Listener property is assigned (e.g. advancedOverlay.Listener = this)"},
+        {"text": "ViewForTrackedBarcode(BarcodeBatchAdvancedOverlay overlay, TrackedBarcode trackedBarcode) is implemented and returns an Android View (e.g. a TextView)"},
+        {"text": "The returned view's text is set from trackedBarcode.Barcode.Data"},
+        {"text": "The using Scandit.DataCapture.Barcode.Batch.UI.Overlay; directive is present"},
+        {"text": "The answer notes the advanced overlay requires the MatrixScan AR add-on (semantic)"},
+        {"text": "Existing BarcodeBatchBasicOverlay.Create call is preserved (the advanced overlay is added in addition, not as a replacement) (semantic)"},
+        {"text": "Existing IBarcodeBatchListener implementation and OnResume / OnPause / OnDestroy lifecycle are preserved"}
+      ],
+      "tags": ["advanced-overlay"]
+    },
+    {
+      "id": 6,
+      "prompt": "I'm already anchoring a label view to each tracked barcode with BarcodeBatchAdvancedOverlay in my MatrixScan Batch Activity. Now I want the label to sit centered just above each barcode rather than overlapping it. Here is my Activity: IntegratedActivity.cs.",
+      "expected_output": "The skill implements AnchorForTrackedBarcode to return Anchor.TopCenter and OffsetForTrackedBarcode to return a PointWithUnit built from FloatWithUnit values using MeasureUnit.Fraction, with a negative vertical fraction to push the label above the barcode. It explains that the offset is relative to the anchor and that a fractional unit scales with the view size. The existing ViewForTrackedBarcode and integration code are preserved.",
+      "files": [
+        "fixtures/IntegratedActivity.cs"
+      ],
+      "assertions": [
+        {"text": "AnchorForTrackedBarcode(BarcodeBatchAdvancedOverlay overlay, TrackedBarcode trackedBarcode) is implemented and returns Anchor.TopCenter"},
+        {"text": "OffsetForTrackedBarcode(BarcodeBatchAdvancedOverlay overlay, TrackedBarcode trackedBarcode) is implemented and returns a PointWithUnit"},
+        {"text": "The PointWithUnit is constructed from two FloatWithUnit values (x and y)"},
+        {"text": "Each FloatWithUnit uses MeasureUnit.Fraction as its unit"},
+        {"text": "The vertical (y) FloatWithUnit uses a negative value to position the label above the barcode"},
+        {"text": "The anchor value is Anchor.TopCenter (semantic) — not a string and not a lowercase Kotlin/Swift-style token"},
+        {"text": "The using Scandit.DataCapture.Core.Common.Geometry; directive is present for Anchor, PointWithUnit, FloatWithUnit and MeasureUnit"},
+        {"text": "Existing ViewForTrackedBarcode / BarcodeBatchAdvancedOverlay setup is preserved"}
+      ],
+      "tags": ["advanced-overlay-positioning"]
+    },
+    {
+      "id": 7,
+      "prompt": "In my MatrixScan Batch Activity I want the device to beep and vibrate whenever a new barcode starts being tracked. Here is my Activity: IntegratedActivity.cs.",
+      "expected_output": "The skill explains that BarcodeBatch (unlike SparkScan or Barcode Capture) has NO automatic feedback, so feedback must be emitted manually. It creates a Feedback instance (Feedback.DefaultFeedback, or new Feedback(Vibration.DefaultVibration, Sound.DefaultSound)) held as a field, and in OnSessionUpdated, when session.AddedTrackedBarcodes is non-empty, calls feedback.Emit(). It uses the Scandit.DataCapture.Core.Common.Feedback namespace. The existing integration and lifecycle code are preserved.",
+      "files": [
+        "fixtures/IntegratedActivity.cs"
+      ],
+      "assertions": [
+        {"text": "A Scandit Feedback instance is created via Feedback.DefaultFeedback (a static property, not Feedback.DefaultFeedback() with parentheses) or via the new Feedback(Vibration, Sound) constructor"},
+        {"text": "feedback.Emit() is called to play the feedback"},
+        {"text": "Emit() is called inside OnSessionUpdated, gated on session.AddedTrackedBarcodes being non-empty (so it fires only for newly-tracked barcodes)"},
+        {"text": "The using Scandit.DataCapture.Core.Common.Feedback; directive is present (the namespace for Feedback, Vibration and Sound)"},
+        {"text": "The answer states that BarcodeBatch has no automatic feedback and that feedback must be emitted manually (semantic)"},
+        {"text": "No BarcodeBatchSettings feedback / Feedback property is assumed on the mode or settings (BarcodeBatch exposes no feedback setting — it is emitted manually) (semantic)"},
+        {"text": "Existing BarcodeBatch.Create / Camera / DataCaptureView / BarcodeBatchBasicOverlay setup is preserved"},
+        {"text": "Existing OnResume / OnPause / OnDestroy lifecycle is preserved"}
+      ],
+      "tags": ["feedback"]
     }
   ]
 }
