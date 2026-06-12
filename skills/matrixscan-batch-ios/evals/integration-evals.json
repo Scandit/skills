@@ -46,7 +46,8 @@
         {"text": "overlay.delegate = self (or equivalent) is assigned"},
         {"text": "Response mentions that per-barcode brush customization requires the MatrixScan AR add-on license"},
         {"text": "Existing integration code (BarcodeBatch initializer, DataCaptureView, BarcodeBatchListener, camera lifecycle) is preserved"}
-      ]
+      ],
+      "tags": ["basic-overlay-brush"]
     },
     {
       "id": 3,
@@ -107,7 +108,90 @@
         {"text": "barcodeBatchAdvancedOverlay(_:viewFor:) is implemented and returns a UIView (e.g. UILabel) that displays trackedBarcode.barcode.data"},
         {"text": "Response mentions that BarcodeBatchAdvancedOverlay requires the MatrixScan AR add-on license"},
         {"text": "Existing integration code (BarcodeBatch initializer, BarcodeBatchBasicOverlay, BarcodeBatchListener, camera lifecycle) is preserved"}
-      ]
+      ],
+      "tags": ["advanced-overlay-view"]
+    },
+    {
+      "id": 6,
+      "prompt": "In my MatrixScan Batch view controller the highlights are drawn as rectangular frames. I'd prefer the dot style instead. Here is my view controller: IntegratedViewController.swift",
+      "expected_output": "The skill changes the BarcodeBatchBasicOverlay construction to pass the .dot style via the style: parameter of the convenience initializer, keeping the rest of the integration intact. It may mention that the style is read-only after construction (set it at init time) and that dotRadius tunes dot size.",
+      "files": [
+        "fixtures/IntegratedViewController.swift"
+      ],
+      "assertions": [
+        {"text": "BarcodeBatchBasicOverlay(barcodeBatch:view:style:) is used (the style-parameter convenience initializer)"},
+        {"text": "The style passed is .dot"},
+        {"text": "The style is set at construction time, not assigned to overlay.style afterward (style is read-only)"},
+        {"text": "Existing integration code (BarcodeBatch initializer, DataCaptureView, BarcodeBatchListener, camera lifecycle) is preserved"}
+      ],
+      "tags": ["basic-overlay-style"]
+    },
+    {
+      "id": 7,
+      "prompt": "When the user taps a highlighted barcode in my MatrixScan Batch view, I want to print the tapped barcode's data. Here is my view controller: IntegratedViewController.swift",
+      "expected_output": "The skill conforms to BarcodeBatchBasicOverlayDelegate, implements barcodeBatchBasicOverlay(_:didTap:) to read trackedBarcode.barcode.data, assigns overlay.delegate = self, and notes that the tap callback fires on the main thread and that the delegate requires the MatrixScan AR add-on license.",
+      "files": [
+        "fixtures/IntegratedViewController.swift"
+      ],
+      "assertions": [
+        {"text": "BarcodeBatchBasicOverlayDelegate is adopted (e.g. via an extension)"},
+        {"text": "barcodeBatchBasicOverlay(_:didTap:) is implemented"},
+        {"text": "trackedBarcode.barcode.data is read inside the didTap callback"},
+        {"text": "overlay.delegate = self (or equivalent) is assigned"},
+        {"text": "Response mentions that using the BarcodeBatchBasicOverlayDelegate requires the MatrixScan AR add-on license"},
+        {"text": "Existing integration code (BarcodeBatch initializer, DataCaptureView, BarcodeBatchListener, camera lifecycle) is preserved"}
+      ],
+      "tags": ["basic-overlay-tap"]
+    },
+    {
+      "id": 8,
+      "prompt": "I already show a label above each tracked barcode using a BarcodeBatchAdvancedOverlay, but the labels overlap the codes. I want each label anchored to the top-center of its barcode and offset upward by one label height. Here is my view controller: IntegratedViewController.swift",
+      "expected_output": "The skill implements barcodeBatchAdvancedOverlay(_:anchorFor:) returning .topCenter and barcodeBatchAdvancedOverlay(_:offsetFor:) returning a PointWithUnit built from FloatWithUnit values in fraction units, keeping the existing viewFor implementation. It notes these delegate methods run on the main thread.",
+      "files": [
+        "fixtures/IntegratedViewController.swift"
+      ],
+      "assertions": [
+        {"text": "barcodeBatchAdvancedOverlay(_:anchorFor:) is implemented and returns .topCenter"},
+        {"text": "barcodeBatchAdvancedOverlay(_:offsetFor:) is implemented and returns a PointWithUnit"},
+        {"text": "The offset PointWithUnit is built with PointWithUnit(x:y:) from FloatWithUnit values"},
+        {"text": "FloatWithUnit(value:unit:) is used with unit .fraction for the offset components"},
+        {"text": "The vertical offset moves the view upward (a negative y FloatWithUnit value)"},
+        {"text": "Existing integration code (BarcodeBatchAdvancedOverlay creation, viewFor delegate method, BarcodeBatchListener, camera lifecycle) is preserved"}
+      ],
+      "tags": ["advanced-overlay-positioning"]
+    },
+    {
+      "id": 9,
+      "prompt": "In my MatrixScan Batch view controller I keep a running set of scanned barcode data. When a barcode leaves the camera view I want to remove it from that set. Here is my view controller: IntegratedViewController.swift",
+      "expected_output": "The skill updates barcodeBatch(_:didUpdate:frameData:) to read session.removedTrackedBarcodes (an array of Int tracking identifiers), copies it out before dispatching, and removes the matching entries on the main thread. It explains removedTrackedBarcodes holds the tracking identifiers of barcodes that left the frame, not TrackedBarcode objects.",
+      "files": [
+        "fixtures/IntegratedViewController.swift"
+      ],
+      "assertions": [
+        {"text": "session.removedTrackedBarcodes is accessed inside barcodeBatch(_:didUpdate:frameData:)"},
+        {"text": "The response treats session.removedTrackedBarcodes as an array of Int tracking identifiers (not TrackedBarcode objects)"},
+        {"text": "The removed identifiers are copied out of the session before DispatchQueue.main.async (session.removedTrackedBarcodes is not accessed inside the async block)"},
+        {"text": "UI/state updates that react to removal are dispatched via DispatchQueue.main.async"},
+        {"text": "Existing integration code (BarcodeBatch initializer, camera setup, overlay, lifecycle) is preserved"}
+      ],
+      "tags": ["removed-barcodes"]
+    },
+    {
+      "id": 10,
+      "prompt": "I want my MatrixScan Batch app to play a beep and vibrate each time a new barcode starts being tracked. Here is my view controller: IntegratedViewController.swift",
+      "expected_output": "The skill explains that BarcodeBatch has no built-in feedback (unlike BarcodeCapture/SparkScan), so feedback must be emitted manually. It calls Feedback.default.emit() from inside barcodeBatch(_:didUpdate:frameData:) when session.addedTrackedBarcodes is non-empty, dispatched to the main thread.",
+      "files": [
+        "fixtures/IntegratedViewController.swift"
+      ],
+      "assertions": [
+        {"text": "Response explains that BarcodeBatch does NOT emit feedback automatically and it must be triggered manually (semantic)"},
+        {"text": "Feedback.default is used to obtain the default feedback"},
+        {"text": "Feedback.default.emit() is called (the emit() method triggers sound and vibration)"},
+        {"text": "Feedback is emitted in response to session.addedTrackedBarcodes being non-empty (new barcodes this frame)"},
+        {"text": "The emit() call is dispatched on the main thread via DispatchQueue.main.async"},
+        {"text": "Existing integration code (BarcodeBatch initializer, camera setup, overlay, lifecycle) is preserved"}
+      ],
+      "tags": ["feedback"]
     }
   ]
 }

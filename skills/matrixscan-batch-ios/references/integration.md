@@ -256,6 +256,54 @@ barcodeBatch.addListener(self)
 | `identifier` | `Int` — unique tracking ID. Reused after the barcode leaves the frame. |
 | `location` | `Quadrilateral` — barcode position in image-space coordinates. |
 
+### Reacting to barcodes leaving the frame
+
+`session.removedTrackedBarcodes` is an `Array<Int>` — the **tracking identifiers** of barcodes that left the view in this frame, not `TrackedBarcode` objects. Use it to drop entries from a running collection keyed by tracking ID. Like every other session collection, copy it out before the callback returns:
+
+```swift
+func barcodeBatch(
+    _ barcodeBatch: BarcodeBatch,
+    didUpdate session: BarcodeBatchSession,
+    frameData: FrameData
+) {
+    let removedIdentifiers = session.removedTrackedBarcodes  // [Int]
+    DispatchQueue.main.async {
+        for identifier in removedIdentifiers {
+            // remove the entry tracked under this identifier
+            _ = identifier
+        }
+    }
+}
+```
+
+`addedTrackedBarcodes` and `updatedTrackedBarcodes` return `Array<TrackedBarcode>`; only `removedTrackedBarcodes` returns identifiers, because the barcodes it refers to are no longer tracked.
+
+## Feedback (sound / vibration)
+
+BarcodeBatch has **no built-in feedback** — unlike `BarcodeCapture` or `SparkScan`, it never plays a sound or vibrates on its own, because it continuously tracks many barcodes rather than committing to a single scan. To give the user audible/haptic feedback (e.g. when a new barcode starts being tracked), emit a `Feedback` manually from inside the listener callback.
+
+```swift
+func barcodeBatch(
+    _ barcodeBatch: BarcodeBatch,
+    didUpdate session: BarcodeBatchSession,
+    frameData: FrameData
+) {
+    let hasNewBarcodes = !session.addedTrackedBarcodes.isEmpty
+    DispatchQueue.main.async {
+        if hasNewBarcodes {
+            Feedback.default.emit()
+        }
+    }
+}
+```
+
+- `Feedback.default` is a static property returning the default feedback (default beep + default vibration).
+- `Feedback.default.emit()` triggers that sound and vibration. It is influenced by the device's ring/volume settings.
+- For a custom feedback, construct one with `Feedback(vibration:sound:)` — e.g. `Feedback(vibration: .default, sound: .default)` — store it on the view controller, and call `.emit()` on that instance. `Vibration.default`, `Sound.default`, and the haptic variants (`Vibration.successHapticFeedback`, `Vibration.selectionHapticFeedback`, etc.) are all available.
+- Emit on the **main thread** (dispatch from the background listener callback), and decide *when* to emit from the session deltas — typically `addedTrackedBarcodes` (newly tracked) rather than every frame, so you do not beep continuously.
+
+`Feedback`, `Vibration`, and `Sound` all live in `ScanditCaptureCore` (re-exported through `ScanditBarcodeCapture`).
+
 ## Step 8 — Lifecycle management
 
 Drive the camera and `isEnabled` flag from `viewWillAppear` and `viewWillDisappear`. Remove the listener in `deinit` to make the lifecycle explicit (listeners are weakly held, so missing this won't leak, but it is best practice).

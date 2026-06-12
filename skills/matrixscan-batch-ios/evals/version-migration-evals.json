@@ -1,0 +1,66 @@
+{
+  "skill_name": "matrixscan-batch-ios",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I need to upgrade my iOS MatrixScan app from Scandit SDK v6 to v7. Here is my current view controller: ViewControllerV6.swift.",
+      "expected_output": "The skill renames every v6 BarcodeTracking* type to its v7 BarcodeBatch* equivalent (mode, settings, listener, session, basic overlay) and renames the listener delegate method barcodeTracking(_:didUpdate:frameData:) to barcodeBatch(_:didUpdate:frameData:). It modernizes the context to DataCaptureContext.initialize(licenseKey:) + DataCaptureContext.shared and the camera setup to BarcodeBatch.recommendedCameraSettings. The convenience-initializer shape BarcodeBatch(context:settings:) is preserved. Provides the v6→v7 migration guide URL.",
+      "files": [
+        "fixtures/ViewControllerV6.swift"
+      ],
+      "assertions": [
+        {"text": "The BarcodeTracking mode type is renamed to BarcodeBatch in the rewritten code blocks"},
+        {"text": "BarcodeTrackingSettings is renamed to BarcodeBatchSettings in the rewritten code blocks"},
+        {"text": "BarcodeTrackingSession is renamed to BarcodeBatchSession in the rewritten code blocks"},
+        {"text": "BarcodeTrackingListener is renamed to BarcodeBatchListener in the rewritten code blocks"},
+        {"text": "BarcodeTrackingBasicOverlay is renamed to BarcodeBatchBasicOverlay in the rewritten code blocks"},
+        {"text": "The listener delegate method barcodeBatch(_:didUpdate:frameData:) is present in the rewritten code blocks"},
+        {"text": "The old delegate method barcodeTracking(_:didUpdate:frameData:) is NOT present in the rewritten code blocks"},
+        {"text": "No BarcodeTracking-named identifier remains in the rewritten code blocks"},
+        {"text": "DataCaptureContext.initialize(licenseKey: is present in the rewritten code blocks"},
+        {"text": "DataCaptureContext.shared is read after initialize"},
+        {"text": "The deprecated DataCaptureContext(licenseKey:) constructor is NOT used in the rewritten code blocks (semantic)"},
+        {"text": "BarcodeBatch.recommendedCameraSettings is used for camera setup"},
+        {"text": "The v6 hand-rolled CameraSettings() with preferredResolution = .auto is NOT present in the rewritten code blocks"},
+        {"text": "The BarcodeBatch(context:settings:) convenience initializer shape is preserved (not changed to a factory like .forDataCaptureContext)"},
+        {"text": "The iOS lifecycle (viewWillAppear / viewWillDisappear) and deinit removeListener are preserved through the rename"},
+        {"text": "The v6→v7 migration guide URL https://docs.scandit.com/sdks/ios/migrate-6-to-7/ is provided"}
+      ],
+      "tags": ["version-migration"]
+    },
+    {
+      "id": 2,
+      "prompt": "I'm upgrading my Scandit iOS MatrixScan Batch SDK from v7 to v8. What do I need to change in my code?",
+      "expected_output": "The skill explains that native iOS BarcodeBatch has no breaking API changes in v7→v8 — the BarcodeBatch(context:settings:) initializer, BarcodeBatchListener, BarcodeBatchSession, and the overlays are unchanged. The only thing to watch for is the VideoResolution.auto deprecation in custom camera settings. It does NOT tell the user to swap BarcodeBatch(context:settings:) for a different constructor + addMode pattern (that change is for cross-platform SDKs only). Provides the v7→v8 migration guide URL.",
+      "files": [],
+      "assertions": [
+        {"text": "The skill states there are no breaking API changes for native iOS BarcodeBatch in v7→v8"},
+        {"text": "VideoResolution.auto (or .auto resolution) deprecation is mentioned"},
+        {"text": "The skill does NOT instruct the user to replace BarcodeBatch(context:settings:) with a different constructor + addMode pattern (that is a cross-platform SDK change) (semantic)"},
+        {"text": "The skill does NOT instruct the user to rename BarcodeBatch(context:settings:) to a factory method (semantic)"},
+        {"text": "The v7→v8 migration guide URL https://docs.scandit.com/sdks/ios/migrate-7-to-8/ is provided"}
+      ],
+      "tags": ["version-migration"]
+    },
+    {
+      "id": 3,
+      "prompt": "I want to upgrade my MatrixScan Batch iOS integration to the latest Scandit SDK version. Here's my code and Package.resolved.",
+      "expected_output": "The skill reads Package.resolved to detect v6.28.1, determines the target is v8, and applies both migrations in order (6→7 then 7→8) without asking the user for their version. The 6→7 BarcodeTracking→BarcodeBatch rename and context/camera modernization are applied.",
+      "files": [
+        "fixtures/ViewControllerV6.swift",
+        "fixtures/Package_v6.resolved"
+      ],
+      "assertions": [
+        {"text": "Summary mentions the detected version (6.28.1 or v6)"},
+        {"text": "Did not ask the user for their version — proceeded autonomously"},
+        {"text": "No BarcodeTracking-named identifier remains in the rewritten code blocks (6→7 rename applied)"},
+        {"text": "BarcodeBatch is used as the mode type in the rewritten code blocks"},
+        {"text": "DataCaptureContext.initialize(licenseKey: is present in the rewritten code blocks"},
+        {"text": "The deprecated DataCaptureContext(licenseKey:) constructor is NOT used in the rewritten code blocks (semantic)"},
+        {"text": "BarcodeBatch.recommendedCameraSettings is used (camera setup updated)"},
+        {"text": "The v6 hand-rolled CameraSettings() with preferredResolution = .auto is NOT present in the rewritten code blocks"}
+      ],
+      "tags": ["version-migration"]
+    }
+  ]
+}
