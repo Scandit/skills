@@ -1,0 +1,61 @@
+{
+  "skill_name": "matrixscan-batch-capacitor",
+  "evals": [
+    {
+      "id": "m0",
+      "prompt": "I'm upgrading my MatrixScan Capacitor app from Scandit SDK v6 to v7. The app uses the old BarcodeTracking API. Here's my scanner file: MatrixScanApp_v6.js. Apply the necessary changes.",
+      "expected_output": "The skill reads migration.md and applies the v6→v7 BarcodeTracking→BarcodeBatch rename across all classes and the import: BarcodeTracking→BarcodeBatch, BarcodeTrackingSettings→BarcodeBatchSettings, BarcodeTrackingBasicOverlay→BarcodeBatchBasicOverlay, BarcodeTrackingBasicOverlayStyle→BarcodeBatchBasicOverlayStyle. Bumps the package versions and reminds to run npx cap sync. Summarizes the changes made.",
+      "files": [
+        "fixtures/MatrixScanApp_v6.js"
+      ],
+      "assertions": [
+        {"text": "In the migrated code blocks, BarcodeBatch is used as the capture mode class"},
+        {"text": "In the migrated code blocks, BarcodeBatchSettings is used (not BarcodeTrackingSettings)"},
+        {"text": "In the migrated code blocks, BarcodeBatchBasicOverlay is used (not BarcodeTrackingBasicOverlay)"},
+        {"text": "In the migrated code blocks, BarcodeBatchBasicOverlayStyle is used for the overlay style"},
+        {"text": "In the migrated code blocks, no class name starting with BarcodeTracking remains"},
+        {"text": "The import from 'scandit-capacitor-datacapture-barcode' is updated to the BarcodeBatch* names"},
+        {"text": "The migration mentions bumping the scandit-capacitor-datacapture-core and scandit-capacitor-datacapture-barcode package versions"},
+        {"text": "The migration reminds the user to run npx cap sync after the version bump (semantic)"},
+        {"text": "The migration notes the underlying API behavior is unchanged — only the class names differ (semantic)"},
+        {"text": "A summary of the changes made is shown"}
+      ]
+    },
+    {
+      "id": "m1",
+      "prompt": "We're moving our MatrixScan Batch Capacitor app from Scandit SDK 7 to 8. Here's our code: MatrixScanApp_v7.js. Please apply any necessary changes.",
+      "expected_output": "The skill applies the v7→v8 changes: DataCaptureContext.forLicenseKey → DataCaptureContext.initialize, and BarcodeBatch.forContext(context, settings) → new BarcodeBatch(settings) followed by context.setMode(barcodeBatch). Reminds to bump package versions and run npx cap sync. Summarizes the changes.",
+      "files": [
+        "fixtures/MatrixScanApp_v7.js"
+      ],
+      "assertions": [
+        {"text": "In the migrated code blocks, DataCaptureContext.initialize( is used to create the context"},
+        {"text": "In the migrated code blocks, DataCaptureContext.forLicenseKey( is not used"},
+        {"text": "In the migrated code blocks, new BarcodeBatch(settings) constructs the mode"},
+        {"text": "In the migrated code blocks, BarcodeBatch.forContext( is not used"},
+        {"text": "context.setMode( is called with the barcodeBatch instance after constructing it"},
+        {"text": "DataCaptureContext.initialize( is still placed after await ScanditCaptureCorePlugin.initializePlugins() (semantic)"},
+        {"text": "The migration reminds the user to run npx cap sync after the version bump (semantic)"},
+        {"text": "A summary of the changes made is shown"}
+      ]
+    },
+    {
+      "id": "m2",
+      "prompt": "We need to upgrade our MatrixScan integration from Scandit SDK 6 all the way to v8. Here's our current code: MatrixScanApp_v6.js",
+      "expected_output": "The skill applies both migrations in order (6→7 then 7→8): the BarcodeTracking→BarcodeBatch rename, then DataCaptureContext.forLicenseKey→initialize and BarcodeBatch.forContext→new BarcodeBatch + context.setMode. Summarizes both migration steps.",
+      "files": [
+        "fixtures/MatrixScanApp_v6.js"
+      ],
+      "assertions": [
+        {"text": "In the migrated code blocks, BarcodeBatch is used as the capture mode class (6→7 rename applied)"},
+        {"text": "In the migrated code blocks, no class name starting with BarcodeTracking remains"},
+        {"text": "In the migrated code blocks, new BarcodeBatch(settings) constructs the mode (7→8 factory change applied)"},
+        {"text": "In the migrated code blocks, BarcodeBatch.forContext( is not used"},
+        {"text": "In the migrated code blocks, DataCaptureContext.initialize( is used (7→8 rename applied)"},
+        {"text": "In the migrated code blocks, DataCaptureContext.forLicenseKey( is not used"},
+        {"text": "context.setMode( is called with the barcodeBatch instance"},
+        {"text": "The summary covers both migration steps (references both 6→7 and 7→8)"}
+      ]
+    }
+  ]
+}

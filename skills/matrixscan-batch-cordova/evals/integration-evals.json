@@ -117,6 +117,91 @@
         {"text": "The teardown function is explained as being called on navigation away or screen exit (semantic)"},
         {"text": "Existing integration code (context, barcodeBatch, camera, view) is still referenced and used (semantic)"}
       ]
+    },
+    {
+      "id": 7,
+      "prompt": "In my MatrixScan Batch Cordova app (IntegratedApp.js), the tracked barcodes are currently shown with a rectangular frame. I want a round dot highlight on each tracked barcode instead.",
+      "expected_output": "The skill changes the BarcodeBatchBasicOverlay style from Frame to Dot — either by passing Scandit.BarcodeBatchBasicOverlayStyle.Dot as the second constructor argument to new Scandit.BarcodeBatchBasicOverlay, or by reconstructing the overlay with that style. The rest of the integration (context, barcodeBatch, camera, view, addOverlay) is preserved.",
+      "files": [
+        "fixtures/IntegratedApp.js"
+      ],
+      "assertions": [
+        {"text": "Scandit.BarcodeBatchBasicOverlayStyle.Dot is used as the overlay style"},
+        {"text": "Scandit.BarcodeBatchBasicOverlayStyle.Frame is NOT used as the overlay style in the final code"},
+        {"text": "new Scandit.BarcodeBatchBasicOverlay( is constructed with window.barcodeBatch and the Dot style"},
+        {"text": "window.view.addOverlay( is called with the basic overlay"},
+        {"text": "Existing integration code (context, barcodeBatch, camera, view) is still referenced and used (semantic)"}
+      ],
+      "tags": ["basic-overlay-style"]
+    },
+    {
+      "id": 8,
+      "prompt": "In my Cordova MatrixScan Batch app (IntegratedApp.js), when the user taps a tracked barcode's highlight I want to log its data and symbology to the console.",
+      "expected_output": "The skill sets a listener on the BarcodeBatchBasicOverlay with a didTapTrackedBarcode callback that reads trackedBarcode.barcode.data and trackedBarcode.barcode.symbology and logs them. Notes that the basic overlay listener requires the MatrixScan AR add-on. Existing integration code is preserved.",
+      "files": [
+        "fixtures/IntegratedApp.js"
+      ],
+      "assertions": [
+        {"text": "basicOverlay.listener is set with a didTapTrackedBarcode callback"},
+        {"text": "didTapTrackedBarcode receives (overlay, trackedBarcode) and reads trackedBarcode.barcode.data"},
+        {"text": "trackedBarcode.barcode.symbology is read inside the didTapTrackedBarcode callback"},
+        {"text": "The tap callback is named exactly didTapTrackedBarcode (not didTapViewForTrackedBarcode, which is the advanced-overlay callback)"},
+        {"text": "A comment or note mentions that the BarcodeBatchBasicOverlay listener requires the MatrixScan AR add-on (semantic)"},
+        {"text": "Existing integration code (context, barcodeBatch, camera, view) is still referenced and used (semantic)"}
+      ],
+      "tags": ["basic-overlay-tap"]
+    },
+    {
+      "id": 9,
+      "prompt": "I added AR bubbles with BarcodeBatchAdvancedOverlay to my Cordova MatrixScan Batch app (IntegratedApp.js). Now I want to handle taps on those AR bubble views so I can open a details screen for the tapped barcode.",
+      "expected_output": "The skill adds a BarcodeBatchAdvancedOverlay (if not present) and sets a didTapViewForTrackedBarcode callback on advancedOverlay.listener that reads trackedBarcode.barcode.data and performs the details action. It uses didTapViewForTrackedBarcode (the advanced-overlay tap callback, which Cordova supports) — NOT didTapTrackedBarcode (the basic-overlay callback). Notes the MatrixScan AR add-on requirement.",
+      "files": [
+        "fixtures/IntegratedApp.js"
+      ],
+      "assertions": [
+        {"text": "new Scandit.BarcodeBatchAdvancedOverlay( is constructed with window.barcodeBatch"},
+        {"text": "advancedOverlay.listener is set with a didTapViewForTrackedBarcode callback"},
+        {"text": "didTapViewForTrackedBarcode receives (overlay, trackedBarcode) and reads trackedBarcode.barcode.data"},
+        {"text": "The tap callback is named exactly didTapViewForTrackedBarcode (not didTapTrackedBarcode, which is the basic-overlay callback)"},
+        {"text": "window.view.addOverlay( is called with the advanced overlay"},
+        {"text": "A comment or note mentions that BarcodeBatchAdvancedOverlay requires the MatrixScan AR add-on (semantic)"},
+        {"text": "Existing integration code (context, barcodeBatch, camera, view) is still referenced and used (semantic)"}
+      ],
+      "tags": ["advanced-overlay-tap"]
+    },
+    {
+      "id": 10,
+      "prompt": "In my Cordova MatrixScan Batch app (IntegratedApp.js) I keep a per-barcode highlight count in a plain object keyed by tracked-barcode identifier. When a barcode leaves the frame I need to delete its entry so the object doesn't leak. How do I detect barcodes that were removed this frame?",
+      "expected_output": "The skill uses session.removedTrackedBarcodes inside the didUpdateSession callback to get the identifiers of barcodes lost this frame, and deletes the corresponding entries from the app-side map. It clarifies that removedTrackedBarcodes is an array of identifier strings (not TrackedBarcode objects), and warns not to hold session references outside the callback. Existing integration code is preserved.",
+      "files": [
+        "fixtures/IntegratedApp.js"
+      ],
+      "assertions": [
+        {"text": "session.removedTrackedBarcodes is accessed inside the didUpdateSession callback"},
+        {"text": "session.removedTrackedBarcodes is iterated (forEach or for-of) to handle each removed identifier"},
+        {"text": "removedTrackedBarcodes is treated as an array of identifier strings, not TrackedBarcode objects (the entries are used directly as keys, not as .barcode.data) (semantic)"},
+        {"text": "The per-barcode entry is deleted from the app-side map using the removed identifier as the key"},
+        {"text": "A note warns not to hold references to session or its arrays outside the didUpdateSession callback (semantic)"},
+        {"text": "Existing integration code (context, barcodeBatch, camera, view) is still referenced and used (semantic)"}
+      ],
+      "tags": ["removed-barcodes"]
+    },
+    {
+      "id": 11,
+      "prompt": "In my Cordova MatrixScan Batch app (IntegratedApp.js) I want a beep and vibration each time a NEW barcode starts being tracked. BarcodeBatch doesn't seem to beep on its own. How do I add that?",
+      "expected_output": "The skill explains that BarcodeBatch has no built-in/automatic feedback (unlike BarcodeCapture or BarcodeCount, BarcodeBatch has no feedback property), so feedback must be emitted manually. It constructs a Scandit.Feedback from Scandit.Vibration.defaultVibration and Scandit.Sound.defaultSound (or uses Scandit.Feedback.defaultFeedback), stores it at module/window scope, and calls feedback.emit() inside didUpdateSession for each entry in session.addedTrackedBarcodes (the new-this-frame barcodes), so the beep fires once per newly tracked barcode rather than every frame. Existing integration code is preserved.",
+      "files": [
+        "fixtures/IntegratedApp.js"
+      ],
+      "assertions": [
+        {"text": "The skill states that BarcodeBatch has no automatic/built-in feedback and that feedback must be emitted manually (semantic)"},
+        {"text": "A Scandit.Feedback is created via new Scandit.Feedback(Scandit.Vibration.defaultVibration, Scandit.Sound.defaultSound) OR via Scandit.Feedback.defaultFeedback"},
+        {"text": "feedback.emit() is called to play the sound and vibration"},
+        {"text": "feedback.emit() is called for entries in session.addedTrackedBarcodes (so it fires once per newly tracked barcode, not every frame) (semantic)"},
+        {"text": "The skill does NOT set a barcodeBatch.feedback property (BarcodeBatch has no such property — feedback is emitted manually) (semantic)"},
+        {"text": "Existing integration code (context, barcodeBatch, camera, view) is still referenced and used (semantic)"}
+      ],
+      "tags": ["feedback"]
     }
   ]
 }

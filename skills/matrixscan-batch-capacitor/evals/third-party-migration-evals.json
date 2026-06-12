@@ -1,0 +1,36 @@
+{
+  "skill_name": "matrixscan-batch-capacitor",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Replace my @capacitor-mlkit/barcode-scanning continuous scanner with Scandit MatrixScan Batch. Every visible barcode (EAN-13, Code 128, QR) should keep being tracked, deduplicated by value, and accumulated into the on-screen summary list. Here is my scanner: MlkitBatchScanner.js.",
+      "expected_output": "The skill removes the ML Kit dependency (the @capacitor-mlkit/barcode-scanning import, BarcodeScanner.addListener('barcodesScanned'), BarcodeScanner.startScan/stopScan, and the BarcodeFormat enum) and replaces it with MatrixScan Batch: ScanditCaptureCorePlugin.initializePlugins() first, DataCaptureContext.initialize, Camera setup via BarcodeBatch.createRecommendedCameraSettings() + Camera.withSettings + context.setFrameSource, BarcodeBatchSettings with the mapped symbologies (EAN13UPCA, Code128, QR), new BarcodeBatch(settings) + context.setMode, a didUpdateSession listener, DataCaptureView.forContext + connectToElement, camera on, isEnabled = true. It maps the ML Kit formats to Scandit symbologies and preserves the dedup-and-summary behavior, ideally upgrading the rawValue-based dedupe to tracking-identifier-based dedupe. Shows the setup checklist (packages, npx cap sync, NSCameraUsageDescription).",
+      "files": [
+        "fixtures/MlkitBatchScanner.js"
+      ],
+      "assertions": [
+        {"text": "The import from '@capacitor-mlkit/barcode-scanning' is removed from the code blocks"},
+        {"text": "BarcodeScanner.addListener('barcodesScanned' is not present in the migrated code blocks"},
+        {"text": "BarcodeScanner.startScan( and BarcodeScanner.stopScan( are not present in the migrated code blocks"},
+        {"text": "The ML Kit BarcodeFormat enum is not used in the migrated code blocks"},
+        {"text": "await ScanditCaptureCorePlugin.initializePlugins() is present and awaited before any other Scandit call"},
+        {"text": "DataCaptureContext.initialize( is used to create the context"},
+        {"text": "BarcodeBatch.createRecommendedCameraSettings() is called"},
+        {"text": "Camera.withSettings( is called and context.setFrameSource( is called"},
+        {"text": "new BarcodeBatchSettings() is present"},
+        {"text": "Symbology.EAN13UPCA is enabled (mapped from BarcodeFormat.Ean13)"},
+        {"text": "Symbology.Code128 is enabled (mapped from BarcodeFormat.Code128)"},
+        {"text": "Symbology.QR is enabled (mapped from BarcodeFormat.QrCode)"},
+        {"text": "new BarcodeBatch(settings) is present and context.setMode( is called with it"},
+        {"text": "barcodeBatch.addListener( is called with a didUpdateSession callback"},
+        {"text": "DataCaptureView.forContext( and connectToElement( are present"},
+        {"text": "camera.switchToDesiredState(FrameSourceState.On) is called and barcodeBatch.isEnabled = true is set"},
+        {"text": "The dedup-and-accumulate behavior is preserved, keyed either on the tracking identifier or on the barcode data/value (semantic)"},
+        {"text": "The on-screen summary rendering (renderSummary or equivalent list update) is preserved (semantic)"},
+        {"text": "Setup checklist mentions installing scandit-capacitor-datacapture-core and scandit-capacitor-datacapture-barcode"},
+        {"text": "Setup checklist mentions running npx cap sync"},
+        {"text": "Setup checklist mentions iOS Info.plist NSCameraUsageDescription"}
+      ]
+    }
+  ]
+}

@@ -174,6 +174,124 @@
           "text": "TrackedBarcodeView is imported from @scandit/web-datacapture-barcode"
         }
       ]
+    },
+    {
+      "id": 5,
+      "prompt": "I already have a DataCaptureContext and a configured BarcodeBatch in my web app. Now I need to build the camera preview surface: create the DataCaptureView from the context, attach it to my <div id=\"data-capture-view\">, and add a BarcodeBatchBasicOverlay to it. File: empty-app.ts.",
+      "expected_output": "The skill builds the DataCaptureView with DataCaptureView.forContext(context), mounts it with view.connectToElement(document.getElementById('data-capture-view')), creates a BarcodeBatchBasicOverlay, and attaches it to the view (either by passing the view to the overlay factory, or by creating the overlay with a null view and calling await view.addOverlay(overlay)).",
+      "files": [
+        "fixtures/empty-app.ts"
+      ],
+      "assertions": [
+        {
+          "text": "DataCaptureView.forContext( is awaited to build the view"
+        },
+        {
+          "text": "view.connectToElement( is called with the DOM element (e.g. document.getElementById('data-capture-view'))"
+        },
+        {
+          "text": "A BarcodeBatchBasicOverlay is created (withBarcodeBatchForView or withBarcodeBatchForViewWithStyle)"
+        },
+        {
+          "text": "The overlay is attached to the view — either the view is passed to the overlay factory, or view.addOverlay( is awaited (semantic)"
+        },
+        {
+          "text": "DataCaptureView is imported from '@scandit/web-datacapture-core'"
+        }
+      ],
+      "tags": ["capture-view"]
+    },
+    {
+      "id": 6,
+      "prompt": "In my MatrixScan Batch web app I want the tracked-barcode highlights to render as dots instead of frames. File: empty-app.ts.",
+      "expected_output": "The skill creates the BarcodeBatchBasicOverlay using withBarcodeBatchForViewWithStyle and passes BarcodeBatchBasicOverlayStyle.Dot as the style argument, noting that .Frame is the alternative.",
+      "files": [
+        "fixtures/empty-app.ts"
+      ],
+      "assertions": [
+        {
+          "text": "BarcodeBatchBasicOverlay.withBarcodeBatchForViewWithStyle is awaited"
+        },
+        {
+          "text": "BarcodeBatchBasicOverlayStyle.Dot is passed as the style argument"
+        },
+        {
+          "text": "BarcodeBatchBasicOverlayStyle.Frame is mentioned as the alternative style (semantic)"
+        },
+        {
+          "text": "BarcodeBatchBasicOverlayStyle is imported from '@scandit/web-datacapture-barcode'"
+        }
+      ],
+      "tags": ["basic-overlay-style"]
+    },
+    {
+      "id": 7,
+      "prompt": "When the user taps one of the highlighted tracked barcodes in my MatrixScan Batch web app, I want to log its data value. I'm using the BarcodeBatchBasicOverlay. File: integrated-app.ts.",
+      "expected_output": "The skill sets overlay.listener with a didTapTrackedBarcode callback that reads trackedBarcode.barcode.data, on the BarcodeBatchBasicOverlay.",
+      "files": [
+        "fixtures/integrated-app.ts"
+      ],
+      "assertions": [
+        {
+          "text": "didTapTrackedBarcode callback is implemented on the BarcodeBatchBasicOverlay listener"
+        },
+        {
+          "text": "trackedBarcode.barcode.data is read inside the callback (semantic)"
+        },
+        {
+          "text": "The listener is assigned to the BarcodeBatchBasicOverlay (overlay.listener =) (semantic)"
+        }
+      ],
+      "tags": ["basic-overlay-tap"]
+    },
+    {
+      "id": 8,
+      "prompt": "I have custom AR bubbles over each tracked barcode using BarcodeBatchAdvancedOverlay. When the user taps one of the AR bubbles, I want to open a detail panel for that barcode. File: integrated-app.ts.",
+      "expected_output": "The skill adds a didTapViewForTrackedBarcode callback to the BarcodeBatchAdvancedOverlay listener that reacts to the tapped trackedBarcode (e.g. reads trackedBarcode.barcode.data).",
+      "files": [
+        "fixtures/integrated-app.ts"
+      ],
+      "assertions": [
+        {
+          "text": "didTapViewForTrackedBarcode callback is implemented on the BarcodeBatchAdvancedOverlay listener"
+        },
+        {
+          "text": "The callback reacts to the tapped trackedBarcode (e.g. reads trackedBarcode.barcode.data) (semantic)"
+        },
+        {
+          "text": "BarcodeBatchAdvancedOverlay is used (withBarcodeBatchForView)"
+        }
+      ],
+      "tags": ["advanced-overlay-tap"]
+    },
+    {
+      "id": 9,
+      "prompt": "I want my MatrixScan Batch web app to beep when a new barcode starts being tracked. There's no beep happening right now. File: empty-app.ts.",
+      "expected_output": "The skill explains that BarcodeBatch has no automatic feedback (no barcodeBatch.feedback property) and emits a Feedback manually: it builds a Feedback (e.g. Feedback.defaultFeedback) once and calls feedback.emit() inside didUpdateSession when session.addedTrackedBarcodes is non-empty.",
+      "files": [
+        "fixtures/empty-app.ts"
+      ],
+      "assertions": [
+        {
+          "text": "It is stated that BarcodeBatch has no automatic/built-in feedback and the beep must be emitted manually (semantic)"
+        },
+        {
+          "text": "A Feedback is obtained — Feedback.defaultFeedback or new Feedback( (semantic)"
+        },
+        {
+          "text": "feedback.emit() is called to play the beep"
+        },
+        {
+          "text": "emit() is called from didUpdateSession when session.addedTrackedBarcodes has new barcodes (semantic)"
+        },
+        {
+          "text": "Feedback is imported from '@scandit/web-datacapture-core'"
+        },
+        {
+          "text": "The Feedback instance is created once and reused, not recreated every frame (semantic)"
+        }
+      ],
+      "tags": ["feedback"]
     }
   ]
 }

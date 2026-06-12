@@ -1,0 +1,41 @@
+{
+  "skill_name": "matrixscan-batch-cordova",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I'm upgrading my Scandit Cordova MatrixScan app to SDK 7+. It still uses the old BarcodeTracking API. Please migrate it to the current MatrixScan Batch (BarcodeBatch) API. Here's my file: MatrixScanApp_v6.js",
+      "expected_output": "The skill renames every BarcodeTracking* identifier to its BarcodeBatch* equivalent (BarcodeTracking -> BarcodeBatch, BarcodeTrackingSettings -> BarcodeBatchSettings, the didUpdateSession listener stays but is now a BarcodeBatchListener, BarcodeTrackingBasicOverlay -> BarcodeBatchBasicOverlay). It also modernizes the construction: BarcodeTracking.forContext(context, settings) becomes new Scandit.BarcodeBatch(settings) followed by context.setMode(barcodeBatch), and BarcodeTrackingBasicOverlay.withBarcodeTrackingForView(...) becomes new Scandit.BarcodeBatchBasicOverlay(barcodeBatch, style) followed by view.addOverlay(overlay). The didUpdateSession callback body and session.trackedBarcodes access are preserved. A summary of the renames is shown and the cordova prepare rebuild step is mentioned.",
+      "files": [
+        "fixtures/MatrixScanApp_v6.js"
+      ],
+      "assertions": [
+        {"text": "new Scandit.BarcodeBatchSettings() is present in the output code block"},
+        {"text": "Scandit.BarcodeTrackingSettings is NOT present in the output code block"},
+        {"text": "new Scandit.BarcodeBatch( is present in the output code block"},
+        {"text": "Scandit.BarcodeTracking.forContext( is NOT present in the output code block"},
+        {"text": "context.setMode( is called to register the barcodeBatch mode after the constructor"},
+        {"text": "new Scandit.BarcodeBatchBasicOverlay( is present in the output code block"},
+        {"text": "Scandit.BarcodeTrackingBasicOverlay.withBarcodeTrackingForView( is NOT present in the output code block"},
+        {"text": "window.view.addOverlay( or view.addOverlay( is called with the basic overlay"},
+        {"text": "The didUpdateSession listener callback is preserved (still reads session.trackedBarcodes)"},
+        {"text": "No BarcodeTracking-named type identifier remains in the output code block (a parameter named barcodeTracking may be renamed to barcodeBatch; references in prose to the old name are acceptable)"},
+        {"text": "A summary of the BarcodeTracking -> BarcodeBatch renames is shown"},
+        {"text": "The summary mentions running cordova prepare (or an equivalent rebuild step) after bumping the plugin versions"}
+      ],
+      "tags": ["version-migration"]
+    },
+    {
+      "id": 2,
+      "prompt": "Quick question for my Cordova app: is BarcodeTracking the same thing as BarcodeBatch? I see both names in old StackOverflow answers and I'm confused which one to use today.",
+      "expected_output": "The skill explains that BarcodeTracking is the legacy name and BarcodeBatch is the current name for the same MatrixScan Batch feature — the API was renamed (BarcodeTracking* -> BarcodeBatch*) and the user should use the BarcodeBatch* classes (BarcodeBatch, BarcodeBatchSettings, BarcodeBatchBasicOverlay, BarcodeBatchAdvancedOverlay, BarcodeBatchListener, BarcodeBatchSession) on current SDKs. It notes the listener callback name didUpdateSession is unchanged, and that the modern constructor pattern is new Scandit.BarcodeBatch(settings) + context.setMode.",
+      "files": [],
+      "assertions": [
+        {"text": "The skill states that BarcodeTracking is the legacy name and BarcodeBatch is the current name for the same MatrixScan Batch feature (semantic)"},
+        {"text": "The skill recommends using the BarcodeBatch* classes on current SDKs"},
+        {"text": "The skill names new Scandit.BarcodeBatch(settings) plus context.setMode as the modern construction pattern"},
+        {"text": "The skill notes the didUpdateSession listener callback name is unchanged across the rename (semantic)"}
+      ],
+      "tags": ["version-migration"]
+    }
+  ]
+}

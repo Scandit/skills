@@ -1,0 +1,37 @@
+{
+  "skill_name": "matrixscan-batch-cordova",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I have a Cordova app that does continuous multi-barcode scanning with a Cordova ML Kit barcode plugin (cordova-plugin-mlkit-barcode-scanner). It returns every barcode in each frame, I filter by format (EAN-13, Code 128, QR) and accumulate them into a dedup-by-value list. Replace it with Scandit MatrixScan Batch. Here is my file: MlkitBatchScanner.js",
+      "expected_output": "The skill removes the ML Kit plugin usage (the window.cordova.plugins.mlkit.barcodeScanner.scan continuous-scan call, the numeric MLKIT_FORMAT_* constants and the wantedFormats array of numbers, and the results.barcodes callback) and replaces it with a MatrixScan Batch integration: DataCaptureContext.initialize, Camera via BarcodeBatch.createRecommendedCameraSettings + Camera.withSettings + context.setFrameSource, new BarcodeBatchSettings with the three symbologies enabled, new BarcodeBatch(settings) + context.setMode, a BarcodeBatchListener.didUpdateSession, DataCaptureView.forContext + connectToElement, a BarcodeBatchBasicOverlay added via addOverlay, camera on + isEnabled = true. It maps the ML Kit formats to Scandit symbologies (EAN_13 -> Scandit.Symbology.EAN13UPCA, CODE_128 -> Scandit.Symbology.Code128, QR_CODE -> Scandit.Symbology.QR). The ScannedBarcode/list data model is preserved, and dedup is preserved — ideally upgraded from value-based to tracking-identifier-based using session.addedTrackedBarcodes plus a Set of identifiers. A setup checklist (plugin install, cordova prepare, license key, camera permissions auto-configured) is shown.",
+      "files": [
+        "fixtures/MlkitBatchScanner.js"
+      ],
+      "assertions": [
+        {"text": "The window.cordova.plugins.mlkit.barcodeScanner.scan continuous-scan call is removed from the runtime code"},
+        {"text": "The numeric MLKIT_FORMAT_* constants and the results.barcodes callback shape are NOT present in the new runtime code (they may appear in a before/after mapping table)"},
+        {"text": "Scandit.DataCaptureContext.initialize( is used to create the context"},
+        {"text": "Scandit.BarcodeBatch.createRecommendedCameraSettings() is called"},
+        {"text": "Scandit.Camera.withSettings( is called and context.setFrameSource( is called"},
+        {"text": "new Scandit.BarcodeBatchSettings() is present"},
+        {"text": "new Scandit.BarcodeBatch(settings) is present and context.setMode( is called"},
+        {"text": "Scandit.Symbology.EAN13UPCA is enabled (mapped from the ML Kit EAN_13 format)"},
+        {"text": "Scandit.Symbology.Code128 is enabled (mapped from the ML Kit CODE_128 format)"},
+        {"text": "Scandit.Symbology.QR is enabled (mapped from the ML Kit QR_CODE format)"},
+        {"text": "barcodeBatch.addListener( is called with a didUpdateSession callback"},
+        {"text": "Scandit.DataCaptureView.forContext( is present and connectToElement( is called"},
+        {"text": "new Scandit.BarcodeBatchBasicOverlay( is constructed and view.addOverlay( is called"},
+        {"text": "camera.switchToDesiredState(Scandit.FrameSourceState.On) is called and barcodeBatch.isEnabled = true is set"},
+        {"text": "The scannedBarcodes accumulation list (or an equivalent data model) is preserved in the output"},
+        {"text": "Deduplication is preserved — either the original value-based dedup or upgraded to tracking-identifier-based dedup via session.addedTrackedBarcodes plus a Set of identifiers (semantic)"},
+        {"text": "import statements from scandit-cordova-datacapture-* are NOT present in runtime code (Scandit.* global is used instead)"},
+        {"text": "A setup checklist is shown mentioning cordova plugin add scandit-cordova-datacapture-core and scandit-cordova-datacapture-barcode"},
+        {"text": "The setup checklist mentions running cordova prepare after installing the plugins"},
+        {"text": "The setup checklist mentions that camera permissions are auto-configured by the plugins"},
+        {"text": "A summary of changes (what was removed from the ML Kit flow, what was added for MatrixScan Batch) is shown"}
+      ],
+      "tags": ["third-party-migration"]
+    }
+  ]
+}

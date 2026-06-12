@@ -31,7 +31,8 @@
         {"text": "onPause turns the camera off (switchToDesiredState(FrameSourceState.OFF))"},
         {"text": "barcodeBatch.removeListener( is called in onDestroy"},
         {"text": "dataCaptureContext.removeCurrentMode() is called in onDestroy"}
-      ]
+      ],
+      "tags": ["basic-integration"]
     },
     {
       "id": 2,
@@ -47,7 +48,8 @@
         {"text": "CODE128 returns a blue Brush"},
         {"text": "overlay.listener = this (or equivalent) is assigned"},
         {"text": "Existing integration code (BarcodeBatch, DataCaptureView, BarcodeBatchListener, camera lifecycle) is preserved"}
-      ]
+      ],
+      "tags": ["basic-overlay-brush"]
     },
     {
       "id": 3,
@@ -62,7 +64,113 @@
         {"text": "Each TrackedBarcode's barcode.data is used"},
         {"text": "Data is copied out of the session before runOnUiThread (session.trackedBarcodes is not accessed inside the UI lambda)"},
         {"text": "Existing integration code (BarcodeBatch factory, camera setup, overlay, lifecycle) is preserved"}
-      ]
+      ],
+      "tags": ["tracked-barcode-data"]
+    },
+    {
+      "id": 4,
+      "prompt": "In my MatrixScan Batch Activity I'd rather show a dot over each tracked barcode instead of the default rectangular frame. Here is my Activity: IntegratedActivity.kt",
+      "expected_output": "The skill switches the basic overlay to the DOT style by using the three-argument BarcodeBatchBasicOverlay.newInstance overload with BarcodeBatchBasicOverlayStyle.DOT, and preserves the rest of the integration.",
+      "files": [
+        "fixtures/IntegratedActivity.kt"
+      ],
+      "assertions": [
+        {"text": "BarcodeBatchBasicOverlayStyle.DOT is passed to BarcodeBatchBasicOverlay.newInstance("},
+        {"text": "The three-argument BarcodeBatchBasicOverlay.newInstance(barcodeBatch, dataCaptureView, style) overload is used"},
+        {"text": "BarcodeBatchBasicOverlayStyle is imported from com.scandit.datacapture.barcode.batch.ui.overlay"},
+        {"text": "The overlay style is not changed by assigning overlay.style (style is read-only and set at creation) (semantic)"},
+        {"text": "Existing integration code (BarcodeBatch factory, camera setup, BarcodeBatchListener, lifecycle) is preserved"}
+      ],
+      "tags": ["basic-overlay-style"]
+    },
+    {
+      "id": 5,
+      "prompt": "When the user taps a highlighted barcode in my MatrixScan Batch Activity, I want to show a Toast with that barcode's data. Here is my Activity: IntegratedActivity.kt",
+      "expected_output": "The skill implements BarcodeBatchBasicOverlayListener, overrides onTrackedBarcodeTapped to read trackedBarcode.barcode.data and show a Toast, and assigns the listener to the overlay.",
+      "files": [
+        "fixtures/IntegratedActivity.kt"
+      ],
+      "assertions": [
+        {"text": "BarcodeBatchBasicOverlayListener is implemented"},
+        {"text": "onTrackedBarcodeTapped is overridden"},
+        {"text": "onTrackedBarcodeTapped signature has parameters (overlay: BarcodeBatchBasicOverlay, trackedBarcode: TrackedBarcode)"},
+        {"text": "trackedBarcode.barcode.data is read inside onTrackedBarcodeTapped"},
+        {"text": "The iOS/JS callback name didTapTrackedBarcode is NOT used (semantic)"},
+        {"text": "overlay.listener = this (or equivalent) is assigned"},
+        {"text": "Existing integration code (BarcodeBatch factory, camera setup, BarcodeBatchListener, lifecycle) is preserved"}
+      ],
+      "tags": ["basic-overlay-tap"]
+    },
+    {
+      "id": 6,
+      "prompt": "I want to overlay a custom Android label (a TextView showing the barcode's data) on top of each tracked barcode in my MatrixScan Batch Activity. Here is my Activity: IntegratedActivity.kt",
+      "expected_output": "The skill adds a BarcodeBatchAdvancedOverlay via newInstance, implements BarcodeBatchAdvancedOverlayListener.viewForTrackedBarcode to return an Android View (TextView) per barcode, and assigns the listener. It notes the MatrixScan AR add-on requirement.",
+      "files": [
+        "fixtures/IntegratedActivity.kt"
+      ],
+      "assertions": [
+        {"text": "BarcodeBatchAdvancedOverlay.newInstance(barcodeBatch, dataCaptureView) is used"},
+        {"text": "BarcodeBatchAdvancedOverlayListener is implemented"},
+        {"text": "viewForTrackedBarcode is overridden and returns an android.view.View (e.g. a TextView)"},
+        {"text": "viewForTrackedBarcode signature has parameters (overlay: BarcodeBatchAdvancedOverlay, trackedBarcode: TrackedBarcode)"},
+        {"text": "The returned View uses trackedBarcode.barcode.data as its text"},
+        {"text": "advancedOverlay.listener = this (or equivalent) is assigned"},
+        {"text": "The MatrixScan AR add-on requirement is mentioned"},
+        {"text": "Existing integration code (BarcodeBatch factory, camera setup, BarcodeBatchListener, lifecycle) is preserved"}
+      ],
+      "tags": ["advanced-overlay"]
+    },
+    {
+      "id": 7,
+      "prompt": "I already show a custom view via BarcodeBatchAdvancedOverlay in my MatrixScan Batch Activity, but it sits on top of the barcode. I want it anchored to the top-center of the barcode and offset upward so it floats just above the code. Here is my Activity: IntegratedActivity.kt",
+      "expected_output": "The skill overrides anchorForTrackedBarcode to return Anchor.TOP_CENTER and offsetForTrackedBarcode to return a PointWithUnit built from FloatWithUnit values in MeasureUnit.FRACTION (e.g. y = -1f) so the view floats above the barcode.",
+      "files": [
+        "fixtures/IntegratedActivity.kt"
+      ],
+      "assertions": [
+        {"text": "anchorForTrackedBarcode is overridden and returns Anchor.TOP_CENTER"},
+        {"text": "offsetForTrackedBarcode is overridden and returns a PointWithUnit"},
+        {"text": "The PointWithUnit is constructed from FloatWithUnit values (not DoubleWithUnit, which is the Flutter name) (semantic)"},
+        {"text": "MeasureUnit.FRACTION is used for the offset unit"},
+        {"text": "Anchor is imported from com.scandit.datacapture.core.common.geometry"},
+        {"text": "offsetForTrackedBarcode signature has parameters (overlay: BarcodeBatchAdvancedOverlay, trackedBarcode: TrackedBarcode, view: View)"},
+        {"text": "Existing advanced overlay and integration code is preserved"}
+      ],
+      "tags": ["advanced-overlay-positioning"]
+    },
+    {
+      "id": 8,
+      "prompt": "In my MatrixScan Batch Activity I want to remove a barcode from my on-screen list as soon as it leaves the camera view. Here is my Activity: IntegratedActivity.kt",
+      "expected_output": "The skill reads session.removedTrackedBarcodes in onSessionUpdated, copies the list of tracking identifiers out of the session, and removes matching entries from the app's own state keyed by tracking ID. It explains removedTrackedBarcodes contains only Int identifiers.",
+      "files": [
+        "fixtures/IntegratedActivity.kt"
+      ],
+      "assertions": [
+        {"text": "session.removedTrackedBarcodes is accessed in onSessionUpdated"},
+        {"text": "removedTrackedBarcodes is treated as a list of Int tracking identifiers (not TrackedBarcode objects) (semantic)"},
+        {"text": "The removed tracking IDs are used to remove entries from the app's own collection"},
+        {"text": "The removed IDs are copied out of the session before runOnUiThread (session is not accessed inside the UI lambda)"},
+        {"text": "Existing integration code (BarcodeBatch factory, camera setup, overlay, lifecycle) is preserved"}
+      ],
+      "tags": ["removed-barcodes"]
+    },
+    {
+      "id": 9,
+      "prompt": "I want my MatrixScan Batch Activity to beep and vibrate each time a new barcode starts being tracked. Here is my Activity: IntegratedActivity.kt",
+      "expected_output": "The skill explains BarcodeBatch has no automatic feedback and emits it manually: creates a single reusable Feedback (Feedback.defaultFeedback()) and calls emit() in onSessionUpdated when session.addedTrackedBarcodes is non-empty.",
+      "files": [
+        "fixtures/IntegratedActivity.kt"
+      ],
+      "assertions": [
+        {"text": "The answer explains BarcodeBatch does not emit feedback automatically and it must be emitted manually (semantic)"},
+        {"text": "Feedback.defaultFeedback() is used to create the Feedback instance"},
+        {"text": "Feedback is imported from com.scandit.datacapture.core.feedback"},
+        {"text": "feedback.emit() is called inside onSessionUpdated"},
+        {"text": "emit() is gated on session.addedTrackedBarcodes being non-empty (so it fires only on newly tracked barcodes)"},
+        {"text": "A single Feedback instance is created once and reused (not constructed every frame) (semantic)"},
+        {"text": "Existing integration code (BarcodeBatch factory, camera setup, overlay, lifecycle) is preserved"}
+      ],
+      "tags": ["feedback"]
     }
   ]
 }

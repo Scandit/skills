@@ -117,6 +117,28 @@
         {"text": "dataCaptureView.AddOverlay( is called for the advanced overlay"},
         {"text": "Existing BarcodeBatch.Create / camera setup / OnSessionUpdated / ResumeAsync / SleepAsync are preserved"}
       ]
+    },
+    {
+      "id": 5,
+      "prompt": "In my MAUI MatrixScan Batch app I want to play a beep and vibrate when a NEW barcode is first tracked (not on every frame, and not once per barcode already on screen). Here is my view model: IntegratedMainPageViewModel.cs.",
+      "expected_output": "The skill explains that BarcodeBatch has no automatic feedback (unlike single-shot BarcodeCapture) and must be emitted manually. It adds a Feedback field constructed with new Feedback(Vibration.DefaultVibration, Sound.DefaultSound) (or Feedback.DefaultFeedback), using the Scandit.DataCapture.Core.Common.Feedback namespace. Inside OnSessionUpdated it calls feedback.Emit() only when a barcode is newly tracked this frame — driven off session.AddedTrackedBarcodes and de-duplicated against the existing seenTrackingIds HashSet so it fires once per new barcode, not every frame. The Feedback instance is built once (as a field), not allocated per frame. The existing frameData.Dispose() in the finally block, BarcodeBatch.Create / camera setup, and ResumeAsync / SleepAsync lifecycle are preserved.",
+      "files": [
+        "fixtures/IntegratedMainPageViewModel.cs"
+      ],
+      "assertions": [
+        {"text": "The answer states that BarcodeBatch emits no automatic feedback and that a Feedback must be emitted manually (it does not claim BarcodeBatch beeps on its own like BarcodeCapture)"},
+        {"text": "A Feedback instance is constructed with new Feedback(...) (e.g. new Feedback(Vibration.DefaultVibration, Sound.DefaultSound)) or obtained via Feedback.DefaultFeedback"},
+        {"text": "The Scandit.DataCapture.Core.Common.Feedback namespace is used (via a using directive or fully-qualified type)"},
+        {"text": "feedback.Emit() is called to produce the beep/vibration"},
+        {"text": "The Emit() call is gated on session.AddedTrackedBarcodes (the barcodes newly tracked this frame), not session.TrackedBarcodes"},
+        {"text": "New-barcode detection is de-duplicated against the existing seenTrackingIds HashSet<int> (seenTrackingIds.Add(...) gating the emit) so feedback fires once per newly tracked barcode, not on every frame"},
+        {"text": "The Feedback instance is created once (e.g. as a field or constructed in the constructor), not allocated inside OnSessionUpdated on every frame"},
+        {"text": "frameData.Dispose() is still called inside OnSessionUpdated, in the finally block"},
+        {"text": "Existing BarcodeBatch.Create / Camera / BarcodeBatchSettings setup is preserved"},
+        {"text": "Existing ResumeAsync / SleepAsync lifecycle methods are preserved"},
+        {"text": "No BarcodeCaptureFeedback type is used (that belongs to single-shot BarcodeCapture, not BarcodeBatch)"}
+      ],
+      "tags": ["feedback"]
     }
   ]
 }

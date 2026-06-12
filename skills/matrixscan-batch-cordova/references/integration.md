@@ -190,6 +190,32 @@ window.barcodeBatch.addListener({
 
 > **Important**: Do not hold references to the session object or its arrays outside the `didUpdateSession` callback — they may be concurrently modified. Copy any data you need.
 
+#### Reacting to removed (lost) barcodes
+
+`session.removedTrackedBarcodes` is an **array of identifier strings** — the identifiers of barcodes that left the frame this frame. It is **not** an array of `TrackedBarcode` objects, so its entries have no `.barcode` — use them directly as keys. Iterate it inside `didUpdateSession` to clean up any app-side state you keyed by tracked-barcode identifier (e.g. a per-barcode counter map or an AR view registry), so the state does not leak as barcodes come and go.
+
+```javascript
+// App-side state keyed by tracked-barcode identifier.
+const highlightCountByIdentifier = {};
+
+window.barcodeBatch.addListener({
+  didUpdateSession: (barcodeBatch, session) => {
+    // Newly tracked barcodes this frame — start tracking app state.
+    session.addedTrackedBarcodes.forEach(trackedBarcode => {
+      highlightCountByIdentifier[trackedBarcode.identifier] = 0;
+    });
+
+    // Lost barcodes this frame — delete the corresponding app state.
+    // Each entry is an identifier string, not a TrackedBarcode.
+    session.removedTrackedBarcodes.forEach(identifier => {
+      delete highlightCountByIdentifier[identifier];
+    });
+  },
+});
+```
+
+> **Important**: `removedTrackedBarcodes` entries are identifier strings. Do not read `.barcode.data` from them. As always, do not hold a reference to `session` or its arrays outside the callback.
+
 ### TrackedBarcode Properties
 
 | Property | Type | Available | Description |
@@ -291,12 +317,54 @@ window.view.addOverlay(basicOverlay);
 | `Scandit.BarcodeBatchBasicOverlayStyle.Frame` | Rectangular frame highlight with appear animation. |
 | `Scandit.BarcodeBatchBasicOverlayStyle.Dot` | Dot highlight with appear animation. |
 
+#### Choosing the overlay style
+
+The style is the **second constructor argument** of `BarcodeBatchBasicOverlay`. There is no `style` setter to change it after construction — pick the style when you create the overlay (or remove and re-create the overlay to switch). Use `Scandit.BarcodeBatchBasicOverlayStyle.Frame` for a rectangular outline, or `Scandit.BarcodeBatchBasicOverlayStyle.Dot` for a single dot per tracked barcode.
+
+```javascript
+// Frame highlight (rectangular outline).
+window.basicOverlay = new Scandit.BarcodeBatchBasicOverlay(
+  window.barcodeBatch,
+  Scandit.BarcodeBatchBasicOverlayStyle.Frame,
+);
+window.view.addOverlay(window.basicOverlay);
+```
+
+```javascript
+// Dot highlight (one dot per tracked barcode).
+window.basicOverlay = new Scandit.BarcodeBatchBasicOverlay(
+  window.barcodeBatch,
+  Scandit.BarcodeBatchBasicOverlayStyle.Dot,
+);
+window.view.addOverlay(window.basicOverlay);
+```
+
+> **Note**: The `style` property is read-only on Cordova. To switch styles at runtime, construct a new overlay with the desired style and add it to the view.
+
 ### IBarcodeBatchBasicOverlayListener Callbacks
 
 | Callback | Description |
 |----------|-------------|
 | `brushForTrackedBarcode(overlay, trackedBarcode)` | Return a `Brush` (or `null` to hide) for a newly tracked barcode. Called from the rendering thread. Requires MatrixScan AR add-on. |
 | `didTapTrackedBarcode(overlay, trackedBarcode)` | Called when the user taps a tracked barcode highlight. Called from the main thread. |
+
+#### Handling taps on a tracked barcode highlight
+
+To react when the user taps a tracked barcode's highlight, set `didTapTrackedBarcode` on the **basic** overlay listener. The callback receives `(overlay, trackedBarcode)`; read `trackedBarcode.barcode.data` and `trackedBarcode.barcode.symbology`.
+
+```javascript
+window.basicOverlay.listener = {
+  // Called on the main thread when a tracked barcode highlight is tapped.
+  didTapTrackedBarcode: (overlay, trackedBarcode) => {
+    const { data, symbology } = trackedBarcode.barcode;
+    console.log(`Tapped [${symbology}]: ${data}`);
+  },
+};
+```
+
+> **Note**: The `BarcodeBatchBasicOverlay` listener (including `didTapTrackedBarcode`) requires the MatrixScan AR add-on.
+>
+> **Important**: `didTapTrackedBarcode` is the **basic**-overlay tap callback. For taps on an AR bubble view rendered by `BarcodeBatchAdvancedOverlay`, use `didTapViewForTrackedBarcode` instead (see Step 8). Returning `null` from `brushForTrackedBarcode` hides a barcode's highlight and also disables its tap action.
 
 ## Step 8 — BarcodeBatchAdvancedOverlay: AR Annotations
 
@@ -446,7 +514,31 @@ session.addedTrackedBarcodes.forEach(trackedBarcode => {
 | `viewForTrackedBarcode(overlay, trackedBarcode)` | Return a `Promise<TrackedBarcodeView?>` for a newly tracked barcode. Ignored if `setViewForTrackedBarcode` was already called for this barcode. |
 | `anchorForTrackedBarcode(overlay, trackedBarcode)` | Return an `Anchor` for the view. |
 | `offsetForTrackedBarcode(overlay, trackedBarcode)` | Return a `PointWithUnit` offset. |
-| `didTapViewForTrackedBarcode(overlay, trackedBarcode)` | Called when the user taps the AR view. |
+| `didTapViewForTrackedBarcode(overlay, trackedBarcode)` | Called when the user taps the AR view. Available on Cordova. |
+
+#### Handling taps on an AR bubble view
+
+When you want to react to a tap on the AR bubble rendered by `BarcodeBatchAdvancedOverlay` (e.g. open a details screen for that barcode), set `didTapViewForTrackedBarcode` on the **advanced** overlay listener. Cordova supports this callback. The callback receives `(overlay, trackedBarcode)`; read `trackedBarcode.barcode.data`.
+
+```javascript
+window.advancedOverlay.listener = {
+  anchorForTrackedBarcode: (overlay, trackedBarcode) => Scandit.Anchor.TopCenter,
+  offsetForTrackedBarcode: (overlay, trackedBarcode) =>
+    new Scandit.PointWithUnit(
+      new Scandit.NumberWithUnit(0, Scandit.MeasureUnit.Fraction),
+      new Scandit.NumberWithUnit(-1, Scandit.MeasureUnit.Fraction),
+    ),
+
+  // Called when the user taps the AR bubble view for a tracked barcode.
+  didTapViewForTrackedBarcode: (overlay, trackedBarcode) => {
+    openDetailsScreen(trackedBarcode.barcode.data);
+  },
+};
+```
+
+> **Note**: `BarcodeBatchAdvancedOverlay` (including `didTapViewForTrackedBarcode`) requires the MatrixScan AR add-on.
+>
+> **Important**: `didTapViewForTrackedBarcode` is the **advanced**-overlay callback (taps on your custom bubble view). For taps on the simple `BarcodeBatchBasicOverlay` highlight, use `didTapTrackedBarcode` instead (see Step 7). Do not mix the two names.
 
 ### TrackedBarcodeView
 
@@ -466,7 +558,45 @@ window.camera.switchToDesiredState(Scandit.FrameSourceState.On);
 window.barcodeBatch.isEnabled = true;
 ```
 
-## Step 10 — Lifecycle: Enable/Disable, Cleanup, and Camera Permissions
+## Step 10 — Feedback (Sound / Vibration)
+
+**`BarcodeBatch` has NO built-in or automatic feedback.** Unlike `BarcodeCapture` (which exposes `BarcodeCaptureFeedback`) or `BarcodeCount`, the `BarcodeBatch` mode has **no `feedback` property** and never beeps or vibrates on its own. If you want a sound and/or vibration when barcodes are tracked, you must emit a `Scandit.Feedback` **manually** from inside `didUpdateSession`.
+
+Build the feedback once (store it at module/`window` scope), then call `.emit()` for the events you care about. To beep once per **newly tracked** barcode (rather than every frame), iterate `session.addedTrackedBarcodes`:
+
+```javascript
+// Build the feedback once. Default sound + default vibration:
+window.scanFeedback = new Scandit.Feedback(
+  Scandit.Vibration.defaultVibration,
+  Scandit.Sound.defaultSound,
+);
+// Equivalent shortcut: const feedback = Scandit.Feedback.defaultFeedback;
+
+window.barcodeBatch.addListener({
+  didUpdateSession: (barcodeBatch, session) => {
+    // Emit once per barcode that started being tracked this frame.
+    session.addedTrackedBarcodes.forEach(() => {
+      window.scanFeedback.emit();
+    });
+  },
+});
+```
+
+> **Why `addedTrackedBarcodes`?** `didUpdateSession` fires on every frame. Emitting from `trackedBarcodes` (all currently tracked) would beep continuously. `addedTrackedBarcodes` contains only the barcodes that newly appeared this frame, so the feedback fires once per new barcode.
+
+To customize, pass a different `Scandit.Vibration` or `Scandit.Sound` (e.g. `new Scandit.Feedback(Scandit.Vibration.defaultVibration, null)` for vibration only, or pass a `Scandit.Sound` with a custom `resource`).
+
+### Feedback API (core)
+
+| Member | Available | Description |
+|--------|-----------|-------------|
+| `new Scandit.Feedback(vibration, sound)` | cordova=6.1 | Constructs a feedback. Either argument may be `null`. |
+| `Scandit.Feedback.defaultFeedback` | cordova=6.1 | A feedback with the default sound and default vibration. |
+| `feedback.emit()` | cordova=6.3 | Emits the sound and vibration. Subject to device ring mode / volume. |
+| `Scandit.Vibration.defaultVibration` | cordova=6.1 | The default success vibration. |
+| `Scandit.Sound.defaultSound` | cordova=6.1 | The default success beep. |
+
+## Step 11 — Lifecycle: Enable/Disable, Cleanup, and Camera Permissions
 
 ### Enable/disable without removing the mode
 
@@ -521,7 +651,7 @@ async function uninitialize() {
 
 Both iOS and Android camera permissions are declared automatically in the plugin manifests — no manual `Info.plist` or `AndroidManifest.xml` edit is required. The Cordova plugin handles this via `plugin.xml`. At runtime, the OS presents the permission dialog when the camera is first activated.
 
-## Step 11 — Complete Example
+## Step 12 — Complete Example
 
 ```javascript
 // @ts-check

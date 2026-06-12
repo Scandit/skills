@@ -125,6 +125,58 @@ async function run(): Promise<void> {
 - Use `DataCaptureContext.sharedInstance` or the captured `context` variable throughout.
 - The module loader for BarcodeBatch is `barcodeCaptureLoader()` — there is no separate `barcodeBatchLoader`.
 
+### Building the DataCaptureView and attaching overlays
+
+The `DataCaptureView` is the rendering surface for the camera preview and all overlays. There are two equivalent ways to build it; pick one and stay consistent:
+
+| Approach | Pattern | When to use |
+|----------|---------|-------------|
+| Create-then-attach | `new DataCaptureView()` → `view.connectToElement(element)` → `await view.setContext(context)` | Lets you show a progress bar (`view.showProgressBar()`) while the SDK loads, before the context exists. |
+| Factory | `const view = await DataCaptureView.forContext(context)` → `view.connectToElement(element)` | Simplest when the context already exists. |
+
+```typescript
+import { DataCaptureView } from "@scandit/web-datacapture-core";
+
+// Factory form — context already initialized.
+const view = await DataCaptureView.forContext(context);
+
+// Mount the view into a sized, positioned DOM element.
+const element = document.getElementById("data-capture-view")!;
+view.connectToElement(element);
+```
+
+Overlays can be attached two ways:
+
+1. **Implicitly via the overlay factory** — `BarcodeBatchBasicOverlay.withBarcodeBatchForView(mode, view)` (and the `WithStyle` and advanced variants) attach themselves to the `view` you pass. This is the common case.
+2. **Explicitly via `view.addOverlay(overlay)`** — create the overlay with a `null` view, then add it to the view yourself. Useful when you build the overlay before the view, or manage overlays dynamically. `addOverlay` is **async** — always `await` it.
+
+```typescript
+import {
+  BarcodeBatchBasicOverlay,
+  BarcodeBatchBasicOverlayStyle,
+} from "@scandit/web-datacapture-barcode";
+
+// Build the overlay detached (null view), then add it explicitly.
+const overlay = await BarcodeBatchBasicOverlay.withBarcodeBatchForViewWithStyle(
+  barcodeBatch,
+  null,
+  BarcodeBatchBasicOverlayStyle.Frame
+);
+await view.addOverlay(overlay);
+```
+
+### DataCaptureView members
+
+| Member | Description |
+|--------|-------------|
+| `DataCaptureView.forContext(context)` | Async factory — returns `Promise<DataCaptureView>`. |
+| `new DataCaptureView()` | Construct detached; attach a context later with `setContext`. |
+| `view.connectToElement(element)` | **Sync** — mount the view into a DOM element (must be sized and positioned). |
+| `view.setContext(context)` | `Promise<void>` — attach a context to a detached view. |
+| `view.addOverlay(overlay)` | `Promise<void>` — attach an overlay (basic or advanced) explicitly. |
+| `view.removeOverlay(overlay)` | `Promise<void>` — detach an overlay. |
+| `view.detachFromElement()` | **Sync** — remove the view from its DOM element. Call during cleanup. |
+
 ## Step 2 — Configure BarcodeBatchSettings and create BarcodeBatch
 
 ```typescript
@@ -277,6 +329,42 @@ barcodeBatch.addListener({
 | `barcode` | `Barcode` | The barcode associated with this track. |
 | `identifier` | `number` | Unique identifier for this track. |
 | `location` | `Quadrilateral` | Location in image-space (frame coordinates). |
+
+### Feedback (beep / vibration)
+
+**BarcodeBatch has NO built-in success feedback.** Unlike `BarcodeCapture` (which beeps automatically on each scan) and `SparkScan` (which exposes a `feedbackDelegate`), `BarcodeBatch` does not emit any sound or vibration on its own — there is no `barcodeBatch.feedback` property. If you want audible/haptic feedback, construct a `Feedback` and call `emit()` yourself, typically from `didUpdateSession` when new barcodes appear, or from `didTapTrackedBarcode` when the user taps a highlight.
+
+```typescript
+import { Feedback, Sound, Vibration } from "@scandit/web-datacapture-core";
+
+// Default beep + vibration. Build once and reuse — do not recreate every frame.
+const feedback = Feedback.defaultFeedback;
+
+// Or compose your own: pass null to omit either channel.
+// const feedback = new Feedback(Vibration.defaultVibration, Sound.defaultSound);
+// const beepOnly = new Feedback(null, Sound.defaultSound);
+
+barcodeBatch.addListener({
+  didUpdateSession: (_barcodeBatch, session) => {
+    // Emit once per frame in which a new barcode started being tracked.
+    if (session.addedTrackedBarcodes.length > 0) {
+      feedback.emit();
+    }
+  },
+});
+```
+
+> **Browser autoplay note:** `Sound`/`Vibration` only fire after the page has had a user gesture (a tap/click). The first `emit()` before any interaction may be silently dropped by the browser — this is a browser policy, not an SDK bug.
+
+#### Feedback API
+
+| Member | Description |
+|--------|-------------|
+| `new Feedback(vibration, sound)` | Construct from a `Vibration \| null` and a `Sound \| null`. Pass `null` to disable that channel. |
+| `Feedback.defaultFeedback` | Static getter — default beep + vibration. |
+| `feedback.emit()` | **Sync** — play the configured sound/vibration once. Returns `void`. |
+| `Vibration.defaultVibration` | Static getter — the default vibration. |
+| `Sound.defaultSound` | Static getter — the default beep sound. |
 
 ## Step 6 — BarcodeBatchAdvancedOverlay: AR views from HTML elements
 

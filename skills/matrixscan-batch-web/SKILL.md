@@ -1,6 +1,6 @@
 ---
 name: matrixscan-batch-web
-description: Use when MatrixScan, MatrixScan Batch, BarcodeBatch, or BarcodeTracking (legacy alias) are involved in a web project — whether the user mentions these names directly, or the codebase already uses BarcodeBatch* classes and something needs to be added, changed, fixed, or extended. This includes adding MatrixScan Batch to a new web app, configuring BarcodeBatchSettings and symbologies, wiring BarcodeBatchListener.didUpdateSession, customizing BarcodeBatchBasicOverlay with per-barcode brushes, adding AR overlays via BarcodeBatchAdvancedOverlay and TrackedBarcodeView.withHTMLElement, managing lifecycle (enable/disable, cleanup, camera), or migrating BarcodeTracking to BarcodeBatch or upgrading between SDK versions (v6→v7, v7→v8). If the project is a web project and MatrixScan / BarcodeBatch is in play, use this skill.
+description: Use when MatrixScan, MatrixScan Batch, BarcodeBatch, or BarcodeTracking (legacy alias) are involved in a web project — whether the user mentions these names directly, or the codebase already uses BarcodeBatch* classes and something needs to be added, changed, fixed, or extended. This includes adding MatrixScan Batch to a new web app, configuring BarcodeBatchSettings and symbologies, wiring BarcodeBatchListener.didUpdateSession, customizing BarcodeBatchBasicOverlay with per-barcode brushes, adding AR overlays via BarcodeBatchAdvancedOverlay and TrackedBarcodeView.withHTMLElement, managing lifecycle (enable/disable, cleanup, camera), emitting manual Feedback (BarcodeBatch has no automatic beep), migrating BarcodeTracking to BarcodeBatch or upgrading between SDK versions (v6→v7, v7→v8), or replacing a third-party multi-barcode scanner (e.g. ZXing-js / @zxing/library continuous multi-scan) with MatrixScan Batch. If the project is a web project and MatrixScan / BarcodeBatch is in play, use this skill.
 license: MIT
 metadata:
   author: scandit
@@ -38,6 +38,7 @@ Based on the user's request, load the appropriate reference file before respondi
 
 - **Integrating MatrixScan Batch from scratch** (e.g. "add MatrixScan to my web app", "set up BarcodeBatch", "track multiple barcodes simultaneously", "show AR overlays on barcodes", "per-barcode brush colors", "lifecycle or cleanup") → read `references/integration.md` and follow the instructions there.
 - **Migrating or upgrading an existing MatrixScan Batch integration** (e.g. "upgrade from v6 to v7", "migrate BarcodeTracking to BarcodeBatch", "bump the Scandit SDK to v8", "what changed between SDK versions") → read `references/migration.md` and follow the instructions there.
+- **Replacing a third-party multi-barcode scanner with MatrixScan Batch** (e.g. "replace my ZXing-js / @zxing/library continuous scanner with MatrixScan Batch", "migrate from BrowserMultiFormatReader multi-scan to BarcodeBatch", "switch from [web barcode library] continuous multi-result scanning to BarcodeBatch") → read `references/third-party-migration.md` and follow the instructions there.
 
 ## API Usage Policy
 

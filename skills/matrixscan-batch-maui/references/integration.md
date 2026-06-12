@@ -448,6 +448,54 @@ this.BarcodeBatch.SessionUpdated += (sender, args) =>
 | `Location` | `Quadrilateral` | Barcode position in image-space coordinates. Use `dataCaptureView.MapFrameQuadrilateralToView(location)` to convert to view space. |
 | `GetAnchorPosition(Anchor)` | `Point` | Returns the position of the given anchor on the tracked barcode. |
 
+### Feedback (beep / vibration on a newly tracked barcode)
+
+Unlike single-shot `BarcodeCapture` — which owns a `BarcodeCaptureFeedback` and beeps automatically on every accepted scan — **`BarcodeBatch` has no built-in feedback and emits nothing on its own.** Tracking many codes per frame would otherwise produce a continuous buzz. If you want a beep or vibration when a code is *first* tracked, you must own a `Feedback` instance yourself and call `Emit()` from `OnSessionUpdated`, gated on `session.AddedTrackedBarcodes` (the barcodes newly tracked this frame).
+
+`session.AddedTrackedBarcodes` is the right trigger: it is the set added *this* frame, so it does not re-fire while a code stays in view. If a tracking ID can be reused after a code leaves and re-enters the frame, de-duplicate against a `HashSet<int>` of identifiers you have already signalled (the same `seenTrackingIds` set you use to accumulate scans).
+
+```csharp
+using Scandit.DataCapture.Core.Common.Feedback;
+
+// Build the Feedback once (e.g. as a field) and reuse it; do not allocate per frame.
+// new Feedback(vibration, sound) — pass null for either component to omit it.
+private readonly Feedback feedback =
+    new Feedback(Vibration.DefaultVibration, Sound.DefaultSound);
+
+public void OnSessionUpdated(
+    BarcodeBatch barcodeBatch,
+    BarcodeBatchSession session,
+    IFrameData frameData)
+{
+    try
+    {
+        // Add() returns true only the first time an identifier is seen, so the
+        // feedback fires once per newly tracked barcode, not on every frame.
+        bool firstSighting = session.AddedTrackedBarcodes
+            .Any(tb => this.seenTrackingIds.Add(tb.Identifier));
+
+        if (firstSighting)
+        {
+            this.feedback.Emit();
+        }
+    }
+    finally
+    {
+        frameData.Dispose();
+    }
+}
+```
+
+`Feedback.Emit()` is influenced by the device ring mode and volume settings, so a correctly configured `Sound`/`Vibration` may still be silent on a muted device. Other useful members from `Scandit.DataCapture.Core.Common.Feedback`:
+
+| Member | Type | Description |
+|--------|------|-------------|
+| `new Feedback(Vibration?, Sound?)` | ctor | Feedback with both components; pass `null` to omit one. Also `new Feedback(Vibration?)`, `new Feedback(Sound?)`. |
+| `Feedback.DefaultFeedback` | `static Feedback` | A feedback with the default sound and default vibration (the same beep + vibration single-shot capture uses). |
+| `Vibration.DefaultVibration` | `static Vibration` | The default success vibration. |
+| `Sound.DefaultSound` | `static Sound` | The default success beep. |
+| `feedback.Emit()` | `void` | Plays the sound and emits the vibration defined by the instance. |
+
 ## Step 6 — Lifecycle and camera permission
 
 Drive the camera from the page's MAUI lifecycle. Request the camera permission inside the `ResumeAsync` path so the first frame is not requested before the user grants access. The order in `SleepAsync` matters — disable `barcodeBatch.Enabled` **before** stopping the camera, because in-flight frames can still report tracked-barcode updates during the asynchronous camera-off transition.

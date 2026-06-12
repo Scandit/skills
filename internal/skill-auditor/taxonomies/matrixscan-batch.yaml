@@ -1,0 +1,121 @@
+# MatrixScan / Barcode Batch (API: `BarcodeBatch`, formerly `BarcodeTracking`) feature taxonomy.
+#
+# `match` patterns are case-insensitive regexes over eval prompt + expected_output +
+# assertion texts; bootstrap heuristic until evals carry explicit `tags`. `evidence`
+# records mining provenance.
+#
+# Provenance (mined 2026-06-12, four parallel source classes):
+#   public_docs  data-capture-documentation — docs/sdks/*/matrixscan/** (intro, get-started,
+#                get-started-with-swift-ui, advanced)
+#   sdk_source   data-capture-sdk @ afebf22dc75 — docs/source/barcode-capture/api/barcode-batch*.rst
+#                (mode/settings/listener/session + basic-overlay + advanced-overlay(-view/-widget/-listener))
+#   samples      datacapture-*-samples — 03_Advanced_Batch_Scanning_Samples/01_Batch_Scanning_and_AR_Info_Lookup/
+#                MatrixScanSimpleSample (basic overlay) + MatrixScanBubblesSample (advanced overlay)
+#   eval-survey  existing skills/matrixscan-batch-*/evals/*.json (thin: 3-7 evals each)
+#
+# Platform-truth notes (layer 1 — from the .rst :available: directives):
+#   - 10 in-scope platforms: android, capacitor, cordova, flutter, ios, maui, net-android, net-ios, rn, web.
+#   - Core BarcodeBatch (mode, settings, listener, session, TrackedBarcode, BASIC + ADVANCED overlay and
+#     their setters/anchor/offset) is available on ALL 10 — no exclusions.
+#   - Availability boundaries that DO matter (encode as excluded_platforms):
+#       * basic-overlay-tap (didTapTrackedBarcode)        — NOT on the .NET binding → exclude net-android,
+#         net-ios, maui.
+#       * advanced-overlay-tap (didTapViewForTrackedBarcode) — only on web/cordova/rn/flutter/capacitor →
+#         exclude android, ios, net-android, net-ios, maui.
+#       * swiftui-integration — iOS only.
+#   - API-shape divergence (NOT exclusions): the advanced-overlay attachment is a UIView (ios), View
+#     (android), BarcodeBatchAdvancedOverlayWidget (flutter), BarcodeBatchAdvancedOverlayView (rn), or
+#     TrackedBarcodeView.withHTMLElement (web/cordova/capacitor) — all the SAME feature. RecommendedCamera-
+#     Settings is a property (ios/.NET/web) vs createRecommendedCameraSettings() method (android/js/flutter).
+#     BarcodeBatch has NO automatic feedback — feedback is emitted manually from the listener.
+product: matrixscan-batch
+skill_prefix: matrixscan-batch-
+features:
+  # ---- Required: core to any MatrixScan / Barcode Batch integration (all 10 platforms) ----
+  - id: basic-integration
+    required: true
+    evidence: [docs, sample, sdk]
+    match: ["barcodebatch\\b", "barcodebatchsettings", "new barcodebatch", "barcodebatch\\.forcontext", "barcodebatch\\.fordatacapturecontext", "barcodebatch\\(", "barcodebatch\\.create"]
+  - id: license-init
+    required: true
+    evidence: [docs, sample, sdk]
+    match: ["datacapturecontext", "license key", "licensekey", "forlicensekey", "\\.initialize\\(", "sharedinstance"]
+  - id: camera-setup
+    required: true
+    evidence: [docs, sample, sdk]
+    match: ["recommendedcamerasettings", "createrecommendedcamerasettings", "camera\\.default", "defaultcamera", "setframesource", "applysettings", "camera\\.withsettings"]
+  - id: capture-view
+    required: true
+    evidence: [docs, sample, sdk]
+    match: ["datacaptureview", "connecttoelement", "addoverlay"]
+  - id: symbology-config
+    required: true
+    evidence: [docs, sample, sdk]
+    match: ["symbolog"]
+  - id: session-listener
+    required: true
+    evidence: [docs, sample, sdk]
+    match: ["didupdatesession", "onsessionupdated", "barcodebatchlistener", "barcodebatchsession", "trackedbarcodes", "addedtrackedbarcodes"]
+  - id: basic-overlay
+    required: true
+    evidence: [docs, sample, sdk]
+    match: ["barcodebatchbasicoverlay"]
+  - id: lifecycle
+    required: true
+    evidence: [docs, sample, sdk]
+    match: ["switchtodesiredstate", "framesourcestate", "onpause|onresume|ondestroy", "viewwillappear|viewwilldisappear", "applifecyclestate", "didchangeapplifecyclestate", "removelistener", "dispose"]
+
+  # ---- Important: broadly available, not strictly required ----
+  - id: tracked-barcode-data
+    required: false
+    evidence: [docs, sample, sdk]
+    match: ["\\.identifier", "trackedbarcode\\.barcode", "\\.location\\b", "quadrilateral", "tracked.*identifier"]
+  - id: basic-overlay-brush
+    required: false
+    evidence: [docs, sample, sdk]
+    match: ["brushfortrackedbarcode", "setbrushfortrackedbarcode", "brush.*tracked|tracked.*brush"]
+  - id: basic-overlay-style
+    required: false
+    evidence: [docs, sample, sdk]
+    match: ["barcodebatchbasicoverlaystyle", "overlaystyle\\.(frame|dot)", "style.*(frame|dot)", "dotradius"]
+  - id: basic-overlay-tap
+    required: false
+    evidence: [docs, sample, sdk]
+    excluded_platforms: [net-android, net-ios, maui]
+    match: ["didtaptrackedbarcode", "ontrackedbarcodetapped", "tap.*tracked barcode|tracked barcode.*tap"]
+  - id: advanced-overlay
+    required: false
+    evidence: [docs, sample, sdk]
+    match: ["barcodebatchadvancedoverlay", "viewfortrackedbarcode", "widgetfortrackedbarcode", "setviewfortrackedbarcode", "setwidgetfortrackedbarcode", "trackedbarcodeview", "barcodebatchadvancedoverlaywidget", "barcodebatchadvancedoverlayview"]
+  - id: advanced-overlay-positioning
+    required: false
+    evidence: [docs, sample, sdk]
+    match: ["anchorfortrackedbarcode", "offsetfortrackedbarcode", "setanchorfortrackedbarcode", "setoffsetfortrackedbarcode", "pointwithunit", "\\banchor\\.", "anchor\\b.*tracked"]
+  - id: advanced-overlay-tap
+    required: false
+    evidence: [docs, sample, sdk]
+    excluded_platforms: [android, ios, net-android, net-ios, maui]
+    match: ["didtapviewfortrackedbarcode", "tap.*(view|advanced).*tracked"]
+  - id: removed-barcodes
+    required: false
+    evidence: [docs, sdk]
+    match: ["removedtrackedbarcodes", "removed.*tracked|tracked.*removed"]
+  - id: feedback
+    required: false
+    evidence: [docs, sdk]
+    match: ["\\bfeedback\\b", "feedback\\.default", "\\.emit\\(", "no automatic feedback|emit.*feedback"]
+  - id: swiftui-integration
+    required: false
+    evidence: [docs, eval-survey]
+    excluded_platforms: [android, capacitor, cordova, flutter, maui, net-android, net-ios, rn, web]
+    match: ["swiftui", "uiviewcontrollerrepresentable", "uiviewrepresentable", "swift ?ui"]
+
+  # ---- Migration ----
+  - id: version-migration
+    required: false
+    evidence: [eval-survey, docs]
+    match: ["migrat", "barcodetracking", "v6|v7|v8", "upgrade.*(version|sdk)"]
+  - id: third-party-migration
+    required: false
+    evidence: [eval-survey]
+    match: ["zxing", "ml ?kit", "mlkit", "avfoundation", "avcapture", "third.?party", "mobilebarcodescanner", "google.*barcode|barcode.*google"]

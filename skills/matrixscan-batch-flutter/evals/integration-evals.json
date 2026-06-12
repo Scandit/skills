@@ -26,7 +26,8 @@
         {"text": "Import from scandit_flutter_datacapture_barcode is present"},
         {"text": "Camera lifecycle is handled (didChangeAppLifecycleState or WidgetsBindingObserver)"},
         {"text": "Permission.camera.request() is called for the runtime camera permission"}
-      ]
+      ],
+      "tags": ["camera-setup", "basic-overlay-style"]
     },
     {
       "id": 2,
@@ -42,7 +43,8 @@
         {"text": "A transparent or zero-alpha Brush is returned for barcodes starting with '0' (hide pattern)"},
         {"text": "BarcodeBatchBasicOverlayListener is implemented on the class"},
         {"text": "Existing integration code (BarcodeBatch, DataCaptureView, didUpdateSession) is preserved"}
-      ]
+      ],
+      "tags": ["basic-overlay-brush"]
     },
     {
       "id": 3,
@@ -63,7 +65,8 @@
         {"text": "offsetForTrackedBarcode( is implemented returning a PointWithUnit"},
         {"text": "MatrixScan AR add-on requirement is mentioned"},
         {"text": "Existing integration code (BarcodeBatch, didUpdateSession) is preserved"}
-      ]
+      ],
+      "tags": ["advanced-overlay"]
     },
     {
       "id": 4,
@@ -77,7 +80,8 @@
         {"text": "setWidgetForTrackedBarcode( is called inside didTapViewForTrackedBarcode to re-push the widget"},
         {"text": "The explanation or comment mentions that native-layer widgets require setWidgetForTrackedBarcode after state changes (semantic)"},
         {"text": "Existing integration code (BarcodeBatch, overlays, didUpdateSession) is preserved"}
-      ]
+      ],
+      "tags": ["advanced-overlay-tap"]
     },
     {
       "id": 5,
@@ -93,7 +97,8 @@
         {"text": "dataCaptureContext.removeAllModes() or removeCurrentMode() is called to remove the mode"},
         {"text": "The cleanup is called from dispose() or an overridden dispose method"},
         {"text": "WidgetsBinding.instance.removeObserver( is called if addObserver was used"}
-      ]
+      ],
+      "tags": ["lifecycle-cleanup"]
     },
     {
       "id": 6,
@@ -108,7 +113,75 @@
         {"text": "session.trackedBarcodes is accessed to get the current tracked count"},
         {"text": "didUpdateSession( is present and properly overrides the listener method"},
         {"text": "Existing integration code (BarcodeBatch, overlays, lifecycle) is preserved"}
-      ]
+      ],
+      "tags": ["session-removed-barcodes"]
+    },
+    {
+      "id": 7,
+      "prompt": "I'm setting up the camera for my MatrixScan Batch Flutter screen. How do I get the device camera, apply the settings BarcodeBatch recommends, and wire it as the frame source for the context? Here's my starter: EmptyScreen.dart.",
+      "expected_output": "The skill writes camera setup into EmptyScreen.dart: obtains the default camera with Camera.defaultCamera, applies BarcodeBatch.createRecommendedCameraSettings() via camera.applySettings, sets the camera as the context frame source with context.setFrameSource(camera), and turns the camera on with switchToDesiredState(FrameSourceState.on) after the permission is granted. It uses the static method createRecommendedCameraSettings(), not a recommendedCameraSettings getter.",
+      "files": [
+        "fixtures/EmptyScreen.dart"
+      ],
+      "assertions": [
+        {"text": "Camera.defaultCamera is used to obtain the camera"},
+        {"text": "BarcodeBatch.createRecommendedCameraSettings() is called as a static method"},
+        {"text": "The recommendedCameraSettings getter is NOT used to obtain camera settings on Flutter (semantic)"},
+        {"text": "camera.applySettings( is called with the recommended settings"},
+        {"text": "_context.setFrameSource( or dataCaptureContext.setFrameSource( is called with the camera"},
+        {"text": "switchToDesiredState(FrameSourceState.on) is called to start the camera"},
+        {"text": "Import from scandit_flutter_datacapture_barcode_batch is present"}
+      ],
+      "tags": ["camera-setup"]
+    },
+    {
+      "id": 8,
+      "prompt": "In my MatrixScan Batch Flutter app I want the tracked-barcode highlights to be filled dots instead of rectangular frames. How do I switch the BarcodeBatchBasicOverlay style? File: IntegratedScreen.dart.",
+      "expected_output": "The skill changes the BarcodeBatchBasicOverlay construction to pass style: BarcodeBatchBasicOverlayStyle.dot (replacing BarcodeBatchBasicOverlayStyle.frame), explains the two available styles (frame and dot), and preserves the rest of the integration.",
+      "files": [
+        "fixtures/IntegratedScreen.dart"
+      ],
+      "assertions": [
+        {"text": "BarcodeBatchBasicOverlayStyle.dot is passed as the style argument"},
+        {"text": "The style is passed via the style: named parameter of BarcodeBatchBasicOverlay("},
+        {"text": "The two available styles are explained as BarcodeBatchBasicOverlayStyle.frame and BarcodeBatchBasicOverlayStyle.dot (semantic)"},
+        {"text": "Existing integration code (BarcodeBatch, DataCaptureView, didUpdateSession) is preserved"}
+      ],
+      "tags": ["basic-overlay-style"]
+    },
+    {
+      "id": 9,
+      "prompt": "In my MatrixScan Batch Flutter app, when the user taps a highlighted barcode I want to show its data in a SnackBar. I'm using the BarcodeBatchBasicOverlay (not the advanced overlay). Wire up the tap handling. File: IntegratedScreen.dart.",
+      "expected_output": "The skill implements didTapTrackedBarcode on BarcodeBatchBasicOverlayListener, reads trackedBarcode.barcode.data, and shows it in a SnackBar. It sets the overlay listener (overlay..listener = this). The existing integration is preserved.",
+      "files": [
+        "fixtures/IntegratedScreen.dart"
+      ],
+      "assertions": [
+        {"text": "didTapTrackedBarcode( is implemented on the BarcodeBatchBasicOverlayListener"},
+        {"text": "trackedBarcode.barcode.data is read inside didTapTrackedBarcode"},
+        {"text": "The basic overlay listener is set (listener = this on the BarcodeBatchBasicOverlay)"},
+        {"text": "The tapped barcode data is surfaced to the user (e.g. SnackBar or dialog) (semantic)"},
+        {"text": "Existing integration code (BarcodeBatch, DataCaptureView, didUpdateSession) is preserved"}
+      ],
+      "tags": ["basic-overlay-tap"]
+    },
+    {
+      "id": 10,
+      "prompt": "In my MatrixScan Batch Flutter app I want a beep and a vibration whenever a new barcode is first tracked. BarcodeBatch doesn't seem to beep on its own. How do I add scan feedback? File: IntegratedScreen.dart.",
+      "expected_output": "The skill explains that BarcodeBatch has no built-in feedback (unlike BarcodeCapture/SparkScan) and the app must emit it manually. It constructs a Feedback with Vibration.defaultVibration and Sound.defaultSound, holds it as a field, and calls feedback.emit() from didUpdateSession when a not-previously-seen tracked barcode appears (deduplicated by identifier). It notes that Scandit's Feedback collides with Flutter material's Feedback so the Scandit core import must be prefixed or Flutter's Feedback hidden.",
+      "files": [
+        "fixtures/IntegratedScreen.dart"
+      ],
+      "assertions": [
+        {"text": "It states that BarcodeBatch has no built-in/automatic feedback and the app must emit it manually (semantic)"},
+        {"text": "A Feedback is constructed with Vibration.defaultVibration and Sound.defaultSound"},
+        {"text": "feedback.emit() is called to play the feedback"},
+        {"text": "emit() is called from didUpdateSession when a newly tracked barcode appears (semantic)"},
+        {"text": "New barcodes are deduplicated by identifier so feedback fires once per barcode, not every frame (semantic)"},
+        {"text": "The Scandit core Feedback is disambiguated from Flutter material's Feedback via an import prefix or by hiding Flutter's Feedback (semantic)"},
+        {"text": "Existing integration code (BarcodeBatch, DataCaptureView, didUpdateSession) is preserved"}
+      ],
+      "tags": ["feedback"]
     }
   ]
 }

@@ -55,6 +55,9 @@ After providing the code, show this setup checklist:
 | `BarcodeBatchBasicOverlay`, `BarcodeBatchBasicOverlayStyle`, `BarcodeBatchBasicOverlayListener` | `com.scandit.datacapture.barcode.batch.ui.overlay` |
 | `BarcodeBatchAdvancedOverlay`, `BarcodeBatchAdvancedOverlayListener` | `com.scandit.datacapture.barcode.batch.ui.overlay` |
 | `TrackedBarcode` | `com.scandit.datacapture.barcode.batch.data` |
+| `Anchor`, `PointWithUnit`, `FloatWithUnit`, `MeasureUnit` | `com.scandit.datacapture.core.common.geometry` |
+| `Feedback`, `Sound`, `Vibration` | `com.scandit.datacapture.core.feedback` |
+| `Brush` | `com.scandit.datacapture.core.ui.style` |
 
 ## Step 1 — Create the DataCaptureContext
 
@@ -153,6 +156,8 @@ val overlay = BarcodeBatchBasicOverlay.newInstance(barcodeBatch, dataCaptureView
 val overlay = BarcodeBatchBasicOverlay.newInstance(barcodeBatch, dataCaptureView, BarcodeBatchBasicOverlayStyle.DOT)
 ```
 
+`BarcodeBatchBasicOverlayStyle` has exactly two values: `BarcodeBatchBasicOverlayStyle.FRAME` (default — a rectangular frame with an appear animation) and `BarcodeBatchBasicOverlayStyle.DOT` (a dot at the barcode center). The style is chosen via the three-argument `newInstance(mode, view, style)` overload at creation time. The `style` property is **read-only** — to change styles you create a new overlay; you do not assign `overlay.style`.
+
 ### BarcodeBatchBasicOverlay Members
 
 | Member | Description |
@@ -203,6 +208,8 @@ overlay.listener = this
 ```
 
 > **MatrixScan AR add-on required** for `brushForTrackedBarcode` and `setBrushForTrackedBarcode`. A uniform default brush (no listener) does not require the add-on.
+
+> **Tap callback naming**: On Android the tap callback is `onTrackedBarcodeTapped(overlay, trackedBarcode)` — called on the **main thread**. Do not use `didTapTrackedBarcode` (that is the iOS/JS name). A barcode whose `brushForTrackedBarcode` returned `null` (or whose brush was cleared) is not tappable. The tap callback is independent of the overlay's `BarcodeBatchBasicOverlayStyle` (`FRAME` or `DOT`) — both styles support it.
 
 ## Step 7 — BarcodeBatchListener
 
@@ -261,6 +268,31 @@ barcodeBatch.addListener(this)
 
 > **Important**: Do not hold references to the session or its collections outside `onSessionUpdated`. Copy any data you need before the callback returns.
 
+### Reacting to added, updated, and removed barcodes
+
+Each frame, the session reports three deltas. `addedTrackedBarcodes` and `updatedTrackedBarcodes` are `List<TrackedBarcode>`; `removedTrackedBarcodes` is a `List<Int>` of **tracking identifiers** only (the barcodes are already gone, so only their `identifier` is available). Use `removedTrackedBarcodes` to drop entries from your own UI/state keyed by tracking ID.
+
+```kotlin
+override fun onSessionUpdated(
+    mode: BarcodeBatch,
+    session: BarcodeBatchSession,
+    data: FrameData
+) {
+    // Copy the deltas out of the session before leaving the recognition thread.
+    val added = session.addedTrackedBarcodes.map { it.identifier to it.barcode.data }
+    val removedIds = session.removedTrackedBarcodes.toList() // List<Int> of tracking IDs
+
+    runOnUiThread {
+        for ((id, value) in added) {
+            // add `value` to your own collection keyed by `id`
+        }
+        for (id in removedIds) {
+            // remove the entry previously stored under this tracking `id`
+        }
+    }
+}
+```
+
 ### TrackedBarcode Properties
 
 | Property | Type | Description |
@@ -292,6 +324,41 @@ override fun onDestroy() {
     super.onDestroy()
 }
 ```
+
+## Optional: emitting feedback (sound / vibration)
+
+Unlike `BarcodeCapture`, `BarcodeBatch` does **not** emit any sound or vibration on its own — there is no `feedback` property on `BarcodeBatch` or its settings. If you want a beep/vibration when a new barcode is tracked, emit it yourself from `onSessionUpdated` using a `Feedback` instance.
+
+Create one `Feedback` once and reuse it (creating one per frame is wasteful). `Feedback.defaultFeedback()` gives the default sound + vibration; `emit()` plays it.
+
+```kotlin
+import com.scandit.datacapture.core.feedback.Feedback
+
+private val feedback = Feedback.defaultFeedback()
+
+override fun onSessionUpdated(
+    mode: BarcodeBatch,
+    session: BarcodeBatchSession,
+    data: FrameData
+) {
+    // Only give feedback when something new was actually tracked this frame.
+    if (session.addedTrackedBarcodes.isNotEmpty()) {
+        feedback.emit()
+    }
+    // ... copy data and dispatch UI work as usual
+}
+```
+
+To customize, build a `Feedback` from a `Sound` and/or `Vibration`:
+```kotlin
+import com.scandit.datacapture.core.feedback.Feedback
+import com.scandit.datacapture.core.feedback.Sound
+import com.scandit.datacapture.core.feedback.Vibration
+
+private val feedback = Feedback(Vibration.defaultVibration(), Sound.defaultSound())
+```
+
+`emit()` is influenced by the device's ring mode and volume settings. `Feedback.emit()` is safe to call from the recognition thread.
 
 ## Complete minimal example
 
@@ -396,7 +463,10 @@ class ScannerActivity : AppCompatActivity(), BarcodeBatchAdvancedOverlayListener
 
     // Called on the main thread for each newly tracked barcode.
     // Return an Android View to anchor to this barcode, or null to show nothing.
-    override fun viewForTrackedBarcode(trackedBarcode: TrackedBarcode): View? {
+    override fun viewForTrackedBarcode(
+        overlay: BarcodeBatchAdvancedOverlay,
+        trackedBarcode: TrackedBarcode
+    ): View? {
         val label = TextView(this).apply {
             text = trackedBarcode.barcode.data
             setBackgroundColor(Color.WHITE)
@@ -405,14 +475,22 @@ class ScannerActivity : AppCompatActivity(), BarcodeBatchAdvancedOverlayListener
         return label
     }
 
-    override fun anchorForTrackedBarcode(trackedBarcode: TrackedBarcode): Anchor {
+    override fun anchorForTrackedBarcode(
+        overlay: BarcodeBatchAdvancedOverlay,
+        trackedBarcode: TrackedBarcode
+    ): Anchor {
         return Anchor.TOP_CENTER
     }
 
-    override fun offsetForTrackedBarcode(trackedBarcode: TrackedBarcode): PointWithUnit {
+    override fun offsetForTrackedBarcode(
+        overlay: BarcodeBatchAdvancedOverlay,
+        trackedBarcode: TrackedBarcode,
+        view: View
+    ): PointWithUnit {
+        // Center the view above the barcode. FRACTION offsets are relative to the view size.
         return PointWithUnit(
-            DoubleWithUnit(0.0, MeasureUnit.FRACTION),
-            DoubleWithUnit(-1.0, MeasureUnit.FRACTION)
+            FloatWithUnit(0f, MeasureUnit.FRACTION),
+            FloatWithUnit(-1f, MeasureUnit.FRACTION)
         )
     }
 }
@@ -442,9 +520,19 @@ advancedOverlay.clearTrackedBarcodeViews() // remove all views
 
 | Callback | Description |
 |----------|-------------|
-| `viewForTrackedBarcode(trackedBarcode): View?` | Return the Android View to anchor to this barcode, or `null` for none. Called on the main thread. |
-| `anchorForTrackedBarcode(trackedBarcode): Anchor` | Return an `Anchor` value for the view position relative to the barcode. |
-| `offsetForTrackedBarcode(trackedBarcode): PointWithUnit` | Return a `PointWithUnit` offset to fine-tune the view position. |
+| `viewForTrackedBarcode(overlay, trackedBarcode): View?` | Return the Android `View` to anchor to this barcode, or `null` for none. Called on the main thread. |
+| `anchorForTrackedBarcode(overlay, trackedBarcode): Anchor` | Return an `Anchor` value (e.g. `Anchor.TOP_CENTER`) for the view position relative to the barcode. Called on the main thread. |
+| `offsetForTrackedBarcode(overlay, trackedBarcode, view): PointWithUnit` | Return a `PointWithUnit` offset to fine-tune the view position. The offset is relative to the anchor; `MeasureUnit.FRACTION` makes it relative to the view's own dimensions. Called on the main thread. |
+
+The geometry types live in `com.scandit.datacapture.core.common.geometry`:
+```kotlin
+import com.scandit.datacapture.core.common.geometry.Anchor
+import com.scandit.datacapture.core.common.geometry.FloatWithUnit
+import com.scandit.datacapture.core.common.geometry.MeasureUnit
+import com.scandit.datacapture.core.common.geometry.PointWithUnit
+```
+
+> **Positioning note**: On Android the offset value type is `FloatWithUnit(value: Float, unit: MeasureUnit)` — not `DoubleWithUnit` (that is the Flutter/Dart name). Construct the point as `PointWithUnit(FloatWithUnit(x, unit), FloatWithUnit(y, unit))`. A `y` of `FloatWithUnit(-1f, MeasureUnit.FRACTION)` shifts the view up by its full height, placing it directly above the barcode when combined with `Anchor.TOP_CENTER`.
 
 > For the tap callback and any additional listener methods, fetch the [Adding AR Overlays](https://docs.scandit.com/sdks/android/matrixscan-batch/advanced/) page.
 
