@@ -39,7 +39,9 @@ Flutter-specific gotchas worth flagging:
 
 Based on the user's request, load the reference file before responding:
 
-- **Integrating MatrixScan Batch from scratch** (e.g. "add MatrixScan to my Flutter app", "set up BarcodeBatch", "track multiple barcodes simultaneously", "show AR overlays", "per-barcode brushes", "lifecycle or cleanup", "camera permissions") → read `references/integration.md` and follow the instructions there.
+- **Integrating MatrixScan Batch from scratch** (e.g. "add MatrixScan to my Flutter app", "set up BarcodeBatch", "track multiple barcodes simultaneously", "show AR overlays", "per-barcode brushes", "scan feedback / beep / vibrate", "lifecycle or cleanup", "camera permissions") → read `references/integration.md` and follow the instructions there.
+- **Upgrading an existing MatrixScan integration across SDK versions** (e.g. "migrate from v6 to v7", "upgrade to SDK 8", "my code uses BarcodeTracking", "rename BarcodeTracking to BarcodeBatch") → read `references/migration.md` and follow the instructions there.
+- **Replacing a third-party scanner with MatrixScan Batch** (e.g. "migrate from mobile_scanner", "we use ML Kit / google_mlkit_barcode_scanning and want to track multiple barcodes", "replace our existing barcode plugin with Scandit MatrixScan") → read `references/third-party-migration.md` and follow the instructions there.
 
 ## API Usage Policy
 
