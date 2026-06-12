@@ -31,7 +31,8 @@ Capacitor-specific gotchas worth flagging:
 
 Based on the user's request, load the appropriate reference file before responding:
 
-- **Integrating MatrixScan Batch from scratch** (e.g. "add MatrixScan to my app", "set up BarcodeBatch", "track multiple barcodes simultaneously", "show AR overlays", "per-barcode brushes", "lifecycle or cleanup", "camera permissions") → read `references/integration.md` and follow the instructions there.
+- **Integrating MatrixScan Batch from scratch** (e.g. "add MatrixScan to my app", "set up BarcodeBatch", "track multiple barcodes simultaneously", "show AR overlays", "per-barcode brushes", "tap handling", "overlay style (frame/dot)", "feedback / beep / vibration on scan", "lifecycle or cleanup", "camera permissions") → read `references/integration.md` and follow the instructions there.
+- **Upgrading the Scandit SDK version** (e.g. "migrate from v6/v7 to v8", "BarcodeTracking is gone", "rename BarcodeTracking to BarcodeBatch", "DataCaptureContext.forLicenseKey not found") **or replacing a third-party scanner** (e.g. "switch from @capacitor-mlkit/barcode-scanning / ML Kit to MatrixScan Batch") → read `references/migration.md` and follow the instructions there.
 
 ## API Usage Policy
 

@@ -173,6 +173,38 @@ window.barcodeBatch.addListener({
 
 > **Important**: Do not hold references to the session object or its arrays outside the `didUpdateSession` callback — they may be concurrently modified. Copy any data you need.
 
+#### Reacting to lost barcodes with `removedTrackedBarcodes`
+
+`session.removedTrackedBarcodes` is the array of tracking identifiers for barcodes that **left the
+frame this frame**. Use it to prune any app-level state you keep keyed by tracking identifier (a
+per-barcode map, AR views, list rows, etc.) so it doesn't grow unbounded:
+
+```javascript
+// App-level state keyed by tracking identifier.
+const trackedState = new Map();
+
+window.barcodeBatch.addListener({
+  didUpdateSession: async (barcodeBatch, session) => {
+    // Add / update entries for currently tracked barcodes.
+    Object.values(session.trackedBarcodes).forEach(trackedBarcode => {
+      trackedState.set(trackedBarcode.identifier, trackedBarcode.barcode.data);
+    });
+
+    // Remove entries for barcodes that were lost this frame.
+    session.removedTrackedBarcodes.forEach(identifier => {
+      trackedState.delete(identifier);
+    });
+  },
+});
+```
+
+> **Note**: `removedTrackedBarcodes` is an array of identifiers, not `TrackedBarcode` objects — the
+> barcode is already gone, so only its `identifier` is reported. On Capacitor the session reports
+> these identifiers as strings (`string[]`), while a live `TrackedBarcode.identifier` is a `number`;
+> when you key your own map, store and look up with a consistent type. As with every session array,
+> consume it inside the callback — do not retain `session` or `removedTrackedBarcodes` after the
+> callback returns.
+
 ### TrackedBarcode Properties
 
 | Property | Type | Available | Description |
@@ -289,12 +321,52 @@ window.view.addOverlay(basicOverlay);
 | `BarcodeBatchBasicOverlayStyle.Frame` | Rectangular frame highlight with appear animation. Default. |
 | `BarcodeBatchBasicOverlayStyle.Dot` | Dot highlight with appear animation. |
 
+#### Choosing or switching the overlay style
+
+The style is the **second argument** of the `new BarcodeBatchBasicOverlay(mode, style)` constructor.
+There are exactly two values — `BarcodeBatchBasicOverlayStyle.Frame` (rectangular outline, the
+default) and `BarcodeBatchBasicOverlayStyle.Dot` (a small dot at the barcode center). To switch
+from frames to dots, change only that argument — nothing else about the overlay setup changes:
+
+```javascript
+// Dot highlights instead of the default frame.
+const basicOverlay = new BarcodeBatchBasicOverlay(
+  window.barcodeBatch,
+  BarcodeBatchBasicOverlayStyle.Dot,
+);
+window.view.addOverlay(basicOverlay);
+```
+
+> **Note**: The style is fixed at construction. To change it at runtime, remove the existing
+> overlay (`view.removeOverlay`) and add a new one with the desired style. Re-applying brushes is
+> not needed for a plain style switch.
+
 ### IBarcodeBatchBasicOverlayListener Callbacks
 
 | Callback | Description |
 |----------|-------------|
 | `brushForTrackedBarcode(overlay, trackedBarcode)` | Return a `Brush` (or `null` to hide) for a newly tracked barcode. Called from the rendering thread. Requires MatrixScan AR add-on. |
 | `didTapTrackedBarcode(overlay, trackedBarcode)` | Called when the user taps a tracked barcode highlight. Called from the main thread. |
+
+#### Handling taps on a tracked-barcode highlight
+
+Set `didTapTrackedBarcode` on the basic-overlay listener to react when the user taps a highlight
+(for example to open a detail view for that code). The callback receives the overlay and the
+`TrackedBarcode` that was tapped:
+
+```javascript
+basicOverlay.listener = {
+  didTapTrackedBarcode: (overlay, trackedBarcode) => {
+    console.log('Tapped barcode:', trackedBarcode.barcode.data);
+    // e.g. navigate to a detail screen for trackedBarcode.barcode.data
+  },
+};
+```
+
+> **Note**: The `BarcodeBatchBasicOverlay` listener (including `didTapTrackedBarcode` and
+> `brushForTrackedBarcode`) requires the **MatrixScan AR add-on**. `didTapTrackedBarcode` is the
+> basic-overlay tap callback; the advanced overlay uses `didTapViewForTrackedBarcode` instead
+> (see Step 7).
 
 ## Step 7 — BarcodeBatchAdvancedOverlay: AR Annotations
 
@@ -435,6 +507,33 @@ function createBubble(barcodeData) {
 | `offsetForTrackedBarcode(overlay, trackedBarcode)` | Return a `PointWithUnit` offset. |
 | `didTapViewForTrackedBarcode(overlay, trackedBarcode)` | Called when the user taps the AR view. |
 
+#### Handling taps on an AR bubble
+
+To react when the user taps a bubble rendered by the advanced overlay, add
+`didTapViewForTrackedBarcode` to the advanced-overlay listener. The callback receives the overlay
+and the tapped `TrackedBarcode`:
+
+```javascript
+window.advancedOverlay.listener = {
+  anchorForTrackedBarcode: (overlay, trackedBarcode) => Anchor.TopCenter,
+  offsetForTrackedBarcode: (overlay, trackedBarcode) =>
+    new PointWithUnit(
+      new NumberWithUnit(0, MeasureUnit.Fraction),
+      new NumberWithUnit(-1, MeasureUnit.Fraction),
+    ),
+
+  // Tap callback for the advanced (AR) overlay.
+  didTapViewForTrackedBarcode: (overlay, trackedBarcode) => {
+    console.log('Tapped AR bubble:', trackedBarcode.barcode.data);
+    // e.g. open a detail view for trackedBarcode.barcode.data
+  },
+};
+```
+
+> **Important**: For the advanced overlay use `didTapViewForTrackedBarcode` — **not**
+> `didTapTrackedBarcode` (that callback belongs to the `BarcodeBatchBasicOverlay` listener, Step 6).
+> Like the rest of `BarcodeBatchAdvancedOverlay`, it requires the **MatrixScan AR add-on**.
+
 ### TrackedBarcodeView
 
 `TrackedBarcodeView` is the serialized view type used by Capacitor's advanced overlay. It wraps a DOM element for transmission to the native layer.
@@ -452,6 +551,57 @@ await window.camera.switchToDesiredState(FrameSourceState.On);
 // Enable the mode to start tracking.
 window.barcodeBatch.isEnabled = true;
 ```
+
+## Step 8b — Feedback (Sound / Vibration)
+
+Unlike `BarcodeCapture` (single-scan), **`BarcodeBatch` has no built-in feedback** — there is no
+`barcodeBatch.feedback` property, and the SDK does **not** automatically beep or vibrate when a
+barcode is tracked. MatrixScan tracks many barcodes continuously, so emitting feedback per frame
+would be constant noise. If you want a sound/vibration cue, you must construct a `Feedback` object
+yourself and call `emit()` from your listener, deciding when it makes sense (typically once per
+newly tracked barcode).
+
+`Feedback`, `Sound`, and `Vibration` come from `scandit-capacitor-datacapture-core`:
+
+```javascript
+import {
+  Feedback,
+  Sound,
+  Vibration,
+} from 'scandit-capacitor-datacapture-core';
+
+// Construct ONCE — outside the listener — so it isn't rebuilt on every frame.
+// new Feedback(vibration, sound): either argument may be null.
+const successFeedback = new Feedback(
+  Vibration.defaultVibration,
+  Sound.defaultSound,
+);
+// Alternatively: const successFeedback = Feedback.defaultFeedback;
+
+window.barcodeBatch.addListener({
+  didUpdateSession: async (barcodeBatch, session) => {
+    // Emit only for barcodes that appeared this frame — not for every tracked
+    // barcode on every frame.
+    if (session.addedTrackedBarcodes.length > 0) {
+      successFeedback.emit();
+    }
+  },
+});
+```
+
+### Feedback Key Members
+
+| Member | Available | Description |
+|--------|-----------|-------------|
+| `new Feedback(vibration, sound)` | capacitor=6.8 | Construct with a `Vibration?` and a `Sound?` (either may be `null`). |
+| `Feedback.defaultFeedback` | capacitor=6.8 | A ready-made feedback with the default sound and vibration. |
+| `feedback.emit()` | capacitor=6.8 | Emits the configured sound and/or vibration. Subject to the device ring mode / volume. |
+| `Vibration.defaultVibration` | capacitor=6.8 | The default system vibration. |
+| `Sound.defaultSound` | capacitor=6.8 | The default beep. Pass a custom `Sound` for a different tone. |
+
+> **Note**: `emit()` is influenced by the device's ring mode and volume settings — a correctly
+> configured `Feedback` may still play nothing if the device is muted. On some browsers/web targets
+> vibration is unsupported and only the sound (if any) is played.
 
 ## Step 9 — Lifecycle: Enable/Disable and Cleanup
 
