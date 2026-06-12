@@ -1,0 +1,40 @@
+{
+  "skill_name": "matrixscan-batch-android",
+  "evals": [
+    {
+      "id": "m1",
+      "prompt": "I'm upgrading my Android MatrixScan app from Scandit SDK v6 to v7. The app uses BarcodeTracking. Here is my Activity that I need migrated to the new API. Show me the full updated file.\n\n```kotlin\npackage com.example.myapp\n\nimport android.os.Bundle\nimport androidx.appcompat.app.AppCompatActivity\nimport com.scandit.datacapture.barcode.tracking.capture.BarcodeTracking\nimport com.scandit.datacapture.barcode.tracking.capture.BarcodeTrackingListener\nimport com.scandit.datacapture.barcode.tracking.capture.BarcodeTrackingSession\nimport com.scandit.datacapture.barcode.tracking.capture.BarcodeTrackingSettings\nimport com.scandit.datacapture.barcode.tracking.data.TrackedBarcode\nimport com.scandit.datacapture.barcode.tracking.ui.overlay.BarcodeTrackingBasicOverlay\nimport com.scandit.datacapture.barcode.data.Symbology\nimport com.scandit.datacapture.core.capture.DataCaptureContext\nimport com.scandit.datacapture.core.data.FrameData\nimport com.scandit.datacapture.core.source.Camera\nimport com.scandit.datacapture.core.source.FrameSourceState\nimport com.scandit.datacapture.core.ui.DataCaptureView\n\nclass MainActivity : AppCompatActivity(), BarcodeTrackingListener {\n\n    private val dataCaptureContext =\n        DataCaptureContext.forLicenseKey(\"-- ENTER YOUR SCANDIT LICENSE KEY HERE --\")\n    private val camera = Camera.getDefaultCamera(BarcodeTracking.createRecommendedCameraSettings())\n    private val barcodeTracking: BarcodeTracking\n\n    init {\n        dataCaptureContext.setFrameSource(camera)\n        val settings = BarcodeTrackingSettings().apply {\n            enableSymbology(Symbology.EAN13_UPCA, true)\n        }\n        barcodeTracking = BarcodeTracking.forDataCaptureContext(dataCaptureContext, settings)\n        barcodeTracking.addListener(this)\n    }\n\n    override fun onCreate(savedInstanceState: Bundle?) {\n        super.onCreate(savedInstanceState)\n        val view = DataCaptureView.newInstance(this, dataCaptureContext)\n        BarcodeTrackingBasicOverlay.newInstance(barcodeTracking, view)\n        setContentView(view)\n    }\n\n    override fun onSessionUpdated(mode: BarcodeTracking, session: BarcodeTrackingSession, data: FrameData) {}\n    override fun onObservationStarted(barcodeTracking: BarcodeTracking) {}\n    override fun onObservationStopped(barcodeTracking: BarcodeTracking) {}\n}\n```",
+      "expected_output": "The skill applies the v6 to v7 rename: every BarcodeTracking* type becomes its BarcodeBatch* equivalent (mode, settings, listener, session, basic overlay), the com.scandit.datacapture.barcode.tracking.* package paths become com.scandit.datacapture.barcode.batch.* (capture / data / ui.overlay), and the factory pattern BarcodeBatch.forDataCaptureContext(context, settings) is preserved. Provides the Android v6 to v7 migration guide URL.",
+      "files": [],
+      "assertions": [
+        {"text": "BarcodeTracking is renamed to BarcodeBatch in the migrated code (semantic)"},
+        {"text": "BarcodeTrackingSettings is renamed to BarcodeBatchSettings in the migrated code (semantic)"},
+        {"text": "BarcodeTrackingListener is renamed to BarcodeBatchListener in the migrated code (semantic)"},
+        {"text": "BarcodeTrackingSession is renamed to BarcodeBatchSession in the migrated code (semantic)"},
+        {"text": "BarcodeTrackingBasicOverlay is renamed to BarcodeBatchBasicOverlay in the migrated code (semantic)"},
+        {"text": "Import paths use com.scandit.datacapture.barcode.batch.capture for BarcodeBatch, BarcodeBatchSettings, BarcodeBatchListener, BarcodeBatchSession"},
+        {"text": "TrackedBarcode is imported from com.scandit.datacapture.barcode.batch.data"},
+        {"text": "BarcodeBatchBasicOverlay is imported from com.scandit.datacapture.barcode.batch.ui.overlay"},
+        {"text": "No com.scandit.datacapture.barcode.tracking. import path remains in the migrated code blocks (semantic)"},
+        {"text": "No BarcodeTracking-prefixed identifier remains in the migrated code blocks (semantic)"},
+        {"text": "The factory call BarcodeBatch.forDataCaptureContext(dataCaptureContext, settings) is used (the factory shape is unchanged)"},
+        {"text": "BarcodeBatch.createRecommendedCameraSettings() is used for the camera"},
+        {"text": "The Android v6 to v7 migration guide URL https://docs.scandit.com/sdks/android/migrate-6-to-7/ is provided"}
+      ],
+      "tags": ["version-migration"]
+    },
+    {
+      "id": "m2",
+      "prompt": "I'm bumping my Android MatrixScan Batch app from Scandit SDK v7 to v8. I already use BarcodeBatch (not the old BarcodeTracking). What do I need to change in my BarcodeBatch code?",
+      "expected_output": "The skill explains that the BarcodeBatch API itself is unchanged from v7 to v8 — the factory BarcodeBatch.forDataCaptureContext, the BarcodeBatchListener / onSessionUpdated callback, the overlays, and the camera/lifecycle pattern all stay the same. It does NOT tell the user to rename anything to BarcodeTracking or change the factory. It points to the Android v7 to v8 migration guide for any SDK-wide (non-BarcodeBatch) changes.",
+      "files": [],
+      "assertions": [
+        {"text": "The skill states the BarcodeBatch mode/listener/overlay API is unchanged between v7 and v8 (semantic)"},
+        {"text": "The skill does NOT instruct renaming BarcodeBatch back to BarcodeTracking (the rename was v6 to v7, already done) (semantic)"},
+        {"text": "The skill does NOT instruct replacing BarcodeBatch.forDataCaptureContext( with a different factory or constructor (semantic)"},
+        {"text": "The Android v7 to v8 migration guide URL https://docs.scandit.com/sdks/android/migrate-7-to-8/ is provided"}
+      ],
+      "tags": ["version-migration"]
+    }
+  ]
+}
