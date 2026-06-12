@@ -175,6 +175,31 @@ barcodeBatch.addListener(listener);
 | `identifier` | `number` | Unique identifier for this track. Reused after the barcode is lost. |
 | `location` | `Quadrilateral` | Location of the barcode in image-space (requires MatrixScan AR add-on). |
 
+### Reading data off a tracked barcode
+
+Each `TrackedBarcode` exposes the per-track fields you need to build your own list, dedupe, or render labels. Read them inside `didUpdateSession` (the only place the session is safe to touch) and copy out what you keep:
+
+```typescript
+Object.values(session.trackedBarcodes).forEach((trackedBarcode: TrackedBarcode) => {
+  // Stable identifier for this track. Use it as a dedupe key — the same physical
+  // barcode keeps the same identifier across frames. (Reused after the track is lost.)
+  const id: number = trackedBarcode.identifier;
+
+  // The decoded barcode. `data` is the string payload; it is `string | null`.
+  const data: string | null = trackedBarcode.barcode.data;
+  const symbology: Symbology = trackedBarcode.barcode.symbology;
+
+  // Corner positions of the barcode. `location` is a Quadrilateral with
+  // topLeft / topRight / bottomRight / bottomLeft Points.
+  const location: Quadrilateral = trackedBarcode.location;
+  console.log(`#${id} [${symbology}] ${data}`, location.topLeft, location.bottomRight);
+});
+```
+
+- `identifier` is the right dedupe key. Do **not** dedupe on `barcode.data` if two different physical labels can share a value — use the track id.
+- `barcode.data` is `string | null`. Guard for `null` before using it (a code can be tracked before it is fully decoded).
+- `location` is in **image-space** (pixel coordinates of the camera frame) and **requires the MatrixScan AR add-on** — without the add-on it returns a quadrilateral with all corners at `(0, 0)`. To position your own UI over the barcode, convert the corners to view coordinates with the `DataCaptureView` method `view.viewQuadrilateralForFrameQuadrilateral(location)` (returns `Promise<Quadrilateral>`); do not assume the raw `location` corners are screen pixels.
+
 ## Step 4 — BarcodeBatchBasicOverlay: per-barcode brushes
 
 `BarcodeBatchBasicOverlay` renders a highlight frame or dot over each tracked barcode. Set a `listener` with `brushForTrackedBarcode` to return different brushes based on the tracked barcode's data or symbology.
@@ -227,6 +252,24 @@ function setupBasicOverlay(barcodeBatch: BarcodeBatch): BarcodeBatchBasicOverlay
 ```
 
 The overlay must be added to the `DataCaptureView` via `view.addOverlay(overlay)` in the view's `ref` callback (see Step 6).
+
+#### Handling taps on a highlight (`didTapTrackedBarcode`)
+
+The basic overlay listener has a second callback, `didTapTrackedBarcode`, called on the main thread when the user taps a tracked barcode's highlight. Use it to react to a tap — e.g. show the barcode's data or open a detail screen:
+
+```typescript
+overlay.listener = {
+  brushForTrackedBarcode: (_overlay, _trackedBarcode: TrackedBarcode) => greenBrush,
+
+  // Called from the main thread when a highlight is tapped.
+  didTapTrackedBarcode: (_overlay, trackedBarcode: TrackedBarcode) => {
+    console.log('Tapped highlight for', trackedBarcode.barcode.data);
+    // e.g. navigation.navigate('Detail', { code: trackedBarcode.barcode.data });
+  },
+};
+```
+
+> **Note**: `didTapTrackedBarcode` requires the **MatrixScan AR add-on** (same as the rest of `IBarcodeBatchBasicOverlayListener`). A barcode whose `brushForTrackedBarcode` returned `null` draws no highlight and therefore **cannot be tapped** — the tap callback will not fire for it.
 
 ### BarcodeBatchBasicOverlay Members
 
@@ -395,6 +438,29 @@ const barcodeBatchListenerRef = useRef({
 
 > The view passed to `setViewForTrackedBarcode` must be a `BarcodeBatchAdvancedOverlayView` subclass instance. Passing a plain React element is not supported on React Native.
 
+### 5e — Handling taps on an AR view (`didTapViewForTrackedBarcode`)
+
+The advanced overlay listener exposes `didTapViewForTrackedBarcode` — the advanced-overlay equivalent of the basic overlay's `didTapTrackedBarcode`. It is called when the user taps the AR view anchored to a tracked barcode. Add it to the same `overlay.listener` object that carries `anchorForTrackedBarcode` and `offsetForTrackedBarcode`:
+
+```typescript
+overlay.listener = {
+  anchorForTrackedBarcode: (_overlay, _trackedBarcode) => Anchor.TopCenter,
+  offsetForTrackedBarcode: (_overlay, _trackedBarcode) =>
+    new PointWithUnit(
+      new NumberWithUnit(0, MeasureUnit.Fraction),
+      new NumberWithUnit(-1, MeasureUnit.Fraction),
+    ),
+
+  // Called when the AR view for a tracked barcode is tapped.
+  didTapViewForTrackedBarcode: (_overlay, trackedBarcode: TrackedBarcode) => {
+    console.log('Tapped AR bubble for', trackedBarcode.barcode.data, trackedBarcode.identifier);
+    // e.g. navigation.navigate('Detail', { code: trackedBarcode.barcode.data });
+  },
+};
+```
+
+> **Note**: `didTapViewForTrackedBarcode` requires the **MatrixScan AR add-on**. Use it for the custom AR views; for the simple frame/dot highlights use the basic overlay's `didTapTrackedBarcode` instead (see Step 4).
+
 ### Advanced Overlay Members
 
 | Member | Available | Description |
@@ -528,6 +594,52 @@ useEffect(() => {
 ```
 
 > Use `dataCaptureContext.removeMode(barcodeBatch)` for cleanup, **not** `setFrameSource(null)`. The BarcodeBatch mode is removed from the context so it stops processing frames.
+
+## Step 7b — Feedback (beep / vibration)
+
+Unlike single-barcode `BarcodeCapture` (which has a `BarcodeCaptureFeedback` and beeps automatically on every scan), **`BarcodeBatch` has no automatic feedback** — there is no `BarcodeBatchFeedback` class, and the mode never beeps or vibrates on its own. If you want audible/haptic feedback when a barcode starts being tracked, you must construct a `Feedback` and call `emit()` yourself.
+
+```typescript
+import { Feedback, Vibration, Sound } from 'scandit-react-native-datacapture-core';
+
+// Build the feedback once (default beep + default vibration).
+// Pass null for either channel to disable it, e.g. new Feedback(Vibration.defaultVibration, null).
+const scanFeedback = new Feedback(Vibration.defaultVibration, Sound.defaultSound);
+// Alternatively: const scanFeedback = Feedback.defaultFeedback;
+
+// Track which barcodes have already triggered feedback so each one beeps only once.
+const seenIdentifiers = new Set<number>();
+
+const listener = {
+  didUpdateSession: async (_batch: BarcodeBatch, session: BarcodeBatchSession) => {
+    // Emit only for barcodes that started being tracked this frame…
+    session.addedTrackedBarcodes.forEach(trackedBarcode => {
+      // …and dedupe by the stable track identifier so the same barcode does not
+      // re-beep on later frames.
+      if (!seenIdentifiers.has(trackedBarcode.identifier)) {
+        seenIdentifiers.add(trackedBarcode.identifier);
+        scanFeedback.emit();
+      }
+    });
+  },
+};
+
+barcodeBatch.addListener(listener);
+```
+
+- Iterate `session.addedTrackedBarcodes` (not all `trackedBarcodes`) so you emit once per new barcode rather than on every frame.
+- Dedupe on `trackedBarcode.identifier` — emitting per `addedTrackedBarcodes` entry is usually enough, but keeping a `Set` guards against a track being briefly lost and re-added.
+- `Feedback`, `Vibration`, and `Sound` are imported from `scandit-react-native-datacapture-core`. `Vibration.defaultVibration` and `Sound.defaultSound` are the standard success cues; emission is still subject to the device's ring mode and volume.
+
+### Feedback API (core)
+
+| Member | Available | Description |
+|--------|-----------|-------------|
+| `new Feedback(vibration, sound)` | react-native=6.5 | Construct a feedback from a `Vibration` (or `null`) and a `Sound` (or `null`). |
+| `Feedback.defaultFeedback` | react-native=6.5 | Static getter: default sound + default vibration. |
+| `feedback.emit()` | react-native=6.5 | Emit the configured sound and vibration. |
+| `Vibration.defaultVibration` | react-native=6.5 | Static getter for the default success vibration. |
+| `Sound.defaultSound` | react-native=6.5 | Static getter for the default success beep. |
 
 ## Step 8 — Camera Permissions
 
