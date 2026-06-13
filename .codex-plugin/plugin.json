@@ -1,0 +1,59 @@
+{
+  "name": "scandit-sdk",
+  "version": "1.0.0",
+  "description": "AI agent skills for integrating the Scandit Data Capture SDK — product selection, documentation, and implementation guides for barcode scanning, ID capture, and smart label capture.",
+  "author": {
+    "name": "Scandit",
+    "email": "support@scandit.com",
+    "url": "https://www.scandit.com/"
+  },
+  "homepage": "https://docs.scandit.com",
+  "repository": "https://github.com/scandit/skills",
+  "license": "MIT",
+  "keywords": [
+    "scandit",
+    "barcode",
+    "scanning",
+    "barcode-scanning",
+    "barcode-capture",
+    "sparkscan",
+    "matrixscan",
+    "matrixscan-ar",
+    "matrixscan-count",
+    "matrixscan-batch",
+    "label-capture",
+    "smart-label-capture",
+    "data-capture",
+    "ios",
+    "web",
+    "react-native",
+    "flutter",
+    "capacitor",
+    "cordova",
+    "dotnet",
+    "net",
+    "net-android",
+    "net-ios",
+    "maui",
+    "xamarin",
+    "sdk",
+    "smart-data-capture"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Scandit SDK",
+    "shortDescription": "Integrate the Scandit Data Capture SDK — barcode scanning, ID capture, and smart label capture.",
+    "longDescription": "Install the Scandit SDK skills to teach Codex how to integrate Scandit's barcode scanning, ID capture, and smart label capture products correctly. Includes a product-selection advisor plus per-product, per-framework implementation and migration guides for iOS, Android, web, React Native, Flutter, Capacitor, Cordova, and .NET/MAUI.",
+    "developerName": "Scandit",
+    "category": "Developer Tools",
+    "capabilities": ["Read", "Write"],
+    "websiteURL": "https://www.scandit.com/",
+    "defaultPrompt": [
+      "Help me choose the right Scandit product for my scanning use case.",
+      "Add SparkScan barcode scanning to my app."
+    ],
+    "composerIcon": "./assets/logo.svg",
+    "logo": "./assets/logo.svg",
+    "screenshots": []
+  }
+}
