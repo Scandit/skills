@@ -101,6 +101,26 @@ Copilot CLI does not auto-update plugins — re-run periodically to pull the lat
 copilot plugin update scandit-sdk
 ```
 
+### Codex plugin
+
+[Codex](https://developers.openai.com/codex/) can also install the skills as a plugin from the marketplace. Run the commands one at a time:
+
+```bash
+codex plugin marketplace add scandit/skills
+```
+
+```bash
+codex plugin add scandit-sdk@scandit-plugins
+```
+
+Codex does not auto-update plugins — re-run periodically to pull the latest skills:
+
+```bash
+codex plugin marketplace upgrade scandit-plugins
+```
+
+See the [Codex plugins docs](https://developers.openai.com/codex/plugins) for details.
+
 ## Using a skill
 
 Two ways the skill is invoked:
