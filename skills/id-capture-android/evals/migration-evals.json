@@ -1,0 +1,52 @@
+{
+  "skill_name": "id-capture-android",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Migrate this v6 ID Capture implementation to the current SDK API.",
+      "expected_output": "Updated Activity using acceptedDocuments with typed document objects, scanner = IdCaptureScanner(FullDocumentScanner()), the v8 onIdCaptured(idCapture, capturedId) and onIdRejected(idCapture, capturedId, rejectionReason) callbacks, and no IdCaptureSession / FrameData / supportedDocuments / supportedSides.",
+      "files": [
+        "evals/fixtures/V6IdCaptureActivity.kt"
+      ],
+      "assertions": [
+        {
+          "text": "Replaces the supportedDocuments bitmask (IdDocumentType / EnumSet) with acceptedDocuments using typed document objects e.g. IdCard(IdCaptureRegion.ANY), DriverLicense(IdCaptureRegion.ANY), Passport(IdCaptureRegion.ANY)"
+        },
+        {
+          "text": "The v8 capture callback onIdCaptured(IdCapture, CapturedId) is implemented (parameter names may vary, e.g. mode/id) and reads the CapturedId directly from the parameter, not from session.newlyCapturedId (semantic)"
+        },
+        {
+          "text": "The v8 reject callback onIdRejected(IdCapture, CapturedId?, RejectionReason) is implemented (parameter names may vary, e.g. mode/id/reason) (semantic)"
+        },
+        {
+          "text": "IdCaptureSession and FrameData are not used in the migrated v8 code, and the onIdLocalized / onObservationStarted / onObservationStopped overrides are removed (semantic)"
+        },
+        {
+          "text": "Sets settings.scanner = IdCaptureScanner(FullDocumentScanner()) — does NOT use settings.scannerType or settings.supportedSides"
+        },
+        {
+          "text": "Keeps DataCaptureContext.forLicenseKey(...) and IdCapture.forDataCaptureContext(...) (these did not change on Android)"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Migrate this v7 ID Capture implementation to the current SDK API.",
+      "expected_output": "Updated Activity replacing settings.scannerType = FullDocumentScanner() with settings.scanner = IdCaptureScanner(FullDocumentScanner()).",
+      "files": [
+        "evals/fixtures/V7IdCaptureActivity.kt"
+      ],
+      "assertions": [
+        {
+          "text": "Replaces settings.scannerType = FullDocumentScanner() with settings.scanner = IdCaptureScanner(FullDocumentScanner())"
+        },
+        {
+          "text": "Does NOT use settings.scannerType"
+        },
+        {
+          "text": "Leaves the already-modern onIdCaptured / onIdRejected callbacks and acceptedDocuments list intact (semantic)"
+        }
+      ]
+    }
+  ]
+}
