@@ -157,24 +157,23 @@ let overlay = BarcodeBatchBasicOverlay(barcodeBatch: barcodeBatch, view: capture
 | `clearTrackedBarcodeBrushes()` | Clear all custom brushes. |
 | `shouldShowScanAreaGuides` | Debug: show the active scan area outline. |
 
-### Per-barcode brush customization (requires MatrixScan AR add-on)
+### Reacting to taps on a barcode (requires MatrixScan AR add-on)
 
-Conform to `BarcodeBatchBasicOverlayDelegate` to return a different brush per barcode. The `brushFor` callback fires on the **rendering thread**; the `didTap` callback fires on the **main thread**.
+Conform to `BarcodeBatchBasicOverlayDelegate` and implement `didTap` to react to the user tapping a highlight. The `didTap` callback fires on the **main thread**.
+
+`brushFor` is a **required** member of the protocol, so adopting the delegate forces you to implement it too. **It must return a brush** — returning `nil` draws nothing for that barcode, which removes the highlight, and with no highlight there is nothing for the user to tap. For a tap-only feature, return the default brush so highlights stay visible:
 
 ```swift
 extension ScanViewController: BarcodeBatchBasicOverlayDelegate {
 
+    // Required by the protocol. Return a real brush so highlights stay
+    // visible and tappable — returning nil blanks the highlight and the
+    // tap can never fire.
     func barcodeBatchBasicOverlay(
         _ overlay: BarcodeBatchBasicOverlay,
         brushFor trackedBarcode: TrackedBarcode
     ) -> Brush? {
-        // Return nil to draw nothing for this barcode.
-        switch trackedBarcode.barcode.symbology {
-        case .ean13UPCA:
-            return Brush(fill: UIColor.green.withAlphaComponent(0.4), stroke: .green, strokeWidth: 2)
-        default:
-            return nil
-        }
+        return BarcodeBatchBasicOverlay.defaultBrush(forStyle: overlay.style)
     }
 
     func barcodeBatchBasicOverlay(
@@ -191,7 +190,26 @@ Assign the delegate after creating the overlay:
 overlay.delegate = self
 ```
 
-> **MatrixScan AR add-on required** for the `brushFor` delegate callback and `setBrush(_:for:)`. A uniform default brush (no delegate) does not require the add-on.
+> **MatrixScan AR add-on required** — adopting `BarcodeBatchBasicOverlayDelegate` (the only way to receive `didTap`), the `brushFor` callback, and `setBrush(_:for:)` all require the add-on. A uniform default brush (no delegate) does not.
+
+### Per-barcode brush customization (requires MatrixScan AR add-on)
+
+The same `brushFor` callback returns a different brush per barcode. It fires on the **rendering thread**. Returning `nil` draws nothing for that barcode — only do this when you genuinely want that code invisible (and not tappable):
+
+```swift
+func barcodeBatchBasicOverlay(
+    _ overlay: BarcodeBatchBasicOverlay,
+    brushFor trackedBarcode: TrackedBarcode
+) -> Brush? {
+    switch trackedBarcode.barcode.symbology {
+    case .ean13UPCA:
+        return Brush(fill: UIColor.green.withAlphaComponent(0.4), stroke: .green, strokeWidth: 2)
+    default:
+        // No highlight for other symbologies — they are also not tappable.
+        return nil
+    }
+}
+```
 
 ## Step 7 — BarcodeBatchListener
 

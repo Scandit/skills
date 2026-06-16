@@ -259,7 +259,7 @@
     {
       "id": 7,
       "prompt": "When the user taps a highlighted barcode in my MatrixScan Batch view, I want to print the tapped barcode's data. Here is my view controller: IntegratedViewController.swift",
-      "expected_output": "The skill conforms to BarcodeBatchBasicOverlayDelegate, implements barcodeBatchBasicOverlay(_:didTap:) to read trackedBarcode.barcode.data, assigns overlay.delegate = self, and notes that the tap callback fires on the main thread and that the delegate requires the MatrixScan AR add-on license.",
+      "expected_output": "The skill conforms to BarcodeBatchBasicOverlayDelegate, implements barcodeBatchBasicOverlay(_:didTap:) to read trackedBarcode.barcode.data, assigns overlay.delegate = self, and notes that the tap callback fires on the main thread and that the delegate requires the MatrixScan AR add-on license. Because brushFor is a required protocol member, the skill also implements it returning a real brush (e.g. BarcodeBatchBasicOverlay.defaultBrush(forStyle: overlay.style)) — NOT nil — so highlights stay visible and remain tappable.",
       "files": [
         "fixtures/IntegratedViewController.swift"
       ],
@@ -272,6 +272,9 @@
         },
         {
           "text": "trackedBarcode.barcode.data is read inside the didTap callback"
+        },
+        {
+          "text": "(semantic) the required barcodeBatchBasicOverlay(_:brushFor:) member returns a real brush (e.g. BarcodeBatchBasicOverlay.defaultBrush(forStyle:) or a custom Brush), NOT nil, so highlights remain visible and tappable"
         },
         {
           "text": "overlay.delegate = self (or equivalent) is assigned"
