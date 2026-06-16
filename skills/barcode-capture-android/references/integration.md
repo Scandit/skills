@@ -379,7 +379,7 @@ For per-result feedback (e.g. success sound only, no vibration), fetch the Advan
 
 ### Viewfinder
 
-Attach a viewfinder to the overlay to draw a guide on the preview:
+Attach a viewfinder to the overlay to draw a guide on the preview. Assign it to the `viewfinder` property of the `BarcodeCaptureOverlay`:
 
 ```kotlin
 import com.scandit.datacapture.core.ui.viewfinder.RectangularViewfinder
@@ -387,6 +387,28 @@ import com.scandit.datacapture.core.ui.viewfinder.RectangularViewfinderStyle
 
 overlay.viewfinder = RectangularViewfinder(RectangularViewfinderStyle.SQUARE)
 ```
+
+**Aimer viewfinder** — a small crosshair/aimer with an embedded Scandit logo. Recommended when pairing with `RadiusLocationSelection`. `AimerViewfinder` has no constructor arguments; tune it via `frameColor` and `dotColor`.
+
+```kotlin
+import com.scandit.datacapture.core.ui.viewfinder.AimerViewfinder
+
+overlay.viewfinder = AimerViewfinder()
+```
+
+**Laserline viewfinder** — a horizontal laser line with a Scandit logo underneath, centered on the view's point of interest. `LaserlineViewfinder` has no constructor arguments; tune it via `width`, `enabledColor`, and `disabledColor`.
+
+```kotlin
+import com.scandit.datacapture.core.ui.viewfinder.LaserlineViewfinder
+
+overlay.viewfinder = LaserlineViewfinder()
+```
+
+| Viewfinder | Constructor | Tunable properties |
+|------------|-------------|--------------------|
+| `RectangularViewfinder` | `RectangularViewfinder(RectangularViewfinderStyle.SQUARE)` | style, color, dimming |
+| `AimerViewfinder` | `AimerViewfinder()` | `frameColor`, `dotColor` |
+| `LaserlineViewfinder` | `LaserlineViewfinder()` | `width`, `enabledColor`, `disabledColor` |
 
 ### CodeDuplicateFilter
 
@@ -402,11 +424,125 @@ Set this before calling `BarcodeCapture.forDataCaptureContext(dataCaptureContext
 
 ### LocationSelection
 
-To restrict scanning to a sub-area of the preview, fetch the [Advanced Configurations](https://docs.scandit.com/sdks/android/barcode-capture/advanced/) page for the `RectangularLocationSelection` API — the exact method signatures need to be verified against the live docs.
+To restrict scanning to a sub-area of the preview, assign an `ILocationSelection` to `settings.locationSelection`. Only barcodes inside the selected area are reported. Set it on the `BarcodeCaptureSettings` before constructing the mode (or re-apply via `barcodeCapture.applySettings(newSettings)`).
+
+`RectangularLocationSelection` is created with a static factory — there is no public constructor. Use `withSize(SizeWithUnit)`, `withWidthAndAspectRatio(...)`, or `withHeightAndAspectRatio(...)`. Sizes use `DoubleWithUnit` with `MeasureUnit.FRACTION` for view-relative dimensions (or `MeasureUnit.DIP` / `MeasureUnit.PIXEL` for absolute).
+
+```kotlin
+import com.scandit.datacapture.core.area.RectangularLocationSelection
+import com.scandit.datacapture.core.area.RadiusLocationSelection
+import com.scandit.datacapture.core.geometry.MeasureUnit
+import com.scandit.datacapture.core.geometry.DoubleWithUnit
+import com.scandit.datacapture.core.geometry.SizeWithUnit
+
+// A rectangle 90% of the view width by 30% of the view height, centered on the point of interest.
+settings.locationSelection = RectangularLocationSelection.withSize(
+    SizeWithUnit(
+        DoubleWithUnit(0.9, MeasureUnit.FRACTION),
+        DoubleWithUnit(0.3, MeasureUnit.FRACTION)
+    )
+)
+```
+
+`RadiusLocationSelection` selects codes touching a circle of the given radius, centered on the point of interest. It takes a single `DoubleWithUnit` radius (fractional radius is relative to the view's width):
+
+```kotlin
+settings.locationSelection = RadiusLocationSelection(DoubleWithUnit(0.2, MeasureUnit.FRACTION))
+```
+
+### Symbology extensions
+
+Some symbologies support extensions that toggle symbology-specific behavior (e.g. Code 39 full ASCII, UPC-A leading-zero handling). Get the per-symbology `SymbologySettings` and call `setExtensionEnabled(extension, enabled)`:
+
+```kotlin
+settings.getSymbologySettings(Symbology.CODE39).setExtensionEnabled("full_ascii", true)
+```
+
+The set of currently enabled extensions is exposed read-only via `enabledExtensions`. See [Symbology Properties](https://docs.scandit.com/symbology-properties) for the list of supported extension names per symbology.
+
+### Symbology checksums
+
+Optional checksums are configured per symbology through `SymbologySettings.checksums`, an `EnumSet<Checksum>`. A code is accepted if any of the listed checksums matches in addition to any mandatory checksum. Checksum enum values are SCREAMING_SNAKE in Kotlin (e.g. `Checksum.MOD_43`, `Checksum.MOD_10`, `Checksum.MOD_11`).
+
+```kotlin
+import com.scandit.datacapture.barcode.data.Checksum
+import java.util.EnumSet
+
+settings.getSymbologySettings(Symbology.CODE39).checksums = EnumSet.of(Checksum.MOD_43)
+```
+
+### Active symbol counts
+
+Variable-length 1D symbologies (Code 39, Code 128, ITF, etc.) only decode a default length range. To scan shorter or longer codes, set `SymbologySettings.activeSymbolCounts` to the desired `Set<Int>`. The setting is ignored for fixed-size symbologies (EAN/UPC) and 2D codes.
+
+```kotlin
+settings.getSymbologySettings(Symbology.CODE39).activeSymbolCounts =
+    setOf(7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20)
+```
+
+### Color-inverted codes
+
+By default only dark-on-bright codes are decoded. To also scan bright-on-dark (color-inverted) codes for a symbology, set `SymbologySettings.isColorInvertedEnabled = true`. The symbology must also be enabled (`isEnabled = true` / `enableSymbology(...)`).
+
+```kotlin
+settings.getSymbologySettings(Symbology.CODE128).isColorInvertedEnabled = true
+```
+
+### Reject / filter scanned barcodes
+
+BarcodeCapture has no built-in reject API — implement rejection inside `onBarcodeScanned` by inspecting the barcode and choosing whether to act on it. To give visual feedback that a code was rejected (no highlight), set the overlay `brush` to a transparent brush; to highlight an accepted code, leave the default brush. A common pattern is to filter by `barcode.data`:
+
+```kotlin
+override fun onBarcodeScanned(
+    barcodeCapture: BarcodeCapture,
+    session: BarcodeCaptureSession,
+    data: FrameData
+) {
+    val barcode = session.newlyRecognizedBarcode ?: return
+    val code = barcode.data ?: return
+    if (!code.startsWith("ACME-")) {
+        // Reject: don't highlight, keep scanning.
+        overlay.brush = Brush.TRANSPARENT
+        return
+    }
+    overlay.brush = BarcodeCaptureOverlay.defaultBrush()
+    barcodeCapture.isEnabled = false
+    runOnUiThread { /* handle accepted code */ }
+}
+```
+
+### Overlay brush
+
+The `BarcodeCaptureOverlay.brush` property controls how a recognized barcode is highlighted. It is read-write — assign a Kotlin property, do not call a setter. Construct a `Brush(fillColor, strokeColor, strokeWidth)` from ARGB `android.graphics.Color` values. Use `Brush.TRANSPARENT` to draw nothing, or `BarcodeCaptureOverlay.defaultBrush()` to restore the default Scandit-blue highlight.
+
+```kotlin
+import android.graphics.Color
+import com.scandit.datacapture.core.ui.style.Brush
+
+// Green fill (alpha 50), solid green stroke, 2dp stroke width:
+overlay.brush = Brush(Color.argb(128, 0, 200, 68), Color.rgb(0, 200, 68), 2f)
+
+// Hide the highlight entirely:
+overlay.brush = Brush.TRANSPARENT
+```
 
 ### Composite codes
 
-Composite codes (linear + 2D companion) require both symbologies and composite types to be enabled. Fetch the Advanced Configurations page for the exact API.
+Composite codes (a linear/1D component plus a 2D companion such as a GS1 DataBar with a PDF417) require **both** the component symbologies **and** the composite types to be enabled on the `BarcodeCaptureSettings`:
+
+1. Enable the symbologies for the composite types with `enableSymbologies(compositeTypes)` (Kotlin overload taking an `EnumSet<CompositeType>`).
+2. Enable the composite types themselves via the `enabledCompositeTypes` property.
+
+Composite type values are `CompositeType.A`, `CompositeType.B`, and `CompositeType.C`.
+
+```kotlin
+import com.scandit.datacapture.barcode.data.CompositeType
+import java.util.EnumSet
+
+val compositeTypes = EnumSet.of(CompositeType.A, CompositeType.B, CompositeType.C)
+settings.enableSymbologies(compositeTypes)
+settings.enabledCompositeTypes = compositeTypes
+```
 
 ## Key Rules
 

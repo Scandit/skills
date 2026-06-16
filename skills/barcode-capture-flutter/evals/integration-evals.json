@@ -22,13 +22,14 @@
         {"text": "Symbology.code128 is enabled"},
         {"text": "No symbologies except ean13Upca and code128 are enabled"},
         {"text": "Camera.defaultCamera is used as the frame source"},
-        {"text": "BarcodeCapture.recommendedCameraSettings is applied to the camera"},
+        {"text": "BarcodeCapture.createRecommendedCameraSettings() is applied to the camera"},
         {"text": "DataCaptureView.forContext( is used to create the view"},
-        {"text": "BarcodeCaptureOverlay.withBarcodeCaptureForView( is used (or BarcodeCaptureOverlay() + view.addOverlay)"},
+        {"text": "BarcodeCaptureOverlay(barcodeCapture) is constructed and attached with captureView.addOverlay(overlay)"},
         {"text": "barcodeCapture.addListener( is called to register the scan listener"},
         {"text": "A class implements BarcodeCaptureListener with didScan and didUpdateSession overrides"},
         {"text": "didScan signature uses Future<FrameData?> Function() for the getFrameData parameter"},
-        {"text": "Imports come from scandit_flutter_datacapture_core (DataCaptureContext, Camera, DataCaptureView) and scandit_flutter_datacapture_barcode (BarcodeCapture, BarcodeCaptureSettings, BarcodeCaptureOverlay, Symbology)"}
+        {"text": "Imports come from scandit_flutter_datacapture_core (DataCaptureContext, Camera, DataCaptureView) and scandit_flutter_datacapture_barcode (BarcodeCaptureSettings, Symbology)"},
+        {"text": "package:scandit_flutter_datacapture_barcode/scandit_flutter_datacapture_barcode_capture.dart is imported for BarcodeCapture, BarcodeCaptureOverlay, and BarcodeCaptureListener"}
       ]
     },
     {
@@ -163,6 +164,128 @@
         {"text": "scanIntention is set BEFORE BarcodeCapture(settings) is constructed"},
         {"text": "Existing integration code (context, barcodeCapture, captureView, listener) is preserved"}
       ]
+    },
+    {
+      "id": 11,
+      "prompt": "Add an aimer viewfinder to my BarcodeCapture preview so users have a dot to aim at the barcode. Use the built-in Scandit aimer.",
+      "expected_output": "The skill constructs an AimerViewfinder and assigns it to the BarcodeCaptureOverlay's viewfinder property. The overlay is promoted to a field so it can be mutated after construction.",
+      "files": [
+        "fixtures/IntegratedBloc.dart"
+      ],
+      "assertions": [
+        {"text": "AimerViewfinder() is constructed"},
+        {"text": "The viewfinder is assigned to the overlay via overlay.viewfinder ="},
+        {"text": "RectangularViewfinder is NOT used (the user asked for the aimer)"},
+        {"text": "Existing integration code (context, barcodeCapture, captureView, listener) is preserved"}
+      ],
+      "tags": ["aimer-viewfinder"]
+    },
+    {
+      "id": 12,
+      "prompt": "I want a horizontal laser-line viewfinder on my BarcodeCapture preview instead of a rectangle. Use the standard Scandit laserline.",
+      "expected_output": "The skill constructs a LaserlineViewfinder and assigns it to the BarcodeCaptureOverlay's viewfinder property. The overlay is promoted to a field so it can be mutated after construction.",
+      "files": [
+        "fixtures/IntegratedBloc.dart"
+      ],
+      "assertions": [
+        {"text": "LaserlineViewfinder() is constructed"},
+        {"text": "The viewfinder is assigned to the overlay via overlay.viewfinder ="},
+        {"text": "RectangularViewfinder is NOT used (the user asked for the laserline)"},
+        {"text": "Existing integration code (context, barcodeCapture, captureView, listener) is preserved"}
+      ],
+      "tags": ["laserline-viewfinder"]
+    },
+    {
+      "id": 13,
+      "prompt": "Change the highlight drawn over a recognized barcode in my BarcodeCapture preview to a green fill with a green outline. Set a custom overlay brush.",
+      "expected_output": "The skill assigns a Brush(fillColor, strokeColor, strokeWidth) to the BarcodeCaptureOverlay's brush property, using a green fill and green stroke. The overlay is promoted to a field so the brush can be set after construction.",
+      "files": [
+        "fixtures/IntegratedBloc.dart"
+      ],
+      "assertions": [
+        {"text": "A Brush is constructed with the (fillColor, strokeColor, strokeWidth) positional form"},
+        {"text": "The brush is assigned to the overlay via overlay.brush ="},
+        {"text": "The overlay is held as a field (promoted from the throwaway constructor local) so brush can be assigned"},
+        {"text": "Existing integration code (context, barcodeCapture, captureView, listener) is preserved"}
+      ],
+      "tags": ["overlay-brush"]
+    },
+    {
+      "id": 14,
+      "prompt": "In my BarcodeCapture app I only want to accept barcodes whose data starts with 'PROD-'. Any other code should be ignored and not highlighted. Wire up this rejection logic.",
+      "expected_output": "Inside didScan the skill checks barcode.data against the 'PROD-' prefix; for a non-matching code it sets overlay.brush = Brush.transparent and returns early without recording the scan. Matching codes are processed as before. The overlay is promoted to a field.",
+      "files": [
+        "fixtures/IntegratedBloc.dart"
+      ],
+      "assertions": [
+        {"text": "barcode.data is inspected inside didScan to decide accept vs reject"},
+        {"text": "The accept condition checks the 'PROD-' prefix (startsWith or equivalent) (semantic)"},
+        {"text": "For a rejected code, overlay.brush = Brush.transparent is set"},
+        {"text": "For a rejected code, the callback returns early without adding the barcode to the scanned list"},
+        {"text": "The overlay is held as a field so its brush can be mutated"},
+        {"text": "Existing integration code (context, barcodeCapture, captureView, listener) is preserved"}
+      ],
+      "tags": ["reject-pattern"]
+    },
+    {
+      "id": 15,
+      "prompt": "I'm scanning Code 39 barcodes that use the Full ASCII character set. Enable the Full ASCII extension on Code 39 in my BarcodeCapture settings.",
+      "expected_output": "The skill gets the Code 39 SymbologySettings via settings.settingsForSymbology(Symbology.code39) and enables the extension with setExtensionEnabled('full_ascii', enabled: true), before the BarcodeCapture mode is constructed.",
+      "files": [
+        "fixtures/IntegratedBloc.dart"
+      ],
+      "assertions": [
+        {"text": "settings.settingsForSymbology(Symbology.code39) is called"},
+        {"text": "setExtensionEnabled('full_ascii', enabled: true) is called on the Code 39 SymbologySettings"},
+        {"text": "The extension is enabled BEFORE BarcodeCapture(settings) is constructed"},
+        {"text": "Existing integration code (context, barcodeCapture, captureView, listener) is preserved"}
+      ],
+      "tags": ["symbology-extensions"]
+    },
+    {
+      "id": 16,
+      "prompt": "My Code 39 barcodes use a mod-43 checksum. Configure the optional checksum for Code 39 in my BarcodeCapture settings.",
+      "expected_output": "The skill gets the Code 39 SymbologySettings and sets checksums to a Set containing Checksum.mod43, before the BarcodeCapture mode is constructed.",
+      "files": [
+        "fixtures/IntegratedBloc.dart"
+      ],
+      "assertions": [
+        {"text": "settings.settingsForSymbology(Symbology.code39) is called"},
+        {"text": "checksums is assigned a Set containing Checksum.mod43"},
+        {"text": "The checksum is set BEFORE BarcodeCapture(settings) is constructed"},
+        {"text": "Existing integration code (context, barcodeCapture, captureView, listener) is preserved"}
+      ],
+      "tags": ["symbology-checksums"]
+    },
+    {
+      "id": 17,
+      "prompt": "My Code 128 codes vary in length from 7 to 20 characters and some aren't being read. Widen the active symbol counts for Code 128 in my BarcodeCapture settings.",
+      "expected_output": "The skill gets the Code 128 SymbologySettings and assigns activeSymbolCounts a Set of integers covering 7 through 20, before the BarcodeCapture mode is constructed.",
+      "files": [
+        "fixtures/IntegratedBloc.dart"
+      ],
+      "assertions": [
+        {"text": "settings.settingsForSymbology(Symbology.code128) is called"},
+        {"text": "activeSymbolCounts is assigned a Set of ints covering 7 through 20"},
+        {"text": "activeSymbolCounts is set BEFORE BarcodeCapture(settings) is constructed"},
+        {"text": "Existing integration code (context, barcodeCapture, captureView, listener) is preserved"}
+      ],
+      "tags": ["active-symbol-counts"]
+    },
+    {
+      "id": 18,
+      "prompt": "Some of our Code 128 labels are printed light-on-dark (color inverted). Enable reading of color-inverted Code 128 codes in my BarcodeCapture settings.",
+      "expected_output": "The skill gets the Code 128 SymbologySettings and sets isColorInvertedEnabled = true, before the BarcodeCapture mode is constructed.",
+      "files": [
+        "fixtures/IntegratedBloc.dart"
+      ],
+      "assertions": [
+        {"text": "settings.settingsForSymbology(Symbology.code128) is called"},
+        {"text": "isColorInvertedEnabled = true is set on the Code 128 SymbologySettings"},
+        {"text": "isColorInvertedEnabled is set BEFORE BarcodeCapture(settings) is constructed"},
+        {"text": "Existing integration code (context, barcodeCapture, captureView, listener) is preserved"}
+      ],
+      "tags": ["color-inverted"]
     }
   ]
 }

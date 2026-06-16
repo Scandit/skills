@@ -1,0 +1,44 @@
+{
+  "skill_name": "barcode-capture-cordova",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "My Cordova app uses phonegap-plugin-barcodescanner for scanning. I want to replace it with Scandit BarcodeCapture. Here is my scanner file: PhonegapScannerApp.js",
+      "expected_output": "Removes the cordova.plugins.barcodeScanner.scan call and its options, adds a continuous BarcodeCapture integration with matching symbologies (EAN13UPCA, Code128, QR), preserves the scannedItems array, the deduplication check, and the renderItems summary. Shows a setup checklist.",
+      "files": [
+        "fixtures/PhonegapScannerApp.js"
+      ],
+      "assertions": [
+        {"text": "cordova.plugins.barcodeScanner.scan( is NOT called in the new code (may appear in a before/after summary table)"},
+        {"text": "The phonegap result.cancelled / result.text / result.format object shape is NOT used in the new code (may appear in a summary)"},
+        {"text": "document.addEventListener('deviceready' is used as the init gate"},
+        {"text": "Scandit.DataCaptureContext.initialize( is present (v8 API used)"},
+        {"text": "Scandit.DataCaptureContext.forLicenseKey( is NOT present"},
+        {"text": "new Scandit.BarcodeCapture( is present (v8 constructor used)"},
+        {"text": "Scandit.BarcodeCapture.forContext( is NOT present"},
+        {"text": "context.setMode( or context.addMode( is called to register the mode"},
+        {"text": "barcodeCapture.addListener( registers a listener with a didScan callback"},
+        {"text": "session.newlyRecognizedBarcode is read inside didScan"},
+        {"text": "Scandit.Symbology.EAN13UPCA is enabled (mapped from the EAN_13 / UPC_A formats)"},
+        {"text": "Scandit.Symbology.Code128 is enabled (mapped from the CODE_128 format)"},
+        {"text": "Scandit.Symbology.QR is enabled (mapped from the QR_CODE format)"},
+        {"text": "Scandit.Symbology.QR_CODE does NOT appear as a Symbology enum value (the QR_CODE phonegap format string in a summary table is acceptable)"},
+        {"text": "Scandit.DataCaptureView.forContext( is present"},
+        {"text": "view.connectToElement( is called to mount the preview to a DOM element"},
+        {"text": "new Scandit.BarcodeCaptureOverlay( is present"},
+        {"text": "view.addOverlay( is called"},
+        {"text": "camera.switchToDesiredState(Scandit.FrameSourceState.On) is called to start the camera"},
+        {"text": "The Scandit.* global is used (no 'import ... from scandit-cordova-datacapture-*' statements in runtime code)"},
+        {"text": "The scannedItems array is preserved in the output"},
+        {"text": "The deduplication check (ignoring a code whose text/data was already scanned) is preserved (semantic)"},
+        {"text": "The renderItems summary function is preserved and called after each accepted scan"},
+        {"text": "A summary of changes is shown listing what was removed (phonegap-plugin-barcodescanner) and what was added (Scandit BarcodeCapture)"},
+        {"text": "Setup checklist mentions cordova plugin add scandit-cordova-datacapture-core and scandit-cordova-datacapture-barcode"},
+        {"text": "Setup checklist mentions removing the old plugin (cordova plugin remove phonegap-plugin-barcodescanner)"},
+        {"text": "Setup checklist mentions cordova prepare after the plugin changes"},
+        {"text": "Setup checklist mentions a sized DOM element (e.g. <div id=\"data-capture-view\">) is required for the camera preview"}
+      ],
+      "tags": ["third-party-migration"]
+    }
+  ]
+}

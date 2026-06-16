@@ -176,6 +176,131 @@
         {"text": "CompositeType is imported from scandit-react-native-datacapture-barcode"},
         {"text": "Existing integration code (context, BarcodeCapture mode, DataCaptureView JSX, listener, overlay) is preserved"}
       ]
+    },
+    {
+      "id": 11,
+      "prompt": "Add an aimer-style viewfinder (a crosshair dot with a frame) to my BarcodeCapture React Native app so users can aim at a single barcode. Make the dot red.",
+      "expected_output": "The skill constructs an AimerViewfinder, sets its dotColor to red, and assigns it to the BarcodeCaptureOverlay's viewfinder property.",
+      "files": [
+        "fixtures/IntegratedApp.tsx"
+      ],
+      "assertions": [
+        {"text": "new AimerViewfinder( is constructed"},
+        {"text": "AimerViewfinder is imported from scandit-react-native-datacapture-core"},
+        {"text": "aimer.dotColor is assigned a Color value"},
+        {"text": "The aimer is assigned to the overlay via overlay.viewfinder ="},
+        {"text": "Existing integration code (context, BarcodeCapture mode, DataCaptureView JSX, listener, overlay) is preserved"}
+      ],
+      "tags": ["aimer-viewfinder"]
+    },
+    {
+      "id": 12,
+      "prompt": "Add a laserline viewfinder to my BarcodeCapture React Native app for scanning 1D barcodes like a laser scanner.",
+      "expected_output": "The skill constructs a LaserlineViewfinder (no constructor arguments) and assigns it to the BarcodeCaptureOverlay's viewfinder property.",
+      "files": [
+        "fixtures/IntegratedApp.tsx"
+      ],
+      "assertions": [
+        {"text": "new LaserlineViewfinder( is constructed"},
+        {"text": "LaserlineViewfinder is imported from scandit-react-native-datacapture-core"},
+        {"text": "The laserline viewfinder is assigned to the overlay via overlay.viewfinder ="},
+        {"text": "Existing integration code (context, BarcodeCapture mode, DataCaptureView JSX, listener, overlay) is preserved"}
+      ],
+      "tags": ["laserline-viewfinder"]
+    },
+    {
+      "id": 13,
+      "prompt": "In my BarcodeCapture React Native app I only want to accept barcodes whose data starts with 'SKU-'. Any other barcode should be ignored and not highlighted.",
+      "expected_output": "The skill rejects non-matching codes inside didScan by checking barcode.data, setting overlay.brush = Brush.transparent and returning early without processing; accepted codes proceed normally.",
+      "files": [
+        "fixtures/IntegratedApp.tsx"
+      ],
+      "assertions": [
+        {"text": "Inside didScan, barcode.data?.startsWith('SKU-') (or barcode.data.startsWith) is used to decide acceptance"},
+        {"text": "For a rejected barcode, overlay.brush = Brush.transparent is set"},
+        {"text": "For a rejected barcode the callback returns early without processing it (a return statement after the rejection branch) (semantic)"},
+        {"text": "Brush is imported from scandit-react-native-datacapture-core"},
+        {"text": "Existing integration code (context, BarcodeCapture mode, DataCaptureView JSX, listener, overlay) is preserved"}
+      ],
+      "tags": ["reject-pattern"]
+    },
+    {
+      "id": 14,
+      "prompt": "Change the highlight color of recognized barcodes in my BarcodeCapture React Native app to a semi-transparent green fill with a solid green outline.",
+      "expected_output": "The skill assigns overlay.brush a new Brush built from a semi-transparent green fill Color, a green stroke Color, and a stroke width.",
+      "files": [
+        "fixtures/IntegratedApp.tsx"
+      ],
+      "assertions": [
+        {"text": "overlay.brush is assigned a new Brush( instance"},
+        {"text": "The Brush constructor receives a fill Color, a stroke Color, and a numeric stroke width"},
+        {"text": "Color.fromRGBA or Color.fromHex is used to build the brush colors"},
+        {"text": "Brush and Color are imported from scandit-react-native-datacapture-core"},
+        {"text": "Existing integration code (context, BarcodeCapture mode, DataCaptureView JSX, listener, overlay) is preserved"}
+      ],
+      "tags": ["overlay-brush"]
+    },
+    {
+      "id": 15,
+      "prompt": "My Code 39 barcodes contain the full ASCII character set. Enable the full ASCII extension for Code 39 in my BarcodeCapture React Native app.",
+      "expected_output": "The skill gets the per-symbology settings via settings.settingsForSymbology(Symbology.Code39) and calls setExtensionEnabled('full_ascii', true), then applies the settings.",
+      "files": [
+        "fixtures/IntegratedApp.tsx"
+      ],
+      "assertions": [
+        {"text": "settings.settingsForSymbology(Symbology.Code39) is called to get the per-symbology settings"},
+        {"text": "setExtensionEnabled('full_ascii', true) is called on the Code39 symbology settings"},
+        {"text": "The settings are applied to the mode via barcodeCapture.applySettings(settings) or passed into the constructor before the mode is added (semantic)"},
+        {"text": "Existing integration code (context, BarcodeCapture mode, DataCaptureView JSX, listener, overlay) is preserved"}
+      ],
+      "tags": ["symbology-extensions"]
+    },
+    {
+      "id": 16,
+      "prompt": "Require a Mod 43 checksum for Code 39 barcodes in my BarcodeCapture React Native app so misreads are rejected.",
+      "expected_output": "The skill gets settings.settingsForSymbology(Symbology.Code39) and sets its checksums to [Checksum.Mod43], then applies the settings.",
+      "files": [
+        "fixtures/IntegratedApp.tsx"
+      ],
+      "assertions": [
+        {"text": "settings.settingsForSymbology(Symbology.Code39) is called"},
+        {"text": "The checksums property of the Code39 symbology settings is assigned [Checksum.Mod43]"},
+        {"text": "Checksum is imported from scandit-react-native-datacapture-barcode"},
+        {"text": "The settings are applied to the mode via barcodeCapture.applySettings(settings) or passed into the constructor before the mode is added (semantic)"},
+        {"text": "Existing integration code (context, BarcodeCapture mode, DataCaptureView JSX, listener, overlay) is preserved"}
+      ],
+      "tags": ["symbology-checksums"]
+    },
+    {
+      "id": 17,
+      "prompt": "My Code 39 labels are a fixed length and I want to restrict scanning to codes between 7 and 20 symbols long in my BarcodeCapture React Native app.",
+      "expected_output": "The skill gets settings.settingsForSymbology(Symbology.Code39) and assigns its activeSymbolCounts an array covering 7 through 20, then applies the settings.",
+      "files": [
+        "fixtures/IntegratedApp.tsx"
+      ],
+      "assertions": [
+        {"text": "settings.settingsForSymbology(Symbology.Code39) is called"},
+        {"text": "The activeSymbolCounts property of the Code39 symbology settings is assigned an array of numbers"},
+        {"text": "The activeSymbolCounts array spans the requested 7 to 20 range (semantic)"},
+        {"text": "The settings are applied to the mode via barcodeCapture.applySettings(settings) or passed into the constructor before the mode is added (semantic)"},
+        {"text": "Existing integration code (context, BarcodeCapture mode, DataCaptureView JSX, listener, overlay) is preserved"}
+      ],
+      "tags": ["active-symbol-counts"]
+    },
+    {
+      "id": 18,
+      "prompt": "Some of my Code 128 barcodes are printed bright-on-dark (color inverted). Enable color-inverted decoding for Code 128 in my BarcodeCapture React Native app.",
+      "expected_output": "The skill gets settings.settingsForSymbology(Symbology.Code128) and sets isColorInvertedEnabled = true, then applies the settings.",
+      "files": [
+        "fixtures/IntegratedApp.tsx"
+      ],
+      "assertions": [
+        {"text": "settings.settingsForSymbology(Symbology.Code128) is called"},
+        {"text": "isColorInvertedEnabled = true is set on the Code128 symbology settings"},
+        {"text": "The settings are applied to the mode via barcodeCapture.applySettings(settings) or passed into the constructor before the mode is added (semantic)"},
+        {"text": "Existing integration code (context, BarcodeCapture mode, DataCaptureView JSX, listener, overlay) is preserved"}
+      ],
+      "tags": ["color-inverted"]
     }
   ]
 }

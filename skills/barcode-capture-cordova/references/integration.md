@@ -257,6 +257,104 @@ overlay.viewfinder = new Scandit.RectangularViewfinder(
 
 Set `overlay.viewfinder = null` to remove it.
 
+Two other viewfinder styles are available; both take **no constructor arguments** and expose color properties you can tweak:
+
+```javascript
+// Aimer viewfinder — a crosshair-style aimer with a frame and a centre dot.
+const aimer = new Scandit.AimerViewfinder();
+aimer.frameColor = Scandit.Color.fromHex('FFFFFF');
+aimer.dotColor = Scandit.Color.fromHex('FF0000');
+overlay.viewfinder = aimer;
+
+// Laserline viewfinder — a horizontal line, good for single-line 1D scanning.
+const laserline = new Scandit.LaserlineViewfinder();
+laserline.width = new Scandit.NumberWithUnit(0.9, Scandit.MeasureUnit.Fraction);
+laserline.enabledColor = Scandit.Color.fromHex('FFFFFF');
+laserline.disabledColor = Scandit.Color.fromHex('808080');
+overlay.viewfinder = laserline;
+```
+
+| Viewfinder | Constructor | Key properties |
+|---|---|---|
+| `Scandit.RectangularViewfinder` | `(style, lineStyle)` | `dimensions`, `color` |
+| `Scandit.AimerViewfinder` | `()` | `frameColor`, `dotColor` |
+| `Scandit.LaserlineViewfinder` | `()` | `width`, `enabledColor`, `disabledColor` |
+
+### Highlight brush (recognized-barcode appearance)
+
+`BarcodeCaptureOverlay` draws a brush over each recognized barcode. The default brush has a transparent fill and a Scandit-blue stroke. Replace `overlay.brush` to change it, or set it to `Scandit.Brush.transparent` to draw nothing:
+
+```javascript
+// A custom highlight: semi-transparent green fill, solid green 3px stroke.
+overlay.brush = new Scandit.Brush(
+  Scandit.Color.fromHex('8800FF00'), // fillColor (ARGB hex)
+  Scandit.Color.fromHex('FF00FF00'), // strokeColor
+  3,                                  // strokeWidth
+);
+
+// Draw no highlight at all.
+overlay.brush = Scandit.Brush.transparent;
+```
+
+`new Scandit.Brush(fillColor, strokeColor, strokeWidth)` takes two `Scandit.Color` instances and a numeric stroke width. `Scandit.Color.fromHex(...)` accepts `RRGGBB` or `AARRGGBB` hex strings.
+
+### Reject (filter) unwanted barcodes
+
+There is no dedicated "reject" API. To accept only barcodes matching a rule, inspect `barcode.data` inside `didScan`: for a rejected code, set the overlay brush to transparent (so it isn't highlighted) and `return` without acting; for an accepted code, draw a highlight brush and process it.
+
+```javascript
+barcodeCapture.addListener({
+  didScan: (barcodeCapture, session, _getFrameData) => {
+    const barcode = session.newlyRecognizedBarcode;
+    if (!barcode) return;
+
+    // Reject codes whose data does not start with the expected prefix.
+    if (!barcode.data || !barcode.data.startsWith('09:')) {
+      overlay.brush = Scandit.Brush.transparent;
+      return;
+    }
+
+    // Accept: highlight and handle the result.
+    overlay.brush = new Scandit.Brush(
+      Scandit.Color.fromHex('8800FF00'),
+      Scandit.Color.fromHex('FF00FF00'),
+      3,
+    );
+    barcodeCapture.isEnabled = false;
+    showResult(`Scanned: ${barcode.data}`);
+  },
+});
+```
+
+### Per-symbology settings: extensions, checksums, active symbol counts, color inversion
+
+`settings.settingsForSymbology(symbology)` returns a mutable `SymbologySettings` object. Mutating it updates the parent `BarcodeCaptureSettings`; re-apply with `barcodeCapture.applySettings(settings)`.
+
+```javascript
+const code39Settings = settings.settingsForSymbology(Scandit.Symbology.Code39);
+
+// Extension: enable a symbology-specific feature by name (e.g. full ASCII for Code 39).
+code39Settings.setExtensionEnabled('full_ascii', true);
+
+// Checksums: require/accept an optional checksum (e.g. Mod 43 for Code 39).
+code39Settings.checksums = [Scandit.Checksum.Mod43];
+
+// Active symbol counts: the set of barcode lengths to decode for variable-length symbologies.
+code39Settings.activeSymbolCounts = [7, 8, 9, 10, 11, 12];
+
+// Color inversion: also decode light-on-dark (inverted) barcodes.
+code39Settings.isColorInvertedEnabled = true;
+
+barcodeCapture.applySettings(settings);
+```
+
+| Member | Type | Description |
+|---|---|---|
+| `setExtensionEnabled(name, enabled)` | method | Activate/deactivate a symbology-specific extension (e.g. `'full_ascii'`). |
+| `checksums` | `Checksum[]` | Optional checksums to accept, e.g. `[Scandit.Checksum.Mod43]`. |
+| `activeSymbolCounts` | `number[]` | Barcode lengths to decode (ignored for fixed-size/2D symbologies). |
+| `isColorInvertedEnabled` | `boolean` | When `true`, also decode color-inverted (light-on-dark) codes. |
+
 ### Location selection
 
 Restrict scanning to a specific region of the frame:

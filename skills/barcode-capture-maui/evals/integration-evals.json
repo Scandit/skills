@@ -116,6 +116,181 @@
         {"text": "CodeDuplicateFilter is set before BarcodeCapture.Create( or via barcodeCapture.ApplySettingsAsync"},
         {"text": "Existing integration code (DataCaptureContext, barcodeCapture, camera, HandlerChanged overlay creation) is preserved"}
       ]
+    },
+    {
+      "id": 7,
+      "prompt": "Add an aimer viewfinder to my .NET MAUI BarcodeCapture preview so users have a single aim point to line up the code, instead of a rectangular frame.",
+      "expected_output": "The skill constructs an AimerViewfinder (from Scandit.DataCapture.Core.UI.Viewfinder) and assigns it to overlay.Viewfinder inside the HandlerChanged handler, after the overlay has been created. Existing integration is preserved.",
+      "files": [
+        "fixtures/IntegratedMainPage.xaml.cs"
+      ],
+      "assertions": [
+        {"text": "An AimerViewfinder is constructed with new AimerViewfinder()"},
+        {"text": "The viewfinder is assigned to BarcodeCaptureOverlay.Viewfinder (overlay.Viewfinder = ...)"},
+        {"text": "The AimerViewfinder assignment happens inside the HandlerChanged handler (i.e. after the overlay has been created)"},
+        {"text": "RectangularViewfinder is NOT used (the user asked for an aimer, not a rectangular frame)"},
+        {"text": "Existing integration code (DataCaptureContext, barcodeCapture, camera, HandlerChanged overlay creation) is preserved"}
+      ],
+      "tags": ["aimer-viewfinder"]
+    },
+    {
+      "id": 8,
+      "prompt": "I only want to scan barcodes that appear inside a centered horizontal strip in the middle of my .NET MAUI preview — about 90% of the width and 30% of the height. Codes outside that band should be ignored.",
+      "expected_output": "The skill sets BarcodeCaptureSettings.LocationSelection to a RectangularLocationSelection.Create(...) built from a SizeWithUnit whose width and height are FloatWithUnit values in MeasureUnit.Fraction (0.9 wide, 0.3 tall). The location selection is applied to the settings before BarcodeCapture.Create or via ApplySettingsAsync. Existing integration is preserved.",
+      "files": [
+        "fixtures/IntegratedMainPage.xaml.cs"
+      ],
+      "assertions": [
+        {"text": "settings.LocationSelection is assigned a RectangularLocationSelection.Create( instance"},
+        {"text": "The size is built with new SizeWithUnit( taking two FloatWithUnit arguments"},
+        {"text": "The width and height FloatWithUnit values use MeasureUnit.Fraction"},
+        {"text": "The fraction values are 0.9f for width and 0.3f for height"},
+        {"text": "LocationSelection is set on the settings before BarcodeCapture.Create( or applied via barcodeCapture.ApplySettingsAsync"},
+        {"text": "Existing integration code (DataCaptureContext, barcodeCapture, camera, HandlerChanged overlay creation) is preserved"}
+      ],
+      "tags": ["location-selection"]
+    },
+    {
+      "id": 9,
+      "prompt": "In my .NET MAUI BarcodeCapture app I want to restrict scanning to a circular area around the center of the preview, with a radius of 20% of the smaller view dimension.",
+      "expected_output": "The skill sets BarcodeCaptureSettings.LocationSelection to a RadiusLocationSelection.Create(...) built from a FloatWithUnit radius in MeasureUnit.Fraction (0.2). Existing integration is preserved.",
+      "files": [
+        "fixtures/IntegratedMainPage.xaml.cs"
+      ],
+      "assertions": [
+        {"text": "settings.LocationSelection is assigned a RadiusLocationSelection.Create( instance"},
+        {"text": "The radius is built with new FloatWithUnit( using MeasureUnit.Fraction"},
+        {"text": "The radius fraction value is 0.2f"},
+        {"text": "LocationSelection is set on the settings before BarcodeCapture.Create( or applied via barcodeCapture.ApplySettingsAsync"},
+        {"text": "Existing integration code (DataCaptureContext, barcodeCapture, camera, HandlerChanged overlay creation) is preserved"}
+      ],
+      "tags": ["location-selection"]
+    },
+    {
+      "id": 10,
+      "prompt": "In my .NET MAUI BarcodeCapture app, our valid product codes always start with the prefix \"PRD-\". When a scanned code does not start with that prefix, I want to ignore it and keep scanning instead of acting on it. Wire up this rejection logic.",
+      "expected_output": "Inside the BarcodeScanned handler the skill inspects barcode.Data, and when it does not match the accepted pattern it returns early WITHOUT disabling scanning or acting on the result (so scanning continues). Accepted codes proceed to the normal handling (disable + process). Existing integration is preserved.",
+      "files": [
+        "fixtures/IntegratedMainPage.xaml.cs"
+      ],
+      "assertions": [
+        {"text": "The BarcodeScanned handler reads barcode.Data from args.Session.NewlyRecognizedBarcode"},
+        {"text": "barcode.Data is checked against the \"PRD-\" prefix (e.g. barcode.Data.StartsWith(\"PRD-\"))"},
+        {"text": "When the code does NOT match, the handler returns early without acting on the result (semantic)"},
+        {"text": "On rejection scanning is NOT disabled, so barcodeCapture.Enabled stays true and scanning continues (semantic)"},
+        {"text": "For an accepted code, barcodeCapture.Enabled = false is set before the result is processed"},
+        {"text": "Existing integration code (DataCaptureContext, barcodeCapture, camera, HandlerChanged overlay creation) is preserved"}
+      ],
+      "tags": ["reject-pattern"]
+    },
+    {
+      "id": 11,
+      "prompt": "I want to hide the default blue highlight that Scandit draws over recognized barcodes in my .NET MAUI preview — the overlay should not visibly mark scanned codes at all.",
+      "expected_output": "The skill assigns Brush.TransparentBrush to the BarcodeCaptureOverlay.Brush property inside the HandlerChanged handler (after the overlay is created). Existing integration is preserved.",
+      "files": [
+        "fixtures/IntegratedMainPage.xaml.cs"
+      ],
+      "assertions": [
+        {"text": "BarcodeCaptureOverlay.Brush is assigned Brush.TransparentBrush (overlay.Brush = Brush.TransparentBrush)"},
+        {"text": "The Brush assignment happens inside the HandlerChanged handler (i.e. after the overlay has been created)"},
+        {"text": "Existing integration code (DataCaptureContext, barcodeCapture, camera, HandlerChanged overlay creation) is preserved"}
+      ],
+      "tags": ["overlay-brush"]
+    },
+    {
+      "id": 12,
+      "prompt": "Customize the recognized-barcode highlight in my .NET MAUI BarcodeCapture preview to use a semi-transparent green fill with a solid green 2-pixel stroke instead of the default Scandit blue.",
+      "expected_output": "The skill creates a new Brush(fillColor, strokeColor, strokeWidth) with a green fill and stroke and a strokeWidth of 2, and assigns it to BarcodeCaptureOverlay.Brush inside the HandlerChanged handler. The Brush type comes from Scandit.DataCapture.Core.UI.Style. Existing integration is preserved.",
+      "files": [
+        "fixtures/IntegratedMainPage.xaml.cs"
+      ],
+      "assertions": [
+        {"text": "A new Brush( is constructed with three arguments (fill color, stroke color, stroke width)"},
+        {"text": "The result is assigned to BarcodeCaptureOverlay.Brush (overlay.Brush = ...)"},
+        {"text": "The stroke width argument is 2f (a float)"},
+        {"text": "The fill and stroke colors are green (semantic)"},
+        {"text": "The Brush assignment happens inside the HandlerChanged handler (i.e. after the overlay has been created)"},
+        {"text": "Existing integration code (DataCaptureContext, barcodeCapture, camera, HandlerChanged overlay creation) is preserved"}
+      ],
+      "tags": ["overlay-brush"]
+    },
+    {
+      "id": 13,
+      "prompt": "My .NET MAUI app scans Code 39 codes that contain the full ASCII character set (lowercase letters and symbols). Enable the full-ASCII extension for Code 39 in my BarcodeCapture settings.",
+      "expected_output": "The skill enables Code39, fetches its per-symbology settings via settings.GetSymbologySettings(Symbology.Code39), and calls SetExtensionEnabled(\"full_ascii\", true) on them. Existing integration is preserved.",
+      "files": [
+        "fixtures/IntegratedMainPage.xaml.cs"
+      ],
+      "assertions": [
+        {"text": "Symbology.Code39 is enabled via settings.EnableSymbology(Symbology.Code39, true)"},
+        {"text": "settings.GetSymbologySettings(Symbology.Code39) is called to obtain the SymbologySettings"},
+        {"text": "SetExtensionEnabled(\"full_ascii\", true) is called on the SymbologySettings"},
+        {"text": "The extension name string is the literal \"full_ascii\""},
+        {"text": "Existing integration code (DataCaptureContext, barcodeCapture, camera, HandlerChanged overlay creation) is preserved"}
+      ],
+      "tags": ["symbology-extensions"]
+    },
+    {
+      "id": 14,
+      "prompt": "Our Code 39 labels use a Mod 43 checksum. Configure my .NET MAUI BarcodeCapture settings so the Mod 43 checksum is enforced for Code 39.",
+      "expected_output": "The skill enables Code39, fetches its per-symbology settings via settings.GetSymbologySettings(Symbology.Code39), and sets Checksums = Checksum.Mod43 on them. Existing integration is preserved.",
+      "files": [
+        "fixtures/IntegratedMainPage.xaml.cs"
+      ],
+      "assertions": [
+        {"text": "Symbology.Code39 is enabled via settings.EnableSymbology(Symbology.Code39, true)"},
+        {"text": "settings.GetSymbologySettings(Symbology.Code39) is called to obtain the SymbologySettings"},
+        {"text": "The Checksums property is assigned Checksum.Mod43 (symbologySettings.Checksums = Checksum.Mod43)"},
+        {"text": "Existing integration code (DataCaptureContext, barcodeCapture, camera, HandlerChanged overlay creation) is preserved"}
+      ],
+      "tags": ["symbology-checksums"]
+    },
+    {
+      "id": 15,
+      "prompt": "My Code 128 codes are always between 7 and 10 symbols long. Restrict the active symbol counts for Code 128 in my .NET MAUI BarcodeCapture settings to that range to cut down on misreads.",
+      "expected_output": "The skill enables Code128, fetches its per-symbology settings via settings.GetSymbologySettings(Symbology.Code128), and assigns ActiveSymbolCounts a collection of short values covering 7 through 10. Existing integration is preserved.",
+      "files": [
+        "fixtures/IntegratedMainPage.xaml.cs"
+      ],
+      "assertions": [
+        {"text": "settings.GetSymbologySettings(Symbology.Code128) is called to obtain the SymbologySettings"},
+        {"text": "The ActiveSymbolCounts property is assigned a collection of short values (symbologySettings.ActiveSymbolCounts = ...)"},
+        {"text": "The assigned collection covers the symbol counts 7, 8, 9 and 10"},
+        {"text": "The collection element type is short (e.g. new HashSet<short> or a short[] cast), not int"},
+        {"text": "Existing integration code (DataCaptureContext, barcodeCapture, camera, HandlerChanged overlay creation) is preserved"}
+      ],
+      "tags": ["active-symbol-counts"]
+    },
+    {
+      "id": 16,
+      "prompt": "Some of our Code 128 labels are printed light-on-dark (color inverted). Enable scanning of color-inverted Code 128 codes in my .NET MAUI BarcodeCapture settings.",
+      "expected_output": "The skill fetches the Code128 per-symbology settings via settings.GetSymbologySettings(Symbology.Code128) and sets ColorInvertedEnabled = true on them. Existing integration is preserved.",
+      "files": [
+        "fixtures/IntegratedMainPage.xaml.cs"
+      ],
+      "assertions": [
+        {"text": "settings.GetSymbologySettings(Symbology.Code128) is called to obtain the SymbologySettings"},
+        {"text": "The ColorInvertedEnabled property is set to true (symbologySettings.ColorInvertedEnabled = true)"},
+        {"text": "The deprecated/nonexistent IsColorInvertedEnabled property name is NOT used; the .NET property is ColorInvertedEnabled (semantic)"},
+        {"text": "Existing integration code (DataCaptureContext, barcodeCapture, camera, HandlerChanged overlay creation) is preserved"}
+      ],
+      "tags": ["color-inverted"]
+    },
+    {
+      "id": 17,
+      "prompt": "I need to scan GS1 Composite codes (a linear EAN-13 with a 2D companion component) in my .NET MAUI BarcodeCapture app. Enable composite code scanning.",
+      "expected_output": "The skill enables the base symbologies (e.g. Ean13Upca), calls settings.EnableSymbologies(CompositeType...) to enable the symbologies required by the composite types, and sets settings.EnabledCompositeTypes to the desired CompositeType flags. Existing integration is preserved.",
+      "files": [
+        "fixtures/IntegratedMainPage.xaml.cs"
+      ],
+      "assertions": [
+        {"text": "The base linear symbology is enabled (settings.EnableSymbology(Symbology.Ean13Upca, true))"},
+        {"text": "settings.EnableSymbologies( is called with a CompositeType value (e.g. CompositeType.A or CompositeType.A | CompositeType.B)"},
+        {"text": "settings.EnabledCompositeTypes is assigned the desired CompositeType flags"},
+        {"text": "The CompositeType enum values used are members A, B and/or C"},
+        {"text": "Existing integration code (DataCaptureContext, barcodeCapture, camera, HandlerChanged overlay creation) is preserved"}
+      ],
+      "tags": ["composite-codes"]
     }
   ]
 }

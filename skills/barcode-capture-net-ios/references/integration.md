@@ -543,6 +543,40 @@ public async void OnBarcodeScanned(
 
 > Using `async void` is acceptable here because the callback signature is `void`. Wrap the body in `try`/`finally` so an exception cannot leave the capture mode permanently disabled and so the frame is always disposed.
 
+### Per-symbology configuration (extensions, checksums, active symbol counts, color-inverted)
+
+`settings.GetSymbologySettings(Symbology.X)` returns the `SymbologySettings` for one symbology (the method is `GetSymbologySettings` — there is no `SettingsForSymbology`). Mutate it in place after enabling the symbology, then pass `settings` to `BarcodeCapture.Create`.
+
+```csharp
+using Scandit.DataCapture.Barcode.Capture;
+using Scandit.DataCapture.Barcode.Data;
+
+// Code 39 full-ASCII extension. SetExtensionEnabled(name, enabled) — there is no IsExtensionEnabled setter.
+SymbologySettings code39 = settings.GetSymbologySettings(Symbology.Code39);
+code39.SetExtensionEnabled("full_ascii", true);
+
+// Checksum: the property is Checksums (not ChecksumType), typed as the Checksum enum.
+code39.Checksums = Checksum.Mod43;
+
+// Active symbol counts for variable-length 1D symbologies (ICollection<short>).
+SymbologySettings code128 = settings.GetSymbologySettings(Symbology.Code128);
+code128.ActiveSymbolCounts = new HashSet<short>(
+    new short[] { 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20 });
+
+// Color-inverted (light code on dark background). The property is ColorInvertedEnabled,
+// not IsColorInvertedEnabled.
+SymbologySettings qr = settings.GetSymbologySettings(Symbology.Qr);
+qr.ColorInvertedEnabled = true;
+```
+
+| `SymbologySettings` member | Type | Description |
+|--------|------|-------------|
+| `SetExtensionEnabled(string, bool)` | method | Enable/disable a named extension (e.g. `"full_ascii"`). Read state with `EnabledExtensions`. |
+| `Checksums` | `Checksum` (get/set) | Optional checksum(s), e.g. `Checksum.Mod43`. |
+| `ActiveSymbolCounts` | `ICollection<short>` (get/set) | Accepted symbol-count range for variable-length symbologies. |
+| `ColorInvertedEnabled` | `bool` (get/set) | Accept color-inverted (light-on-dark) codes. |
+| `Enabled` | `bool` (get/set) | Whether the symbology is enabled (same as `settings.EnableSymbology`). |
+
 ### BarcodeCaptureFeedback
 
 By default, BarcodeCapture beeps and vibrates on success. To customize feedback, modify `barcodeCapture.Feedback.Success` or replace the entire `Feedback` object:
@@ -574,6 +608,54 @@ overlay.Viewfinder = new RectangularViewfinder(
     RectangularViewfinderStyle.Square,
     RectangularViewfinderLineStyle.Light);
 ```
+
+For a crosshair-style aiming reticle instead of a rectangle, use `AimerViewfinder` (no constructor arguments):
+
+```csharp
+overlay.Viewfinder = new AimerViewfinder();
+```
+
+### Overlay highlight brush
+
+`overlay.Brush` controls the fill/stroke drawn over recognized barcodes; `BarcodeCaptureOverlay.DefaultBrush` is the Scandit-blue default. A custom brush is `new Brush(fillColor, strokeColor, strokeWidth)`. On the .NET-for-iOS slice the color arguments accept `UIColor` (implicitly converted to the SDK's `Color`):
+
+```csharp
+using Scandit.DataCapture.Core.UI.Style;
+using UIKit;
+
+overlay.Brush = new Brush(
+    UIColor.Green.ColorWithAlpha(0.2f), // fill
+    UIColor.Green,                       // stroke
+    2.0f);                               // stroke width
+```
+
+### Reject barcodes that don't match
+
+There is no built-in filter callback in BarcodeCapture — implement rejection in the scan callback. For a non-matching `barcode.Data`, clear the highlight by setting `overlay.Brush = Brush.TransparentBrush`, dispose the frame, and return early **without** re-enabling/handling. For a match, restore the normal brush and proceed:
+
+```csharp
+public void OnBarcodeScanned(
+    BarcodeCapture barcodeCapture,
+    BarcodeCaptureSession session,
+    IFrameData frameData)
+{
+    var barcode = session.NewlyRecognizedBarcode;
+    if (barcode == null || !IsAccepted(barcode.Data))
+    {
+        // Don't highlight rejected codes; still dispose the frame on every early return.
+        this.overlay.Brush = Brush.TransparentBrush;
+        frameData?.Dispose();
+        return;
+    }
+
+    this.overlay.Brush = BarcodeCaptureOverlay.DefaultBrush;
+    barcodeCapture.Enabled = false;
+    this.ShowResult($"Scanned {barcode.Data}");
+    frameData?.Dispose();
+}
+```
+
+`Brush.TransparentBrush` is a static property. `frameData?.Dispose()` on the reject path is mandatory — skipping it on early return is the most common cause of a frozen preview (see Key rule 5).
 
 ### CodeDuplicateFilter
 
@@ -618,7 +700,19 @@ settings.BatterySaving = BatterySavingMode.On;
 
 ### LocationSelection
 
-To restrict scanning to a sub-area of the preview, set `BarcodeCaptureSettings.LocationSelection` to an `ILocationSelection` instance (e.g. `RectangularLocationSelection`). Fetch the [Advanced Configurations](https://docs.scandit.com/sdks/net/ios/barcode-capture/advanced/) page for the exact constructor arguments — do not guess.
+To restrict scanning to a sub-area of the preview, set `BarcodeCaptureSettings.LocationSelection` to an `ILocationSelection`. `RectangularLocationSelection` is created with the `Create(...)` factory (not `new`), taking a `SizeWithUnit`:
+
+```csharp
+using Scandit.DataCapture.Core.Area;
+using Scandit.DataCapture.Core.Common.Geometry;
+
+settings.LocationSelection = RectangularLocationSelection.Create(
+    new SizeWithUnit(
+        new FloatWithUnit(0.9f, MeasureUnit.Fraction),
+        new FloatWithUnit(0.3f, MeasureUnit.Fraction)));
+```
+
+There are also `RectangularLocationSelection.CreateWithWidthAndAspectRatio(FloatWithUnit width, float heightToWidthAspectRatio)` / `CreateWithHeightAndAspectRatio(FloatWithUnit height, float widthToHeightAspectRatio)` factories that fix one dimension and derive the other from an aspect ratio.
 
 ### Composite codes
 
