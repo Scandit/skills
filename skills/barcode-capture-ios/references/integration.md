@@ -140,6 +140,10 @@ overlay.brush = Brush(fill: UIColor.green.withAlphaComponent(0.2),
 
 There is no `session.rejectBarcodes(...)` API. To reject codes whose data does not match, do the check inside `didScanIn`: set the overlay brush to `Brush.transparent` so the non-matching code is not highlighted, and `return` early before handling it.
 
+**`overlay.brush` is overlay-wide, not per-barcode.** `BarcodeCapture` has no per-barcode brush delegate (unlike MatrixScan). Once you set the brush to transparent it stays transparent for *every* subsequent code — including matching ones — until you set it back. So in continuous scanning you MUST restore the brush on the accept path, e.g. `overlay.brush = BarcodeCaptureOverlay.defaultBrush`, or the preview goes permanently blank after the first rejected code.
+
+**Rejection only hides the highlight — it does not mute feedback.** A rejected code is still recognized, so the default beep/vibration still fires. If "reject" should also be silent, mute feedback as well: `barcodeCapture.feedback.success = Feedback(vibration: nil, sound: nil)`. Decide which you want: suppress *only* the highlight (below), or true silent filtering (highlight + feedback both off).
+
 ```swift
 func barcodeCapture(_ barcodeCapture: BarcodeCapture,
                     didScanIn session: BarcodeCaptureSession,
@@ -152,6 +156,9 @@ func barcodeCapture(_ barcodeCapture: BarcodeCapture,
         overlay.brush = Brush.transparent
         return
     }
+
+    // Accept: restore the default highlight so matching codes stay visible.
+    overlay.brush = BarcodeCaptureOverlay.defaultBrush
 
     DispatchQueue.main.async {
         // Handle the accepted barcode here.
