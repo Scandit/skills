@@ -27,7 +27,7 @@ These are runtime/licensing facts about Label Capture — not API versioning —
 
 **Label Capture reads printed text only.** Handwritten text is not supported. The on-device OCR engine and ARE both target machine-printed characters (latin letters, digits, common punctuation). If the user asks about scanning handwritten values, say so explicitly and propose a manual-entry fallback (e.g. the Validation Flow's manual input field).
 
-**ARE (Adaptive Recognition Engine)** is Scandit's cloud-based OCR fallback — enabled via `.adaptiveRecognition(.auto)` on the `LabelDefinition`. It is currently in Beta, works **only with the Validation Flow overlay**, and requires a license key with the ARE feature flag enabled. Trial keys can be issued for evaluation; production keys require contacting <support@scandit.com>. Do not enable it by default.
+**ARE (Adaptive Recognition Engine)** is Scandit's cloud-based OCR fallback — enabled via `.adaptiveRecognition(.auto)` on the `LabelDefinition`. It is a property of the label definition and is **overlay-agnostic** (it works with the Basic, Advanced, or Validation Flow overlay alike — do not tell the user it is Validation-Flow-only). It is currently in Beta and needs the Adaptive Recognition Engine entitlement, which Scandit enables server-side on your subscription — there is no client-side flag the user toggles themselves; the entitlement rides in the issued license key. Trial keys can be issued for evaluation; production keys require contacting <support@scandit.com>. Do not enable it by default. (Distinct from Beta Receipt Scanning, which *does* require its own dedicated overlay.)
 
 ## Intent Routing
 

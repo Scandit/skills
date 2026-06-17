@@ -260,14 +260,14 @@
     {
       "id": 9,
       "prompt": "What is ARE in Smart Label Capture and can I use it on iOS? My customer wants better OCR for their worn shipping labels.",
-      "expected_output": "The skill explains ARE is the Adaptive Recognition Engine, a cloud-based OCR fallback. It enumerates the constraints: works ONLY with the Validation Flow, requires a license key with the ARE feature flag, is in Beta, trial keys are available for evaluation, and production keys require contacting support@scandit.com. It shows the enabling API .adaptiveRecognition(.auto) on the LabelDefinition.",
+      "expected_output": "The skill explains ARE is the Adaptive Recognition Engine, a cloud-based OCR fallback. It enumerates the constraints: requires a license key with the ARE feature flag, is in Beta, trial keys are available for evaluation, and production keys require contacting support@scandit.com. It shows the enabling API .adaptiveRecognition(.auto) on the LabelDefinition. It does NOT claim ARE is restricted to the Validation Flow overlay — ARE is a property of the LabelDefinition and is overlay-agnostic (works with the Basic, Advanced, or Validation Flow overlay alike).",
       "files": [],
       "assertions": [
         {
           "text": "The response defines ARE as Adaptive Recognition Engine and describes it as Scandit's cloud-based OCR fallback (or similar wording)"
         },
         {
-          "text": "The response states ARE works ONLY with the Validation Flow overlay \u2014 not with Basic Overlay or Advanced Overlay"
+          "text": "The response does NOT claim ARE is restricted to the Validation Flow overlay. ARE is a property of the LabelDefinition and is overlay-agnostic \u2014 it works with the Basic, Advanced, or Validation Flow overlay alike. An answer asserting ARE works ONLY with the Validation Flow (or that it does not work with the Basic/Advanced overlay) FAILS this assertion."
         },
         {
           "text": "The response states ARE requires a license key with the ARE feature flag enabled"

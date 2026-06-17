@@ -192,8 +192,8 @@ If the user is not reading the numeric components — i.e. they only use `dayStr
 
 ARE is an additive feature, not a migration. Enable it only if the user explicitly asks for better OCR on difficult labels, and only after confirming they understand the constraints:
 
-- Works only with `LabelCaptureValidationFlowOverlay`.
-- Requires a license key with the ARE feature flag (trial keys available; for production contact <support@scandit.com>).
+- Overlay-agnostic — set via `.adaptiveRecognition(.auto)` on the `LabelDefinition`; works with the Basic, Advanced, or Validation Flow overlay alike. The inline modifier requires iOS SDK 8.0+ (the always-on `.on` mode, 8.4+); on an older SDK it will not compile.
+- Enabled by Scandit on your subscription, not self-served — the Adaptive Recognition Engine entitlement is provisioned server-side and rides in your license key (trial keys available for evaluation; for production contact <support@scandit.com>). A standard key does not carry it; there is no flag for the user to toggle themselves.
 - Currently in Beta.
 
 Enable via `.adaptiveRecognition(.auto)` on the `LabelDefinition` — see the integration guide for details. Do not enable this as part of a routine SDK upgrade.
