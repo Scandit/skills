@@ -571,7 +571,7 @@ The Basic Overlay draws two layers per detected label:
 1. A *label box* around the whole captured label, drawn with `labelBrush`.
 2. A *field box* around each field inside the label, drawn with `capturedFieldBrush` (for fields that matched the regex this frame) or `predictedFieldBrush` (for fields the SDK predicts will appear but hasn't fully matched yet).
 
-You can override the defaults globally:
+You can override the defaults globally (the `.clear` `labelBrush` below is an *intentional* override — hiding the whole-label box while keeping field highlights; this is not the same as blanket-clearing every brush "to be safe", which the Advanced Overlay section warns against):
 
 ```swift
 basicOverlay.labelBrush = Brush(fill: .clear, stroke: .clear, strokeWidth: 0)
@@ -630,7 +630,97 @@ Return `nil` from `brushFor field:` or `brushFor label:` to keep the default bru
 
 ### Advanced Overlay
 
-Use `LabelCaptureAdvancedOverlay` only when the app needs fully custom AR rendering — drawing its own `UIView` subclasses on top of the camera feed with full positional control. This requires significantly more implementation work. Refer to the [Advanced Configurations](https://docs.scandit.com/sdks/ios/label-capture/advanced/) page for the listener interface and anchor points.
+Use `LabelCaptureAdvancedOverlay` only when the app needs fully custom AR rendering — drawing its own `UIView` subclasses (floating pins, badges, callouts) on top of the camera feed with full positional control. This requires significantly more implementation work than the Basic Overlay. See the [Advanced Configurations](https://docs.scandit.com/sdks/ios/label-capture/advanced/) page for the authoritative reference.
+
+> **Before hand-rolling an Advanced Overlay, re-check Step 0.** Choosing the Advanced Overlay is a *rendering* decision; it does **not** change the label-definition decision. If the user's label is a price/shelf label, VIN, or seven-segment display, you must still build it from the pre-built whole-label factory (`LabelDefinition.priceCapture(withName:)`, `vinLabelDefinition(withName:)`, `sevenSegmentDisplay(withName:)`) rather than hand-composing `CustomBarcode` + `TotalPriceText`. The factory ships tuned anchor/value regexes and out-performs anything you assemble by hand. A common failure mode is reaching for the Advanced Overlay and silently dropping back to a custom definition — don't. (Unlike the Validation Flow, these factories *are* compatible with the Basic and Advanced overlays.)
+
+**The Advanced Overlay is its own delegate-driven AR path — you do not need a `LabelCaptureListener`.** The overlay asks its delegate for a view, an anchor, and an offset **once per newly tracked label** (keyed internally by tracking id) and then caches and repositions that view itself across frames. Do all your work in the delegate; do not attach a separate `LabelCaptureListener` to drive captures, and do not build a per-frame state store. Adding a listener on top leads to per-frame flicker (rebuilding views every frame) and duplicated work — the overlay already does the lifecycle management for you.
+
+**Construct it with the `view:` initializer — which auto-registers the overlay.** Passing the `DataCaptureView` to the initializer adds the overlay to that view for you. Calling `captureView.addOverlay(advancedOverlay)` afterwards is redundant — do not call it.
+
+```swift
+// `view:` auto-adds the overlay — do NOT also call captureView.addOverlay(...)
+let advancedOverlay = LabelCaptureAdvancedOverlay(labelCapture: labelCapture, view: captureView)
+advancedOverlay.delegate = self
+```
+
+**Delegate — validate on the spot, no caching.** Because the delegate fires once per newly tracked label, validate the label's fields right there and return a freshly built view. There is no need to cache results in a dictionary or recompute every frame:
+
+```swift
+extension ScanViewController: LabelCaptureAdvancedOverlayDelegate {
+    // Build the custom view for a newly tracked label. Validate inline from the
+    // captured fields — no state store, no LabelCaptureListener.
+    func labelCaptureAdvancedOverlay(
+        _ overlay: LabelCaptureAdvancedOverlay,
+        viewFor capturedLabel: CapturedLabel
+    ) -> UIView? {
+        let state = validate(capturedLabel)          // pure function of the label's fields
+        emitFeedbackOnce(for: capturedLabel)         // once-per-label feedback — see Feedback below
+        return StatusPinView(state: state)           // a fresh view; the overlay caches it
+    }
+
+    // Where the view is pinned ON the label. The view is CENTERED on the anchor point.
+    // For a pin that sits above the label with its tail pointing down at it, use .topCenter
+    // (NOT .bottomCenter — that drops the pin onto the bottom edge, away from the content).
+    func labelCaptureAdvancedOverlay(
+        _ overlay: LabelCaptureAdvancedOverlay,
+        anchorFor capturedLabel: CapturedLabel
+    ) -> Anchor {
+        return .topCenter
+    }
+
+    // Fine-tune placement relative to the anchor. Because the view is centered on the
+    // anchor point, a zero offset leaves the pin half-overlapping the label box. Lift it
+    // by half its own height so the tail tip lands exactly on the label's top edge.
+    // `.fraction` is relative to the VIEW's own size; negative y is up.
+    func labelCaptureAdvancedOverlay(
+        _ overlay: LabelCaptureAdvancedOverlay,
+        offsetFor capturedLabel: CapturedLabel
+    ) -> PointWithUnit {
+        return PointWithUnit(
+            x: FloatWithUnit(value: 0, unit: .fraction),
+            y: FloatWithUnit(value: -0.5, unit: .fraction)
+        )
+    }
+}
+```
+
+> **Anchor semantics — the view is centered on the anchor point.** The `Anchor` you return is a point *on the tracked label/field*, and the overlay centers your view on that point. `.topCenter` therefore centers the view on the top edge of the label; the visible badge then sits above the edge and the tail points down at it. `.bottomCenter` would center it on the bottom edge — usually not what a "pin pointing at the label" wants. The nine cases are `.topLeft`, `.topCenter`, `.topRight`, `.centerLeft`, `.center`, `.centerRight`, `.bottomLeft`, `.bottomCenter`, `.bottomRight`.
+
+> **Offset is in `.fraction` of the view's own size (not the screen).** A zero offset (`PointWithUnit(x: .zero, y: .zero)`) leaves the centered view straddling the anchor, so a downward-pointing pin overlaps the label box by half its height. Returning `y: -0.5` in `.fraction` lifts it by exactly half its height so the tail tip lands on the edge. The y-axis sign isn't pinned in the docs — negative is up per Scandit's samples; if it pushes the pin the wrong way on-device, flip the sign.
+
+**Per-field views.** The delegate also has optional per-field variants — `labelCaptureAdvancedOverlay(_:viewFor:of:)`, `labelCaptureAdvancedOverlay(_:anchorFor:of:)`, and `labelCaptureAdvancedOverlay(_:offsetFor:of:)`, each taking a `LabelField` **and** its parent `CapturedLabel` (`viewFor field: LabelField, of capturedLabel: CapturedLabel`) — when you want to pin a separate view to an individual field (e.g. a badge on just the price field) rather than the whole label. Same anchor/offset semantics apply.
+
+**Pairing with a Basic Overlay for the box.** A common pattern is a Basic Overlay drawing the state-coloured box around a field *and* an Advanced Overlay drawing a floating pin — they coexist on the same `DataCaptureView`. When you do this, only override the brushes you actually need. **Do not blanket-set `labelBrush` / `capturedFieldBrush` / `predictedFieldBrush` to `.clear`** unless you specifically want those elements invisible — clearing them "to be safe" just hides the AR highlights you're paying for. Override a brush only when you have a concrete reason (e.g. you want a per-field colour via `brushFor field:`), and leave the rest at their defaults.
+
+### Feedback (sound & vibration)
+
+`LabelCapture` ships a built-in `LabelCaptureFeedback` whose `success` feedback (beep + vibration) fires on **every successful-capture event** — i.e. repeatedly, frame after frame, while a label stays in view. With the Validation Flow this is fine (capture is confirmed once), but with the **Basic or Advanced Overlay** the result is continuous beeping/vibrating as long as the label is on screen.
+
+For automated/AR overlays where you want feedback **once per captured label**, silence the built-in feedback and emit it yourself:
+
+```swift
+// 1. Silence the mode's built-in repeating feedback (do this in setup).
+let silentFeedback = LabelCaptureFeedback()
+silentFeedback.success = Feedback(vibration: nil, sound: nil)
+labelCapture.feedback = silentFeedback
+
+// 2. Emit once per newly tracked label, keyed by tracking id.
+private var feedbackEmittedFor = Set<Int>()
+
+private func emitFeedbackOnce(for label: CapturedLabel) {
+    guard !feedbackEmittedFor.contains(label.trackingId) else { return }
+    feedbackEmittedFor.insert(label.trackingId)
+    Feedback.default.emit()   // default beep + vibration, fired exactly once
+}
+```
+
+Call `emitFeedbackOnce(for:)` from whatever fires once per label in your integration:
+
+- **Advanced Overlay** — from `viewFor` (it already fires once per newly tracked label; the `trackingId` guard is then just belt-and-braces).
+- **Basic Overlay** — from your `LabelCaptureListener.labelCapture(_:didUpdate:frameData:)` (iterate `session.capturedLabels` and gate on `trackingId`), or from `brushFor field:` / `brushFor label:` if you've set a `LabelCaptureBasicOverlayDelegate`. The "no `LabelCaptureListener`" rule above is specific to the Advanced Overlay path — a Basic Overlay integration that already uses a listener to read results is the natural place to emit.
+
+`Feedback` and `Feedback.default` come from `ScanditCaptureCore`. Do **not** leave the default `LabelCaptureFeedback` in place and *also* emit your own — you'll get both the repeating built-in beeps and your one-shot. This manual once-per-label recipe is **only** for the Basic and Advanced overlays; the Validation Flow confirms capture once, so leave its feedback alone.
 
 ## Capturing the scanned frame image
 

@@ -730,6 +730,92 @@
       "tags": [
         "receipt-scanning"
       ]
+    },
+    {
+      "id": 28,
+      "prompt": "I'm building an iOS price-checker with Smart Label Capture and I want a fully custom AR look \u2014 a floating coloured status pin drawn above each price label, not the standard highlights. Write the Advanced Overlay integration into ScanViewController.swift.",
+      "expected_output": "The skill writes a LabelCaptureAdvancedOverlay integration. The DISCRIMINATING behaviors (the ones a skill-less answer gets wrong even though it knows the API): it drives ALL per-label work through the LabelCaptureAdvancedOverlayDelegate with NO LabelCaptureListener attached and no per-frame validation state store; it anchors the pin with exactly .topCenter (a skill-less answer typically picks .center or .bottomCenter); and it lifts the pin with a concrete negative half-height .fraction offset tied to the view being centered on the anchor. It also uses the pre-built LabelDefinition.priceCapture(withName:) (the Advanced Overlay is a rendering choice, not a label-definition change) and constructs the overlay with the view: initializer without a redundant captureView.addOverlay(...).",
+      "files": [
+        "fixtures/ScanViewController.swift"
+      ],
+      "assertions": [
+        {
+          "text": "DISCRIMINATING: NO LabelCaptureListener is attached to the LabelCapture mode \u2014 there is no labelCapture.addListener(...) call anywhere. Validation and pin creation happen inside LabelCaptureAdvancedOverlayDelegate methods (e.g. viewFor). Any answer that registers a LabelCaptureListener to drive the capture/validation/pin flow FAILS this assertion (a skill-less answer commonly adds one)."
+        },
+        {
+          "text": "DISCRIMINATING: anchorFor returns exactly Anchor .topCenter. Returning .center, .bottomCenter, or any other anchor FAILS this assertion."
+        },
+        {
+          "text": "DISCRIMINATING: offsetFor returns a PointWithUnit whose y is a NEGATIVE .fraction of about half the view height \u2014 e.g. FloatWithUnit(value: -0.5, unit: .fraction) \u2014 AND the answer ties this to the view being centered on the .topCenter anchor (so a zero offset would half-overlap the label). PointWithUnit(x: .zero, y: .zero), or an offset not expressed in .fraction units, FAILS this assertion."
+        },
+        {
+          "text": "DISCRIMINATING: validation is computed on the spot from the CapturedLabel's fields inside the delegate; there is NO dictionary/state-store caching validation results across frames. An answer that builds a per-trackingId validation cache / results map FAILS this assertion."
+        },
+        {
+          "text": "The overlay is constructed with the view: initializer \u2014 LabelCaptureAdvancedOverlay(labelCapture: ..., view: ...) \u2014 and captureView.addOverlay(advancedOverlay) is NOT called afterwards for the advanced overlay (the view: initializer auto-registers it)."
+        },
+        {
+          "text": "LabelDefinition.priceCapture(withName: \"...\") is used (not a hand-assembled CustomBarcode + TotalPriceText), and the Validation Flow overlay is NOT used for this price factory."
+        }
+      ],
+      "tags": [
+        "advanced-overlay",
+        "prebuilt-label-definitions",
+        "discriminative-power"
+      ]
+    },
+    {
+      "id": 29,
+      "prompt": "I'm using Smart Label Capture on iOS with the Basic Overlay (fully automated, no Validation Flow). The app beeps and vibrates continuously the whole time a label is in front of the camera. I just want one beep + vibration per captured label. How do I fix this?",
+      "expected_output": "The skill explains that the built-in LabelCaptureFeedback.success fires on every successful-capture event (i.e. every frame the label is in view), which is why it repeats. The fix is to silence the mode's built-in feedback (assign a LabelCaptureFeedback whose success is a no-op Feedback, via labelCapture.feedback) and emit Feedback.default.emit() yourself exactly once per newly tracked label, keyed by trackingId. It does NOT leave the default feedback in place while also emitting a one-shot.",
+      "files": [
+        "fixtures/ScanViewController.swift"
+      ],
+      "assertions": [
+        {
+          "text": "The answer identifies that the default LabelCaptureFeedback success feedback re-fires on every capture event / every frame, which causes the continuous beeping/vibration"
+        },
+        {
+          "text": "The mode's built-in feedback is silenced by assigning labelCapture.feedback a LabelCaptureFeedback whose success is a no-op Feedback (e.g. Feedback(vibration: nil, sound: nil) or the parameterless Feedback())"
+        },
+        {
+          "text": "Feedback.default.emit() (from ScanditCaptureCore) is emitted manually exactly once per newly tracked label, gated by the label's trackingId (e.g. a Set<Int> of already-emitted trackingIds)"
+        },
+        {
+          "text": "The answer does NOT advise leaving the default LabelCaptureFeedback in place while ALSO emitting a manual one-shot (that would double up)"
+        }
+      ],
+      "tags": [
+        "feedback",
+        "basic-overlay"
+      ]
+    },
+    {
+      "id": 30,
+      "prompt": "On iOS I'm pairing a LabelCaptureBasicOverlay (to draw a coloured box on the price field) with a LabelCaptureAdvancedOverlay (to draw a floating pin) for my Smart Label Capture app. My pin points the wrong way and overlaps the box, and I set every basic-overlay brush to .clear just to be safe. What am I doing wrong?",
+      "expected_output": "The skill diagnoses all three sub-problems, but the DISCRIMINATING content (what a skill-less answer misses) is the CONCRETE positioning fix: it must emit the exact .topCenter anchor and a concrete negative half-height .fraction PointWithUnit offset, and explain that the pin overlaps because the view is CENTERED on the anchor point. A skill-less answer tends to describe 'use an anchor and an offset' or defer to the docs without the concrete values. (It also correctly confirms the two overlays coexist and warns against blanket-clearing brushes \u2014 but a skill-less answer already gets those, so they are not the discriminating assertions.)",
+      "files": [
+        "fixtures/ScanViewController.swift"
+      ],
+      "assertions": [
+        {
+          "text": "DISCRIMINATING: gives CONCRETE corrected positioning code \u2014 anchorFor returns exactly Anchor .topCenter AND offsetFor returns a concrete PointWithUnit using FloatWithUnit(value: -0.5 (approx), unit: .fraction) for a negative half-height y. An answer that only says 'use an anchor and an offset' / defers to the docs without emitting the concrete .topCenter anchor and a concrete .fraction PointWithUnit FAILS this assertion."
+        },
+        {
+          "text": "DISCRIMINATING: explains the pin overlaps because the custom view is CENTERED on the anchor point, so a .topCenter anchor plus a -0.5 .fraction (half view height) offset is what lands the tail tip on the field's top edge \u2014 i.e. the centered-on-anchor mechanic, not just 'nudge it upward'."
+        },
+        {
+          "text": "Confirms a LabelCaptureBasicOverlay and a LabelCaptureAdvancedOverlay can coexist on the same DataCaptureView (the overlap is expected; they are independent layers)."
+        },
+        {
+          "text": "Advises AGAINST blanket-setting labelBrush / capturedFieldBrush / predictedFieldBrush to .clear 'to be safe'; instead colour only the price field via brushFor field: and return nil/clear for the rest."
+        }
+      ],
+      "tags": [
+        "advanced-overlay",
+        "basic-overlay",
+        "discriminative-power"
+      ]
     }
   ]
 }
