@@ -708,7 +708,7 @@
     {
       "id": 27,
       "prompt": "My customer wants to scan whole grocery receipts on iOS with Scandit \u2014 pull out the store name, the total, and the individual line items. Can Smart Label Capture do that?",
-      "expected_output": "The skill identifies this as the Receipt Scanning feature (ARE-powered, available on iOS since 7.6.0), flags clearly that it is Beta and requires a license key with the Adaptive Recognition Engine enabled (contact support@scandit.com), and describes the distinct integration pattern: LabelCaptureAdaptiveRecognitionOverlay + LabelCaptureAdaptiveRecognitionListener delivering a ReceiptScanningResult (store fields, payment totals, lineItems). It does NOT fabricate the exact delegate selector and points the user at the Advanced Configurations / API page to confirm it.",
+      "expected_output": "The skill identifies this as the Receipt Scanning feature (ARE-powered, available on iOS since 7.6.0), flags clearly that it is Beta and requires a license key with the Adaptive Recognition Engine enabled (contact support@scandit.com), and describes the distinct integration pattern: LabelCaptureAdaptiveRecognitionOverlay + LabelCaptureAdaptiveRecognitionDelegate delivering a ReceiptScanningResult (store fields, payment totals, lineItems). It does NOT fabricate the exact delegate selector and points the user at the Advanced Configurations / API page to confirm it.",
       "files": [],
       "assertions": [
         {
@@ -718,13 +718,13 @@
           "text": "The response states Receipt Scanning requires a license key with the Adaptive Recognition Engine (ARE) enabled, and directs the user to contact support@scandit.com to enable it"
         },
         {
-          "text": "The response names LabelCaptureAdaptiveRecognitionOverlay as the overlay used (instead of the standard Basic / Validation Flow overlays) and LabelCaptureAdaptiveRecognitionListener as the listener"
+          "text": "The response names LabelCaptureAdaptiveRecognitionOverlay as the overlay used (instead of the standard Basic / Validation Flow overlays) and LabelCaptureAdaptiveRecognitionDelegate as the delegate (the iOS Swift name is `\u2026Delegate`; `\u2026Listener` is the cross-platform name and does not exist on iOS \u2014 naming `\u2026Listener` FAILS)."
         },
         {
           "text": "The response names ReceiptScanningResult as the result type and describes its content \u2014 store fields (e.g. storeName), payment totals (e.g. paymentTotal), and a lineItems collection (each with name, unitPrice, quantity, totalPrice)"
         },
         {
-          "text": "The response does NOT fabricate an exact delegate-method selector for the receipt callback \u2014 it either omits the precise signature or explicitly tells the user to confirm it against the Advanced Configurations page / the LabelCaptureAdaptiveRecognitionListener API reference"
+          "text": "The response does NOT fabricate an exact delegate-method selector for the receipt callback \u2014 it either omits the precise signature or explicitly tells the user to confirm it against the Advanced Configurations page / the LabelCaptureAdaptiveRecognitionDelegate API reference"
         }
       ],
       "tags": [
@@ -814,6 +814,53 @@
       "tags": [
         "advanced-overlay",
         "basic-overlay",
+        "discriminative-power"
+      ]
+    },
+    {
+      "id": 31,
+      "prompt": "On iOS I'm adding Smart Label Capture to read the IMEI from a smartphone box \u2014 just the IMEI barcode, there are no text fields on what I scan. Which Scandit SPM products do I need to link?",
+      "expected_output": "The skill recognises IMEI as the pre-built IMEIOneBarcode semantic/data-typed barcode builder, and \u2014 the DISCRIMINATING point \u2014 tells the user to link ScanditLabelCaptureText IN ADDITION to the three core products even though there is no text field, because the semantic barcode builders' recognition models ship in ScanditLabelCaptureText (omitting it causes a missing-resource error at launch). It does NOT recommend ScanditPriceLabel (no price field). A skill-less answer typically lists only the three core products for a 'barcode-only' label.",
+      "files": [],
+      "assertions": [
+        {
+          "text": "DISCRIMINATING: lists ScanditLabelCaptureText as REQUIRED even though the label has no text field, because the IMEI/serial/part-number (data-typed/semantic) barcode builders' recognition models ship in it. An answer that lists only ScanditCaptureCore + ScanditBarcodeCapture + ScanditLabelCapture and omits ScanditLabelCaptureText FAILS this assertion."
+        },
+        {
+          "text": "Uses the pre-built IMEIOneBarcode(name:) builder for the IMEI rather than a hand-rolled CustomBarcode with a custom regex."
+        },
+        {
+          "text": "Names the three always-required core products: ScanditCaptureCore, ScanditBarcodeCapture, ScanditLabelCapture."
+        },
+        {
+          "text": "Does NOT recommend ScanditPriceLabel for this label (there is no UnitPriceText/TotalPriceText price field)."
+        }
+      ],
+      "tags": [
+        "spm-products",
+        "semantic-barcode",
+        "discriminative-power"
+      ]
+    },
+    {
+      "id": 32,
+      "prompt": "On iOS I already have Smart Label Capture working. I also need to scan a separate shipping barcode in the same app. I added a BarcodeCapture mode to the same DataCaptureContext and now nothing scans at all. Why, and what should I do?",
+      "expected_output": "The skill explains the DISCRIMINATING core-SDK fact: a DataCaptureContext is associated with only ONE mode at a time \u2014 associating a second mode (BarcodeCapture alongside LabelCapture) makes the context process no frames and report an error, which is why nothing scans. The fix is NOT to make both modes coexist: either model the extra barcode as a CustomBarcode / pre-built barcode field inside the LabelDefinition (preferred when read together), or keep one mode active and swap with context.setMode(_:) for genuinely separate workflow steps. A skill-less answer may try to configure both modes to run together.",
+      "files": [],
+      "assertions": [
+        {
+          "text": "DISCRIMINATING: explains a DataCaptureContext can have only ONE active mode at a time \u2014 adding a second mode (BarcodeCapture + LabelCapture on the same context) makes it process no frames / report an error, which is the cause of 'nothing scans'. An answer claiming both modes can run concurrently on one context, or that frames its as a mere configuration issue of the second mode, FAILS this assertion."
+        },
+        {
+          "text": "DISCRIMINATING: recommends EITHER modelling the extra barcode as a label field (CustomBarcode or a pre-built barcode field) inside the LabelDefinition, OR switching the active mode via context.setMode(_:) for separate steps \u2014 NOT running two modes simultaneously."
+        },
+        {
+          "text": "References the correct mode-management API surface (context.setMode(_:) replacing the active mode; addMode/removeMode) rather than inventing a 'multi-mode' API."
+        }
+      ],
+      "tags": [
+        "single-active-mode",
+        "barcode-capture-coexistence",
         "discriminative-power"
       ]
     }

@@ -29,12 +29,14 @@ Only proceed to the manual integration steps below if the user already has an ex
   | `ScanditCaptureCore` | **Always** | SDK runtime, camera, `DataCaptureView`. |
   | `ScanditBarcodeCapture` | **Always** | Label Capture has an internal barcode dependency even when no barcode field is declared. |
   | `ScanditLabelCapture` | **Always** | The `LabelCapture` mode, settings, overlays. |
-  | `ScanditLabelCaptureText` | **If the label has any text field** — `ExpiryDateText`, `PackingDateText`, `DateText`, `WeightText`, `UnitPriceText`, `TotalPriceText`, `CustomText`. | Bundles the on-device text/OCR models. |
+  | `ScanditLabelCaptureText` | **If the label has any text field** — `ExpiryDateText`, `PackingDateText`, `DateText`, `WeightText`, `UnitPriceText`, `TotalPriceText`, `CustomText` — **or any *data-typed/semantic barcode* field** — `SerialNumberBarcode`, `PartNumberBarcode`, `IMEIOneBarcode`, `IMEITwoBarcode`. | Bundles the on-device text/OCR models **and the barcode-semantics models** (`ocr_barcode_semantics_*`, `barcode_label_localization_*`) that the data-typed barcode builders rely on. |
   | `ScanditPriceLabel` | **If the label has a price field** — `UnitPriceText` or `TotalPriceText`. | Bundles the specialised price-text recognizer used in addition to the general text recognizer. Required *in addition to* `ScanditLabelCaptureText`, not instead of it. |
 
   If a required product is missing at runtime, the `DataCaptureView` surfaces a visible error along the lines of *"Scandit SDK is missing a required resource to operate"* — it does not fail silently. That's the symptom the user will see in the app if you under-recommend the SPM products.
 
-  After the user picks fields in Question A below, list exactly which of the five products to add — don't dump all five if the label is barcode-only, and don't omit `ScanditLabelCaptureText` if any text field is present. A label-only-barcodes setup gets the first three; a label with a date or weight adds `ScanditLabelCaptureText`; a label with `UnitPriceText` / `TotalPriceText` adds both `ScanditLabelCaptureText` and `ScanditPriceLabel`.
+  > **⚠️ Semantic barcode fields need `ScanditLabelCaptureText` even with no text field.** This is the most common SPM under-recommendation. The data-typed barcode builders (`SerialNumberBarcode`, `PartNumberBarcode`, `IMEIOneBarcode`, `IMEITwoBarcode`) are *declared* in `ScanditLabelCapture`, but their recognition models ship in `ScanditLabelCaptureText` — verified in the resolved SDK: `ScanditLabelCapture` bundles no models, while `ScanditLabelCaptureText` carries `ocr_barcode_semantics_default_model`, `barcode_semantics_ocr_detector_default_model`, and `barcode_label_localization_mslc_model_*`. So an IMEI / serial-number / part-number label that links only the three core products hits the missing-resource error at launch. A **plain `CustomBarcode`** with no data-type pattern does **not** need it — only the semantic/data-typed barcode builders do.
+
+  After the user picks fields in Question A below, list exactly which products to add. Rules of thumb: a label whose only barcode is a **plain `CustomBarcode`** (no text field) gets the first three; a label with **any text field** adds `ScanditLabelCaptureText`; a label with **any data-typed/semantic barcode builder** (`SerialNumberBarcode` / `IMEIOneBarcode` / `IMEITwoBarcode` / `PartNumberBarcode`) **also** adds `ScanditLabelCaptureText` even if it has no text field; and a label with `UnitPriceText` / `TotalPriceText` adds both `ScanditLabelCaptureText` and `ScanditPriceLabel`.
 
 - A valid Scandit license key:
   - Sign in at <https://ssl.scandit.com> to generate one.
@@ -513,6 +515,17 @@ Smart Label Capture's on-device OCR engine reads **printed Latin characters**: `
 - **Non-Latin scripts** — Cyrillic, Greek, CJK (Chinese/Japanese/Korean), Arabic, Hebrew, etc. are not currently supported.
 - **Heavily stylised fonts, low-contrast text, or worn/damaged labels** — accuracy degrades sharply. Recommend ARE (see below) for difficult labels.
 
+## Label Capture cannot run alongside Barcode Capture (single active mode)
+
+A `DataCaptureContext` is associated with **one capture mode at a time** — `LabelCapture` and `BarcodeCapture` (or `SparkScan`, `BarcodeCount`, etc.) **cannot both be active on the same context**. This is a core-SDK constraint, not a Label Capture quirk: `context.setMode(_:)` *replaces* the current mode, and if more than one mode is associated with a context "the context will not process any frames and report an error." (See [DataCaptureContext](https://docs.scandit.com/data-capture-sdk/ios/core/api/data-capture-context.html) — `setMode(_:)`, `addMode(_:)`, `removeMode(_:)`, `removeAllModes()`.)
+
+So if a user wants to *also* read a separate barcode (e.g. a shelf-edge barcode in addition to the label), do **not** spin up a second `BarcodeCapture` mode alongside `LabelCapture`. Two patterns:
+
+- **Preferred — model the extra barcode as a label field.** Add a `CustomBarcode` (or a pre-built barcode field like `SerialNumberBarcode`) to the `LabelDefinition`. The label engine then returns that barcode in the same captured label, no second mode needed. This is the right answer whenever the barcode is part of, or read together with, the label.
+- **Genuinely separate steps — switch the active mode.** If the two scans are distinct workflow stages (scan a barcode on one screen, a label on another), keep one mode active at a time and call `context.setMode(_:)` to swap between a `BarcodeCapture` and a `LabelCapture` instance when the user moves between steps. Disable the outgoing mode before switching.
+
+> This is distinct from the *"data-typed barcode + data-typed text can't coexist in one `LabelDefinition`"* exclusion rule above: that one is about field combinations *within* a label; this one is about capture *modes* on a context.
+
 ## Overlay Integration
 
 ### Validation Flow (default overlay — write this unless the user has explicitly asked for something else)
@@ -802,7 +815,7 @@ If the user wants to extract structured data from a **whole receipt** (store, to
 Receipt Scanning does **not** use the standard label-capture overlays or a `LabelDefinition`. It uses a different integration pattern:
 
 - The overlay is **`LabelCaptureAdaptiveRecognitionOverlay`** (instead of `LabelCaptureBasicOverlay` / `LabelCaptureValidationFlowOverlay`).
-- Results arrive through a **`LabelCaptureAdaptiveRecognitionListener`**, whose recognition callback delivers a **`ReceiptScanningResult`**.
+- Results arrive through a **`LabelCaptureAdaptiveRecognitionDelegate`**, whose recognition callback delivers a **`ReceiptScanningResult`**. (The iOS Swift name is `…Delegate`; "Listener" is the cross-platform name and does **not** exist on iOS.)
 
 `ReceiptScanningResult` carries the parsed receipt — all fields are optional because not every receipt prints every value:
 
@@ -813,13 +826,15 @@ Receipt Scanning does **not** use the standard label-capture overlays or a `Labe
 | `storeCity` | `String?` | City |
 | `date` | `String?` | Transaction date |
 | `time` | `String?` | Transaction time |
-| `paymentPreTaxTotal` | `Float?` | Balance before taxes |
-| `paymentTax` | `Float?` | Total tax |
-| `paymentTotal` | `Float?` | Total paid |
-| `loyaltyNumber` | `Int?` | Loyalty program identifier |
-| `lineItems` | list | Each item carries `name`, `unitPrice`, `discount`, `quantity`, `totalPrice` |
+| `paymentPreTaxTotal` | `NSDecimalNumber?` | Balance before taxes |
+| `paymentTax` | `NSDecimalNumber?` | Total tax |
+| `paymentTotal` | `NSDecimalNumber?` | Total paid |
+| `loyaltyNumber` | `NSNumber?` | Loyalty program identifier |
+| `lineItems` | `[ReceiptScanningLineItem]` | Each item carries `name` (`String`), `unitPrice` / `discount` / `totalPrice` (`NSDecimalNumber?`), and `quantity` (`NSDecimalNumber`) |
 
-> **Verify the exact delegate selector before writing the listener.** The Receipt Scanning overlay and listener are Beta, and the receipt callback's precise Swift signature is not pinned in the integration references here. Fetch the [Advanced Configurations](https://docs.scandit.com/sdks/ios/label-capture/advanced/) page (Receipt Scanning section) and the linked API page for `LabelCaptureAdaptiveRecognitionListener` before emitting the delegate method — don't guess the selector. The overlay type (`LabelCaptureAdaptiveRecognitionOverlay`), the listener type (`LabelCaptureAdaptiveRecognitionListener`), and the result type (`ReceiptScanningResult`) above are confirmed; the delegate method name is not, so look it up.
+> The monetary fields are `NSDecimalNumber?` and `loyaltyNumber` is `NSNumber?` (not Swift `Float?` / `Int?`) — code written against `Float?` / `Int?` will not compile. Bridge with `.doubleValue` / `.intValue` (or use `NSDecimalNumber` directly for exact currency math).
+
+> **Verify the exact delegate selector before writing the delegate.** The Receipt Scanning overlay and delegate are Beta, and the receipt callback's precise Swift signature is not pinned in the integration references here. Fetch the [Advanced Configurations](https://docs.scandit.com/sdks/ios/label-capture/advanced/) page (Receipt Scanning section) and the linked API page for `LabelCaptureAdaptiveRecognitionDelegate` before emitting the delegate method — don't guess the selector. The overlay type (`LabelCaptureAdaptiveRecognitionOverlay`), the delegate type (`LabelCaptureAdaptiveRecognitionDelegate` — `NS_SWIFT_NAME` confirmed in `SDCLabelCaptureAdaptiveRecognitionOverlay.h`), and the result type (`ReceiptScanningResult`) above are confirmed; the delegate method name is not, so look it up.
 
 ## Setup Checklist
 
@@ -828,8 +843,9 @@ After the integration code and overlay choice are in place, show this checklist:
 1. Add the SPM package `https://github.com/Scandit/datacapture-spm` and link the products required by the field types in this label (see Prerequisites table for the full rule):
    - **Always:** `ScanditCaptureCore`, `ScanditBarcodeCapture`, `ScanditLabelCapture`.
    - **If the label has any text field** (e.g. `ExpiryDateText`, `DateText`, `WeightText`, `UnitPriceText`, `TotalPriceText`, `CustomText`): also link `ScanditLabelCaptureText`.
+   - **If the label has a data-typed/semantic barcode field** (`SerialNumberBarcode`, `PartNumberBarcode`, `IMEIOneBarcode`, `IMEITwoBarcode`): also link `ScanditLabelCaptureText` **even if there is no text field** — these builders' models ship in that product (see the ⚠️ note in Prerequisites). A plain `CustomBarcode` does not need it.
    - **If the label has a price field** (`UnitPriceText` or `TotalPriceText`): also link `ScanditPriceLabel` (in addition to `ScanditLabelCaptureText`, not instead of it).
-   - List only the products this specific label needs — don't recommend `ScanditLabelCaptureText` for a barcode-only label, and don't omit it if any text field is present. A missing text/price product is a common silent failure: the mode runs but produces no `text` result for those fields.
+   - List only the products this specific label needs. `ScanditLabelCaptureText` is *not* needed for a plain-`CustomBarcode` barcode-only label, but it **is** required for a semantic-barcode (IMEI / serial / part-number) label or any text/price label. A missing text/price/semantics product is a common failure: the `DataCaptureView` reports a missing-resource error, or text/semantic fields produce no result.
 2. Replace `-- ENTER YOUR SCANDIT LICENSE KEY HERE --` with your license key from <https://ssl.scandit.com>.
 3. Add `NSCameraUsageDescription` to your `Info.plist` with a user-facing reason string.
 4. Add a `UIView` outlet named `containerView` to your view controller (or replace `containerView` with `view` to use the whole VC's view).
