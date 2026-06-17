@@ -90,16 +90,39 @@ final barcodeBatch = BarcodeBatch(captureSettings);
 dataCaptureContext.setMode(barcodeBatch);
 ```
 
-Apply recommended camera settings and attach the camera to the context:
+### Camera setup
+
+Set up the camera as the context's frame source. There are three steps: get the device camera, apply the camera settings BarcodeBatch recommends, and register the camera as the context frame source. The camera is started separately (after the permission is granted — see Step 8).
 
 ```dart
+// 1. Get the default (rear) camera.
+Camera? camera = Camera.defaultCamera;
+
+// 2. Apply the recommended settings.
+//    On Flutter this is a STATIC METHOD: BarcodeBatch.createRecommendedCameraSettings().
+//    There is NO `recommendedCameraSettings` getter on Flutter.
 final cameraSettings = BarcodeBatch.createRecommendedCameraSettings();
-_camera?.applySettings(cameraSettings);
-// Attach camera as the frame source.
-if (_camera != null) {
-  dataCaptureContext.setFrameSource(_camera!);
+camera?.applySettings(cameraSettings);
+
+// 3. Attach the camera as the context's frame source.
+if (camera != null) {
+  dataCaptureContext.setFrameSource(camera);
 }
+
+// 4. Start it once the camera permission is granted (see Step 8).
+camera?.switchToDesiredState(FrameSourceState.on);
 ```
+
+> **Flutter gotcha**: use the static **method** `BarcodeBatch.createRecommendedCameraSettings()`. The `recommendedCameraSettings` *getter* exists on some other platforms (iOS, web, .NET) but **not** on Flutter — calling it will not compile.
+
+### Camera setup members (from `scandit_flutter_datacapture_core`)
+
+| Member | Description |
+|--------|-------------|
+| `Camera.defaultCamera` | Static getter — the default (rear) `Camera?`. May be `null` if no camera is available. |
+| `camera.applySettings(CameraSettings)` | Apply camera settings (resolution, focus, etc.). |
+| `dataCaptureContext.setFrameSource(FrameSource)` | Register the camera as the context's frame source. |
+| `camera.switchToDesiredState(FrameSourceState)` | Turn the camera `on` / `off` / `standby`. |
 
 ### BarcodeBatchSettings Members
 
@@ -203,6 +226,66 @@ void dispose() {
 | `barcode` | `Barcode` | The barcode associated with this track. |
 | `identifier` | `int` | Unique integer identifier for this track. Reused after the barcode is lost. |
 | `location` | `Quadrilateral` | Location of the barcode in image-space (requires MatrixScan AR add-on). Convert to view-space with `captureView.viewQuadrilateralForFrameQuadrilateral(...)`. |
+
+### Step 4a — Scan feedback (sound / vibration)
+
+**`BarcodeBatch` has no built-in feedback.** Unlike `BarcodeCapture` and `SparkScan`, the BarcodeBatch mode does not expose a `feedback` property and does **not** beep or vibrate on its own. To give the user audible/haptic feedback when a barcode is first tracked, construct a `Feedback` from `scandit_flutter_datacapture_core` and call `emit()` yourself from `didUpdateSession`.
+
+> **Import collision**: Flutter's `package:flutter/material.dart` also exports a class named `Feedback`. When you import both, the name is ambiguous. Either import the Scandit core barrel with a prefix (`as sdc`) and write `sdc.Feedback`, or hide Flutter's version with `import 'package:flutter/material.dart' hide Feedback;`.
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:scandit_flutter_datacapture_barcode/scandit_flutter_datacapture_barcode_batch.dart';
+import 'package:scandit_flutter_datacapture_core/scandit_flutter_datacapture_core.dart';
+// The core barrel is normally imported unprefixed (above) for Camera, DataCaptureView,
+// FrameData, etc. Scandit's Feedback collides with Flutter material's Feedback, so ALSO
+// import the core barrel with a prefix and use the prefixed name only for Feedback.
+import 'package:scandit_flutter_datacapture_core/scandit_flutter_datacapture_core.dart' as sdc;
+
+class _ScanScreenState extends State<ScanScreen>
+    implements BarcodeBatchListener {
+
+  // Default sound + vibration. Use sdc.Feedback() for an empty (silent) feedback,
+  // or pass null for either argument to suppress just that channel.
+  final sdc.Feedback _feedback =
+      sdc.Feedback(sdc.Vibration.defaultVibration, sdc.Sound.defaultSound);
+
+  // Track which identifiers we have already given feedback for, so we beep
+  // once per barcode rather than on every frame it is visible.
+  final Set<int> _feedbackGiven = {};
+
+  @override
+  Future<void> didUpdateSession(
+    BarcodeBatch barcodeBatch,
+    BarcodeBatchSession session,
+    Future<FrameData> getFrameData(),
+  ) async {
+    var hasNew = false;
+    for (final trackedBarcode in session.addedTrackedBarcodes) {
+      if (_feedbackGiven.add(trackedBarcode.identifier)) {
+        hasNew = true;
+      }
+    }
+    // Emit once per update if at least one not-previously-seen barcode appeared.
+    if (hasNew) {
+      _feedback.emit();
+    }
+  }
+}
+```
+
+### Feedback / Sound / Vibration members (from `scandit_flutter_datacapture_core`)
+
+| Member | Description |
+|--------|-------------|
+| `Feedback(Vibration? vibration, Sound? sound)` | Construct a feedback. **Dart order is vibration first, then sound.** Pass `null` for either to suppress that channel. |
+| `Feedback()` | Empty constructor — emits no sound and no vibration. |
+| `Feedback.defaultFeedback` | Static getter — a `Feedback` with `Vibration.defaultVibration` and `Sound.defaultSound`. |
+| `feedback.emit()` | Plays the configured sound and vibration. Influenced by device ring mode / volume. |
+| `Vibration.defaultVibration` | Static getter — the default vibration. |
+| `Sound.defaultSound` | Static getter — the default scan sound. |
+
+> **Note**: Feedback (sound/vibration) does **not** require the MatrixScan AR add-on — it is core SDK functionality. (Per-barcode brushes and AR overlays do require the add-on.)
 
 ## Step 5 — BarcodeBatchBasicOverlay: per-barcode brushes
 

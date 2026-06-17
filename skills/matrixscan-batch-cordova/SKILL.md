@@ -31,7 +31,9 @@ Cordova-specific gotchas worth flagging:
 
 Based on the user's request, load the appropriate reference file before responding:
 
-- **Integrating MatrixScan Batch from scratch** (e.g. "add MatrixScan to my app", "set up BarcodeBatch", "track multiple barcodes simultaneously", "show AR overlays", "per-barcode brushes", "lifecycle or cleanup", "camera permissions") → read `references/integration.md` and follow the instructions there.
+- **Integrating MatrixScan Batch from scratch** (e.g. "add MatrixScan to my app", "set up BarcodeBatch", "track multiple barcodes simultaneously", "show AR overlays", "per-barcode brushes", "tap handling", "removed barcodes", "feedback / beep / vibration", "lifecycle or cleanup", "camera permissions") → read `references/integration.md` and follow the instructions there.
+- **Migrating or upgrading an existing MatrixScan integration** (e.g. "upgrade from v6 to v7/v8", "migrate BarcodeTracking to BarcodeBatch", "is BarcodeTracking the same as BarcodeBatch?", "bump the Scandit plugins", "what changed between SDK versions") → read `references/migration.md` and follow the instructions there.
+- **Replacing a third-party multi-barcode scanner** (e.g. "replace phonegap-plugin-barcodescanner with MatrixScan Batch", "migrate from the Cordova ML Kit barcode plugin", "we loop a scanner to read all barcodes, switch us to Scandit") → read `references/third-party-migration.md` and follow the instructions there.
 
 ## API Usage Policy
 

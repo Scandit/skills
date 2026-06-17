@@ -738,6 +738,61 @@ this.advancedOverlay.ClearTrackedBarcodeViews(); // remove all views
 
 > For tap callbacks and additional advanced-overlay options, fetch the [Adding AR Overlays](https://docs.scandit.com/sdks/net/ios/matrixscan/advanced/) page.
 
+## Optional: feedback (beep / vibration on a newly tracked barcode)
+
+Unlike single-shot `BarcodeCapture` — which owns a `BarcodeCaptureFeedback` and beeps automatically on every accepted scan — and unlike `SparkScan`, **`BarcodeBatch` has no built-in feedback and emits nothing on its own.** There is no feedback property on `BarcodeBatch` or `BarcodeBatchSettings`. Tracking many codes per frame would otherwise produce a continuous buzz. To beep or vibrate when a code is *first* tracked, own a `Feedback` instance yourself and call `Emit()` from `OnSessionUpdated`, gated on `session.AddedTrackedBarcodes` (the barcodes newly tracked *this* frame).
+
+`session.AddedTrackedBarcodes` is the right trigger: it is the set added this frame, so it does not re-fire while a code stays in view. If a tracking ID can be reused after a code leaves and re-enters the frame, de-duplicate against a `HashSet<int>` of identifiers you have already signalled.
+
+```csharp
+using System.Linq;
+using Scandit.DataCapture.Core.Common.Feedback;
+
+// Build the Feedback once (as a field) and reuse it; do NOT allocate per frame.
+// new Feedback(vibration, sound) — pass null for either component to omit it.
+private readonly Feedback feedback =
+    new Feedback(Vibration.DefaultVibration, Sound.DefaultSound);
+// (or simply: private readonly Feedback feedback = Feedback.DefaultFeedback;)
+
+// Identifiers already signalled, so feedback fires once per newly tracked barcode.
+private readonly HashSet<int> signalledTrackingIds = new();
+
+public void OnSessionUpdated(
+    BarcodeBatch barcodeBatch,
+    BarcodeBatchSession session,
+    IFrameData frameData)
+{
+    try
+    {
+        // Add() returns true only the first time an identifier is seen, so Emit()
+        // fires once per newly tracked barcode rather than on every frame.
+        bool firstSighting = session.AddedTrackedBarcodes
+            .Any(tb => this.signalledTrackingIds.Add(tb.Identifier));
+
+        if (firstSighting)
+        {
+            this.feedback.Emit();
+        }
+    }
+    finally
+    {
+        frameData.Dispose();
+    }
+}
+```
+
+`Feedback.Emit()` is influenced by the device ring mode and volume settings, so a correctly configured `Sound`/`Vibration` may still be silent on a muted device. Members live in `Scandit.DataCapture.Core.Common.Feedback`:
+
+| Member | Type | Description |
+|--------|------|-------------|
+| `new Feedback(Vibration?, Sound?)` | ctor | Feedback with both components; pass `null` to omit one. Also `new Feedback(Vibration?)` and `new Feedback(Sound?)`. |
+| `Feedback.DefaultFeedback` | `static Feedback` (property, no `()`) | A feedback with the default sound and default vibration (the same beep + vibration single-shot capture uses). |
+| `Vibration.DefaultVibration` | `static Vibration` (property) | The default success vibration. `Vibration.SuccessHapticFeedback` and `Vibration.SelectionHapticFeedback` are also available on iOS. |
+| `Sound.DefaultSound` | `static Sound` (property) | The default success beep. |
+| `feedback.Emit()` | `void` | Plays the sound and emits the vibration defined by the instance. |
+
+> `Feedback`, `Vibration` and `Sound` are `IDisposable` in the .NET binding. Hold the `Feedback` for the controller's lifetime and let it be released with the controller; do not allocate a new one per frame.
+
 ## Optional: pause / reset tracking
 
 | Action | How |
@@ -802,3 +857,4 @@ The same applies to the event-based API — call `args.FrameData.Dispose()` in a
 14. **No runtime permission call** — iOS handles the camera prompt automatically once `NSCameraUsageDescription` is in `Info.plist`. There is no Android-style `RequestPermissions`.
 15. **SDK 8.0+ initialization** — `AppDelegate.FinishedLaunching` calling `ScanditCaptureCore.Initialize()` + `ScanditBarcodeCapture.Initialize()` is mandatory on 8.0+.
 16. **`IFrameData`, not `FrameData`** — the .NET listener signature passes an `IFrameData`. Don't import `FrameData` (that's a Swift type).
+17. **No automatic feedback** — `BarcodeBatch` has no built-in beep/vibration and exposes no feedback property (unlike `BarcodeCaptureFeedback` / `SparkScanFeedback`). To signal a new code, own a `Feedback` (`Feedback.DefaultFeedback` or `new Feedback(Vibration.DefaultVibration, Sound.DefaultSound)`) and call `feedback.Emit()` from `OnSessionUpdated`, gated on `session.AddedTrackedBarcodes`. `Feedback.DefaultFeedback` / `Vibration.DefaultVibration` / `Sound.DefaultSound` are static **properties**, not methods.

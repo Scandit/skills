@@ -1,0 +1,79 @@
+{
+  "skill_name": "matrixscan-batch-web",
+  "evals": [
+    {
+      "id": "tpm0",
+      "prompt": "I have a web app using ZXing-js (@zxing/library + @zxing/browser) to continuously scan multiple barcodes by re-decoding the video feed and collecting distinct values. I want to replace it with Scandit MatrixScan Batch so all visible barcodes are tracked at once. It needs to keep reading EAN-13, UPC-A, Code 128, and QR. Here is the scanner: zxing-scanner.ts.",
+      "expected_output": "The skill removes the ZXing-js APIs (BrowserMultiFormatReader, decodeFromVideoDevice, BarcodeFormat/DecodeHintType hints, the <video> element) and replaces them with MatrixScan Batch: DataCaptureContext.forLicenseKey, BarcodeBatchSettings with EAN13UPCA + Code128 + QR, BarcodeBatch.forContext, a DataCaptureView, a BarcodeBatchBasicOverlay, and an IBarcodeBatchListener.didUpdateSession that iterates session.addedTrackedBarcodes. The ScannedBarcode interface and the dedupe/accumulate logic are preserved (dedupe moved to the tracking identifier). It maps ZXing BarcodeFormat to the correct web Symbology values, flags COOP/COEP as a new requirement, and shows a summary.",
+      "files": [
+        "fixtures/zxing-scanner.ts"
+      ],
+      "assertions": [
+        {
+          "text": "The @zxing/library and @zxing/browser imports are NOT present in the migrated code block (may appear in a before/after summary)"
+        },
+        {
+          "text": "BrowserMultiFormatReader is NOT instantiated in the migrated code block (may appear in a summary table)"
+        },
+        {
+          "text": "decodeFromVideoDevice is NOT called in the migrated code block"
+        },
+        {
+          "text": "DecodeHintType and the POSSIBLE_FORMATS hint configuration are NOT present in the migrated code block"
+        },
+        {
+          "text": "DataCaptureContext.forLicenseKey( is used to create the context"
+        },
+        {
+          "text": "BarcodeBatchSettings is created with new BarcodeBatchSettings()"
+        },
+        {
+          "text": "await BarcodeBatch.forContext( is used as the async factory"
+        },
+        {
+          "text": "Symbology.EAN13UPCA is enabled (mapped from BarcodeFormat.EAN_13 and BarcodeFormat.UPC_A)"
+        },
+        {
+          "text": "Symbology.Code128 is enabled (mapped from BarcodeFormat.CODE_128)"
+        },
+        {
+          "text": "Symbology.QR is enabled (mapped from BarcodeFormat.QR_CODE — not Symbology.QrCode, which does not exist on web)"
+        },
+        {
+          "text": "Symbology.QrCode does NOT appear as a Symbology enum value in the migrated code (the deprecated/nonexistent web casing is not used)"
+        },
+        {
+          "text": "A DataCaptureView is created (DataCaptureView.forContext or new DataCaptureView) and connectToElement is called"
+        },
+        {
+          "text": "BarcodeBatchBasicOverlay is created (withBarcodeBatchForView or withBarcodeBatchForViewWithStyle)"
+        },
+        {
+          "text": "didUpdateSession is implemented on a BarcodeBatch listener"
+        },
+        {
+          "text": "session.addedTrackedBarcodes is iterated for the new-this-frame barcodes (semantic)"
+        },
+        {
+          "text": "trackedBarcode.barcode.data is read for the scanned value (replacing result.getText()) (semantic)"
+        },
+        {
+          "text": "The ScannedBarcode interface (or equivalent data model) is preserved"
+        },
+        {
+          "text": "Deduplication is preserved and keyed on the tracking identifier (trackedBarcode.identifier) instead of a Set of strings (semantic)"
+        },
+        {
+          "text": "Cross-origin isolation (COOP/COEP) headers are flagged as a new requirement that ZXing-js did not need (semantic)"
+        },
+        {
+          "text": "Setup checklist mentions installing @scandit/web-datacapture-core and @scandit/web-datacapture-barcode"
+        },
+        {
+          "text": "A summary of changes is shown describing what was removed (ZXing) and what was added (BarcodeBatch) (semantic)"
+        }
+      ],
+      "tags": ["third-party-migration"]
+    }
+  ]
+}

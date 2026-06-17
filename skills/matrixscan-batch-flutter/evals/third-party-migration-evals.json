@@ -1,0 +1,38 @@
+{
+  "skill_name": "matrixscan-batch-flutter",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "We have a Flutter screen that scans multiple barcodes at once using the mobile_scanner plugin (ML Kit). We want to replace it with Scandit MatrixScan Batch (BarcodeBatch) to track all visible barcodes. Here's the screen: MobileScannerScreen.dart. Migrate it and keep our deduplicated scanResults list.",
+      "expected_output": "The skill reads third-party-migration.md, removes the mobile_scanner plugin usage (MobileScannerController, the MobileScanner widget, onDetect, and the mobile_scanner import), and replaces it with a BarcodeBatch integration: BarcodeBatchSettings with the symbologies mapped from the mobile_scanner formats (BarcodeFormat.ean13 -> Symbology.ean13Upca, BarcodeFormat.code128 -> Symbology.code128, BarcodeFormat.qrCode -> Symbology.qr), a class implementing BarcodeBatchListener with didUpdateSession, a DataCaptureView with a BarcodeBatchBasicOverlay, and camera setup (Camera.defaultCamera + BarcodeBatch.createRecommendedCameraSettings() + setFrameSource). The _seen Set and scanResults list with the deduplication logic are preserved. It shows a setup checklist (packages, license key, camera permission) and a summary of what was removed and added.",
+      "files": [
+        "fixtures/MobileScannerScreen.dart"
+      ],
+      "assertions": [
+        {"text": "The mobile_scanner import package:mobile_scanner/mobile_scanner.dart is NOT present in the rewritten code"},
+        {"text": "MobileScannerController is NOT instantiated in the rewritten code (it may appear in a before/after summary table)"},
+        {"text": "The MobileScanner widget is NOT used in the rewritten code (it may appear in a before/after summary table)"},
+        {"text": "onDetect is NOT wired as a mobile_scanner callback in the rewritten code (it may appear in a before/after summary table)"},
+        {"text": "Import from scandit_flutter_datacapture_barcode_batch is present"},
+        {"text": "Import from scandit_flutter_datacapture_barcode is present"},
+        {"text": "BarcodeBatch( captureSettings ) constructor is used and dataCaptureContext.setMode( or _context.setMode( is called"},
+        {"text": "A class implements BarcodeBatchListener and defines didUpdateSession("},
+        {"text": "Symbology.ean13Upca is enabled (mapped from BarcodeFormat.ean13)"},
+        {"text": "Symbology.code128 is enabled (mapped from BarcodeFormat.code128)"},
+        {"text": "Symbology.qr is enabled (mapped from BarcodeFormat.qrCode)"},
+        {"text": "Symbology.qrCode is NOT used as a Symbology value (the Scandit value is Symbology.qr) (semantic)"},
+        {"text": "DataCaptureView.forContext( is used as the camera preview"},
+        {"text": "BarcodeBatchBasicOverlay( is added to the DataCaptureView"},
+        {"text": "Camera.defaultCamera is used and BarcodeBatch.createRecommendedCameraSettings() is applied"},
+        {"text": "_context.setFrameSource( or dataCaptureContext.setFrameSource( is called with the camera"},
+        {"text": "The _seen Set and scanResults list are preserved with the deduplication logic (add to scanResults only when the value is new) (semantic)"},
+        {"text": "The scanned values are read from trackedBarcode.barcode.data inside didUpdateSession (not from a mobile_scanner Barcode.rawValue) (semantic)"},
+        {"text": "If both Scandit and a residual third-party BarcodeCapture name are in scope, the collision is disambiguated (import prefix or hide), or the mobile_scanner BarcodeCapture type is fully removed (semantic)"},
+        {"text": "A setup checklist mentions adding scandit_flutter_datacapture_barcode and running flutter pub get"},
+        {"text": "The setup checklist mentions the camera permission (NSCameraUsageDescription on iOS and the runtime request on Android)"},
+        {"text": "A summary of changes is shown listing what was removed (mobile_scanner) and what was added (BarcodeBatch)"}
+      ],
+      "tags": ["third-party-migration"]
+    }
+  ]
+}

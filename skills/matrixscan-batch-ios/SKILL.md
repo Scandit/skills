@@ -25,6 +25,8 @@ iOS-specific gotchas worth flagging:
 - **`DataCaptureView` must be `addSubview`'d manually** — unlike `BarcodeArView`, `DataCaptureView` does not auto-attach to a parent view.
 - **Per-barcode brush customization** (`barcodeBatchBasicOverlay(_:brushFor:)`, `setBrush(_:for:)`) requires the **MatrixScan AR add-on** license. A uniform default brush (no delegate) does not.
 - **BarcodeBatchAdvancedOverlay** requires the **MatrixScan AR add-on** license.
+- **No built-in feedback** — `BarcodeBatch` never plays a sound or vibrates on its own (unlike `BarcodeCapture` / `SparkScan`). Emit feedback manually with `Feedback.default.emit()` from inside the listener callback (dispatched to the main thread), gated on `session.addedTrackedBarcodes` so it doesn't beep every frame.
+- `session.removedTrackedBarcodes` is an **`[Int]` of tracking identifiers** (barcodes that left the frame) — not `TrackedBarcode` objects. `addedTrackedBarcodes` / `updatedTrackedBarcodes` are `[TrackedBarcode]`.
 - iOS symbology cases are **camelCase**: `.ean13UPCA`, `.code128`, `.qr` — not `EAN13_UPCA` / `CODE128` / `QR` like Android.
 - iOS delegate methods use Swift naming: `barcodeBatchBasicOverlay(_:didTap:)` (not Android's `onTrackedBarcodeTapped`), `barcodeBatchAdvancedOverlay(_:viewFor:)` (not `viewForTrackedBarcode`).
 - `BarcodeBatchAdvancedOverlayDelegate` uses `UIView` — not Android `View` or SwiftUI views.
@@ -36,7 +38,9 @@ iOS-specific gotchas worth flagging:
 
 Based on the user's request, load the appropriate reference file before responding:
 
-- **Integrating MatrixScan Batch from scratch, configuring settings, handling tracked barcodes, customizing overlays, or managing lifecycle** → read `references/integration.md` and follow the instructions there. Before writing code, determine whether the project uses UIKit or SwiftUI (check for `import SwiftUI`, an `@main` `App` struct, `SceneDelegate`/`AppDelegate`, `.storyboard`/`.xib` files, etc.) and use the matching Get Started page from the References table below. If the project already has BarcodeBatch wired up, do not re-create the context, mode, view, or lifecycle — locate the existing ones (grep for `BarcodeBatch`, then `DataCaptureView`) and change only what the user asked for.
+- **Integrating MatrixScan Batch from scratch, configuring settings, handling tracked barcodes, customizing overlays, adding feedback, or managing lifecycle** → read `references/integration.md` and follow the instructions there. Before writing code, determine whether the project uses UIKit or SwiftUI (check for `import SwiftUI`, an `@main` `App` struct, `SceneDelegate`/`AppDelegate`, `.storyboard`/`.xib` files, etc.) and use the matching Get Started page from the References table below. If the project already has BarcodeBatch wired up, do not re-create the context, mode, view, or lifecycle — locate the existing ones (grep for `BarcodeBatch`, then `DataCaptureView`) and change only what the user asked for.
+- **Upgrading the Scandit SDK version** (e.g. v6→v7, v7→v8, or "upgrade to the latest") → read `references/migration.md`. The headline v6→v7 change for MatrixScan Batch is the `BarcodeTracking` → `BarcodeBatch` rename; the guide also covers the context/camera modernization. Detect the installed version from `Package.resolved` / `Podfile.lock` before asking the user.
+- **Replacing a different barcode scanner with MatrixScan Batch** (AVFoundation `AVCaptureMetadataOutput`, VisionKit `DataScannerViewController`, or another third-party multi-barcode SDK) → read `references/third-party-migration.md`, then follow `references/integration.md` for the BarcodeBatch integration.
 
 ## API Usage Policy
 
@@ -55,4 +59,5 @@ URL structures can vary (e.g. `api/ui/` subdirectory) and guessing will lead to 
 | UIKit integration | [Get Started (UIKit)](https://docs.scandit.com/sdks/ios/matrixscan/get-started/) · [Sample](https://github.com/Scandit/datacapture-ios-samples/tree/master/03_Advanced_Batch_Scanning_Samples/01_Batch_Scanning_and_AR_Info_Lookup/MatrixScanBubblesSample) |
 | SwiftUI integration | [Get Started (SwiftUI)](https://docs.scandit.com/sdks/ios/matrixscan/get-started-with-swift-ui/) |
 | AR overlays (BasicOverlay brushes, AdvancedOverlay views) | [Adding AR Overlays](https://docs.scandit.com/sdks/ios/matrixscan/advanced/) |
+| Version migration (v6→v7→v8) | [Migrate 6→7](https://docs.scandit.com/sdks/ios/migrate-6-to-7/) · [Migrate 7→8](https://docs.scandit.com/sdks/ios/migrate-7-to-8/) |
 | Full API reference | [BarcodeBatch API](https://docs.scandit.com/data-capture-sdk/ios/barcode-capture/api.html) |

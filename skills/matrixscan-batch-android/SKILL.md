@@ -33,7 +33,9 @@ Android-specific gotchas worth flagging:
 
 Based on the user's request, load the appropriate reference file before responding:
 
-- **Integrating MatrixScan Batch from scratch, configuring settings, handling tracked barcodes, customizing overlays, or managing lifecycle** → read `references/integration.md` and follow the instructions there.
+- **Integrating MatrixScan Batch from scratch, configuring settings, handling tracked barcodes, customizing overlays (basic FRAME/DOT style, tap callbacks, advanced AR views, anchor/offset positioning), reacting to removed barcodes, or emitting feedback** → read `references/integration.md` and follow the instructions there.
+- **Migrating or upgrading an existing MatrixScan Batch integration** (e.g. "upgrade from v6 to v7", "rename BarcodeTracking to BarcodeBatch", "bump the Scandit SDK to v8", "what changed between SDK versions") → read `references/migration.md` and follow the instructions there.
+- **Replacing a third-party multi-barcode scanner with MatrixScan Batch** (e.g. "migrate from ML Kit barcode scanning to Scandit MatrixScan", "replace my ML Kit multi-barcode scanner with BarcodeBatch", "switch from [library] to MatrixScan Batch") → read `references/third-party-migration.md` and follow the instructions there.
 
 ## API Usage Policy
 

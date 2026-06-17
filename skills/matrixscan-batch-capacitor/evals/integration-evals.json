@@ -116,6 +116,83 @@
         {"text": "The teardown function is explained as being called on navigation away or screen exit (semantic)"},
         {"text": "Existing integration code (context, barcodeBatch, camera, view) is still referenced and used (semantic)"}
       ]
+    },
+    {
+      "id": 7,
+      "prompt": "I'd rather have the tracked-barcode highlights show as dots instead of rectangular frames in my MatrixScan Batch Capacitor app. Right now the BarcodeBatchBasicOverlay is using the frame style. Switch it to the dot style.",
+      "expected_output": "The skill changes the BarcodeBatchBasicOverlay style argument from BarcodeBatchBasicOverlayStyle.Frame to BarcodeBatchBasicOverlayStyle.Dot in the overlay constructor (the second argument of new BarcodeBatchBasicOverlay(barcodeBatch, style)). Explains that Frame and Dot are the two available styles. Existing integration code is preserved.",
+      "files": [
+        "fixtures/IntegratedApp.js"
+      ],
+      "assertions": [
+        {"text": "new BarcodeBatchBasicOverlay( is called with BarcodeBatchBasicOverlayStyle.Dot as the style argument"},
+        {"text": "BarcodeBatchBasicOverlayStyle.Frame is NOT the style passed to the overlay constructor in the updated code"},
+        {"text": "The two available styles are described as BarcodeBatchBasicOverlayStyle.Frame and BarcodeBatchBasicOverlayStyle.Dot (semantic)"},
+        {"text": "Existing integration code (context, barcodeBatch, camera, view) is still referenced and used (semantic)"}
+      ]
+    },
+    {
+      "id": 8,
+      "prompt": "In my MatrixScan Batch Capacitor app I want to react when the user taps one of the highlighted tracked barcodes on the BarcodeBatchBasicOverlay — log the tapped barcode's data. The basic overlay is already created.",
+      "expected_output": "The skill sets the basicOverlay.listener with a didTapTrackedBarcode callback that receives (overlay, trackedBarcode) and logs trackedBarcode.barcode.data. Notes that the basic-overlay listener requires the MatrixScan AR add-on. Existing integration code is preserved.",
+      "files": [
+        "fixtures/IntegratedApp.js"
+      ],
+      "assertions": [
+        {"text": "basicOverlay.listener is set with a didTapTrackedBarcode callback"},
+        {"text": "didTapTrackedBarcode receives the overlay and trackedBarcode parameters"},
+        {"text": "trackedBarcode.barcode.data is read inside the didTapTrackedBarcode callback"},
+        {"text": "A comment or note mentions that the BarcodeBatchBasicOverlay listener requires the MatrixScan AR add-on (semantic)"},
+        {"text": "Existing integration code (context, barcodeBatch, camera, view) is still referenced and used (semantic)"}
+      ]
+    },
+    {
+      "id": 9,
+      "prompt": "I have AR bubbles on tracked barcodes via BarcodeBatchAdvancedOverlay in my Capacitor app. I want a tap on a bubble to open a detail view — for now just log the barcode data of the tapped bubble.",
+      "expected_output": "The skill adds a didTapViewForTrackedBarcode callback to the advancedOverlay.listener that receives (overlay, trackedBarcode) and logs trackedBarcode.barcode.data. Notes that BarcodeBatchAdvancedOverlay requires the MatrixScan AR add-on. Existing AR overlay code is preserved.",
+      "files": [
+        "fixtures/IntegratedApp.js"
+      ],
+      "assertions": [
+        {"text": "advancedOverlay.listener has a didTapViewForTrackedBarcode callback"},
+        {"text": "didTapViewForTrackedBarcode receives the overlay and trackedBarcode parameters"},
+        {"text": "trackedBarcode.barcode.data is read inside the didTapViewForTrackedBarcode callback"},
+        {"text": "didTapTrackedBarcode is NOT used for the advanced overlay tap (that is the basic-overlay callback)"},
+        {"text": "A comment or note mentions that BarcodeBatchAdvancedOverlay requires the MatrixScan AR add-on (semantic)"},
+        {"text": "Existing integration code (context, barcodeBatch, camera, view) is still referenced and used (semantic)"}
+      ]
+    },
+    {
+      "id": 10,
+      "prompt": "In my MatrixScan Batch Capacitor app I keep my own dictionary of tracked barcodes keyed by tracking identifier. I need to remove entries when a barcode leaves the frame so the dictionary doesn't grow forever. How do I detect barcodes that were lost?",
+      "expected_output": "The skill reads session.removedTrackedBarcodes (an array of string identifiers) inside the didUpdateSession callback and deletes the matching entries from the app's own state map. Explains that removedTrackedBarcodes contains the identifiers of barcodes lost this frame, and warns not to retain the session arrays outside the callback. Existing integration code is preserved.",
+      "files": [
+        "fixtures/IntegratedApp.js"
+      ],
+      "assertions": [
+        {"text": "session.removedTrackedBarcodes is accessed inside the didUpdateSession callback"},
+        {"text": "session.removedTrackedBarcodes is described as an array of tracking identifiers of barcodes lost this frame (semantic)"},
+        {"text": "The removed identifiers are used to delete the matching entries from the app's own state map"},
+        {"text": "A note warns not to retain the session or its arrays outside the didUpdateSession callback (semantic)"},
+        {"text": "Existing integration code (context, barcodeBatch, camera, view) is still referenced and used (semantic)"}
+      ]
+    },
+    {
+      "id": 11,
+      "prompt": "I want my MatrixScan Batch Capacitor app to play a beep and vibrate the first time each new barcode is tracked. BarcodeBatch doesn't seem to have a feedback property like BarcodeCapture does. How do I add success feedback?",
+      "expected_output": "The skill explains that BarcodeBatch has no built-in feedback, so feedback must be emitted manually. It constructs a Feedback (e.g. new Feedback(Vibration.defaultVibration, Sound.defaultSound), imported from scandit-capacitor-datacapture-core) once, stored outside the listener, and calls feedback.emit() inside didUpdateSession for each newly added barcode (iterating session.addedTrackedBarcodes). Existing integration code is preserved.",
+      "files": [
+        "fixtures/IntegratedApp.js"
+      ],
+      "assertions": [
+        {"text": "A note explains that BarcodeBatch has no built-in feedback and feedback must be emitted manually (semantic)"},
+        {"text": "A Feedback instance is created, either via new Feedback( or via Feedback.defaultFeedback (semantic)"},
+        {"text": "Feedback is imported from 'scandit-capacitor-datacapture-core'"},
+        {"text": "feedback.emit() is called inside the didUpdateSession callback"},
+        {"text": "session.addedTrackedBarcodes is iterated so feedback fires only for newly tracked barcodes (semantic)"},
+        {"text": "The Feedback instance is constructed once outside the listener, not rebuilt on every frame (semantic)"},
+        {"text": "Existing integration code (context, barcodeBatch, camera, view) is still referenced and used (semantic)"}
+      ]
     }
   ]
 }

@@ -79,6 +79,71 @@
         {"text": "Existing BarcodeBatch.Create / Camera / DataCaptureView / BarcodeBatchBasicOverlay setup is preserved"},
         {"text": "Existing ViewWillAppear / ViewWillDisappear lifecycle is preserved"}
       ]
+    },
+    {
+      "id": 4,
+      "prompt": "In my MatrixScan Batch ViewController I want to anchor a small custom label (a UILabel showing the barcode's data) on top of each tracked barcode, and have it move with the barcode as the camera pans. I have the MatrixScan AR add-on. Here is my ViewController: IntegratedViewController.cs.",
+      "expected_output": "The skill adds a BarcodeBatchAdvancedOverlay: it creates the overlay with BarcodeBatchAdvancedOverlay.Create(barcodeBatch, dataCaptureView), makes the ViewController implement IBarcodeBatchAdvancedOverlayListener, assigns the overlay's Listener property, and implements ViewForTrackedBarcode to return a UILabel whose Text is the tracked barcode's data. It notes the advanced overlay requires the MatrixScan AR add-on and that ViewForTrackedBarcode is called on the main thread. The existing BarcodeBatchBasicOverlay, IBarcodeBatchListener (with its frameData.Dispose() in a finally block), camera setup, and ViewWillAppear / ViewWillDisappear lifecycle are all preserved.",
+      "files": [
+        "fixtures/IntegratedViewController.cs"
+      ],
+      "assertions": [
+        {"text": "BarcodeBatchAdvancedOverlay.Create( is called with the BarcodeBatch and the DataCaptureView (not new BarcodeBatchAdvancedOverlay(...))"},
+        {"text": "The class declares it implements IBarcodeBatchAdvancedOverlayListener"},
+        {"text": "The advanced overlay's Listener property is assigned (advancedOverlay.Listener = this)"},
+        {"text": "ViewForTrackedBarcode(BarcodeBatchAdvancedOverlay overlay, TrackedBarcode trackedBarcode) is implemented"},
+        {"text": "ViewForTrackedBarcode returns a UIView (e.g. a UILabel) — not an Android View / TextView"},
+        {"text": "The returned UILabel's Text is set from trackedBarcode.Barcode.Data"},
+        {"text": "The using Scandit.DataCapture.Barcode.Batch.UI.Overlay; directive is present"},
+        {"text": "The answer notes the advanced overlay requires the MatrixScan AR add-on (semantic)"},
+        {"text": "Existing BarcodeBatchBasicOverlay.Create call is preserved — the advanced overlay is added in addition, not as a replacement (semantic)"},
+        {"text": "Existing IBarcodeBatchListener.OnSessionUpdated implementation is preserved, including its frameData.Dispose() in a finally block"},
+        {"text": "Existing ViewWillAppear / ViewWillDisappear camera lifecycle is preserved"},
+        {"text": "No Android view types (TextView, FrameLayout, Android.Views.View) and no Android lifecycle hooks (OnResume / OnPause / OnDestroy) appear"}
+      ],
+      "tags": ["advanced-overlay"]
+    },
+    {
+      "id": 5,
+      "prompt": "I'm already anchoring a UILabel to each tracked barcode with BarcodeBatchAdvancedOverlay in my MatrixScan Batch ViewController. Now I want the label to sit centered just above each barcode rather than overlapping it. Here is my ViewController: IntegratedViewController.cs.",
+      "expected_output": "The skill implements AnchorForTrackedBarcode to return Anchor.TopCenter and OffsetForTrackedBarcode to return a PointWithUnit built from two FloatWithUnit values using MeasureUnit.Fraction, with a negative vertical fraction to push the label above the barcode. It explains that the offset is relative to the anchor and that a fractional unit scales with the view size. The existing ViewForTrackedBarcode, advanced-overlay setup, and frameData.Dispose() integration code are preserved.",
+      "files": [
+        "fixtures/IntegratedViewController.cs"
+      ],
+      "assertions": [
+        {"text": "AnchorForTrackedBarcode(BarcodeBatchAdvancedOverlay overlay, TrackedBarcode trackedBarcode) is implemented and returns Anchor.TopCenter"},
+        {"text": "OffsetForTrackedBarcode(BarcodeBatchAdvancedOverlay overlay, TrackedBarcode trackedBarcode) is implemented and returns a PointWithUnit"},
+        {"text": "The PointWithUnit is constructed from two FloatWithUnit values (x and y)"},
+        {"text": "Each FloatWithUnit uses MeasureUnit.Fraction as its unit"},
+        {"text": "The vertical (y) FloatWithUnit uses a negative value to position the label above the barcode"},
+        {"text": "The anchor value is Anchor.TopCenter (semantic) — not a string and not a lowercase Swift/Kotlin-style token like .topCenter"},
+        {"text": "The using Scandit.DataCapture.Core.Common.Geometry; directive is present for Anchor, PointWithUnit, FloatWithUnit and MeasureUnit"},
+        {"text": "Existing ViewForTrackedBarcode / BarcodeBatchAdvancedOverlay setup is preserved"},
+        {"text": "Existing frameData.Dispose() in the OnSessionUpdated finally block is preserved"}
+      ],
+      "tags": ["advanced-overlay-positioning"]
+    },
+    {
+      "id": 6,
+      "prompt": "In my MatrixScan Batch ViewController I want the device to beep and vibrate whenever a new barcode starts being tracked. Here is my ViewController: IntegratedViewController.cs.",
+      "expected_output": "The skill explains that BarcodeBatch (unlike SparkScan or single-shot BarcodeCapture) has NO automatic feedback, so feedback must be emitted manually. It creates a Feedback instance once — held as a field via Feedback.DefaultFeedback or new Feedback(Vibration.DefaultVibration, Sound.DefaultSound) — using the Scandit.DataCapture.Core.Common.Feedback namespace, and inside OnSessionUpdated calls feedback.Emit() only for barcodes newly tracked this frame (driven off session.AddedTrackedBarcodes). The existing frameData.Dispose() in the finally block, BarcodeBatch.Create / camera / DataCaptureView / BarcodeBatchBasicOverlay setup, and ViewWillAppear / ViewWillDisappear lifecycle are preserved.",
+      "files": [
+        "fixtures/IntegratedViewController.cs"
+      ],
+      "assertions": [
+        {"text": "A Scandit Feedback instance is created via Feedback.DefaultFeedback (a static property, not Feedback.DefaultFeedback() with parentheses) or via the new Feedback(Vibration.DefaultVibration, Sound.DefaultSound) constructor"},
+        {"text": "The Feedback instance is created once (e.g. as a field), not allocated inside OnSessionUpdated on every frame"},
+        {"text": "feedback.Emit() is called to play the sound and emit the vibration"},
+        {"text": "Emit() is called inside OnSessionUpdated, driven off session.AddedTrackedBarcodes (the barcodes newly tracked this frame) so it fires only for new barcodes, not on every frame"},
+        {"text": "The using Scandit.DataCapture.Core.Common.Feedback; directive is present (the namespace for Feedback, Vibration and Sound)"},
+        {"text": "The answer states that BarcodeBatch has no automatic feedback and that feedback must be emitted manually (semantic)"},
+        {"text": "No feedback property is assumed on BarcodeBatch or BarcodeBatchSettings (BarcodeBatch exposes no feedback setting — it is emitted manually) (semantic)"},
+        {"text": "No BarcodeCaptureFeedback or SparkScanFeedback type is used (those belong to other modes, not BarcodeBatch) (semantic)"},
+        {"text": "frameData.Dispose() is still called inside OnSessionUpdated, ideally in a finally block"},
+        {"text": "Existing BarcodeBatch.Create / Camera / DataCaptureView / BarcodeBatchBasicOverlay setup is preserved"},
+        {"text": "Existing ViewWillAppear / ViewWillDisappear lifecycle is preserved"}
+      ],
+      "tags": ["feedback"]
     }
   ]
 }

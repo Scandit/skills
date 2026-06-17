@@ -1,0 +1,39 @@
+{
+  "skill_name": "matrixscan-batch-rn",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Replace my react-native-vision-camera multi-barcode scanner with Scandit MatrixScan Batch. The screen currently uses useCodeScanner with codeTypes ['ean-13','code-128','qr'] to track every code in the frame and dedupes them by value into a running count. I want the same behavior on Scandit: track all visible barcodes, dedupe, and show the count. Here is my screen: VisionCameraScanScreen.tsx.",
+      "expected_output": "The skill removes the react-native-vision-camera pieces (the Camera/useCameraDevice/useCodeScanner imports, the useCodeScanner hook with codeTypes/onCodeScanned, and the codeScanner prop on Camera) and replaces them with MatrixScan Batch: DataCaptureContext.initialize once with the license placeholder, BarcodeBatchSettings with enableSymbologies mapping each VisionCamera codeType to a Symbology (ean-13 -> Symbology.EAN13UPCA, code-128 -> Symbology.Code128, qr -> Symbology.QR), new BarcodeBatch(settings), dataCaptureContext.setMode, a camera via BarcodeBatch.createRecommendedCameraSettings + Camera.withSettings + setFrameSource + switchToDesiredState(FrameSourceState.On), a BarcodeBatchListener whose didUpdateSession iterates session.addedTrackedBarcodes and dedupes by trackedBarcode.identifier, a BarcodeBatchBasicOverlay added to a rendered DataCaptureView, and cleanup via removeMode. The dedupe-and-count behavior and the unique-count display are preserved. A setup checklist (packages, npx pod-install, NSCameraUsageDescription, license key) is shown.",
+      "files": [
+        "fixtures/VisionCameraScanScreen.tsx"
+      ],
+      "assertions": [
+        {"text": "The react-native-vision-camera import is removed from the code"},
+        {"text": "The useCodeScanner hook is removed from the code"},
+        {"text": "The codeScanner prop on a Camera component is removed from the code"},
+        {"text": "DataCaptureContext.initialize( is called once with the license key placeholder"},
+        {"text": "'-- ENTER YOUR SCANDIT LICENSE KEY HERE --' is present"},
+        {"text": "new BarcodeBatchSettings() is constructed"},
+        {"text": "settings.enableSymbologies( is called"},
+        {"text": "Symbology.EAN13UPCA is enabled (mapped from the 'ean-13' codeType)"},
+        {"text": "Symbology.Code128 is enabled (mapped from the 'code-128' codeType)"},
+        {"text": "Symbology.QR is enabled (mapped from the 'qr' codeType)"},
+        {"text": "new BarcodeBatch(settings) is constructed"},
+        {"text": "dataCaptureContext.setMode( is called with the BarcodeBatch instance"},
+        {"text": "BarcodeBatch.createRecommendedCameraSettings() is used for the camera settings"},
+        {"text": "Camera.withSettings( is used and camera.switchToDesiredState(FrameSourceState.On) is called"},
+        {"text": "didUpdateSession is implemented on a BarcodeBatchListener added with barcodeBatch.addListener("},
+        {"text": "session.addedTrackedBarcodes is iterated to accumulate newly tracked barcodes (semantic)"},
+        {"text": "Dedupe uses trackedBarcode.identifier (the stable track id) rather than re-counting on every frame (semantic)"},
+        {"text": "new BarcodeBatchBasicOverlay( is constructed and added via view.addOverlay( on a rendered <DataCaptureView"},
+        {"text": "The unique-count display behavior from the original screen is preserved (semantic)"},
+        {"text": "dataCaptureContext.removeMode( is called in the useEffect cleanup"},
+        {"text": "Setup checklist mentions scandit-react-native-datacapture-core and scandit-react-native-datacapture-barcode"},
+        {"text": "Setup checklist mentions npx pod-install for iOS"},
+        {"text": "Setup checklist mentions NSCameraUsageDescription in the iOS Info.plist"}
+      ],
+      "tags": ["third-party-migration"]
+    }
+  ]
+}

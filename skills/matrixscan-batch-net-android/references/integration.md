@@ -732,6 +732,55 @@ this.advancedOverlay.ClearTrackedBarcodeViews(); // remove all views
 
 > For tap callbacks and additional advanced-overlay options, fetch the [Adding AR Overlays](https://docs.scandit.com/sdks/net/android/matrixscan/advanced/) page.
 
+## Optional: scan feedback (sound / vibration)
+
+`BarcodeBatch` has **no automatic feedback** — unlike `SparkScan` or `BarcodeCapture`, the mode does not expose a feedback setting and never beeps or vibrates on its own. If you want a sound or vibration when barcodes are tracked, create a `Feedback` and `Emit()` it yourself from `OnSessionUpdated`.
+
+```csharp
+using Scandit.DataCapture.Core.Common.Feedback;
+
+// Hold one Feedback instance for the lifetime of the activity.
+// Default = default beep + default vibration:
+private readonly Feedback feedback = Feedback.DefaultFeedback;
+
+// …or build a custom one:
+// private readonly Feedback feedback =
+//     new Feedback(Vibration.DefaultVibration, Sound.DefaultSound);
+```
+
+Emit it when new barcodes appear. `OnSessionUpdated` runs on the recognition thread; read `session.AddedTrackedBarcodes` there and emit:
+
+```csharp
+public void OnSessionUpdated(
+    BarcodeBatch barcodeBatch,
+    BarcodeBatchSession session,
+    IFrameData frameData)
+{
+    if (session.AddedTrackedBarcodes.Count > 0)
+    {
+        // Emit() is influenced by the device ring mode / volume settings.
+        this.feedback.Emit();
+    }
+}
+```
+
+> `Feedback.DefaultFeedback` is a **static property** in the .NET binding (no parentheses) — not a `DefaultFeedback()` method. `Vibration.DefaultVibration` and `Sound.DefaultSound` are likewise static properties.
+
+### Feedback members (`Scandit.DataCapture.Core.Common.Feedback`)
+
+| Member | Description |
+|--------|-------------|
+| static `Feedback.DefaultFeedback` (`Feedback` get) | Default sound + default vibration. |
+| `Feedback(Vibration?, Sound?)` | Construct with a specific vibration and sound; either may be `null`. |
+| `Feedback(Vibration?)` / `Feedback(Sound?)` | Vibration-only / sound-only. |
+| `Feedback()` | No sound, no vibration. |
+| `Emit()` | Plays the sound and emits the vibration. Subject to device ring mode / volume. |
+| `EmitSound()` / `EmitVibration()` | Emit only one component (8.2+). |
+| `Sound` (`Sound?` get) / `Vibration` (`Vibration?` get) | The configured components. |
+| `Dispose()` | Free native resources. |
+
+> `Feedback`, `Vibration`, and `Sound` all implement `IDisposable` in the .NET binding (the native-only `Release()` method is **not** exposed here). Because this feedback is not owned by a capture mode, call `Dispose()` when the activity is destroyed.
+
 ## Optional: pause / reset tracking
 
 | Action | How |

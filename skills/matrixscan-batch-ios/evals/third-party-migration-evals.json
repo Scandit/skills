@@ -1,0 +1,93 @@
+{
+  "skill_name": "matrixscan-batch-ios",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Replace my AVFoundation AVCaptureMetadataOutput multi-barcode scanner with Scandit MatrixScan Batch. Every visible barcode (EAN-13, Code 128, QR) should be tracked at once and accumulated into a dedup list. Here is my view controller: AVFoundationViewController.swift",
+      "expected_output": "The skill removes the AVFoundation stack (AVCaptureSession / AVCaptureDeviceInput / AVCaptureMetadataOutput / AVCaptureVideoPreviewLayer setup, the AVCaptureMetadataOutputObjectsDelegate metadataOutput callback, the AVMetadataObject.ObjectType usage) and replaces it with MatrixScan Batch: DataCaptureContext.initialize + .shared, manual camera setup via Camera.default + BarcodeBatch.recommendedCameraSettings + context.setFrameSource, BarcodeBatchSettings with .ean13UPCA + .code128 + .qr, BarcodeBatch(context:settings:), DataCaptureView added with addSubview, BarcodeBatchBasicOverlay(barcodeBatch:view:), a BarcodeBatchListener whose barcodeBatch(_:didUpdate:frameData:) reads session.addedTrackedBarcodes (copied out, then dispatched to DispatchQueue.main.async). The ScannedBarcode model and the dedup logic are preserved. The setup checklist is shown.",
+      "files": [
+        "fixtures/AVFoundationViewController.swift"
+      ],
+      "assertions": [
+        {
+          "text": "import AVFoundation is NOT present in the output"
+        },
+        {
+          "text": "import ScanditBarcodeCapture IS present in the output"
+        },
+        {
+          "text": "The AVCaptureSession / AVCaptureDeviceInput / AVCaptureDevice setup is removed (semantic)"
+        },
+        {
+          "text": "The AVCaptureMetadataOutput instance and its setMetadataObjectsDelegate wiring are removed (semantic)"
+        },
+        {
+          "text": "The AVCaptureMetadataOutputObjectsDelegate conformance and its metadataOutput(_:didOutput:from:) callback are removed (semantic)"
+        },
+        {
+          "text": "The AVCaptureVideoPreviewLayer is removed and replaced by a DataCaptureView (semantic)"
+        },
+        {
+          "text": "DataCaptureContext.initialize(licenseKey: is used and DataCaptureContext.shared is read"
+        },
+        {
+          "text": "BarcodeBatchSettings is constructed"
+        },
+        {
+          "text": "Symbology .ean13UPCA is enabled (mapped from AVMetadataObject.ObjectType.ean13) (semantic)"
+        },
+        {
+          "text": "Symbology .code128 is enabled (mapped from .code128) (semantic)"
+        },
+        {
+          "text": "Symbology .qr is enabled (mapped from .qr) (semantic)"
+        },
+        {
+          "text": "Camera.default is used to obtain the camera"
+        },
+        {
+          "text": "BarcodeBatch.recommendedCameraSettings is applied via camera?.apply(_:completionHandler:) (semantic)"
+        },
+        {
+          "text": "context.setFrameSource(camera, completionHandler:) is called (semantic)"
+        },
+        {
+          "text": "BarcodeBatch(context: settings:) convenience initializer is used"
+        },
+        {
+          "text": "DataCaptureView(context:frame:) is created and added with view.addSubview (semantic)"
+        },
+        {
+          "text": "BarcodeBatchBasicOverlay(barcodeBatch:view:) is called (semantic)"
+        },
+        {
+          "text": "The view controller conforms to BarcodeBatchListener and implements barcodeBatch(_:didUpdate:frameData:)"
+        },
+        {
+          "text": "barcodeBatch(_:didUpdate:frameData:) reads session.addedTrackedBarcodes (the new-this-frame collection)"
+        },
+        {
+          "text": "Session data is copied out before DispatchQueue.main.async and UI/state updates run inside DispatchQueue.main.async"
+        },
+        {
+          "text": "The existing ScannedBarcode struct is preserved in the output"
+        },
+        {
+          "text": "The deduplication logic (the seenValues set / checking before appending) is preserved in the new flow"
+        },
+        {
+          "text": "Setup checklist is shown and mentions adding ScanditBarcodeCapture and ScanditCaptureCore via Swift Package Manager"
+        },
+        {
+          "text": "Setup checklist mentions adding NSCameraUsageDescription to Info.plist"
+        },
+        {
+          "text": "A summary of changes is shown with Removed and Added sections"
+        }
+      ],
+      "tags": [
+        "third-party-migration"
+      ]
+    }
+  ]
+}

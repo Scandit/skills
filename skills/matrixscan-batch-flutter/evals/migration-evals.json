@@ -1,0 +1,50 @@
+{
+  "skill_name": "matrixscan-batch-flutter",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I'm upgrading my Flutter MatrixScan app from Scandit SDK v6 to v7. My code still uses the old BarcodeTracking API. Here's the screen: LegacyTrackingScreen.dart. Apply the v6->v7 changes.",
+      "expected_output": "The skill reads migration.md and applies the v6->v7 rename: every BarcodeTracking* symbol becomes its BarcodeBatch* equivalent (BarcodeTracking->BarcodeBatch, BarcodeTrackingSettings->BarcodeBatchSettings, BarcodeTrackingSession->BarcodeBatchSession, BarcodeTrackingListener->BarcodeBatchListener, BarcodeTrackingBasicOverlay->BarcodeBatchBasicOverlay, BarcodeTrackingBasicOverlayStyle->BarcodeBatchBasicOverlayStyle), and the import barrel changes from scandit_flutter_datacapture_barcode_tracking to scandit_flutter_datacapture_barcode_batch. The BarcodeTracking.forContext factory may stay as BarcodeBatch.forContext for a 6->7 migration. The scanResults dedup list and camera lifecycle are preserved. Provides the 6->7 migration guide URL and a summary.",
+      "files": [
+        "fixtures/LegacyTrackingScreen.dart"
+      ],
+      "assertions": [
+        {"text": "In the migrated code blocks, no BarcodeTracking-named identifier remains (BarcodeTracking, BarcodeTrackingSettings, BarcodeTrackingSession, BarcodeTrackingListener, BarcodeTrackingBasicOverlay are all renamed)"},
+        {"text": "BarcodeBatch is present in the migrated code"},
+        {"text": "BarcodeBatchSettings is present in the migrated code"},
+        {"text": "BarcodeBatchSession is present in the migrated code"},
+        {"text": "BarcodeBatchListener is implemented in the migrated code"},
+        {"text": "BarcodeBatchBasicOverlay is present in the migrated code"},
+        {"text": "BarcodeBatchBasicOverlayStyle.frame is present in the migrated code"},
+        {"text": "The import barrel scandit_flutter_datacapture_barcode_tracking is replaced by scandit_flutter_datacapture_barcode_batch in the migrated code blocks"},
+        {"text": "The scanResults list and its deduplication logic (contains check before add) are preserved (semantic)"},
+        {"text": "The camera lifecycle (switchToDesiredState and didChangeAppLifecycleState) is preserved (semantic)"},
+        {"text": "The v6->7 migration guide URL https://docs.scandit.com/sdks/flutter/migrate-6-to-7/ is provided"},
+        {"text": "A summary of the changes made is shown"}
+      ],
+      "tags": ["version-migration"]
+    },
+    {
+      "id": 2,
+      "prompt": "We're moving our Flutter MatrixScan app from Scandit SDK 7 to 8. Here's our screen, which still uses the BarcodeTracking.forContext factory: LegacyTrackingScreen.dart. Make all the changes needed for v8.",
+      "expected_output": "The skill applies both the BarcodeTracking->BarcodeBatch rename and the v7->v8 constructor change: BarcodeTracking.forContext(context, settings) becomes BarcodeBatch(settings) followed by dataCaptureContext.setMode(barcodeBatch). The v6 hand-rolled CameraSettings()..preferredResolution is replaced by BarcodeBatch.createRecommendedCameraSettings(). The import barrel becomes scandit_flutter_datacapture_barcode_batch. DataCaptureContext.forLicenseKey is left as-is (still valid on Flutter v8). The scanResults dedup and lifecycle are preserved. Provides the 7->8 migration guide URL and a summary mentioning flutter pub get.",
+      "files": [
+        "fixtures/LegacyTrackingScreen.dart"
+      ],
+      "assertions": [
+        {"text": "BarcodeBatch( captureSettings ) constructor form is present in the migrated code"},
+        {"text": "In the migrated code blocks, the BarcodeTracking.forContext factory is NOT used to construct the mode"},
+        {"text": "dataCaptureContext.setMode( or _context.setMode( is called to register the BarcodeBatch mode"},
+        {"text": "BarcodeBatch.createRecommendedCameraSettings() is used as a static method to obtain the camera settings"},
+        {"text": "In the migrated code blocks, the hand-rolled CameraSettings()..preferredResolution = VideoResolution.uhd4k is removed"},
+        {"text": "In the migrated code blocks, no BarcodeTracking-named identifier remains"},
+        {"text": "The import barrel scandit_flutter_datacapture_barcode_tracking is replaced by scandit_flutter_datacapture_barcode_batch in the migrated code blocks"},
+        {"text": "DataCaptureContext.forLicenseKey( is preserved (still valid on Flutter v8) (semantic)"},
+        {"text": "The scanResults list and its deduplication logic are preserved (semantic)"},
+        {"text": "The v7->8 migration guide URL https://docs.scandit.com/sdks/flutter/migrate-7-to-8/ is provided"},
+        {"text": "The summary mentions running flutter pub get after bumping the package version"}
+      ],
+      "tags": ["version-migration"]
+    }
+  ]
+}

@@ -121,6 +121,80 @@
         {"text": "brushForTrackedBarcode listener is NOT set (global brush approach, not per-barcode) (semantic)"},
         {"text": "Existing BarcodeBatch mode, DataCaptureView, and camera lifecycle are preserved (semantic)"}
       ]
+    },
+    {
+      "id": 7,
+      "prompt": "Inside my MatrixScan Batch didUpdateSession, I need to build a list of every currently tracked barcode where each entry has the track's stable id, the decoded value, the symbology, and the corner positions on screen. Show me how to read those fields off each tracked barcode. File: IntegratedApp.tsx.",
+      "expected_output": "The skill iterates Object.values(session.trackedBarcodes) inside didUpdateSession and, for each TrackedBarcode, reads trackedBarcode.identifier (number), trackedBarcode.barcode.data (string | null), trackedBarcode.barcode.symbology, and trackedBarcode.location (a Quadrilateral with topLeft/topRight/bottomRight/bottomLeft Points). It notes that location is in image-space and requires the MatrixScan AR add-on, and that for on-screen coordinates the quadrilateral must be converted with view.viewQuadrilateralForFrameQuadrilateral. It warns to copy the data out of the callback rather than holding the session reference.",
+      "files": [
+        "fixtures/IntegratedApp.tsx"
+      ],
+      "assertions": [
+        {"text": "Object.values(session.trackedBarcodes) is iterated inside didUpdateSession"},
+        {"text": "trackedBarcode.identifier is read for the stable track id"},
+        {"text": "trackedBarcode.barcode.data is read for the decoded value"},
+        {"text": "trackedBarcode.barcode.symbology is read"},
+        {"text": "trackedBarcode.location is read for the corner positions"},
+        {"text": "The location is described as a Quadrilateral (topLeft/topRight/bottomRight/bottomLeft) (semantic)"},
+        {"text": "A note that trackedBarcode.location is in image-space and requires the MatrixScan AR add-on is present (semantic)"},
+        {"text": "view.viewQuadrilateralForFrameQuadrilateral is mentioned for converting image-space corners to view coordinates"},
+        {"text": "A warning to copy the tracked data out before the callback returns rather than holding the session reference is present (semantic)"}
+      ],
+      "tags": ["tracked-barcode-data"]
+    },
+    {
+      "id": 8,
+      "prompt": "In my MatrixScan Batch app I want the user to be able to tap a highlighted barcode and see its data. How do I detect taps on the basic overlay highlights? File: IntegratedApp.tsx.",
+      "expected_output": "The skill implements didTapTrackedBarcode on the BarcodeBatchBasicOverlay listener. The callback receives the overlay and the tapped TrackedBarcode, and reads trackedBarcode.barcode.data to react to the tap. A note that the MatrixScan AR add-on is required (and that a barcode whose brush is null cannot be tapped) is included. The existing overlay, mode, and camera lifecycle are preserved.",
+      "files": [
+        "fixtures/IntegratedApp.tsx"
+      ],
+      "assertions": [
+        {"text": "didTapTrackedBarcode is implemented on the BarcodeBatchBasicOverlay listener"},
+        {"text": "The didTapTrackedBarcode callback receives the overlay and the tapped TrackedBarcode (semantic)"},
+        {"text": "trackedBarcode.barcode.data is read inside the tap callback to react to the tap (semantic)"},
+        {"text": "overlay.listener is the object carrying didTapTrackedBarcode (semantic)"},
+        {"text": "A note that the MatrixScan AR add-on is required for the basic overlay tap callback is present (semantic)"},
+        {"text": "Existing BarcodeBatch mode, DataCaptureView, and camera lifecycle are preserved (semantic)"}
+      ],
+      "tags": ["basic-overlay-tap"]
+    },
+    {
+      "id": 9,
+      "prompt": "I already have AR bubble annotations on my tracked barcodes via BarcodeBatchAdvancedOverlay. Now I want to handle taps on those AR bubbles so I can open a detail screen. How do I detect a tap on the advanced overlay view for a tracked barcode? File: IntegratedApp.tsx.",
+      "expected_output": "The skill implements didTapViewForTrackedBarcode on the BarcodeBatchAdvancedOverlay listener (overlay.listener). The callback receives the overlay and the tapped TrackedBarcode and reads trackedBarcode.barcode.data / trackedBarcode.identifier to route to a detail screen. It notes this is the advanced-overlay equivalent of the basic overlay's didTapTrackedBarcode, that it requires the MatrixScan AR add-on, and that the existing anchorForTrackedBarcode / offsetForTrackedBarcode / setViewForTrackedBarcode wiring is preserved.",
+      "files": [
+        "fixtures/IntegratedApp.tsx"
+      ],
+      "assertions": [
+        {"text": "didTapViewForTrackedBarcode is implemented on the BarcodeBatchAdvancedOverlay listener"},
+        {"text": "The didTapViewForTrackedBarcode callback receives the overlay and the tapped TrackedBarcode (semantic)"},
+        {"text": "trackedBarcode.barcode.data or trackedBarcode.identifier is read inside the tap callback (semantic)"},
+        {"text": "overlay.listener is the object carrying didTapViewForTrackedBarcode (semantic)"},
+        {"text": "didTapViewForTrackedBarcode is distinguished from the basic overlay didTapTrackedBarcode (semantic)"},
+        {"text": "A note that the MatrixScan AR add-on is required is present (semantic)"},
+        {"text": "Existing anchorForTrackedBarcode, offsetForTrackedBarcode, and setViewForTrackedBarcode wiring is preserved (semantic)"}
+      ],
+      "tags": ["advanced-overlay-tap"]
+    },
+    {
+      "id": 10,
+      "prompt": "I want my MatrixScan Batch app to beep and vibrate the first time each new barcode starts being tracked. There's no automatic beep like single-barcode capture has. File: IntegratedApp.tsx.",
+      "expected_output": "The skill explains that BarcodeBatch has no automatic feedback (there is no BarcodeBatchFeedback class), so feedback must be emitted manually. It constructs a Feedback (e.g. new Feedback(Vibration.defaultVibration, Sound.defaultSound) or Feedback.defaultFeedback) once, then calls feedback.emit() inside didUpdateSession for each barcode in session.addedTrackedBarcodes, deduping by trackedBarcode.identifier so the same track is not re-emitted on later frames. Feedback, Vibration, and Sound are imported from scandit-react-native-datacapture-core.",
+      "files": [
+        "fixtures/IntegratedApp.tsx"
+      ],
+      "assertions": [
+        {"text": "A note that BarcodeBatch has no automatic feedback (no BarcodeBatchFeedback) and feedback must be emitted manually is present (semantic)"},
+        {"text": "A Feedback instance is constructed with new Feedback( or Feedback.defaultFeedback"},
+        {"text": "Vibration.defaultVibration is used for the vibration channel (semantic)"},
+        {"text": "Sound.defaultSound is used for the sound channel (semantic)"},
+        {"text": "feedback.emit() is called to emit the feedback"},
+        {"text": "feedback.emit() is called for barcodes in session.addedTrackedBarcodes (the new-this-frame collection) (semantic)"},
+        {"text": "Emission is deduped by trackedBarcode.identifier so the same track is not re-emitted on subsequent frames (semantic)"},
+        {"text": "Feedback, Vibration, and Sound are imported from 'scandit-react-native-datacapture-core'"}
+      ],
+      "tags": ["feedback"]
     }
   ]
 }

@@ -1,0 +1,35 @@
+{
+  "skill_name": "matrixscan-batch-android",
+  "evals": [
+    {
+      "id": "tp1",
+      "prompt": "I have an Android app that scans multiple barcodes per camera frame using Google ML Kit barcode scanning, and I accumulate the unique values into a list shown on screen. I want to replace ML Kit with Scandit MatrixScan Batch (BarcodeBatch) so I get real multi-barcode tracking. Here is my Activity. Show me the full migrated file.\n\n```kotlin\npackage com.example.myapp\n\nimport android.os.Bundle\nimport androidx.appcompat.app.AppCompatActivity\nimport androidx.camera.core.ImageAnalysis\nimport androidx.camera.core.ImageProxy\nimport com.google.mlkit.vision.barcode.BarcodeScanning\nimport com.google.mlkit.vision.barcode.BarcodeScannerOptions\nimport com.google.mlkit.vision.barcode.common.Barcode\nimport com.google.mlkit.vision.common.InputImage\n\nclass MainActivity : AppCompatActivity() {\n\n    private val scannedValues = mutableListOf<String>()\n\n    private val options = BarcodeScannerOptions.Builder()\n        .setBarcodeFormats(\n            Barcode.FORMAT_EAN_13,\n            Barcode.FORMAT_QR_CODE,\n            Barcode.FORMAT_CODE_128\n        )\n        .build()\n    private val scanner = BarcodeScanning.getClient(options)\n\n    override fun onCreate(savedInstanceState: Bundle?) {\n        super.onCreate(savedInstanceState)\n        // CameraX preview + analysis setup omitted\n    }\n\n    private fun analyze(imageProxy: ImageProxy) {\n        val mediaImage = imageProxy.image ?: return\n        val image = InputImage.fromMediaImage(mediaImage, imageProxy.imageInfo.rotationDegrees)\n        scanner.process(image)\n            .addOnSuccessListener { barcodes ->\n                for (barcode in barcodes) {\n                    val value = barcode.rawValue ?: continue\n                    if (scannedValues.none { it == value }) {\n                        scannedValues.add(value)\n                    }\n                }\n            }\n            .addOnCompleteListener { imageProxy.close() }\n    }\n}\n```",
+      "expected_output": "The skill removes all ML Kit barcode-scanning APIs (BarcodeScanning, BarcodeScannerOptions, InputImage, the CameraX analyze pipeline) and replaces them with a BarcodeBatch integration: DataCaptureContext, Camera with BarcodeBatch.createRecommendedCameraSettings, DataCaptureView, BarcodeBatchBasicOverlay, and a BarcodeBatchListener whose onSessionUpdated processes tracked barcodes. It maps the ML Kit formats to Scandit symbologies (FORMAT_EAN_13 -> Symbology.EAN13_UPCA, FORMAT_QR_CODE -> Symbology.QR, FORMAT_CODE_128 -> Symbology.CODE128), preserves the deduplicated scannedValues list, and uses the tracking identifier so each physical barcode is counted once. Shows a summary and setup checklist.",
+      "files": [],
+      "assertions": [
+        {"text": "com.google.mlkit import is NOT present in the migrated code blocks (semantic)"},
+        {"text": "BarcodeScanning is NOT used in the migrated code (may appear in a before/after summary table) (semantic)"},
+        {"text": "BarcodeScannerOptions is NOT used in the migrated code (semantic)"},
+        {"text": "InputImage is NOT used in the migrated code (semantic)"},
+        {"text": "com.scandit.datacapture import IS present"},
+        {"text": "BarcodeBatch.forDataCaptureContext( is used (not a direct BarcodeBatch constructor)"},
+        {"text": "BarcodeBatchListener is implemented with onSessionUpdated"},
+        {"text": "Symbology.EAN13_UPCA is enabled (mapped from FORMAT_EAN_13)"},
+        {"text": "Symbology.QR is enabled (mapped from FORMAT_QR_CODE, not Symbology.QR_CODE which does not exist)"},
+        {"text": "Symbology.CODE128 is enabled (mapped from FORMAT_CODE_128)"},
+        {"text": "Symbology.QR_CODE does NOT appear as a Symbology enum value (Barcode.FORMAT_QR_CODE in a summary table is acceptable) (semantic)"},
+        {"text": "DataCaptureView.newInstance( is used and set as the content view"},
+        {"text": "BarcodeBatchBasicOverlay.newInstance( is called"},
+        {"text": "Camera.getDefaultCamera(BarcodeBatch.createRecommendedCameraSettings()) is used"},
+        {"text": "The scannedValues list (or equivalent accumulator) is preserved"},
+        {"text": "Deduplication is preserved, keyed by the TrackedBarcode tracking identifier so each tracked barcode is handled once"},
+        {"text": "session data is copied out before runOnUiThread (the session is not accessed off the recognition thread) (semantic)"},
+        {"text": "A summary of changes is shown with what was removed and what was added"},
+        {"text": "Setup checklist mentions com.scandit.datacapture:barcode and com.scandit.datacapture:core Gradle dependencies"},
+        {"text": "A concrete version number is used for the dependencies (not a [version] placeholder)"},
+        {"text": "Setup checklist mentions the CAMERA permission (CAMERA or AndroidManifest)"}
+      ],
+      "tags": ["third-party-migration"]
+    }
+  ]
+}
