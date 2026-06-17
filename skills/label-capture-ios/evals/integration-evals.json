@@ -260,14 +260,14 @@
     {
       "id": 9,
       "prompt": "What is ARE in Smart Label Capture and can I use it on iOS? My customer wants better OCR for their worn shipping labels.",
-      "expected_output": "The skill explains ARE is the Adaptive Recognition Engine, a cloud-based OCR fallback. It enumerates the constraints: works ONLY with the Validation Flow, requires a license key with the ARE feature flag, is in Beta, trial keys are available for evaluation, and production keys require contacting support@scandit.com. It shows the enabling API .adaptiveRecognition(.auto) on the LabelDefinition.",
+      "expected_output": "The skill explains ARE is the Adaptive Recognition Engine, a cloud-based OCR fallback. It enumerates the constraints: requires a license key with the ARE feature flag, is in Beta, trial keys are available for evaluation, and production keys require contacting support@scandit.com. It shows the enabling API .adaptiveRecognition(.auto) on the LabelDefinition. It does NOT claim ARE is restricted to the Validation Flow overlay — ARE is a property of the LabelDefinition and is overlay-agnostic (works with the Basic, Advanced, or Validation Flow overlay alike).",
       "files": [],
       "assertions": [
         {
           "text": "The response defines ARE as Adaptive Recognition Engine and describes it as Scandit's cloud-based OCR fallback (or similar wording)"
         },
         {
-          "text": "The response states ARE works ONLY with the Validation Flow overlay \u2014 not with Basic Overlay or Advanced Overlay"
+          "text": "The response does NOT claim ARE is restricted to the Validation Flow overlay. ARE is a property of the LabelDefinition and is overlay-agnostic \u2014 it works with the Basic, Advanced, or Validation Flow overlay alike. An answer asserting ARE works ONLY with the Validation Flow (or that it does not work with the Basic/Advanced overlay) FAILS this assertion."
         },
         {
           "text": "The response states ARE requires a license key with the ARE feature flag enabled"
@@ -708,7 +708,7 @@
     {
       "id": 27,
       "prompt": "My customer wants to scan whole grocery receipts on iOS with Scandit \u2014 pull out the store name, the total, and the individual line items. Can Smart Label Capture do that?",
-      "expected_output": "The skill identifies this as the Receipt Scanning feature (ARE-powered, available on iOS since 7.6.0), flags clearly that it is Beta and requires a license key with the Adaptive Recognition Engine enabled (contact support@scandit.com), and describes the distinct integration pattern: LabelCaptureAdaptiveRecognitionOverlay + LabelCaptureAdaptiveRecognitionListener delivering a ReceiptScanningResult (store fields, payment totals, lineItems). It does NOT fabricate the exact delegate selector and points the user at the Advanced Configurations / API page to confirm it.",
+      "expected_output": "The skill identifies this as the Receipt Scanning feature (ARE-powered, available on iOS since 7.6.0), flags clearly that it is Beta and requires a license key with the Adaptive Recognition Engine enabled (contact support@scandit.com), and describes the distinct integration pattern: LabelCaptureAdaptiveRecognitionOverlay + LabelCaptureAdaptiveRecognitionDelegate delivering a ReceiptScanningResult (store fields, payment totals, lineItems). It does NOT fabricate the exact delegate selector and points the user at the Advanced Configurations / API page to confirm it.",
       "files": [],
       "assertions": [
         {
@@ -718,17 +718,150 @@
           "text": "The response states Receipt Scanning requires a license key with the Adaptive Recognition Engine (ARE) enabled, and directs the user to contact support@scandit.com to enable it"
         },
         {
-          "text": "The response names LabelCaptureAdaptiveRecognitionOverlay as the overlay used (instead of the standard Basic / Validation Flow overlays) and LabelCaptureAdaptiveRecognitionListener as the listener"
+          "text": "The response names LabelCaptureAdaptiveRecognitionOverlay as the overlay used (instead of the standard Basic / Validation Flow overlays) and LabelCaptureAdaptiveRecognitionDelegate as the delegate (the iOS Swift name is `\u2026Delegate`; `\u2026Listener` is the cross-platform name and does not exist on iOS \u2014 naming `\u2026Listener` FAILS)."
         },
         {
           "text": "The response names ReceiptScanningResult as the result type and describes its content \u2014 store fields (e.g. storeName), payment totals (e.g. paymentTotal), and a lineItems collection (each with name, unitPrice, quantity, totalPrice)"
         },
         {
-          "text": "The response does NOT fabricate an exact delegate-method selector for the receipt callback \u2014 it either omits the precise signature or explicitly tells the user to confirm it against the Advanced Configurations page / the LabelCaptureAdaptiveRecognitionListener API reference"
+          "text": "The response does NOT fabricate an exact delegate-method selector for the receipt callback \u2014 it either omits the precise signature or explicitly tells the user to confirm it against the Advanced Configurations page / the LabelCaptureAdaptiveRecognitionDelegate API reference"
         }
       ],
       "tags": [
         "receipt-scanning"
+      ]
+    },
+    {
+      "id": 28,
+      "prompt": "I'm building an iOS price-checker with Smart Label Capture and I want a fully custom AR look \u2014 a floating coloured status pin drawn above each price label, not the standard highlights. Write the Advanced Overlay integration into ScanViewController.swift.",
+      "expected_output": "The skill writes a LabelCaptureAdvancedOverlay integration. The DISCRIMINATING behaviors (the ones a skill-less answer gets wrong even though it knows the API): it drives ALL per-label work through the LabelCaptureAdvancedOverlayDelegate with NO LabelCaptureListener attached and no per-frame validation state store; it anchors the pin with exactly .topCenter (a skill-less answer typically picks .center or .bottomCenter); and it lifts the pin with a concrete negative half-height .fraction offset tied to the view being centered on the anchor. It also uses the pre-built LabelDefinition.priceCapture(withName:) (the Advanced Overlay is a rendering choice, not a label-definition change) and constructs the overlay with the view: initializer without a redundant captureView.addOverlay(...).",
+      "files": [
+        "fixtures/ScanViewController.swift"
+      ],
+      "assertions": [
+        {
+          "text": "DISCRIMINATING: NO LabelCaptureListener is attached to the LabelCapture mode \u2014 there is no labelCapture.addListener(...) call anywhere. Validation and pin creation happen inside LabelCaptureAdvancedOverlayDelegate methods (e.g. viewFor). Any answer that registers a LabelCaptureListener to drive the capture/validation/pin flow FAILS this assertion (a skill-less answer commonly adds one)."
+        },
+        {
+          "text": "DISCRIMINATING: anchorFor returns exactly Anchor .topCenter. Returning .center, .bottomCenter, or any other anchor FAILS this assertion."
+        },
+        {
+          "text": "DISCRIMINATING: offsetFor returns a PointWithUnit whose y is a NEGATIVE .fraction of about half the view height \u2014 e.g. FloatWithUnit(value: -0.5, unit: .fraction) \u2014 AND the answer ties this to the view being centered on the .topCenter anchor (so a zero offset would half-overlap the label). PointWithUnit(x: .zero, y: .zero), or an offset not expressed in .fraction units, FAILS this assertion."
+        },
+        {
+          "text": "DISCRIMINATING: validation is computed on the spot from the CapturedLabel's fields inside the delegate; there is NO dictionary/state-store caching validation results across frames. An answer that builds a per-trackingId validation cache / results map FAILS this assertion."
+        },
+        {
+          "text": "The overlay is constructed with the view: initializer \u2014 LabelCaptureAdvancedOverlay(labelCapture: ..., view: ...) \u2014 and captureView.addOverlay(advancedOverlay) is NOT called afterwards for the advanced overlay (the view: initializer auto-registers it)."
+        },
+        {
+          "text": "LabelDefinition.priceCapture(withName: \"...\") is used (not a hand-assembled CustomBarcode + TotalPriceText), and the Validation Flow overlay is NOT used for this price factory."
+        }
+      ],
+      "tags": [
+        "advanced-overlay",
+        "prebuilt-label-definitions",
+        "discriminative-power"
+      ]
+    },
+    {
+      "id": 29,
+      "prompt": "I'm using Smart Label Capture on iOS with the Basic Overlay (fully automated, no Validation Flow). The app beeps and vibrates continuously the whole time a label is in front of the camera. I just want one beep + vibration per captured label. How do I fix this?",
+      "expected_output": "The skill explains that the built-in LabelCaptureFeedback.success fires on every successful-capture event (i.e. every frame the label is in view), which is why it repeats. The fix is to silence the mode's built-in feedback (assign a LabelCaptureFeedback whose success is a no-op Feedback, via labelCapture.feedback) and emit Feedback.default.emit() yourself exactly once per newly tracked label, keyed by trackingId. It does NOT leave the default feedback in place while also emitting a one-shot.",
+      "files": [
+        "fixtures/ScanViewController.swift"
+      ],
+      "assertions": [
+        {
+          "text": "The answer identifies that the default LabelCaptureFeedback success feedback re-fires on every capture event / every frame, which causes the continuous beeping/vibration"
+        },
+        {
+          "text": "The mode's built-in feedback is silenced by assigning labelCapture.feedback a LabelCaptureFeedback whose success is a no-op Feedback (e.g. Feedback(vibration: nil, sound: nil) or the parameterless Feedback())"
+        },
+        {
+          "text": "Feedback.default.emit() (from ScanditCaptureCore) is emitted manually exactly once per newly tracked label, gated by the label's trackingId (e.g. a Set<Int> of already-emitted trackingIds)"
+        },
+        {
+          "text": "The answer does NOT advise leaving the default LabelCaptureFeedback in place while ALSO emitting a manual one-shot (that would double up)"
+        }
+      ],
+      "tags": [
+        "feedback",
+        "basic-overlay"
+      ]
+    },
+    {
+      "id": 30,
+      "prompt": "On iOS I'm pairing a LabelCaptureBasicOverlay (to draw a coloured box on the price field) with a LabelCaptureAdvancedOverlay (to draw a floating pin) for my Smart Label Capture app. My pin points the wrong way and overlaps the box, and I set every basic-overlay brush to .clear just to be safe. What am I doing wrong?",
+      "expected_output": "The skill diagnoses all three sub-problems, but the DISCRIMINATING content (what a skill-less answer misses) is the CONCRETE positioning fix: it must emit the exact .topCenter anchor and a concrete negative half-height .fraction PointWithUnit offset, and explain that the pin overlaps because the view is CENTERED on the anchor point. A skill-less answer tends to describe 'use an anchor and an offset' or defer to the docs without the concrete values. (It also correctly confirms the two overlays coexist and warns against blanket-clearing brushes \u2014 but a skill-less answer already gets those, so they are not the discriminating assertions.)",
+      "files": [
+        "fixtures/ScanViewController.swift"
+      ],
+      "assertions": [
+        {
+          "text": "DISCRIMINATING: gives CONCRETE corrected positioning code \u2014 anchorFor returns exactly Anchor .topCenter AND offsetFor returns a concrete PointWithUnit using FloatWithUnit(value: -0.5 (approx), unit: .fraction) for a negative half-height y. An answer that only says 'use an anchor and an offset' / defers to the docs without emitting the concrete .topCenter anchor and a concrete .fraction PointWithUnit FAILS this assertion."
+        },
+        {
+          "text": "DISCRIMINATING: explains the pin overlaps because the custom view is CENTERED on the anchor point, so a .topCenter anchor plus a -0.5 .fraction (half view height) offset is what lands the tail tip on the field's top edge \u2014 i.e. the centered-on-anchor mechanic, not just 'nudge it upward'."
+        },
+        {
+          "text": "Confirms a LabelCaptureBasicOverlay and a LabelCaptureAdvancedOverlay can coexist on the same DataCaptureView (the overlap is expected; they are independent layers)."
+        },
+        {
+          "text": "Advises AGAINST blanket-setting labelBrush / capturedFieldBrush / predictedFieldBrush to .clear 'to be safe'; instead colour only the price field via brushFor field: and return nil/clear for the rest."
+        }
+      ],
+      "tags": [
+        "advanced-overlay",
+        "basic-overlay",
+        "discriminative-power"
+      ]
+    },
+    {
+      "id": 31,
+      "prompt": "On iOS I'm adding Smart Label Capture to read the IMEI from a smartphone box \u2014 just the IMEI barcode, there are no text fields on what I scan. Which Scandit SPM products do I need to link?",
+      "expected_output": "The skill recognises IMEI as the pre-built IMEIOneBarcode semantic/data-typed barcode builder, and \u2014 the DISCRIMINATING point \u2014 tells the user to link ScanditLabelCaptureText IN ADDITION to the three core products even though there is no text field, because the semantic barcode builders' recognition models ship in ScanditLabelCaptureText (omitting it causes a missing-resource error at launch). It does NOT recommend ScanditPriceLabel (no price field). A skill-less answer typically lists only the three core products for a 'barcode-only' label.",
+      "files": [],
+      "assertions": [
+        {
+          "text": "DISCRIMINATING: lists ScanditLabelCaptureText as REQUIRED even though the label has no text field, because the IMEI/serial/part-number (data-typed/semantic) barcode builders' recognition models ship in it. An answer that lists only ScanditCaptureCore + ScanditBarcodeCapture + ScanditLabelCapture and omits ScanditLabelCaptureText FAILS this assertion."
+        },
+        {
+          "text": "Uses the pre-built IMEIOneBarcode(name:) builder for the IMEI rather than a hand-rolled CustomBarcode with a custom regex."
+        },
+        {
+          "text": "Names the three always-required core products: ScanditCaptureCore, ScanditBarcodeCapture, ScanditLabelCapture."
+        },
+        {
+          "text": "Does NOT recommend ScanditPriceLabel for this label (there is no UnitPriceText/TotalPriceText price field)."
+        }
+      ],
+      "tags": [
+        "spm-products",
+        "semantic-barcode",
+        "discriminative-power"
+      ]
+    },
+    {
+      "id": 32,
+      "prompt": "On iOS I already have Smart Label Capture working. I also need to scan a separate shipping barcode in the same app. I added a BarcodeCapture mode to the same DataCaptureContext and now nothing scans at all. Why, and what should I do?",
+      "expected_output": "The skill explains the DISCRIMINATING core-SDK fact: a DataCaptureContext is associated with only ONE mode at a time \u2014 associating a second mode (BarcodeCapture alongside LabelCapture) makes the context process no frames and report an error, which is why nothing scans. The fix is NOT to make both modes coexist: either model the extra barcode as a CustomBarcode / pre-built barcode field inside the LabelDefinition (preferred when read together), or keep one mode active and swap with context.setMode(_:) for genuinely separate workflow steps. A skill-less answer may try to configure both modes to run together.",
+      "files": [],
+      "assertions": [
+        {
+          "text": "DISCRIMINATING: explains a DataCaptureContext can have only ONE active mode at a time \u2014 adding a second mode (BarcodeCapture + LabelCapture on the same context) makes it process no frames / report an error, which is the cause of 'nothing scans'. An answer claiming both modes can run concurrently on one context, or that frames its as a mere configuration issue of the second mode, FAILS this assertion."
+        },
+        {
+          "text": "DISCRIMINATING: recommends EITHER modelling the extra barcode as a label field (CustomBarcode or a pre-built barcode field) inside the LabelDefinition, OR switching the active mode via context.setMode(_:) for separate steps \u2014 NOT running two modes simultaneously."
+        },
+        {
+          "text": "References the correct mode-management API surface (context.setMode(_:) replacing the active mode; addMode/removeMode) rather than inventing a 'multi-mode' API."
+        }
+      ],
+      "tags": [
+        "single-active-mode",
+        "barcode-capture-coexistence",
+        "discriminative-power"
       ]
     }
   ]

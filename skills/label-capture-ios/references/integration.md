@@ -29,12 +29,14 @@ Only proceed to the manual integration steps below if the user already has an ex
   | `ScanditCaptureCore` | **Always** | SDK runtime, camera, `DataCaptureView`. |
   | `ScanditBarcodeCapture` | **Always** | Label Capture has an internal barcode dependency even when no barcode field is declared. |
   | `ScanditLabelCapture` | **Always** | The `LabelCapture` mode, settings, overlays. |
-  | `ScanditLabelCaptureText` | **If the label has any text field** — `ExpiryDateText`, `PackingDateText`, `DateText`, `WeightText`, `UnitPriceText`, `TotalPriceText`, `CustomText`. | Bundles the on-device text/OCR models. |
+  | `ScanditLabelCaptureText` | **If the label has any text field** — `ExpiryDateText`, `PackingDateText`, `DateText`, `WeightText`, `UnitPriceText`, `TotalPriceText`, `CustomText` — **or any *data-typed/semantic barcode* field** — `SerialNumberBarcode`, `PartNumberBarcode`, `IMEIOneBarcode`, `IMEITwoBarcode`. | Bundles the on-device text/OCR models **and the barcode-semantics models** (`ocr_barcode_semantics_*`, `barcode_label_localization_*`) that the data-typed barcode builders rely on. |
   | `ScanditPriceLabel` | **If the label has a price field** — `UnitPriceText` or `TotalPriceText`. | Bundles the specialised price-text recognizer used in addition to the general text recognizer. Required *in addition to* `ScanditLabelCaptureText`, not instead of it. |
 
   If a required product is missing at runtime, the `DataCaptureView` surfaces a visible error along the lines of *"Scandit SDK is missing a required resource to operate"* — it does not fail silently. That's the symptom the user will see in the app if you under-recommend the SPM products.
 
-  After the user picks fields in Question A below, list exactly which of the five products to add — don't dump all five if the label is barcode-only, and don't omit `ScanditLabelCaptureText` if any text field is present. A label-only-barcodes setup gets the first three; a label with a date or weight adds `ScanditLabelCaptureText`; a label with `UnitPriceText` / `TotalPriceText` adds both `ScanditLabelCaptureText` and `ScanditPriceLabel`.
+  > **⚠️ Semantic barcode fields need `ScanditLabelCaptureText` even with no text field.** This is the most common SPM under-recommendation. The data-typed barcode builders (`SerialNumberBarcode`, `PartNumberBarcode`, `IMEIOneBarcode`, `IMEITwoBarcode`) are *declared* in `ScanditLabelCapture`, but their recognition models ship in `ScanditLabelCaptureText` — verified in the resolved SDK: `ScanditLabelCapture` bundles no models, while `ScanditLabelCaptureText` carries `ocr_barcode_semantics_default_model`, `barcode_semantics_ocr_detector_default_model`, and `barcode_label_localization_mslc_model_*`. So an IMEI / serial-number / part-number label that links only the three core products hits the missing-resource error at launch. A **plain `CustomBarcode`** with no data-type pattern does **not** need it — only the semantic/data-typed barcode builders do.
+
+  After the user picks fields in Question A below, list exactly which products to add. Rules of thumb: a label whose only barcode is a **plain `CustomBarcode`** (no text field) gets the first three; a label with **any text field** adds `ScanditLabelCaptureText`; a label with **any data-typed/semantic barcode builder** (`SerialNumberBarcode` / `IMEIOneBarcode` / `IMEITwoBarcode` / `PartNumberBarcode`) **also** adds `ScanditLabelCaptureText` even if it has no text field; and a label with `UnitPriceText` / `TotalPriceText` adds both `ScanditLabelCaptureText` and `ScanditPriceLabel`.
 
 - A valid Scandit license key:
   - Sign in at <https://ssl.scandit.com> to generate one.
@@ -86,7 +88,7 @@ let settings = try LabelCaptureSettings(
 - `vinLabelDefinition(withName:)` → an optional `text` field and an optional `barcode` field, both matching `[A-Z0-9]{17}`.
 - `sevenSegmentDisplay(withName:)` → a single `weight` text field tuned for 7-segment glyphs (it tolerates the common `O`/`0`, `Q`/`0`, `B`/`8` confusions).
 
-> **Pre-built whole-label definitions are NOT Validation-Flow compatible.** `LabelDefinition.priceCapture(withName:)`, `vinLabelDefinition(withName:)`, and `sevenSegmentDisplay(withName:)` are documented as not intended for use with the Validation Flow — using them inside the VF "may result in incorrect data being captured." For these factories, use the **Basic Overlay** (or Advanced Overlay) path, not `LabelCaptureValidationFlowOverlay`. If the user needs the VF guided experience for a price/VIN/seven-segment use case, build an equivalent custom `LabelDefinition` from `CustomBarcode` + the relevant pre-built text fields instead. `priceCapture` additionally requires the **`ScanditPriceLabel`** SPM product (its `priceText` field uses the specialised price recogniser), in addition to `ScanditLabelCaptureText`.
+> **The price-capture and VIN whole-label definitions are NOT Validation-Flow compatible.** `LabelDefinition.priceCapture(withName:)` and `vinLabelDefinition(withName:)` are documented as not intended for use with the Validation Flow — using them inside the VF "may result in incorrect data being captured." For these factories, use the **Basic Overlay** (or Advanced Overlay) path, not `LabelCaptureValidationFlowOverlay`. If the user needs the VF guided experience for a price/VIN use case, build an equivalent custom `LabelDefinition` from `CustomBarcode` + the relevant pre-built text fields instead. `priceCapture` additionally requires the **`ScanditPriceLabel`** SPM product (its `priceText` field uses the specialised price recogniser), in addition to `ScanditLabelCaptureText`.
 
 If no whole-label factory fits, build the label from individual fields below — preferring the pre-built field builders.
 
@@ -351,7 +353,7 @@ Notes when generating this code:
 - iOS symbology enum values use camelCase: `.ean13UPCA`, `.code128`, `.gs1DatabarExpanded`, `.qr`, `.dataMatrix`, etc. Do NOT use the Android underscore form (`.EAN13_UPCA`).
 - For `CustomBarcode`, the symbologies are passed as a `Set<Symbology>` via the constructor: `CustomBarcode(name: "Barcode", symbologies: [.ean13UPCA, .code128])`.
 - For `CustomText`, use `.valueRegex("pattern")` or `.valueRegexes(["p1", "p2"])`. Do NOT use `.setPattern` / `.setPatterns` — those names were renamed in v8 and no longer exist.
-- For `ExpiryDateText` / `PackingDateText`, optionally call `.labelDateFormat(LabelDateFormat(componentFormat: .MDY, acceptPartialDates: false))` to control date parsing. `LabelDateComponentFormat` values: `.MDY`, `.DMY`, `.YMD`, etc.
+- For `ExpiryDateText` / `PackingDateText`, optionally call `.labelDateFormat(LabelDateFormat(componentFormat: .MDY, acceptPartialDates: false))` to control date parsing. `LabelDateComponentFormat` has exactly three values: `.MDY`, `.DMY`, `.YMD`.
 - For `DateText`, the `LabelDateFormat` is **not** optional — pass it in the initializer: `DateText(name: "Date", labelDateFormat: LabelDateFormat(componentFormat: .MDY, acceptPartialDates: false))`. There is no single-argument initializer.
 - `labelCapture(_:didUpdate:frameData:)` is called on a background thread. Dispatch any UI updates to the main thread.
 - Set `labelCapture.isEnabled = false` synchronously inside the delegate (before dispatching UI work to the main thread) so the next frame doesn't fire another `didUpdate` with the same captured label. Dispatching the disable to the main queue first leaves a 30+-frame window where duplicates can leak through.
@@ -507,11 +509,23 @@ This works on every pre-built text builder (`ExpiryDateText`, `PackingDateText`,
 
 ## Supported characters
 
-Smart Label Capture's on-device OCR engine reads **printed Latin characters**: `A–Z` (uppercase and lowercase), digits `0–9`, and common punctuation (`. , / : ; - ( ) % $ £ € + *`). It does **not** read:
+Smart Label Capture's on-device OCR engine reads **printed Latin characters**: `A–Z` (uppercase and lowercase), digits `0–9`, space, and this exact punctuation set — `( ) - . / : , $ ¶ "`. (This is a single cross-platform character set; it does not include `£`, `€`, `%`, `*`, `+`, or `;`.) It does **not** read:
 
 - **Handwriting** — neither the on-device engine nor ARE recognises handwritten text. If the label has handwritten values, fall back to the Validation Flow's manual input.
+- **Accented / diacritic letters** — `é`, `ñ`, `ü`, etc. are not in the supported set (only unaccented `A–Z` / `a–z`).
 - **Non-Latin scripts** — Cyrillic, Greek, CJK (Chinese/Japanese/Korean), Arabic, Hebrew, etc. are not currently supported.
 - **Heavily stylised fonts, low-contrast text, or worn/damaged labels** — accuracy degrades sharply. Recommend ARE (see below) for difficult labels.
+
+## Label Capture cannot run alongside Barcode Capture (single active mode)
+
+A `DataCaptureContext` is associated with **one capture mode at a time** — `LabelCapture` and `BarcodeCapture` (or `SparkScan`, `BarcodeCount`, etc.) **cannot both be active on the same context**. This is a core-SDK constraint, not a Label Capture quirk: `context.setMode(_:)` *replaces* the current mode, and if more than one mode is associated with a context "the context will not process any frames and report an error." (See [DataCaptureContext](https://docs.scandit.com/data-capture-sdk/ios/core/api/data-capture-context.html) — `setMode(_:)`, `addMode(_:)`, `removeMode(_:)`, `removeAllModes()`.)
+
+So if a user wants to *also* read a separate barcode (e.g. a shelf-edge barcode in addition to the label), do **not** spin up a second `BarcodeCapture` mode alongside `LabelCapture`. Two patterns:
+
+- **Preferred — model the extra barcode as a label field.** Add a `CustomBarcode` (or a pre-built barcode field like `SerialNumberBarcode`) to the `LabelDefinition`. The label engine then returns that barcode in the same captured label, no second mode needed. This is the right answer whenever the barcode is part of, or read together with, the label.
+- **Genuinely separate steps — switch the active mode.** If the two scans are distinct workflow stages (scan a barcode on one screen, a label on another), keep one mode active at a time and call `context.setMode(_:)` to swap between a `BarcodeCapture` and a `LabelCapture` instance when the user moves between steps. Disable the outgoing mode before switching.
+
+> This is distinct from the *"data-typed barcode + data-typed text can't coexist in one `LabelDefinition`"* exclusion rule above: that one is about field combinations *within* a label; this one is about capture *modes* on a context.
 
 ## Overlay Integration
 
@@ -571,7 +585,7 @@ The Basic Overlay draws two layers per detected label:
 1. A *label box* around the whole captured label, drawn with `labelBrush`.
 2. A *field box* around each field inside the label, drawn with `capturedFieldBrush` (for fields that matched the regex this frame) or `predictedFieldBrush` (for fields the SDK predicts will appear but hasn't fully matched yet).
 
-You can override the defaults globally:
+You can override the defaults globally (the `.clear` `labelBrush` below is an *intentional* override — hiding the whole-label box while keeping field highlights; this is not the same as blanket-clearing every brush "to be safe", which the Advanced Overlay section warns against):
 
 ```swift
 basicOverlay.labelBrush = Brush(fill: .clear, stroke: .clear, strokeWidth: 0)
@@ -630,7 +644,97 @@ Return `nil` from `brushFor field:` or `brushFor label:` to keep the default bru
 
 ### Advanced Overlay
 
-Use `LabelCaptureAdvancedOverlay` only when the app needs fully custom AR rendering — drawing its own `UIView` subclasses on top of the camera feed with full positional control. This requires significantly more implementation work. Refer to the [Advanced Configurations](https://docs.scandit.com/sdks/ios/label-capture/advanced/) page for the listener interface and anchor points.
+Use `LabelCaptureAdvancedOverlay` only when the app needs fully custom AR rendering — drawing its own `UIView` subclasses (floating pins, badges, callouts) on top of the camera feed with full positional control. This requires significantly more implementation work than the Basic Overlay. See the [Advanced Configurations](https://docs.scandit.com/sdks/ios/label-capture/advanced/) page for the authoritative reference.
+
+> **Before hand-rolling an Advanced Overlay, re-check Step 0.** Choosing the Advanced Overlay is a *rendering* decision; it does **not** change the label-definition decision. If the user's label is a price/shelf label, VIN, or seven-segment display, you must still build it from the pre-built whole-label factory (`LabelDefinition.priceCapture(withName:)`, `vinLabelDefinition(withName:)`, `sevenSegmentDisplay(withName:)`) rather than hand-composing `CustomBarcode` + `TotalPriceText`. The factory ships tuned anchor/value regexes and out-performs anything you assemble by hand. A common failure mode is reaching for the Advanced Overlay and silently dropping back to a custom definition — don't. (All three factories *are* compatible with the Basic and Advanced overlays; only the price-capture and VIN factories are documented as not intended for the Validation Flow.)
+
+**The Advanced Overlay is its own delegate-driven AR path — you do not need a `LabelCaptureListener`.** The overlay asks its delegate for a view, an anchor, and an offset **once per newly tracked label** (keyed internally by tracking id) and then caches and repositions that view itself across frames. Do all your work in the delegate; do not attach a separate `LabelCaptureListener` to drive captures, and do not build a per-frame state store. Adding a listener on top leads to per-frame flicker (rebuilding views every frame) and duplicated work — the overlay already does the lifecycle management for you.
+
+**Construct it with the `view:` initializer — which auto-registers the overlay.** Passing the `DataCaptureView` to the initializer adds the overlay to that view for you. Calling `captureView.addOverlay(advancedOverlay)` afterwards is redundant — do not call it.
+
+```swift
+// `view:` auto-adds the overlay — do NOT also call captureView.addOverlay(...)
+let advancedOverlay = LabelCaptureAdvancedOverlay(labelCapture: labelCapture, view: captureView)
+advancedOverlay.delegate = self
+```
+
+**Delegate — validate on the spot, no caching.** Because the delegate fires once per newly tracked label, validate the label's fields right there and return a freshly built view. There is no need to cache results in a dictionary or recompute every frame:
+
+```swift
+extension ScanViewController: LabelCaptureAdvancedOverlayDelegate {
+    // Build the custom view for a newly tracked label. Validate inline from the
+    // captured fields — no state store, no LabelCaptureListener.
+    func labelCaptureAdvancedOverlay(
+        _ overlay: LabelCaptureAdvancedOverlay,
+        viewFor capturedLabel: CapturedLabel
+    ) -> UIView? {
+        let state = validate(capturedLabel)          // pure function of the label's fields
+        emitFeedbackOnce(for: capturedLabel)         // once-per-label feedback — see Feedback below
+        return StatusPinView(state: state)           // a fresh view; the overlay caches it
+    }
+
+    // Where the view is pinned ON the label. The view is CENTERED on the anchor point.
+    // For a pin that sits above the label with its tail pointing down at it, use .topCenter
+    // (NOT .bottomCenter — that drops the pin onto the bottom edge, away from the content).
+    func labelCaptureAdvancedOverlay(
+        _ overlay: LabelCaptureAdvancedOverlay,
+        anchorFor capturedLabel: CapturedLabel
+    ) -> Anchor {
+        return .topCenter
+    }
+
+    // Fine-tune placement relative to the anchor. Because the view is centered on the
+    // anchor point, a zero offset leaves the pin half-overlapping the label box. Lift it
+    // by half its own height so the tail tip lands exactly on the label's top edge.
+    // `.fraction` is relative to the VIEW's own size; negative y is up.
+    func labelCaptureAdvancedOverlay(
+        _ overlay: LabelCaptureAdvancedOverlay,
+        offsetFor capturedLabel: CapturedLabel
+    ) -> PointWithUnit {
+        return PointWithUnit(
+            x: FloatWithUnit(value: 0, unit: .fraction),
+            y: FloatWithUnit(value: -0.5, unit: .fraction)
+        )
+    }
+}
+```
+
+> **Anchor semantics — the view is centered on the anchor point.** The `Anchor` you return is a point *on the tracked label/field*, and the overlay centers your view on that point. `.topCenter` therefore centers the view on the top edge of the label; the visible badge then sits above the edge and the tail points down at it. `.bottomCenter` would center it on the bottom edge — usually not what a "pin pointing at the label" wants. The nine cases are `.topLeft`, `.topCenter`, `.topRight`, `.centerLeft`, `.center`, `.centerRight`, `.bottomLeft`, `.bottomCenter`, `.bottomRight`.
+
+> **Offset is in `.fraction` of the view's own size (not the screen).** A zero offset (`PointWithUnit(x: .zero, y: .zero)`) leaves the centered view straddling the anchor, so a downward-pointing pin overlaps the label box by half its height. Returning `y: -0.5` in `.fraction` lifts it by exactly half its height so the tail tip lands on the edge. The y-axis sign isn't pinned in the docs — negative is up per Scandit's samples; if it pushes the pin the wrong way on-device, flip the sign.
+
+**Per-field views.** The delegate also has optional per-field variants — `labelCaptureAdvancedOverlay(_:viewFor:of:)`, `labelCaptureAdvancedOverlay(_:anchorFor:of:)`, and `labelCaptureAdvancedOverlay(_:offsetFor:of:)`, each taking a `LabelField` **and** its parent `CapturedLabel` (`viewFor field: LabelField, of capturedLabel: CapturedLabel`) — when you want to pin a separate view to an individual field (e.g. a badge on just the price field) rather than the whole label. Same anchor/offset semantics apply.
+
+**Pairing with a Basic Overlay for the box.** A common pattern is a Basic Overlay drawing the state-coloured box around a field *and* an Advanced Overlay drawing a floating pin — they coexist on the same `DataCaptureView`. When you do this, only override the brushes you actually need. **Do not blanket-set `labelBrush` / `capturedFieldBrush` / `predictedFieldBrush` to `.clear`** unless you specifically want those elements invisible — clearing them "to be safe" just hides the AR highlights you're paying for. Override a brush only when you have a concrete reason (e.g. you want a per-field colour via `brushFor field:`), and leave the rest at their defaults.
+
+### Feedback (sound & vibration)
+
+`LabelCapture` ships a built-in `LabelCaptureFeedback` whose `success` feedback (beep + vibration) fires on **every successful-capture event** — i.e. repeatedly, frame after frame, while a label stays in view. With the Validation Flow this is fine (capture is confirmed once), but with the **Basic or Advanced Overlay** the result is continuous beeping/vibrating as long as the label is on screen.
+
+For automated/AR overlays where you want feedback **once per captured label**, silence the built-in feedback and emit it yourself:
+
+```swift
+// 1. Silence the mode's built-in repeating feedback (do this in setup).
+let silentFeedback = LabelCaptureFeedback()
+silentFeedback.success = Feedback(vibration: nil, sound: nil)
+labelCapture.feedback = silentFeedback
+
+// 2. Emit once per newly tracked label, keyed by tracking id.
+private var feedbackEmittedFor = Set<Int>()
+
+private func emitFeedbackOnce(for label: CapturedLabel) {
+    guard !feedbackEmittedFor.contains(label.trackingId) else { return }
+    feedbackEmittedFor.insert(label.trackingId)
+    Feedback.default.emit()   // default beep + vibration, fired exactly once
+}
+```
+
+Call `emitFeedbackOnce(for:)` from whatever fires once per label in your integration:
+
+- **Advanced Overlay** — from `viewFor` (it already fires once per newly tracked label; the `trackingId` guard is then just belt-and-braces).
+- **Basic Overlay** — from your `LabelCaptureListener.labelCapture(_:didUpdate:frameData:)` (iterate `session.capturedLabels` and gate on `trackingId`), or from `brushFor field:` / `brushFor label:` if you've set a `LabelCaptureBasicOverlayDelegate`. The "no `LabelCaptureListener`" rule above is specific to the Advanced Overlay path — a Basic Overlay integration that already uses a listener to read results is the natural place to emit.
+
+`Feedback` and `Feedback.default` come from `ScanditCaptureCore`. Do **not** leave the default `LabelCaptureFeedback` in place and *also* emit your own — you'll get both the repeating built-in beeps and your one-shot. This manual once-per-label recipe is **only** for the Basic and Advanced overlays; the Validation Flow confirms capture once, so leave its feedback alone.
 
 ## Capturing the scanned frame image
 
@@ -684,9 +788,10 @@ ARE is Scandit's cloud-based fallback for on-device text recognition. When the o
 
 **Important constraints — tell the user all of these before they try to enable it:**
 
-- **Validation Flow only.** ARE works exclusively with the Validation Flow overlay (`LabelCaptureValidationFlowOverlay`). It does not work with `LabelCaptureBasicOverlay` or `LabelCaptureAdvancedOverlay`.
-- **Requires a license key with the ARE feature flag.** The standard license key does not include ARE. Trial license keys can be issued with ARE enabled for evaluation — direct the user to <support@scandit.com> to request one.
-- **For production use, contact Scandit.** ARE is in Beta and requires explicit enablement on the production license key. Tell the user to contact <support@scandit.com> to get it enabled for their production key before going live.
+- **Overlay-agnostic.** ARE is a property of the `LabelDefinition` (`adaptiveRecognitionMode`), resolved at the recognition-engine layer before any overlay renders. It runs the same with the Basic, Advanced, or Validation Flow overlay — there is no overlay requirement. (This is distinct from Beta **Receipt Scanning**, which is a separate ARE-powered feature that *does* require its own `LabelCaptureAdaptiveRecognitionOverlay` — see that section below.)
+- **Enabled by Scandit on your subscription — you cannot self-enable it.** ARE is gated by a license-key feature flag (the SDK checks for the Adaptive Recognition Engine entitlement at runtime), but you do not set that flag yourself: Scandit provisions it server-side onto your subscription, and the entitlement then rides in the license key you are issued. A standard license key does not carry it. For evaluation, trial keys can be issued with ARE enabled; for production, the entitlement must be added to your subscription before going live. In every case direct the user to <support@scandit.com> — do **not** tell them to look for a flag to toggle in their own key, code, or dashboard.
+- **Requires iOS SDK 8.0+ for the inline modifier.** `.adaptiveRecognition(.auto)` on a `LabelDefinition` was added in iOS 8.0 (the always-on `.on` mode in 8.4). On an older SDK the modifier does not exist and the code will not compile — check `Package.resolved` before emitting it, the same way you gate the result-builder DSL and the v8.4 date APIs.
+- **Beta.** ARE is currently in Beta.
 - **Handwriting is still unsupported.** ARE improves accuracy on printed text in adverse conditions; it does not enable handwritten-character recognition.
 
 Enable ARE by setting `.adaptiveRecognition(.auto)` on the label definition:
@@ -707,12 +812,12 @@ Mention ARE only if the user asks about improving OCR accuracy or mentions diffi
 
 ## Receipt Scanning (Beta — built on ARE)
 
-If the user wants to extract structured data from a **whole receipt** (store, totals, line items) rather than a few fields off a printed label, that's **Receipt Scanning** — a separate ARE-powered feature available on iOS since SDK 7.6.0. It is **Beta** and, like ARE generally, requires a license key with the Adaptive Recognition Engine enabled. Flag this up front and direct the user to <support@scandit.com> to get it enabled on their subscription before they try to use it. Do not present it as generally available.
+If the user wants to extract structured data from a **whole receipt** (store, totals, line items) rather than a few fields off a printed label, that's **Receipt Scanning** — a separate ARE-powered feature available on iOS since SDK 7.6.0 (the overlay, result, and listener types are all `ios=7.6`+). It is **Beta** and, like ARE generally, needs the Adaptive Recognition Engine entitlement — enabled by Scandit on your subscription, not self-served (see the **license** bullet in the ARE section above). Flag this up front and direct the user to <support@scandit.com> to get it enabled on their subscription before they try to use it. Do not present it as generally available.
 
 Receipt Scanning does **not** use the standard label-capture overlays or a `LabelDefinition`. It uses a different integration pattern:
 
 - The overlay is **`LabelCaptureAdaptiveRecognitionOverlay`** (instead of `LabelCaptureBasicOverlay` / `LabelCaptureValidationFlowOverlay`).
-- Results arrive through a **`LabelCaptureAdaptiveRecognitionListener`**, whose recognition callback delivers a **`ReceiptScanningResult`**.
+- Results arrive through a **`LabelCaptureAdaptiveRecognitionDelegate`**, whose recognition callback delivers a **`ReceiptScanningResult`**. (The iOS Swift name is `…Delegate`; "Listener" is the cross-platform name and does **not** exist on iOS.)
 
 `ReceiptScanningResult` carries the parsed receipt — all fields are optional because not every receipt prints every value:
 
@@ -723,13 +828,15 @@ Receipt Scanning does **not** use the standard label-capture overlays or a `Labe
 | `storeCity` | `String?` | City |
 | `date` | `String?` | Transaction date |
 | `time` | `String?` | Transaction time |
-| `paymentPreTaxTotal` | `Float?` | Balance before taxes |
-| `paymentTax` | `Float?` | Total tax |
-| `paymentTotal` | `Float?` | Total paid |
-| `loyaltyNumber` | `Int?` | Loyalty program identifier |
-| `lineItems` | list | Each item carries `name`, `unitPrice`, `discount`, `quantity`, `totalPrice` |
+| `paymentPreTaxTotal` | `NSDecimalNumber?` | Balance before taxes |
+| `paymentTax` | `NSDecimalNumber?` | Total tax |
+| `paymentTotal` | `NSDecimalNumber?` | Total paid |
+| `loyaltyNumber` | `NSNumber?` | Loyalty program identifier |
+| `lineItems` | `[ReceiptScanningLineItem]` | Each item carries `name` (`String`), `unitPrice` / `discount` / `totalPrice` (`NSDecimalNumber?`), and `quantity` (`NSDecimalNumber`) |
 
-> **Verify the exact delegate selector before writing the listener.** The Receipt Scanning overlay and listener are Beta, and the receipt callback's precise Swift signature is not pinned in the integration references here. Fetch the [Advanced Configurations](https://docs.scandit.com/sdks/ios/label-capture/advanced/) page (Receipt Scanning section) and the linked API page for `LabelCaptureAdaptiveRecognitionListener` before emitting the delegate method — don't guess the selector. The overlay type (`LabelCaptureAdaptiveRecognitionOverlay`), the listener type (`LabelCaptureAdaptiveRecognitionListener`), and the result type (`ReceiptScanningResult`) above are confirmed; the delegate method name is not, so look it up.
+> The monetary fields are `NSDecimalNumber?` and `loyaltyNumber` is `NSNumber?` (not Swift `Float?` / `Int?`) — code written against `Float?` / `Int?` will not compile. Bridge with `.doubleValue` / `.intValue` (or use `NSDecimalNumber` directly for exact currency math).
+
+> **Verify the exact delegate selector before writing the delegate.** The Receipt Scanning overlay and delegate are Beta, and the receipt callback's precise Swift signature is not pinned in the integration references here. Fetch the [Advanced Configurations](https://docs.scandit.com/sdks/ios/label-capture/advanced/) page (Receipt Scanning section) and the linked API page for `LabelCaptureAdaptiveRecognitionDelegate` before emitting the delegate method — don't guess the selector. The overlay type (`LabelCaptureAdaptiveRecognitionOverlay`), the delegate type (`LabelCaptureAdaptiveRecognitionDelegate` — `NS_SWIFT_NAME` confirmed in `SDCLabelCaptureAdaptiveRecognitionOverlay.h`), and the result type (`ReceiptScanningResult`) above are confirmed; the delegate method name is not, so look it up.
 
 ## Setup Checklist
 
@@ -738,8 +845,9 @@ After the integration code and overlay choice are in place, show this checklist:
 1. Add the SPM package `https://github.com/Scandit/datacapture-spm` and link the products required by the field types in this label (see Prerequisites table for the full rule):
    - **Always:** `ScanditCaptureCore`, `ScanditBarcodeCapture`, `ScanditLabelCapture`.
    - **If the label has any text field** (e.g. `ExpiryDateText`, `DateText`, `WeightText`, `UnitPriceText`, `TotalPriceText`, `CustomText`): also link `ScanditLabelCaptureText`.
+   - **If the label has a data-typed/semantic barcode field** (`SerialNumberBarcode`, `PartNumberBarcode`, `IMEIOneBarcode`, `IMEITwoBarcode`): also link `ScanditLabelCaptureText` **even if there is no text field** — these builders' models ship in that product (see the ⚠️ note in Prerequisites). A plain `CustomBarcode` does not need it.
    - **If the label has a price field** (`UnitPriceText` or `TotalPriceText`): also link `ScanditPriceLabel` (in addition to `ScanditLabelCaptureText`, not instead of it).
-   - List only the products this specific label needs — don't recommend `ScanditLabelCaptureText` for a barcode-only label, and don't omit it if any text field is present. A missing text/price product is a common silent failure: the mode runs but produces no `text` result for those fields.
+   - List only the products this specific label needs. `ScanditLabelCaptureText` is *not* needed for a plain-`CustomBarcode` barcode-only label, but it **is** required for a semantic-barcode (IMEI / serial / part-number) label or any text/price label. A missing text/price/semantics product is a common failure: the `DataCaptureView` reports a missing-resource error, or text/semantic fields produce no result.
 2. Replace `-- ENTER YOUR SCANDIT LICENSE KEY HERE --` with your license key from <https://ssl.scandit.com>.
 3. Add `NSCameraUsageDescription` to your `Info.plist` with a user-facing reason string.
 4. Add a `UIView` outlet named `containerView` to your view controller (or replace `containerView` with `view` to use the whole VC's view).

@@ -4,7 +4,7 @@ The Validation Flow gives users a guided scanning experience: a persistent check
 
 This guide assumes you already have the minimal Label Capture integration in place (DataCaptureContext, camera, settings, `LabelCapture` mode, `DataCaptureView`). If not, start from `integration.md` first — the Validation Flow is a *swap-in* for the Basic Overlay, not a from-scratch flow.
 
-> **PriceCapture and VIN pre-made labels are not VF-compatible.** `LabelDefinition.priceCapture(withName:)` and `LabelDefinition.vinLabelDefinition(withName:)` are **explicitly documented as incompatible with the Validation Flow** — using them inside VF "may result in incorrect data being captured." For price labels or VIN scanning, either build a custom definition out of custom barcode and text fields to use with VF, or keep the pre-made label but use the basic overlay path instead.
+> **PriceCapture and VIN pre-made labels are not intended for the VF.** `LabelDefinition.priceCapture(withName:)` and `LabelDefinition.vinLabelDefinition(withName:)` each carry an explicit API-reference `@warning`: they are **"not intended for use in the Validation Flow"** — using them there "may result in incorrect data being captured for the label fields." For price labels or VIN scanning, either build a custom definition out of custom barcode and text fields to use with VF, or keep the pre-made label but use the basic overlay path instead.
 
 ## Key classes
 
@@ -19,6 +19,18 @@ This guide assumes you already have the minimal Label Capture integration in pla
 > **The Validation Flow must be implemented full screen.** The `DataCaptureView` that hosts the Validation Flow overlay must cover the full viewport. Do not embed the Validation Flow inside a card, popover, sheet, or partial-screen container — it will not work correctly. Push the scanning view controller onto the navigation stack, present it modally full-screen, or otherwise dedicate the whole screen to it for the duration of the capture.
 
 If a user asks how to embed the VF in a partial-screen widget, refuse and recommend a full-screen presentation pattern instead.
+
+## Standby / auto-pause on idle
+
+> **The Validation Flow pauses itself when no label is detected for a while.** After an idle period with no successful scan, the VF enters a standby state: scanning halts and the `standbyHintText` toast is shown until the user taps to resume. This is built-in battery-saving behaviour and is **not configurable** — only the hint *text* can be changed (via `standbyHintText`), not the timeout or the pause itself.
+
+If a user reports "the camera stops / freezes after a few seconds in the Validation Flow," this is expected standby, not a bug — tell them to tap to resume. (Distinct from the `labelCapture.isEnabled` toggle footgun in **Setup** below, which prevents scanning from resuming at all.)
+
+## One label definition per flow
+
+> **The Validation Flow drives a single `LabelDefinition` — the *first* one in your `LabelCaptureSettings`.** The iOS overlay starts the flow without naming a label, so the engine defaults to `labelDefinitions[0]`. Additional definitions are **not rejected** (no crash, no error), but they won't drive the flow — if the engine detects a label of a *different* type mid-flow, the VF pauses rather than switching to it.
+
+This is a soft behaviour, not an enforced constraint — don't tell the user the VF "requires exactly one" definition (it doesn't). But if they pass several definitions and wonder why only one is being validated, this is why. To validate multiple distinct label shapes, use the Basic/Advanced overlay or separate scan screens instead of the VF.
 
 ## Setup
 
@@ -191,7 +203,7 @@ extension ScanViewController: LabelCaptureValidationFlowDelegate {
 
 ## ARE — Adaptive Recognition Engine
 
-ARE works exclusively with the Validation Flow overlay. If the user asks about ARE, see the **ARE — Adaptive Recognition Engine** section in `integration.md` for the full constraint list (license flag, Beta status, trial vs production) and the `.adaptiveRecognition(.auto)` enabling API.
+ARE is overlay-agnostic — it's a property of the `LabelDefinition` and is **not** specific to the Validation Flow (it works with the Basic and Advanced overlays too). If the user asks about ARE, see the **ARE — Adaptive Recognition Engine** section in `integration.md` for the full constraint list (license flag, Beta status, trial vs production) and the `.adaptiveRecognition(.auto)` enabling API.
 
 ## Where to go next
 
