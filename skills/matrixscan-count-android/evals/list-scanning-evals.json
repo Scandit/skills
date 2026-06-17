@@ -1,0 +1,40 @@
+{
+  "skill_name": "matrixscan-count-android",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I have a receiving order with expected barcodes and quantities. Make my MatrixScan Count app scan against that list and show progress. File: IntegratedActivity.kt",
+      "expected_output": "The skill builds a List of TargetBarcode via TargetBarcode.create(data, quantity), wraps them in a BarcodeCountCaptureList via BarcodeCountCaptureList.create(listener, targets), applies it with barcodeCount.setBarcodeCountCaptureList(...), and implements BarcodeCountCaptureListListener to observe progress (onCaptureListSessionUpdated / onCaptureListCompleted). The progress bar shows automatically.",
+      "files": ["fixtures/IntegratedActivity.kt"],
+      "assertions": [
+        {"text": "Each expected barcode is created with TargetBarcode.create(data, quantity) — the static factory, not a constructor"},
+        {"text": "A BarcodeCountCaptureList is created with BarcodeCountCaptureList.create(listener, targets) where targets is a List<TargetBarcode>"},
+        {"text": "The list is applied with barcodeCount.setBarcodeCountCaptureList(...)"},
+        {"text": "A BarcodeCountCaptureListListener is implemented (onCaptureListSessionUpdated and/or onCaptureListCompleted), reading session.correctBarcodes / wrongBarcodes / missingBarcodes"},
+        {"text": "It does not hand-roll progress tracking when the built-in capture list provides it; no guessed API like setCaptureList(...) (the Android method is setBarcodeCountCaptureList)"}
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "When scanning against my list in MatrixScan Count, let the user accept or reject barcodes that aren't on the list. File: IntegratedListScanningActivity.kt",
+      "expected_output": "The skill enables the not-in-list action by creating a BarcodeCountNotInListActionSettings, setting enabled = true, and assigning it to barcodeCountView.barcodeNotInListActionSettings. Accepted/rejected barcodes then appear in the capture-list session.",
+      "files": ["fixtures/IntegratedListScanningActivity.kt"],
+      "assertions": [
+        {"text": "A BarcodeCountNotInListActionSettings is constructed and its enabled property is set to true"},
+        {"text": "It is assigned to barcodeCountView.barcodeNotInListActionSettings"},
+        {"text": "It does not invent a settings flag on BarcodeCountSettings for this — the action settings live on the view"}
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "In my MatrixScan Count receiving flow, automatically stop scanning once every expected barcode on the list has been counted. File: IntegratedListScanningActivity.kt",
+      "expected_output": "The skill sets settings.disableModeWhenCaptureListCompleted = true on the BarcodeCountSettings before constructing the BarcodeCount mode.",
+      "files": ["fixtures/IntegratedListScanningActivity.kt"],
+      "assertions": [
+        {"text": "settings.disableModeWhenCaptureListCompleted = true is set on the BarcodeCountSettings"},
+        {"text": "It is set before BarcodeCount.forDataCaptureContext(...) is called"},
+        {"text": "It uses the real property disableModeWhenCaptureListCompleted — not a guessed API"}
+      ]
+    }
+  ]
+}

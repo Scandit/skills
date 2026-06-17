@@ -1,0 +1,41 @@
+{
+  "skill_name": "matrixscan-count-android",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "In my MatrixScan Count app I want to mark each scanned barcode with a status (e.g. expired) and show it automatically as items are scanned. File: IntegratedActivity.kt",
+      "expected_output": "The skill implements a BarcodeCountStatusProvider, registers it via barcodeCountView.setStatusProvider(...), and sets barcodeCountView.shouldShowStatusIconsOnScan = true. In onStatusRequested it builds a BarcodeCountStatusItem per barcode via BarcodeCountStatusItem.create(trackedBarcode, BarcodeCountStatus.X), wraps them in BarcodeCountStatusResultSuccess.create(...), and delivers it via callback.onStatusReady(...).",
+      "files": ["fixtures/IntegratedActivity.kt"],
+      "assertions": [
+        {"text": "A BarcodeCountStatusProvider is implemented and registered via barcodeCountView.setStatusProvider(...)"},
+        {"text": "onStatusRequested(barcodes, callback) builds one BarcodeCountStatusItem per barcode via BarcodeCountStatusItem.create(trackedBarcode, status)"},
+        {"text": "The status value is a BarcodeCountStatus enum value (e.g. BarcodeCountStatus.EXPIRED) — Android uses the fixed enum, not a custom icon builder"},
+        {"text": "The result is built with BarcodeCountStatusResultSuccess.create(...) and delivered via callback.onStatusReady(...)"},
+        {"text": "barcodeCountView.shouldShowStatusIconsOnScan = true is set so statuses appear automatically on scan"}
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "In my MatrixScan Count app, only show the per-barcode statuses when the user taps the status-mode button, not automatically. File: IntegratedActivity.kt",
+      "expected_output": "The skill sets barcodeCountView.shouldShowStatusModeButton = true and leaves shouldShowStatusIconsOnScan at its default (false), in addition to registering a status provider.",
+      "files": ["fixtures/IntegratedActivity.kt"],
+      "assertions": [
+        {"text": "barcodeCountView.shouldShowStatusModeButton = true is set"},
+        {"text": "shouldShowStatusIconsOnScan is NOT set to true (left at its default false) so the button flow is used"},
+        {"text": "A BarcodeCountStatusProvider is still registered via setStatusProvider so there are statuses to show"}
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "My MatrixScan Count statuses come from a backend call that can fail. Show me how to handle the success and the failure cases in the status provider. File: IntegratedActivity.kt",
+      "expected_output": "The skill shows resolving statuses asynchronously and delivering the appropriate result type via callback.onStatusReady(...): BarcodeCountStatusResultSuccess.create(...) on success, and BarcodeCountStatusResultError.create(...) or BarcodeCountStatusResultAbort.create(...) on failure.",
+      "files": ["fixtures/IntegratedActivity.kt"],
+      "assertions": [
+        {"text": "On success it delivers BarcodeCountStatusResultSuccess.create(statusItems, ...) via callback.onStatusReady(...)"},
+        {"text": "On failure it delivers BarcodeCountStatusResultError.create(...) and/or BarcodeCountStatusResultAbort.create(...)"},
+        {"text": "It uses the static create(...) factories on the result classes — not constructors"},
+        {"text": "callback.onStatusReady(...) is called exactly once per onStatusRequested invocation (semantic)"}
+      ]
+    }
+  ]
+}

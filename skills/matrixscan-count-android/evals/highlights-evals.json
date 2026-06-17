@@ -1,0 +1,52 @@
+{
+  "skill_name": "matrixscan-count-android",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Make the recognized-barcode highlights green in my MatrixScan Count app. File: IntegratedActivity.kt",
+      "expected_output": "The app is on the default Icon style, so the skill recolors the recognized highlight by customizing the icon: it returns a BarcodeCountIcon (built with ScanditIconBuilder, green background + a background shape) from iconForRecognizedBarcode on a BarcodeCountViewListener (or via setIconForRecognizedBarcode). It does NOT switch to the Dot style just to change a color.",
+      "files": ["fixtures/IntegratedActivity.kt"],
+      "assertions": [
+        {"text": "A green highlight is applied by customizing the icon on the default Icon style — iconForRecognizedBarcode (or setIconForRecognizedBarcode) returning a BarcodeCountIcon"},
+        {"text": "The icon is built with ScanditIconBuilder using a green background color AND a background shape (ScanditIconShape.CIRCLE or SQUARE), wrapped in BarcodeCountIcon"},
+        {"text": "It does NOT switch the view to the Dot style merely to change the color"},
+        {"text": "The rest of the integration (context, camera, settings, mode, view creation, lifecycle) is unchanged"}
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "In my MatrixScan Count app, give each barcode a different highlight icon based on its data — a warning icon if the data starts with '99', otherwise the default check. File: IntegratedActivity.kt",
+      "expected_output": "The skill sets barcodeCountView.listener to a BarcodeCountViewListener and implements iconForRecognizedBarcode, returning a warning BarcodeCountIcon (e.g. EXCLAMATION_MARK) when trackedBarcode.barcode.data starts with '99' and BarcodeCountView.defaultRecognizedIcon() otherwise.",
+      "files": ["fixtures/IntegratedActivity.kt"],
+      "assertions": [
+        {"text": "barcodeCountView.listener is set to a BarcodeCountViewListener implementing iconForRecognizedBarcode(view, trackedBarcode)"},
+        {"text": "The decision reads trackedBarcode.barcode.data and returns a distinct BarcodeCountIcon (built via ScanditIconBuilder) for the matching case"},
+        {"text": "It returns BarcodeCountView.defaultRecognizedIcon() (or a sensible default BarcodeCountIcon) for the non-matching case rather than inventing an API"},
+        {"text": "The callback returns a non-null BarcodeCountIcon (the Android callback is non-null)"}
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Switch my MatrixScan Count view to the Dot style and make the recognized dots blue. File: IntegratedActivity.kt",
+      "expected_output": "The skill creates the BarcodeCountView with the BarcodeCountViewStyle.DOT newInstance overload and sets barcodeCountView.recognizedBrush to a blue Brush.",
+      "files": ["fixtures/IntegratedActivity.kt"],
+      "assertions": [
+        {"text": "The view is created with BarcodeCountView.newInstance(..., BarcodeCountViewStyle.DOT)"},
+        {"text": "barcodeCountView.recognizedBrush is set to a blue Brush (Brush with Android color ints and a Float width)"},
+        {"text": "style is set via the newInstance overload (read-only after construction), not a post-init assignment"},
+        {"text": "The rest of the integration is unchanged"}
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "I scan against a manifest in my MatrixScan Count app (default Icon style). Make the not-in-list barcodes stand out with a red icon. File: IntegratedListScanningActivity.kt",
+      "expected_output": "The skill customizes the not-in-list icon on the Icon style — returning a red BarcodeCountIcon from iconForRecognizedBarcodeNotInList on the BarcodeCountViewListener (or via setIconForRecognizedBarcodeNotInList).",
+      "files": ["fixtures/IntegratedListScanningActivity.kt"],
+      "assertions": [
+        {"text": "The not-in-list highlight is recolored red by customizing its icon via iconForRecognizedBarcodeNotInList (or setIconForRecognizedBarcodeNotInList) returning a BarcodeCountIcon"},
+        {"text": "It uses the not-in-list-specific hook (iconForRecognizedBarcodeNotInList), not the recognized one"},
+        {"text": "It does not switch to the Dot style just to recolor (the app is on the Icon style)"}
+      ]
+    }
+  ]
+}
