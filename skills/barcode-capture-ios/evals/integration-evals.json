@@ -299,7 +299,7 @@
     {
       "id": 11,
       "prompt": "In my iOS BarcodeCapture app I only want to accept barcodes whose data starts with the prefix \"978\" (ISBNs). Other codes should be ignored and not highlighted. Wire this rejection logic into IntegratedViewController.swift.",
-      "expected_output": "The skill, inside barcodeCapture(_:didScanIn:frameData:), reads barcode.data and checks barcode.data.hasPrefix(\"978\"); when it does not match it sets the overlay brush to a transparent Brush (Brush.transparent) and returns without handling the scan.",
+      "expected_output": "The skill, inside barcodeCapture(_:didScanIn:frameData:), reads barcode.data and checks barcode.data.hasPrefix(\"978\"); when it does not match it sets the overlay brush to a transparent Brush (Brush.transparent) and returns without handling the scan. On the accept path it restores the overlay brush to the default (BarcodeCaptureOverlay.defaultBrush) so matching codes stay highlighted in continuous scanning, since overlay.brush is overlay-wide and not per-barcode.",
       "files": [
         "fixtures/IntegratedViewController.swift"
       ],
@@ -315,6 +315,9 @@
         },
         {
           "text": "(semantic) the callback returns early for rejected codes so non-matching barcodes are not handled"
+        },
+        {
+          "text": "(semantic) on the accept path (matching prefix) the overlay brush is restored to the default, e.g. overlay.brush = BarcodeCaptureOverlay.defaultBrush, so that matching codes remain highlighted after a prior code was rejected (overlay.brush is overlay-wide, not per-barcode)"
         },
         {
           "text": "Existing integration code (context, barcodeCapture, camera, listener) is preserved"

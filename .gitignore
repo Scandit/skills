@@ -8,3 +8,4 @@ internal/skill-auditor/sources.local.yaml
 __pycache__/
 internal/skill-auditor-PLAN.md
 internal/skill-auditor-STATUS.md
+.serena/
