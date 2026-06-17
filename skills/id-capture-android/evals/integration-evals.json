@@ -1,0 +1,164 @@
+{
+  "skill_name": "id-capture-android",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Add ID Capture to this blank Activity to scan passports, driver's licenses, and ID cards from any region. I need data from both sides of the document. When a document is recognized, show the full name, date of birth, and document number in a dialog. When a document is rejected, show an appropriate message.",
+      "expected_output": "A complete Activity implementing IdCaptureListener with addListener called once at setup, camera lifecycle in onResume/onPause, IdCaptureSettings with acceptedDocuments for Passport, DriverLicense and IdCard, a FullDocumentScanner (required for both-sides capture), runOnUiThread for UI work, and dialog-based result display.",
+      "files": ["evals/fixtures/EmptyActivity.kt"],
+      "assertions": [
+        {"text": "Imports the Scandit id and core packages (e.g. com.scandit.datacapture.id.capture / .data and com.scandit.datacapture.core.*)"},
+        {"text": "Creates the context with DataCaptureContext.forLicenseKey(\"...\") — does NOT use initialize(licenseKey:) or .shared"},
+        {"text": "Uses Camera.getDefaultCamera(IdCapture.createRecommendedCameraSettings()) and calls dataCaptureContext.setFrameSource(camera)"},
+        {"text": "Creates DataCaptureView.newInstance(this, dataCaptureContext) and passes it to setContentView"},
+        {"text": "Creates IdCaptureSettings() and sets acceptedDocuments to include Passport(IdCaptureRegion.ANY), DriverLicense(IdCaptureRegion.ANY), and IdCard(IdCaptureRegion.ANY)"},
+        {"text": "Sets settings.scanner = IdCaptureScanner(FullDocumentScanner()) — uses FullDocumentScanner (both sides required), does NOT use SingleSideScanner, supportedDocuments, or scannerType"},
+        {"text": "Creates the mode with IdCapture.forDataCaptureContext(dataCaptureContext, settings) — does NOT use IdCapture(context, settings) iOS-style or IdCapture.Create"},
+        {"text": "Creates the overlay with IdCaptureOverlay.newInstance(idCapture, dataCaptureView)"},
+        {"text": "Overrides onIdCaptured with (IdCapture, CapturedId) parameters (parameter names may vary, e.g. mode/id) — does NOT use the v6 three-parameter onIdCaptured(idCapture, session, frameData) signature"},
+        {"text": "Overrides onIdRejected with (IdCapture, CapturedId?, RejectionReason) parameters (parameter names may vary, e.g. mode/id/reason) — does NOT use the v6 three-parameter onIdRejected(idCapture, session, frameData) signature"},
+        {"text": "Sets the mode's isEnabled = false inside onIdCaptured before showing the dialog"},
+        {"text": "Re-enables the mode (isEnabled = true) when the dialog is dismissed"},
+        {"text": "Dispatches UI work via runOnUiThread {} (callbacks run on a background thread)"},
+        {"text": "Registers the listener once at setup time via addListener (e.g. in init or onCreate), NOT in onResume"},
+        {"text": "Turns the camera on in onResume and off in onPause via camera.switchToDesiredState(FrameSourceState.ON / OFF)"},
+        {"text": "Reads capturedId.fullName, capturedId.dateOfBirth, and capturedId.documentNumber from the CapturedId"},
+        {"text": "Does NOT reference IdCaptureSession or FrameData"},
+        {"text": "Does NOT reference AamvaBarcodeVerifier or DataConsistencyVerifier"}
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Update the ID Capture integration to reject expired IDs and holders under 21 years old. Show a distinct message for each rejection reason: expired document, underage holder, timeout, and any other rejection.",
+      "expected_output": "IdCaptureSettings updated with rejectExpiredIds = true and rejectHolderBelowAge = 21, and onIdRejected updated with a when on RejectionReason showing distinct messages for DOCUMENT_EXPIRED, HOLDER_UNDERAGE, TIMEOUT, and an else branch.",
+      "files": ["evals/fixtures/IntegratedActivity.kt"],
+      "assertions": [
+        {"text": "Sets settings.rejectExpiredIds = true"},
+        {"text": "Sets settings.rejectHolderBelowAge = 21"},
+        {"text": "Uses a when statement on the RejectionReason parameter in onIdRejected"},
+        {"text": "Has a branch for RejectionReason.DOCUMENT_EXPIRED with a distinct user-facing message about the document being expired"},
+        {"text": "Has a branch for RejectionReason.HOLDER_UNDERAGE with a distinct user-facing message about the age requirement"},
+        {"text": "Has a branch for RejectionReason.TIMEOUT with a distinct user-facing message about the capture timing out"},
+        {"text": "Has an else branch for all other rejection reasons"},
+        {"text": "Sets rejectHolderBelowAge to the Int literal 21 — not a String"}
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Configure ID Capture to accept ID cards and driver's licenses from the US, but explicitly reject passports.",
+      "expected_output": "IdCaptureSettings with acceptedDocuments containing IdCard(IdCaptureRegion.US) and DriverLicense(IdCaptureRegion.US), and rejectedDocuments containing Passport(IdCaptureRegion.ANY).",
+      "files": ["evals/fixtures/EmptyActivity.kt"],
+      "assertions": [
+        {"text": "Sets acceptedDocuments to listOf(IdCard(IdCaptureRegion.US), DriverLicense(IdCaptureRegion.US)) — does NOT put passports in acceptedDocuments"},
+        {"text": "Sets rejectedDocuments to contain Passport — does NOT use acceptedDocuments to exclude passports"},
+        {"text": "Does NOT confuse acceptedDocuments and rejectedDocuments — wanted documents go in acceptedDocuments, unwanted in rejectedDocuments"}
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "I only need to read the barcode from US driver's licenses — I don't need the VIZ or MRZ.",
+      "expected_output": "IdCaptureSettings with acceptedDocuments containing DriverLicense(IdCaptureRegion.US) and scanner set to IdCaptureScanner(SingleSideScanner(barcode = true, machineReadableZone = false, visualInspectionZone = false)).",
+      "files": ["evals/fixtures/EmptyActivity.kt"],
+      "assertions": [
+        {"text": "Sets acceptedDocuments to listOf(DriverLicense(IdCaptureRegion.US))"},
+        {"text": "Uses SingleSideScanner with barcode = true and machineReadableZone = false and visualInspectionZone = false — does NOT use FullDocumentScanner"},
+        {"text": "Wraps the scanner in IdCaptureScanner(SingleSideScanner(...))"}
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "I only need to read the MRZ from passports — I don't need the VIZ or barcode.",
+      "expected_output": "IdCaptureSettings with acceptedDocuments containing Passport and scanner set to IdCaptureScanner(SingleSideScanner(barcode = false, machineReadableZone = true, visualInspectionZone = false)).",
+      "files": ["evals/fixtures/EmptyActivity.kt"],
+      "assertions": [
+        {"text": "Sets acceptedDocuments to include Passport"},
+        {"text": "Uses SingleSideScanner with machineReadableZone = true and visualInspectionZone = false and barcode = false — does NOT use FullDocumentScanner"},
+        {"text": "Wraps the scanner in IdCaptureScanner(SingleSideScanner(...))"}
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "Configure ID Capture to scan US driver's licenses only and verify them for forged AAMVA barcodes and data inconsistency between the front and back of the document. Also reject expired IDs. On rejection for inconsistent data, extract and display the front review image from the verification result. On a successful scan, also check for and display the review image if available.",
+      "expected_output": "IdCaptureSettings targeting DriverLicense(IdCaptureRegion.US) with rejectForgedAamvaBarcodes, rejectInconsistentData, and rejectExpiredIds flags, setShouldPassImageTypeToResult for CROPPED_DOCUMENT, and correct VerificationResult access in both callbacks.",
+      "files": ["evals/fixtures/IntegratedActivity.kt"],
+      "assertions": [
+        {"text": "Sets acceptedDocuments to listOf(DriverLicense(IdCaptureRegion.US)) only"},
+        {"text": "Sets settings.rejectForgedAamvaBarcodes = true"},
+        {"text": "Sets settings.rejectInconsistentData = true"},
+        {"text": "Sets settings.rejectExpiredIds = true"},
+        {"text": "Calls settings.setShouldPassImageTypeToResult(IdImageType.CROPPED_DOCUMENT, true) — required for frontReviewImage to be populated"},
+        {"text": "Does NOT use AamvaBarcodeVerifier or DataConsistencyVerifier — verification is settings-driven"},
+        {"text": "In onIdRejected, accesses the CapturedId's verificationResult?.dataConsistency?.frontReviewImage when the reason is RejectionReason.INCONSISTENT_DATA"},
+        {"text": "Handles RejectionReason.INCONSISTENT_DATA, RejectionReason.FORGED_AAMVA_BARCODE, and RejectionReason.DOCUMENT_EXPIRED in onIdRejected with distinct messages"},
+        {"text": "Re-enables idCapture.isEnabled = true after showing the verification result"}
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "The app already uses BarcodeCapture for scanning barcodes. Now add an ID scanning screen using IdCapture. Make sure the two modes don't interfere — the ID scanning screen should handle mode co-existence correctly.",
+      "expected_output": "Code that addresses BarcodeCapture/IdCapture co-existence — either by removing the existing mode before adding IdCapture (the typical approach for separate screens), or by explicitly acknowledging that simultaneous operation is intentional.",
+      "files": ["evals/fixtures/EmptyActivity.kt"],
+      "assertions": [
+        {"text": "Addresses the BarcodeCapture/IdCapture co-existence concern — either calls dataCaptureContext.removeCurrentMode() or removeAllModes() when switching modes, OR explicitly notes that simultaneous co-existence is intentional"},
+        {"text": "Creates the mode with IdCapture.forDataCaptureContext(dataCaptureContext, settings)"},
+        {"text": "Sets up IdCaptureSettings with acceptedDocuments and scanner"},
+        {"text": "Implements IdCaptureListener with onIdCaptured and onIdRejected"},
+        {"text": "Manages camera lifecycle in onResume / onPause"}
+      ],
+      "tags": ["barcode-coexistence"]
+    },
+    {
+      "id": 8,
+      "prompt": "Configure this ID Capture integration so that sensitive fields are redacted AND obscured with black boxes on the returned document images, not just removed from the data.",
+      "expected_output": "IdCaptureSettings with anonymizationMode set to IdAnonymizationMode.FIELDS_AND_IMAGES so that anonymized fields are both nulled in the CapturedId and covered on the returned images.",
+      "files": ["evals/fixtures/IntegratedActivity.kt"],
+      "assertions": [
+        {"text": "Sets settings.anonymizationMode = IdAnonymizationMode.FIELDS_AND_IMAGES"},
+        {"text": "Uses the IdAnonymizationMode enum value FIELDS_AND_IMAGES — does NOT use a string literal"},
+        {"text": "Does NOT set anonymizationMode to NONE, FIELDS_ONLY, or IMAGES_ONLY (semantic)"}
+      ],
+      "tags": ["data-anonymization"]
+    },
+    {
+      "id": 9,
+      "prompt": "Update ID Capture to reject voided documents (for example a hole-punched or VOID-stamped US driver's license) and show a distinct message when that happens.",
+      "expected_output": "IdCaptureSettings with rejectVoidedIds = true and an onIdRejected when that handles RejectionReason.DOCUMENT_VOIDED with a distinct voided-document message.",
+      "files": ["evals/fixtures/IntegratedActivity.kt"],
+      "assertions": [
+        {"text": "Sets settings.rejectVoidedIds = true"},
+        {"text": "Handles the RejectionReason.DOCUMENT_VOIDED case in onIdRejected"},
+        {"text": "Shows a distinct user-facing message about the document being voided"},
+        {"text": "Does NOT use a standalone verifier class for voided detection — rejection is settings-driven (semantic)"}
+      ],
+      "tags": ["voided-detection"]
+    },
+    {
+      "id": 10,
+      "prompt": "I need the vehicle category data from the back of European driving licenses. Enable extraction of that data, and in onIdCaptured iterate over the driving license categories and log each category's code.",
+      "expected_output": "IdCaptureSettings with decodeBackOfEuropeanDrivingLicense = true, and onIdCaptured reading capturedId.viz?.drivingLicenseDetails?.drivingLicenseCategories and accessing each category's .code.",
+      "files": ["evals/fixtures/IntegratedActivity.kt"],
+      "assertions": [
+        {"text": "Sets settings.decodeBackOfEuropeanDrivingLicense = true"},
+        {"text": "Reads capturedId.viz?.drivingLicenseDetails?.drivingLicenseCategories"},
+        {"text": "Accesses the category code as .code on each DrivingLicenseCategory"},
+        {"text": "Does NOT use .categoryCode — the property is named code"},
+        {"text": "Reads the categories from capturedId.viz — NOT capturedId.vizResult"}
+      ],
+      "tags": ["europe-driving-license"]
+    },
+    {
+      "id": 11,
+      "prompt": "I need to scan mobile driver's licenses (mDL, ISO 18013-5) and read the holder's name and date of birth. Set that up in IntegratedActivity.kt.",
+      "expected_output": "IdCaptureSettings whose scanner is an IdCaptureScanner built with a MobileDocumentScanner(iso180135 = true, ...), and onIdCaptured reading capturedId.mobileDocument (or the harmonized top-level fields). MobileDocumentScanner ships in the base id module with no add-on dependency.",
+      "files": ["evals/fixtures/IntegratedActivity.kt"],
+      "assertions": [
+        {"text": "Builds an IdCaptureScanner that includes a MobileDocumentScanner(iso180135 = true, ...) (semantic)"},
+        {"text": "The MobileDocumentScanner is supplied to IdCaptureScanner via the mobileDocument argument (semantic)"},
+        {"text": "onIdCaptured reads capturedId.mobileDocument, or the harmonized top-level fields the mobile document populates (semantic)"},
+        {"text": "Does NOT use a separate add-on dependency for mobile documents — MobileDocumentScanner is in the base id module (semantic)"},
+        {"text": "Does NOT use an IdDocumentType bitmask or an AamvaBarcodeVerifier for mobile documents (semantic)"}
+      ],
+      "tags": ["mobile-document-mdl"]
+    }
+  ]
+}
