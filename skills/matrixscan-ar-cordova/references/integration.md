@@ -644,6 +644,11 @@ barcodeArView.annotationProvider = {
 
 Pass `null` for either annotation variant to display nothing in that state.
 
+> **Filtering visible barcodes:** `BarcodeArFilter` is documented for Cordova at SDK 8.5, but
+> it is **not yet in the published `scandit-cordova-datacapture-*` plugin** (latest is 8.4.0),
+> so do not generate it today. To limit which barcodes are shown, return `null` from the
+> `highlightProvider` / `annotationProvider` for the barcodes you want to suppress.
+
 ## Step 10 — Feedback
 
 `BarcodeArFeedback` controls sound and vibration emitted on barcode events. It lives on the `BarcodeAr` mode, not on the view.

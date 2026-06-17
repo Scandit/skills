@@ -1,0 +1,156 @@
+# MatrixScan AR (API: `BarcodeAr`) feature taxonomy — curated edge-case checklist.
+#
+# `match` patterns are case-insensitive regexes over eval prompt + expected_output +
+# assertion texts; bootstrap heuristic until evals carry explicit `tags`. `evidence`
+# records mining provenance.
+#
+# Provenance (mined 2026-06-11, four parallel source classes):
+#   public_docs  data-capture-documentation — docs/sdks/*/matrixscan-ar/** (intro, get-started,
+#                get-started-with-swift-ui)
+#   sdk_source   data-capture-sdk @ 31b836a4feb — docs/source/barcode-capture/api/barcode-ar*.rst
+#                + ui/barcode-ar-*.rst  (the :available: directive is availability ground truth)
+#   samples      datacapture-*-samples — 03_Advanced_Batch_Scanning_Samples/01_Batch_Scanning_and_AR_Info_Lookup/
+#                MatrixScanARSimpleSample (flutter, cordova, capacitor ship one; ios/android/rn/web do not)
+#   eval-survey  existing skills/matrixscan-ar-*/evals/*.json
+#
+# Platform-truth notes (layer 1 — from the .rst :available: directives):
+#   - 10 in-scope platforms: android, capacitor, cordova, flutter, ios, maui, net-android,
+#     net-ios, rn, web. (titanium + linux do NOT support BarcodeAr — no skill.)
+#   - iOS is modelled as ONE logical platform via manifest.platform_aliases: matrixscan-ar-ios +
+#     matrixscan-ar-annotation-ios + matrixscan-ar-highlight-ios fold into "ios" (evals aggregated).
+#   - ALL core AR APIs (mode, settings, view, all highlights, all annotations, providers, listeners,
+#     feedback) are available on every platform incl. web (ios/android/web=7.1, cordova/capacitor=8.2,
+#     dotnet=7.2). So core features carry NO exclusions.
+#   - Verified availability boundaries that DO matter (encode as excluded_platforms):
+#       * barcode-filter (BarcodeArFilter)            — NOT web. (ios/android=8.1, js=8.5, dotnet=8.6)
+#       * custom-highlight / custom-annotation        — NOT web. The BarcodeArCustom{Highlight,Annotation}
+#         CLASS is rn/flutter-only, but native (ios/android/dotnet) achieve custom shapes by subclassing
+#         the protocol; web supports neither. So the *feature* excludes only web.
+#       * swiftui-integration                         — iOS only (UIViewRepresentable wrappers).
+#   - API-shape divergence to keep in mind (NOT exclusions): factory naming
+#     (DataCaptureContext.forLicenseKey vs .initialize vs new), enum casing (ean13Upca vs EAN13UPCA),
+#     view construction (Flutter forModeWithViewSettings… vs JS object-literal ctor vs .Create on .NET),
+#     and web/cordova/capacitor attaching the view via connectToElement(htmlElement).
+product: matrixscan-ar
+skill_prefix: matrixscan-ar-
+features:
+  # ---- Required: core to any MatrixScan AR integration (available on all 10 platforms) ----
+  - id: basic-integration
+    required: true
+    evidence: [docs, sample, sdk]
+    match: ["add (matrixscan ar|barcode ?ar)", "integrate (matrixscan ar|barcodear)", "barcode ?ar to my", "new barcodear", "barcodear\\(", "barcodearsettings", "barcodear\\.forcontext", "barcodear\\.create"]
+  - id: license-init
+    required: true
+    evidence: [docs, sample, sdk]
+    match: ["datacapturecontext", "license key", "licensekey", "forlicensekey", "\\.initialize\\("]
+  - id: barcode-ar-view
+    required: true
+    evidence: [docs, sample, sdk]
+    match: ["barcodearview", "connecttoelement", "formodewithviewsettings"]
+  - id: view-lifecycle
+    required: true
+    evidence: [docs, sample]
+    match: ["switchtodesiredstate", "framesourcestate", "\\bstart\\(\\)|\\bstop\\(\\)", "onresume|onpause|ondestroy", "viewwillappear|viewwilldisappear", "widgetresumed|widgetpaused", "applifecyclestate", "detachfromelement", "pause vs stop|stop vs pause"]
+  - id: symbology-config
+    required: true
+    evidence: [docs, sample, sdk]
+    # Catches every platform shape: enableSymbologies (JS/Dart/.NET), settings.set(symbology:…) and
+    # settings.settings(for:…) (Swift), SymbologySettings, activeSymbolCounts.
+    match: ["symbolog", "activesymbolcount"]
+  - id: highlight-basic
+    required: true
+    evidence: [docs, sample, sdk]
+    match: ["barcodearrectanglehighlight", "barcodearcirclehighlight", "barcodearhighlight\\b", "rectangle highlight", "circle highlight"]
+  - id: highlight-provider
+    required: true
+    evidence: [docs, sample, sdk]
+    match: ["highlightprovider", "barcodearhighlightprovider", "highlightforbarcode", "highlight\\(for"]
+  - id: annotation-basic
+    required: true
+    evidence: [docs, sample, sdk]
+    match: ["barcodearinfoannotation", "barcodearannotation\\b", "info annotation"]
+  - id: annotation-provider
+    required: true
+    evidence: [docs, sample, sdk]
+    match: ["annotationprovider", "barcodearannotationprovider", "annotationforbarcode", "annotation\\(for"]
+  - id: feedback-control
+    required: true
+    evidence: [docs, sample, sdk]
+    match: ["barcodearfeedback", "soundenabled", "hapticenabled", "suppress.*(beep|sound|vibrat)", "mute|silent", "feedback"]
+
+  # ---- Important: high-value AR surface, broadly available, not strictly required ----
+  - id: circle-highlight
+    required: false
+    evidence: [docs, sample, sdk]
+    match: ["barcodearcirclehighlight", "circlehighlightpreset", "\\bdot\\b preset|preset\\.dot", "icon preset"]
+  - id: highlight-brush-icon
+    required: false
+    evidence: [docs, sample]
+    match: ["highlight.*brush", "brush.*highlight", "highlight.*\\.icon", "highlight.*color", "fillcolor.*highlight", "pulsing|pulse"]
+  - id: info-annotation-content
+    required: false
+    evidence: [docs, sample, sdk]
+    match: ["barcodearinfoannotationheader", "barcodearinfoannotationbodycomponent", "barcodearinfoannotationfooter", "annotation.*header|header.*annotation", "annotation.*footer|footer.*annotation", "body component"]
+  - id: status-icon-annotation
+    required: false
+    evidence: [docs, sdk]
+    match: ["barcodearstatusiconannotation", "status ?icon annotation", "statusiconannotationanchor"]
+  - id: popover-annotation
+    required: false
+    evidence: [docs, sample, sdk]
+    match: ["barcodearpopoverannotation", "popoverannotationbutton", "popover annotation", "didtappopover|didtapbutton|didtappopoverbutton"]
+  - id: responsive-annotation
+    required: false
+    evidence: [docs, sample, sdk]
+    match: ["barcodearresponsiveannotation", "responsive annotation", "close.?up.*far.?away|far.?away.*close.?up", "\\bthreshold\\b"]
+  - id: highlight-tap
+    required: false
+    evidence: [docs, sample, sdk]
+    match: ["barcodearviewuilistener", "barcodearviewuidelegate", "didtaphighlight", "onhighlightforbarcodetapped", "highlightforbarcodetapped", "tap.*highlight|highlight.*tap"]
+  - id: annotation-tap
+    required: false
+    evidence: [docs, sample, sdk]
+    match: ["barcodearinfoannotationlistener", "didtapinfoannotation", "oninfoannotationtapped", "annotation.*listener", "isentireannotationtappable", "tap.*annotation|annotation.*tap"]
+  - id: annotation-trigger
+    required: false
+    evidence: [docs, sample, sdk]
+    match: ["barcodearannotationtrigger", "annotationtrigger", "highlighttap|highlighttapandbarcodescan", "trigger.*(highlight|scan)"]
+  - id: view-controls
+    required: false
+    evidence: [docs, sdk]
+    match: ["barcodearviewsettings", "shouldshowtorchcontrol", "shouldshowzoomcontrol", "shouldshowcameraswitchcontrol", "torchcontrolposition|zoomcontrolposition", "defaultcameraposition", "torch control|zoom control"]
+
+  # ---- Specialized: platform-gated. excluded_platforms encode the SDK :available: truth ----
+  # custom-highlight / custom-annotation = a fully developer-drawn view. Two real paths:
+  # the BarcodeArCustom{Highlight,Annotation} CLASS (rn/flutter only per :available:) and native
+  # protocol subclassing with createView()/update() (ios/android only). The .NET binding exposes
+  # NO createView/update hook and JS-bridge frameworks (capacitor/cordova) have neither path, so
+  # "custom" is unavailable there (those platforms can still tune brush/icon — that's highlight-brush-icon).
+  - id: custom-highlight
+    required: false
+    evidence: [docs, sample, sdk]
+    excluded_platforms: [web, capacitor, cordova, net-android, net-ios, maui]
+    match: ["barcodearcustomhighlight", "custom highlight", "subclass.*highlight|highlight.*subclass", "custom.*barcodearhighlight"]
+  - id: custom-annotation
+    required: false
+    evidence: [docs, sample, sdk]
+    excluded_platforms: [web, capacitor, cordova, net-android, net-ios, maui]
+    match: ["barcodearcustomannotation", "custom annotation", "subclass.*annotation|annotation.*subclass", "custom.*barcodearannotation"]
+  # barcode-filter: BarcodeArFilter ships in the PUBLISHED SDK only for ios/android (=8.1). It is
+  # documented at 8.5 (flutter/rn/cordova/capacitor) and 8.6 (.NET) but those packages are NOT yet
+  # on npm/pub.dev/NuGet, so the build gate cannot verify them — excluded until published (the .NET
+  # migration evals even carry a guard asserting SetBarcodeFilter must NOT be emitted).
+  - id: barcode-filter
+    required: false
+    evidence: [docs, sdk]
+    excluded_platforms: [web, flutter, rn, capacitor, cordova, net-android, net-ios, maui]
+    match: ["barcodearfilter", "barcode filter", "setbarcodefilter", "barcodefilter", "filter.*(barcode|highlight)"]
+  - id: swiftui-integration
+    required: false
+    evidence: [docs, eval-survey]
+    excluded_platforms: [android, capacitor, cordova, flutter, maui, net-android, net-ios, rn, web]
+    match: ["swiftui", "uiviewrepresentable", "uiviewcontrollerrepresentable", "swift ?ui"]
+  - id: migration
+    required: false
+    evidence: [eval-survey, docs]
+    match: ["migrat", "barcodebatch to barcodear|barcodebatch.*barcodear", "barcodetracking.*barcodear|barcodetracking to", "upgrade.*(v7|v8|version)", "from (barcodebatch|barcodetracking|matrixscan)"]

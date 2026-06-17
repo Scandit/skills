@@ -6,7 +6,7 @@
       "prompt": "The status icon annotation in my MatrixScan AR app should show the text 'In stock' when expanded. File: IntegratedBarcodeArWithStatusIconAnnotationViewController.swift",
       "expected_output": "The skill sets the text property on the constructed BarcodeArStatusIconAnnotation to 'In stock' inside the existing provider, before passing it to the completion handler.",
       "files": [
-        "eval-fixtures/IntegratedBarcodeArWithStatusIconAnnotationViewController.swift"
+        "fixtures/IntegratedBarcodeArWithStatusIconAnnotationViewController.swift"
       ],
       "assertions": [
         {"text": "annotation.text = \"In stock\" is set inside the provider (or equivalent assignment to the text property on the status-icon annotation instance)"},
@@ -20,7 +20,7 @@
       "prompt": "Anchor the status icon annotation to the top of each barcode instead of the bottom. File: IntegratedBarcodeArWithStatusIconAnnotationViewController.swift",
       "expected_output": "The skill sets the anchor property on the status icon annotation to .top (a case of BarcodeArStatusIconAnnotationAnchor), inside the existing provider.",
       "files": [
-        "eval-fixtures/IntegratedBarcodeArWithStatusIconAnnotationViewController.swift"
+        "fixtures/IntegratedBarcodeArWithStatusIconAnnotationViewController.swift"
       ],
       "assertions": [
         {"text": "annotation.anchor = .top is set (or equivalent assignment using a documented BarcodeArStatusIconAnnotationAnchor case)"},
@@ -33,7 +33,7 @@
       "prompt": "The info annotation in my MatrixScan AR app should only appear when the user taps the highlight — don't show it automatically on scan. File: IntegratedBarcodeArWithInfoAnnotationViewController.swift",
       "expected_output": "The skill sets annotation.annotationTrigger to a documented BarcodeArAnnotationTrigger case representing tap-only behavior (e.g. .highlightTap), inside the existing provider.",
       "files": [
-        "eval-fixtures/IntegratedBarcodeArWithInfoAnnotationViewController.swift"
+        "fixtures/IntegratedBarcodeArWithInfoAnnotationViewController.swift"
       ],
       "assertions": [
         {"text": "annotation.annotationTrigger is assigned to a documented BarcodeArAnnotationTrigger case"},
@@ -49,7 +49,7 @@
       "prompt": "Set the info annotation's header text to 'Product' and its footer text to 'Tap for details'. File: IntegratedBarcodeArWithInfoAnnotationViewController.swift",
       "expected_output": "The skill constructs a BarcodeArInfoAnnotationHeader with the text 'Product' and a BarcodeArInfoAnnotationFooter with the text 'Tap for details', and assigns them to the annotation's header and footer properties inside the existing provider.",
       "files": [
-        "eval-fixtures/IntegratedBarcodeArWithInfoAnnotationViewController.swift"
+        "fixtures/IntegratedBarcodeArWithInfoAnnotationViewController.swift"
       ],
       "assertions": [
         {"text": "BarcodeArInfoAnnotationHeader is constructed"},
@@ -67,7 +67,7 @@
       "prompt": "Use the large width preset for the info annotation in my MatrixScan AR app. File: IntegratedBarcodeArWithInfoAnnotationViewController.swift",
       "expected_output": "The skill sets the annotation's width property to the large case of BarcodeArInfoAnnotationWidthPreset, inside the existing provider.",
       "files": [
-        "eval-fixtures/IntegratedBarcodeArWithInfoAnnotationViewController.swift"
+        "fixtures/IntegratedBarcodeArWithInfoAnnotationViewController.swift"
       ],
       "assertions": [
         {"text": "annotation.width = .large is set (or equivalent assignment using the documented BarcodeArInfoAnnotationWidthPreset case)"},
@@ -80,7 +80,7 @@
       "prompt": "In my MatrixScan AR SwiftUI app, the info annotation should use the large width preset. File: IntegratedBarcodeArWithInfoAnnotationSwiftUIView.swift",
       "expected_output": "The skill sets annotation.width = .large on the BarcodeArInfoAnnotation constructed inside the provider on the wrapped UIKit ScanViewController. The SwiftUI wrapper types are left intact.",
       "files": [
-        "eval-fixtures/IntegratedBarcodeArWithInfoAnnotationSwiftUIView.swift"
+        "fixtures/IntegratedBarcodeArWithInfoAnnotationSwiftUIView.swift"
       ],
       "assertions": [
         {"text": "annotation.width = .large is set inside the provider on ScanViewController (or equivalent assignment using the documented BarcodeArInfoAnnotationWidthPreset case)"},
@@ -96,7 +96,7 @@
       "prompt": "Configure my MatrixScan AR popover annotation so that individual button taps are reported (not a single whole-popover tap). File: IntegratedBarcodeArViewController.swift. The popover should have one 'Action' button.",
       "expected_output": "The skill adds a BarcodeArAnnotationProvider returning a BarcodeArPopoverAnnotation with one BarcodeArPopoverAnnotationButton, and either explicitly sets annotation.isEntirePopoverTappable = false or relies on the documented default false — but crucially does NOT set it to true. If the assistant sets it to true, the per-button tap delegate callback would no longer fire.",
       "files": [
-        "eval-fixtures/IntegratedBarcodeArViewController.swift"
+        "fixtures/IntegratedBarcodeArViewController.swift"
       ],
       "assertions": [
         {"text": "BarcodeArPopoverAnnotation is constructed with one BarcodeArPopoverAnnotationButton"},
@@ -126,7 +126,7 @@
       "prompt": "The status icon annotation in my MatrixScan AR app should have a black background. File: IntegratedBarcodeArWithStatusIconAnnotationViewController.swift",
       "expected_output": "The skill sets annotation.backgroundColor = .black (or a documented equivalent UIColor) on the constructed BarcodeArStatusIconAnnotation inside the existing provider.",
       "files": [
-        "eval-fixtures/IntegratedBarcodeArWithStatusIconAnnotationViewController.swift"
+        "fixtures/IntegratedBarcodeArWithStatusIconAnnotationViewController.swift"
       ],
       "assertions": [
         {"text": "annotation.backgroundColor is assigned to a black UIColor (.black, UIColor.black, or equivalent)"},
@@ -140,7 +140,7 @@
       "prompt": "My info annotation should show two rows of text under the header: 'Price: $19.99' and 'In stock: 42'. File: IntegratedBarcodeArWithInfoAnnotationViewController.swift",
       "expected_output": "The skill constructs two BarcodeArInfoAnnotationBodyComponent instances, sets each one's text property to the requested string, and assigns them as an array to the existing BarcodeArInfoAnnotation's body property, inside the existing provider.",
       "files": [
-        "eval-fixtures/IntegratedBarcodeArWithInfoAnnotationViewController.swift"
+        "fixtures/IntegratedBarcodeArWithInfoAnnotationViewController.swift"
       ],
       "assertions": [
         {"text": "Two BarcodeArInfoAnnotationBodyComponent instances are constructed"},

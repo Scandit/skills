@@ -544,7 +544,7 @@ import {
   BarcodeArPopoverAnnotationButton,
   BarcodeArPopoverAnnotationListener,
 } from 'scandit-react-native-datacapture-barcode';
-import { ScanditIcon, ScanditIconType } from 'scandit-react-native-datacapture-core';
+import { ScanditIconBuilder, ScanditIconType } from 'scandit-react-native-datacapture-core';
 
 const popoverListener: BarcodeArPopoverAnnotationListener = {
   didTapButton(popover, button, buttonIndex) {
@@ -554,14 +554,13 @@ const popoverListener: BarcodeArPopoverAnnotationListener = {
 
 const annotationProvider: BarcodeArAnnotationProvider = {
   annotationForBarcode: async (barcode: Barcode) => {
-    const infoButton = new BarcodeArPopoverAnnotationButton(
-      new ScanditIcon(ScanditIconType.Info),
-      'Details',
-    );
-    const addButton = new BarcodeArPopoverAnnotationButton(
-      new ScanditIcon(ScanditIconType.Plus),
-      'Add',
-    );
+    // ScanditIcon is built via ScanditIconBuilder (there is NO single-arg
+    // `new ScanditIcon(type)` constructor). Pick an icon from ScanditIconType.
+    const infoIcon = new ScanditIconBuilder().withIcon(ScanditIconType.InspectItem).build();
+    const addIcon = new ScanditIconBuilder().withIcon(ScanditIconType.ToPick).build();
+
+    const infoButton = new BarcodeArPopoverAnnotationButton(infoIcon, 'Details');
+    const addButton = new BarcodeArPopoverAnnotationButton(addIcon, 'Add');
 
     const popover = new BarcodeArPopoverAnnotation(barcode, [infoButton, addButton]);
     popover.isEntirePopoverTappable = false;
@@ -571,6 +570,23 @@ const annotationProvider: BarcodeArAnnotationProvider = {
 };
 ```
 
+The `BarcodeArPopoverAnnotationButton` constructor takes `(icon: ScanditIcon, text: string)`. The listener callback is `didTapButton(popover, button, buttonIndex)`.
+
+### Building a ScanditIcon
+
+`ScanditIcon` has no convenience single-argument constructor. Build one with `ScanditIconBuilder`:
+
+```typescript
+import { ScanditIconBuilder, ScanditIconType, Color } from 'scandit-react-native-datacapture-core';
+
+const icon = new ScanditIconBuilder()
+  .withIcon(ScanditIconType.ExclamationMark)
+  .withIconColor(Color.fromHex('#FFFFFFFF'))
+  .build();
+```
+
+`ScanditIconType` members include: `ArrowRight`, `ArrowLeft`, `ArrowUp`, `ArrowDown`, `ToPick`, `Checkmark`, `XMark`, `QuestionMark`, `ExclamationMark`, `LowStock`, `ExpiredItem`, `WrongItem`, `FragileItem`, `StarFilled`, `StarHalfFilled`, `StarOutlined`, `ChevronUp`, `ChevronDown`, `ChevronLeft`, `ChevronRight`, `InspectItem`, `Print`. There is **no** `Info` or `Plus` member.
+
 ### BarcodeArStatusIconAnnotation
 
 A compact icon that expands to show text when tapped.
@@ -579,12 +595,14 @@ A compact icon that expands to show text when tapped.
 import {
   BarcodeArStatusIconAnnotation,
 } from 'scandit-react-native-datacapture-barcode';
-import { ScanditIcon, ScanditIconType, Color } from 'scandit-react-native-datacapture-core';
+import { ScanditIconBuilder, ScanditIconType, Color } from 'scandit-react-native-datacapture-core';
 
 const annotationProvider: BarcodeArAnnotationProvider = {
   annotationForBarcode: async (barcode: Barcode) => {
     const statusAnnotation = new BarcodeArStatusIconAnnotation(barcode);
-    statusAnnotation.icon = new ScanditIcon(ScanditIconType.ExclamationMark);
+    statusAnnotation.icon = new ScanditIconBuilder()
+      .withIcon(ScanditIconType.ExclamationMark)
+      .build();
     statusAnnotation.text = 'Low stock';          // shown on tap (max 20 chars)
     statusAnnotation.backgroundColor = Color.fromHex('#FFFBC02C');
     return statusAnnotation;
@@ -705,9 +723,13 @@ barcodeAr.feedback = custom;
 | `scanned` | `Feedback` | Feedback emitted when a new barcode is detected. |
 | `tapped` | `Feedback` | Feedback emitted when a barcode annotation element is tapped. |
 
-## Step 9 — BarcodeArFilter
+## Step 9 — Limiting which barcodes are shown
 
-`BarcodeArFilter` lets you programmatically limit which barcodes appear in the session. **Note**: As of the current docs, `BarcodeArFilter` (`IBarcodeArFilter`) is only `:available:` on `ios=8.1` and `android=8.1` — it is **not available on react-native** in the current API reference. Do not expose this API in React Native integrations. If the user asks about filtering barcodes in React Native, use the `annotationProvider` or `highlightProvider` to return `null` for unwanted barcodes instead.
+`BarcodeArFilter` is documented for React Native at SDK **8.5**, but that version is **not yet published** in the `scandit-react-native-datacapture-*` packages (latest published is 8.4.0). Do **not** generate `BarcodeArFilter` / `barcodeAr.setBarcodeFilter(...)` code today — the API is not available to install.
+
+To limit which barcodes are shown in the meantime, return `null` from the `highlightProvider` or `annotationProvider` for unwanted barcodes. This hides their visuals while keeping them tracked.
+
+> **Forward-looking note (filter vs. provider)**: Once `BarcodeArFilter` ships for React Native, `setBarcodeFilter` will remove barcodes from the session entirely (no highlight, no annotation, not reported as tracked), whereas returning `null` from `highlightProvider`/`annotationProvider` keeps the barcode tracked but hides its visuals. Until the filter API is published, use the provider-`null` approach.
 
 ## Step 10 — Lifecycle and Cleanup
 
