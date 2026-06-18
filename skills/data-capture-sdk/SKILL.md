@@ -93,9 +93,9 @@ Rules for the handoff:
 
 ### Step 3 — Fallback when no skill exists for that combo
 
-For product + platform combinations not in the table (e.g., MatrixScan Count on Android, ID Capture on Web), the implementation skill doesn't exist yet. In that case, fall back to the sample app as the reference implementation and offer to adapt it:
+For product + platform combinations not in the table (e.g., MatrixScan Count on Web, MatrixScan Pick on Android), the implementation skill doesn't exist yet. In that case, fall back to the sample app as the reference implementation and offer to adapt it:
 
-> "There's no dedicated skill for MatrixScan Count on Android yet, but the `MatrixScanCountSimpleSample` ([link]) is a complete working reference. I can walk through it and help you adapt it to your project — want me to start there?"
+> "There's no dedicated skill for MatrixScan Count on Web yet, but the `MatrixScanCountSimpleSample` ([link]) is a complete working reference. I can walk through it and help you adapt it to your project — want me to start there?"
 
 Always include both the docs.scandit.com link and the platform-specific sample-app link from the product catalog. The sample is the working starting point; the docs are the reference.
 
@@ -159,6 +159,7 @@ Always include both the docs.scandit.com link and the platform-specific sample-a
 | MatrixScan Batch | .NET for iOS | `matrixscan-batch-net-ios` | "Ask me to integrate MatrixScan Batch into your .NET iOS app" |
 | MatrixScan Batch | .NET MAUI | `matrixscan-batch-maui` | "Ask me to integrate MatrixScan Batch into your .NET MAUI app" |
 | MatrixScan Count | iOS | `matrixscan-count-ios` | "Ask me to integrate MatrixScan Count into your iOS app" |
+| MatrixScan Count | Android | `matrixscan-count-android` | "Ask me to integrate MatrixScan Count into your Android app" |
 | MatrixScan Count | React Native | `matrixscan-count-rn` | "Ask me to integrate MatrixScan Count into your React Native app" |
 | MatrixScan Count | Flutter | `matrixscan-count-flutter` | "Ask me to integrate MatrixScan Count into your Flutter app" |
 | MatrixScan Count | Capacitor | `matrixscan-count-capacitor` | "Ask me to integrate MatrixScan Count into your Capacitor app" |

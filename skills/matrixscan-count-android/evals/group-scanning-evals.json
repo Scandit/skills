@@ -1,0 +1,30 @@
+{
+  "skill_name": "matrixscan-count-android",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Enable group scanning in my MatrixScan Count app so the user can split the count into one group per pallet with Next Group / Redo controls. File: IntegratedActivity.kt",
+      "expected_output": "The skill sets settings.groupScanningEnabled = true on the BarcodeCountSettings before constructing the BarcodeCount mode, which adds the Next Group / Redo controls. It notes results still come back as a flat list via the normal listener.",
+      "files": ["fixtures/IntegratedActivity.kt"],
+      "assertions": [
+        {"text": "settings.groupScanningEnabled = true is set on the BarcodeCountSettings"},
+        {"text": "It is set before BarcodeCount.forDataCaptureContext(...) is called"},
+        {"text": "It does not invent a separate Next Group / Redo button wiring — the controls come from enabling the setting"},
+        {"text": "It notes (or implies) results still arrive as a flat list via the normal BarcodeCountListener (no grouped-result callback)"}
+      ],
+      "tags": ["group-scanning"]
+    },
+    {
+      "id": 2,
+      "prompt": "In my MatrixScan Count app with group scanning on, relabel the Next Group button to 'Next pallet' and the Redo button to 'Clear pallet'. File: IntegratedActivity.kt",
+      "expected_output": "The skill calls barcodeCountView.setNextGroupButtonText(\"Next pallet\") and barcodeCountView.setRedoButtonText(\"Clear pallet\") — the method form (these are setter methods, not Kotlin properties).",
+      "files": ["fixtures/IntegratedActivity.kt"],
+      "assertions": [
+        {"text": "barcodeCountView.setNextGroupButtonText(\"Next pallet\") is called (the method form, not a property assignment)"},
+        {"text": "barcodeCountView.setRedoButtonText(\"Clear pallet\") is called (the method form)"},
+        {"text": "It does not assign these as Kotlin properties (e.g. barcodeCountView.nextGroupButtonText = ...) — they are setter methods"}
+      ],
+      "tags": ["group-scanning"]
+    }
+  ]
+}

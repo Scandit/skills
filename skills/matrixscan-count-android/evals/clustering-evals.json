@@ -1,0 +1,62 @@
+{
+  "skill_name": "matrixscan-count-android",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "The barcodes on my multi-packs belong together — enable automatic clustering in my MatrixScan Count app. File: IntegratedActivity.kt",
+      "expected_output": "The skill sets settings.clusteringMode = ClusteringMode.AUTO on the BarcodeCountSettings before constructing the BarcodeCount mode.",
+      "files": ["fixtures/IntegratedActivity.kt"],
+      "assertions": [
+        {"text": "settings.clusteringMode = ClusteringMode.AUTO is set on the BarcodeCountSettings"},
+        {"text": "ClusteringMode is used with an Android enum value (DISABLED / MANUAL / AUTO / AUTO_WITH_MANUAL_CORRECTION)"},
+        {"text": "It is set before BarcodeCount.forDataCaptureContext(...) is called"}
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "In my MatrixScan Count app with clustering on, read out the clusters and how many barcodes each one contains when a scan completes. File: IntegratedActivity.kt",
+      "expected_output": "The skill reads session.recognizedClusters inside onScan, copies it out, hops to the main thread, and iterates each Cluster reading cluster.barcodes (and its size).",
+      "files": ["fixtures/IntegratedActivity.kt"],
+      "assertions": [
+        {"text": "session.recognizedClusters is read inside onScan and iterated"},
+        {"text": "Each Cluster's barcodes are read via cluster.barcodes (List<Barcode>)"},
+        {"text": "The work is dispatched to the main thread (runOnUiThread) since the session is only valid in the callback"}
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Add a 'Group all' button to my MatrixScan Count app that groups the currently recognized barcodes into one cluster. File: IntegratedActivity.kt",
+      "expected_output": "The skill uses barcodeCount.beginClusterEditing() (handling the nullable return), calls formCluster(session.recognizedBarcodes) and endEditing(). It notes/uses a clustering mode that allows manual editing (MANUAL or AUTO_WITH_MANUAL_CORRECTION), since beginClusterEditing returns null otherwise.",
+      "files": ["fixtures/IntegratedActivity.kt"],
+      "assertions": [
+        {"text": "barcodeCount.beginClusterEditing() is used and its nullable result is handled (e.g. editor?.formCluster(...))"},
+        {"text": "formCluster(...) is called with a List<Barcode> and the edit is committed with endEditing()"},
+        {"text": "It uses a clustering mode that permits manual editing (MANUAL or AUTO_WITH_MANUAL_CORRECTION), or notes that beginClusterEditing returns null otherwise"}
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "When the user taps a cluster in my MatrixScan Count app, I want to react to it. File: IntegratedActivity.kt",
+      "expected_output": "The skill sets barcodeCountView.listener to a BarcodeCountViewListener and overrides onClusterTapped(view, cluster), reading cluster.barcodes.",
+      "files": ["fixtures/IntegratedActivity.kt"],
+      "assertions": [
+        {"text": "barcodeCountView.listener is set to a BarcodeCountViewListener"},
+        {"text": "onClusterTapped(view, cluster) is overridden"},
+        {"text": "The handler reads from the cluster (e.g. cluster.barcodes) rather than inventing an API"}
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "Each multi-pack should have 6 items. In my MatrixScan Count app, color each cluster green if it has the right count and red if it doesn't. File: IntegratedActivity.kt",
+      "expected_output": "The skill sets settings.expectedNumberOfBarcodesPerCluster = 6, enables clustering, and sets barcodeCountView.listener to a BarcodeCountViewListener implementing brushForCluster that returns green for ClusterExpectationStatus.MATCHES and red for DEVIATES (and a neutral color for NOT_EVALUATED), based on cluster.expectationStatus.",
+      "files": ["fixtures/IntegratedActivity.kt"],
+      "assertions": [
+        {"text": "settings.expectedNumberOfBarcodesPerCluster = 6 is set (and clustering is enabled via clusteringMode)"},
+        {"text": "barcodeCountView.listener implements brushForCluster(view, cluster) returning a Brush"},
+        {"text": "The brush is chosen from cluster.expectationStatus using ClusterExpectationStatus values (MATCHES -> green, DEVIATES -> red, NOT_EVALUATED -> neutral)"},
+        {"text": "brushForCluster returns a Brush (its declared type is Brush? — returning a concrete Brush is valid; Android color ints)"}
+      ],
+      "tags": ["clustering"]
+    }
+  ]
+}

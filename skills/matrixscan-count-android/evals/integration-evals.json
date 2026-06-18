@@ -1,0 +1,204 @@
+{
+  "skill_name": "matrixscan-count-android",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Add MatrixScan Count to my app so I can count barcodes in bulk. Go with a reasonable default symbology set. File: EmptyActivity.kt",
+      "expected_output": "The skill adds the MatrixScan Count pipeline to the existing ScanActivity: imports the Scandit packages, creates the DataCaptureContext via forLicenseKey, creates and configures the camera (Camera.getDefaultCamera + BarcodeCount.createRecommendedCameraSettings()) and sets it as the context frame source, builds BarcodeCountSettings with a default symbology set, creates the BarcodeCount mode via forDataCaptureContext, registers a BarcodeCountListener that copies session.recognizedBarcodes out on the main thread in onScan, constructs a BarcodeCountView via newInstance and adds it to the view hierarchy, wires the BarcodeCountViewUiListener list/exit callbacks, and switches the camera on in onResume and off in onPause. The response also shows the setup checklist (Gradle deps, camera permission, license key).",
+      "files": ["fixtures/EmptyActivity.kt"],
+      "assertions": [
+        {"text": "The DataCaptureContext is created with DataCaptureContext.forLicenseKey and the placeholder '-- ENTER YOUR SCANDIT LICENSE KEY HERE --'"},
+        {"text": "A camera is created with Camera.getDefaultCamera(...) and the recommended settings come from BarcodeCount.createRecommendedCameraSettings() — NOT a bare CameraSettings()"},
+        {"text": "The camera is set as the context frame source via dataCaptureContext.setFrameSource(camera)"},
+        {"text": "The camera state is toggled in the lifecycle: camera?.switchToDesiredState(FrameSourceState.ON) in onResume and OFF (or STANDBY) in onPause — the view is NOT assumed to own the camera"},
+        {"text": "BarcodeCountSettings is constructed and at least two symbologies are enabled via settings.setSymbologyEnabled(symbology, true) (or enableSymbologies)"},
+        {"text": "The BarcodeCount mode is constructed via BarcodeCount.forDataCaptureContext(dataCaptureContext, settings) — not a constructor and not forContext"},
+        {"text": "The class implements BarcodeCountListener and overrides onScan(barcodeCount, session, data), copying session.recognizedBarcodes out and dispatching to the main thread (runOnUiThread) before touching app state"},
+        {"text": "barcodeCount.addListener(...) is called"},
+        {"text": "A BarcodeCountView is created with BarcodeCountView.newInstance(...) and added to the hierarchy with addView (the view does NOT add itself and is NOT created with a constructor)"},
+        {"text": "The class implements BarcodeCountViewUiListener (overrides onListButtonTapped / onExitButtonTapped — preferring the (view, snapshot: BarcodeCountSessionSnapshot?) overloads over the deprecated single-arg forms) and barcodeCountView.uiListener is set"},
+        {"text": "The existing ScanActivity class is preserved (not renamed or removed)"},
+        {"text": "The response includes the setup checklist: Gradle dependencies (com.scandit.datacapture:barcode and :core), CAMERA permission at runtime, replace the license key placeholder"},
+        {"text": "No hallucinated iOS-style APIs are used (no BarcodeCount(...) constructor, no recommendedCameraSettings property, no barcodeCountView.onResume()/start(), no sessionSnapshot parameter)"}
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Also enable QR codes in my MatrixScan Count app. File: IntegratedActivity.kt",
+      "expected_output": "The skill adds settings.setSymbologyEnabled(Symbology.QR, true) inside setupRecognition(), preserves the existing enabled symbologies, and does not touch the context / camera / mode / view / listener / lifecycle.",
+      "files": ["fixtures/IntegratedActivity.kt"],
+      "assertions": [
+        {"text": "settings.setSymbologyEnabled(Symbology.QR, true) is present (the constant is Symbology.QR, NOT QR_CODE)"},
+        {"text": "The existing enabled symbologies (EAN13_UPCA, EAN8, UPCE, CODE128, CODE39) are all still enabled"},
+        {"text": "The change is confined to symbology configuration; the camera setup, BarcodeCount mode, BarcodeCountView, listener, and lifecycle are unchanged"}
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "Use the Dot style for the MatrixScan Count view instead of the default. File: IntegratedActivity.kt",
+      "expected_output": "The skill switches the BarcodeCountView to the Dot style by using the newInstance overload that takes a BarcodeCountViewStyle (BarcodeCountViewStyle.DOT), leaving the rest of the integration unchanged.",
+      "files": ["fixtures/IntegratedActivity.kt"],
+      "assertions": [
+        {"text": "The BarcodeCountView is created with BarcodeCountView.newInstance(this, dataCaptureContext, barcodeCount, BarcodeCountViewStyle.DOT)"},
+        {"text": "No invalid/hallucinated style API is used (no post-init 'style' assignment — style is read-only and set via the newInstance overload; no BarcodeCountViewSettings)"},
+        {"text": "The rest of the integration (context, camera, settings, mode, listener, uiListener, lifecycle) is unchanged"}
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "Show a torch (flashlight) button in my MatrixScan Count view. File: IntegratedActivity.kt",
+      "expected_output": "The skill sets barcodeCountView.shouldShowTorchControl = true (using the view's built-in toggle), without hand-rolling a Button or manipulating the camera torch directly.",
+      "files": ["fixtures/IntegratedActivity.kt"],
+      "assertions": [
+        {"text": "barcodeCountView.shouldShowTorchControl = true is set"},
+        {"text": "No custom Button / manual torch handling (e.g. camera.desiredTorchState) is added — the built-in control toggle is used"},
+        {"text": "The rest of the integration is unchanged"}
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "Suppress the beep and vibration in my MatrixScan Count app. File: IntegratedActivity.kt",
+      "expected_output": "The skill silences feedback through barcodeCount.feedback (a BarcodeCountFeedback) by setting its success (and optionally failure) to a silent Feedback (Feedback(null, null)), rather than a non-existent boolean toggle. The rest of the integration is unchanged.",
+      "files": ["fixtures/IntegratedActivity.kt"],
+      "assertions": [
+        {"text": "Feedback is silenced by assigning barcodeCount.feedback a BarcodeCountFeedback whose success (and/or failure) is a silent Feedback(null, null) (semantic)"},
+        {"text": "It does NOT use a non-existent boolean like isSoundEnabled / isHapticsEnabled (that is the MatrixScan Pick API; BarcodeCount has no such toggle — feedback is configured via the BarcodeCountFeedback object)"},
+        {"text": "The change is confined to feedback; the camera, settings, mode, view, listener and lifecycle are unchanged"}
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "Hide the list button in my MatrixScan Count view. File: IntegratedActivity.kt",
+      "expected_output": "The skill sets barcodeCountView.shouldShowListButton = false using the view's built-in toggle, leaving the rest of the integration unchanged.",
+      "files": ["fixtures/IntegratedActivity.kt"],
+      "assertions": [
+        {"text": "barcodeCountView.shouldShowListButton = false is set (the built-in shouldShow* toggle)"},
+        {"text": "No custom view manipulation or removal of the BarcodeCountViewUiListener is done to hide the button"},
+        {"text": "The rest of the integration is unchanged"}
+      ]
+    },
+    {
+      "id": 8,
+      "prompt": "In my MatrixScan Count app, Code 128 barcodes are always between 8 and 20 characters — restrict to that. File: IntegratedActivity.kt",
+      "expected_output": "The skill restricts the Code 128 active symbol counts via settings.getSymbologySettings(Symbology.CODE128).activeSymbolCounts, set to a Set of Short covering 8..20, applied on the BarcodeCountSettings before the BarcodeCount mode is constructed. Existing symbologies stay enabled.",
+      "files": ["fixtures/IntegratedActivity.kt"],
+      "assertions": [
+        {"text": "settings.getSymbologySettings(Symbology.CODE128).activeSymbolCounts is assigned a Set of Short covering 8 through 20 (e.g. (8..20).map { it.toShort() }.toSet())"},
+        {"text": "The per-symbology settings are accessed via settings.getSymbologySettings(...) on the BarcodeCountSettings (not a guessed API), before BarcodeCount.forDataCaptureContext(...) is called"},
+        {"text": "The value is a Set of Short (not Int) — activeSymbolCounts is Set<Short> on Android"},
+        {"text": "The existing enabled symbologies remain enabled; the rest of the integration is unchanged"}
+      ]
+    },
+    {
+      "id": 9,
+      "prompt": "I added MatrixScan Count to my Android app but the camera preview is just black and nothing gets counted. What's wrong?",
+      "expected_output": "The skill explains that BarcodeCountView does NOT own the camera: you must create the camera (Camera.getDefaultCamera), apply BarcodeCount.createRecommendedCameraSettings(), set it as the context's frame source (dataCaptureContext.setFrameSource), and switch it on (camera.switchToDesiredState(FrameSourceState.ON)) in onResume — and request the CAMERA permission at runtime. Missing the explicit camera setup/lifecycle, or the runtime permission, is the usual cause of a black preview.",
+      "files": [],
+      "assertions": [
+        {"text": "The answer identifies that BarcodeCountView does NOT manage the camera — the app must create and drive it (unlike BarcodeArView)"},
+        {"text": "It lists the required camera steps: Camera.getDefaultCamera(...), BarcodeCount.createRecommendedCameraSettings(), dataCaptureContext.setFrameSource(camera), and camera.switchToDesiredState(FrameSourceState.ON) in onResume (OFF in onPause)"},
+        {"text": "It mentions requesting the CAMERA permission at runtime as a prerequisite"},
+        {"text": "It does NOT invent a view-owns-camera API (no barcodeCountView.onResume()/start() — those belong to BarcodeArView, not BarcodeCount)"}
+      ]
+    },
+    {
+      "id": 11,
+      "prompt": "When the user taps a counted barcode in my MatrixScan Count app, I want to react to it (e.g. show its data). File: IntegratedActivity.kt",
+      "expected_output": "The skill sets barcodeCountView.listener to a BarcodeCountViewListener and overrides onRecognizedBarcodeTapped(view, trackedBarcode), using the TrackedBarcode passed in. It does NOT touch the uiListener (List/Exit) wiring and does not add brush customization unless asked.",
+      "files": ["fixtures/IntegratedActivity.kt"],
+      "assertions": [
+        {"text": "barcodeCountView.listener is set (the BarcodeCountViewListener — distinct from uiListener)"},
+        {"text": "A BarcodeCountViewListener is implemented and overrides onRecognizedBarcodeTapped(view, trackedBarcode) with a TrackedBarcode parameter"},
+        {"text": "The tap handler reads from the tapped TrackedBarcode (e.g. trackedBarcode.barcode.data) rather than inventing an API"},
+        {"text": "The existing uiListener (List/Exit) wiring and the rest of the integration are unchanged; no brush customization is added unless needed"}
+      ]
+    },
+    {
+      "id": 12,
+      "prompt": "In my MatrixScan Count app, let the user remove a barcode after scanning it by tapping it. File: IntegratedActivity.kt",
+      "expected_output": "The skill enables tap-to-uncount by setting barcodeCountView.tapToUncountEnabled = true. No custom tap/gesture handling is added; the rest of the integration is unchanged.",
+      "files": ["fixtures/IntegratedActivity.kt"],
+      "assertions": [
+        {"text": "barcodeCountView.tapToUncountEnabled = true is set"},
+        {"text": "It uses the real property on the BarcodeCountView (tapToUncountEnabled) — NOT a settings flag, a guessed/invented API, or a hand-rolled gesture listener"},
+        {"text": "The context, mode, camera, settings, listener, uiListener and lifecycle are unchanged"}
+      ]
+    },
+    {
+      "id": 13,
+      "prompt": "My labels have both a Code 128 and a PDF417 barcode, and I only want to count the Code 128 ones. File: IntegratedActivity.kt",
+      "expected_output": "The skill filters out PDF417 by setting settings.filterSettings.excludedSymbologies (mutating the read-only filterSettings in place) to a set containing Symbology.PDF417, while keeping PDF417 enabled (the excluded one must be enabled to be decoded then filtered). The rest of the integration is unchanged.",
+      "files": ["fixtures/IntegratedActivity.kt"],
+      "assertions": [
+        {"text": "settings.filterSettings.excludedSymbologies is set to a set containing Symbology.PDF417"},
+        {"text": "The filterSettings is mutated in place (it is read-only on BarcodeCountSettings — NOT assigned a new BarcodeFilterSettings)"},
+        {"text": "PDF417 is also enabled via settings.setSymbologyEnabled(Symbology.PDF417, true) so it is decoded and then filtered out (semantic)"},
+        {"text": "The existing enabled symbologies remain enabled; the camera, mode, view, listener, uiListener and lifecycle are unchanged"}
+      ],
+      "tags": ["filtering"]
+    },
+    {
+      "id": 15,
+      "prompt": "Let the user trigger a scan with the volume-down button in my MatrixScan Count app instead of only the on-screen shutter. File: IntegratedActivity.kt",
+      "expected_output": "The skill enables the hardware trigger by calling barcodeCountView.enableHardwareTrigger(...) with the volume-down key code (KeyEvent.KEYCODE_VOLUME_DOWN). No custom key-event handling is added; the rest of the integration is unchanged.",
+      "files": ["fixtures/IntegratedActivity.kt"],
+      "assertions": [
+        {"text": "barcodeCountView.enableHardwareTrigger(...) is called with a key code (e.g. KeyEvent.KEYCODE_VOLUME_DOWN)"},
+        {"text": "It uses the real method enableHardwareTrigger(Int?) on the BarcodeCountView — NOT a boolean property like hardwareTriggerEnabled (that is the iOS API) and not a hand-rolled onKeyDown override"},
+        {"text": "The context, mode, camera, settings, listener, uiListener and lifecycle are unchanged"}
+      ],
+      "tags": ["hardware-trigger"]
+    },
+    {
+      "id": 16,
+      "prompt": "I'm sure every barcode in the scene is unique in my MatrixScan Count app — turn on whatever makes scanning faster for that. File: IntegratedActivity.kt",
+      "expected_output": "The skill sets settings.expectsOnlyUniqueBarcodes = true on the BarcodeCountSettings before constructing the BarcodeCount mode. The rest of the integration is unchanged.",
+      "files": ["fixtures/IntegratedActivity.kt"],
+      "assertions": [
+        {"text": "settings.expectsOnlyUniqueBarcodes = true is set on the BarcodeCountSettings"},
+        {"text": "It is set before BarcodeCount.forDataCaptureContext(...) is called"},
+        {"text": "It uses the real property expectsOnlyUniqueBarcodes — not a guessed API"},
+        {"text": "The existing enabled symbologies remain enabled; the camera, mode, view, listener, uiListener and lifecycle are unchanged"}
+      ],
+      "tags": ["expects-only-unique"]
+    },
+    {
+      "id": 17,
+      "prompt": "In my MatrixScan Count app, when the app goes to the background I want to clear the count, but when it comes back I want the previously scanned barcodes to still be shown as already counted. File: IntegratedActivity.kt",
+      "expected_output": "The skill carries the previous batch across the background cycle by stashing the recognized barcodes and calling barcodeCount.reset() when going to the background, then calling barcodeCount.setAdditionalBarcodes(previouslyScanned) when returning so they are restored as already-counted. The core integration is otherwise unchanged.",
+      "files": ["fixtures/IntegratedActivity.kt"],
+      "assertions": [
+        {"text": "On returning to the foreground, barcodeCount.setAdditionalBarcodes(...) is called with the previously scanned barcodes"},
+        {"text": "On going to the background, the previously scanned barcodes are stashed and barcodeCount.reset() is called to clear the current count (semantic)"},
+        {"text": "It uses the real APIs setAdditionalBarcodes(...) and reset() — not a guessed restore API"},
+        {"text": "The context, camera, settings, mode, view, listener and uiListener wiring are otherwise unchanged"}
+      ],
+      "tags": ["additional-barcodes"]
+    },
+    {
+      "id": 18,
+      "prompt": "Add a 'Start new count' action to my MatrixScan Count app that clears all the scanned barcodes and the on-screen highlights so the user can begin a fresh count. File: IntegratedActivity.kt",
+      "expected_output": "The skill adds an action that calls barcodeCount.reset() to clear the scanned list and the AR overlays, and clears the app's own running tally (allRecognizedBarcodes). The rest of the integration is unchanged.",
+      "files": ["fixtures/IntegratedActivity.kt"],
+      "assertions": [
+        {"text": "barcodeCount.reset() is called to clear the scanned barcodes and the AR overlays"},
+        {"text": "The app's own running tally (allRecognizedBarcodes) is also cleared (semantic)"},
+        {"text": "It uses the real reset() method on BarcodeCount — not a guessed clear API and not a manual teardown of the view"},
+        {"text": "The context, camera, settings, mode, view, listener, uiListener and lifecycle are unchanged"}
+      ],
+      "tags": ["reset-mode"]
+    },
+    {
+      "id": 22,
+      "prompt": "Enable scan preview in my MatrixScan Count app so detected barcodes are shown before the shutter is pressed. File: IntegratedActivity.kt",
+      "expected_output": "The skill explains that scan preview is not available in the Android MatrixScan Count SDK (there is no scanPreviewEnabled setting) and does not invent an API for it. The existing integration is left intact.",
+      "files": ["fixtures/IntegratedActivity.kt"],
+      "assertions": [
+        {"text": "It states that scan preview is not available in the Android MatrixScan Count SDK"},
+        {"text": "It does NOT emit code constructing BarcodeCountSettings(scanPreviewEnabled = true) or setting a scanPreviewEnabled flag (these do not exist on Android)"},
+        {"text": "It does not invent a guessed API to fake scan preview"}
+      ],
+      "tags": ["not-available-android"]
+    }
+  ]
+}
