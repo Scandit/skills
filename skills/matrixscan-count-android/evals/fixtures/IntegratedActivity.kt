@@ -6,6 +6,7 @@ import androidx.appcompat.app.AppCompatActivity
 import com.scandit.datacapture.barcode.count.capture.BarcodeCount
 import com.scandit.datacapture.barcode.count.capture.BarcodeCountListener
 import com.scandit.datacapture.barcode.count.capture.BarcodeCountSession
+import com.scandit.datacapture.barcode.count.capture.BarcodeCountSessionSnapshot
 import com.scandit.datacapture.barcode.count.capture.BarcodeCountSettings
 import com.scandit.datacapture.barcode.count.ui.view.BarcodeCountView
 import com.scandit.datacapture.barcode.count.ui.view.BarcodeCountViewUiListener
@@ -84,11 +85,11 @@ class CountActivity : AppCompatActivity(), BarcodeCountListener, BarcodeCountVie
         }
     }
 
-    override fun onListButtonTapped(view: BarcodeCountView) {
-        // Present the current progress.
+    override fun onListButtonTapped(view: BarcodeCountView, snapshot: BarcodeCountSessionSnapshot?) {
+        // Present the current progress, e.g. from snapshot?.recognizedBarcodes.
     }
 
-    override fun onExitButtonTapped(view: BarcodeCountView) {
-        // Present a summary.
+    override fun onExitButtonTapped(view: BarcodeCountView, snapshot: BarcodeCountSessionSnapshot?) {
+        // Present a summary, e.g. from snapshot?.recognizedBarcodes.
     }
 }

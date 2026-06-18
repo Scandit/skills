@@ -60,9 +60,10 @@ barcodeCountView.listener = object : BarcodeCountViewListener {
 }
 ```
 
-- The callback returns a **non-null** `BarcodeCountIcon`. To keep the SDK default for a barcode, return
-  `BarcodeCountView.defaultRecognizedIcon()` (and `defaultNotInListIcon()` / `defaultAcceptedIcon()` /
-  `defaultRejectedIcon()` for the other states).
+- The callback return type is **nullable** (`BarcodeCountIcon?`) — return `null` to keep the SDK default
+  for a barcode, or return a concrete `BarcodeCountIcon` (this guide returns one). You can also reuse a
+  default explicitly via `BarcodeCountView.defaultRecognizedIcon()` (and `defaultNotInListIcon()` /
+  `defaultAcceptedIcon()` / `defaultRejectedIcon()` for the other states).
 - `BarcodeCountIcon(defaultIcon, accessibleIcon)` takes a default `ScanditIcon` and an **accessible**
   variant; the SDK picks between them based on the user's accessibility settings (pass the same icon for
   both if you don't need a distinct accessible version).

@@ -136,8 +136,8 @@ barcodeCountView.listener = object : BarcodeCountViewListener {
 }
 ```
 
-`brushForCluster` returns a non-null `Brush` (Android color ints); for clusters the fill color is what
-the SDK applies.
+`brushForCluster` returns a `Brush?` — return `null` to keep the SDK default, or a concrete `Brush`
+(Android color ints) as above; for clusters the fill color is what the SDK applies.
 
 ## After wiring up
 

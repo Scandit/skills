@@ -16,7 +16,7 @@
         {"text": "The class implements BarcodeCountListener and overrides onScan(barcodeCount, session, data), copying session.recognizedBarcodes out and dispatching to the main thread (runOnUiThread) before touching app state"},
         {"text": "barcodeCount.addListener(...) is called"},
         {"text": "A BarcodeCountView is created with BarcodeCountView.newInstance(...) and added to the hierarchy with addView (the view does NOT add itself and is NOT created with a constructor)"},
-        {"text": "The class implements BarcodeCountViewUiListener (overrides onListButtonTapped / onExitButtonTapped) and barcodeCountView.uiListener is set"},
+        {"text": "The class implements BarcodeCountViewUiListener (overrides onListButtonTapped / onExitButtonTapped — preferring the (view, snapshot: BarcodeCountSessionSnapshot?) overloads over the deprecated single-arg forms) and barcodeCountView.uiListener is set"},
         {"text": "The existing ScanActivity class is preserved (not renamed or removed)"},
         {"text": "The response includes the setup checklist: Gradle dependencies (com.scandit.datacapture:barcode and :core), CAMERA permission at runtime, replace the license key placeholder"},
         {"text": "No hallucinated iOS-style APIs are used (no BarcodeCount(...) constructor, no recommendedCameraSettings property, no barcodeCountView.onResume()/start(), no sessionSnapshot parameter)"}

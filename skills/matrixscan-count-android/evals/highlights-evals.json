@@ -21,8 +21,8 @@
       "assertions": [
         {"text": "barcodeCountView.listener is set to a BarcodeCountViewListener implementing iconForRecognizedBarcode(view, trackedBarcode)"},
         {"text": "The decision reads trackedBarcode.barcode.data and returns a distinct BarcodeCountIcon (built via ScanditIconBuilder) for the matching case"},
-        {"text": "It returns BarcodeCountView.defaultRecognizedIcon() (or a sensible default BarcodeCountIcon) for the non-matching case rather than inventing an API"},
-        {"text": "The callback returns a non-null BarcodeCountIcon (the Android callback is non-null)"}
+        {"text": "It returns BarcodeCountView.defaultRecognizedIcon() (or a sensible default BarcodeCountIcon, or null) for the non-matching case rather than inventing an API"},
+        {"text": "The icon callback's return type is BarcodeCountIcon? (nullable) — returning a concrete BarcodeCountIcon or null both compile"}
       ]
     },
     {

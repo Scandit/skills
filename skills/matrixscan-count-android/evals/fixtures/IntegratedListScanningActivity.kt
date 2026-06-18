@@ -6,6 +6,7 @@ import androidx.appcompat.app.AppCompatActivity
 import com.scandit.datacapture.barcode.count.capture.BarcodeCount
 import com.scandit.datacapture.barcode.count.capture.BarcodeCountListener
 import com.scandit.datacapture.barcode.count.capture.BarcodeCountSession
+import com.scandit.datacapture.barcode.count.capture.BarcodeCountSessionSnapshot
 import com.scandit.datacapture.barcode.count.capture.BarcodeCountSettings
 import com.scandit.datacapture.barcode.count.capture.list.BarcodeCountCaptureList
 import com.scandit.datacapture.barcode.count.capture.list.BarcodeCountCaptureListListener
@@ -96,9 +97,9 @@ class ReceivingActivity :
         }
     }
 
-    override fun onListButtonTapped(view: BarcodeCountView) {}
+    override fun onListButtonTapped(view: BarcodeCountView, snapshot: BarcodeCountSessionSnapshot?) {}
 
-    override fun onExitButtonTapped(view: BarcodeCountView) {}
+    override fun onExitButtonTapped(view: BarcodeCountView, snapshot: BarcodeCountSessionSnapshot?) {}
 
     override fun onCaptureListSessionUpdated(
         captureList: BarcodeCountCaptureList,

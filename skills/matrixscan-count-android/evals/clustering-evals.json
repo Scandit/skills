@@ -54,7 +54,7 @@
         {"text": "settings.expectedNumberOfBarcodesPerCluster = 6 is set (and clustering is enabled via clusteringMode)"},
         {"text": "barcodeCountView.listener implements brushForCluster(view, cluster) returning a Brush"},
         {"text": "The brush is chosen from cluster.expectationStatus using ClusterExpectationStatus values (MATCHES -> green, DEVIATES -> red, NOT_EVALUATED -> neutral)"},
-        {"text": "It returns a non-null Brush from brushForCluster (Android color ints)"}
+        {"text": "brushForCluster returns a Brush (its declared type is Brush? — returning a concrete Brush is valid; Android color ints)"}
       ],
       "tags": ["clustering"]
     }

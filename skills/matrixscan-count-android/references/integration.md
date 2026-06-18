@@ -67,7 +67,7 @@ lives under `batch.data`, not `batch`; `Feedback` is under `core.common.feedback
 
 | Class | Package |
 |-------|---------|
-| `BarcodeCount`, `BarcodeCountListener`, `BarcodeCountSession`, `BarcodeCountSettings`, `BarcodeClusterEditor` | `com.scandit.datacapture.barcode.count.capture` |
+| `BarcodeCount`, `BarcodeCountListener`, `BarcodeCountSession`, `BarcodeCountSessionSnapshot`, `BarcodeCountSettings`, `BarcodeClusterEditor` | `com.scandit.datacapture.barcode.count.capture` |
 | `BarcodeCountCaptureList`, `BarcodeCountCaptureListListener`, `BarcodeCountCaptureListSession`, `TargetBarcode` | `com.scandit.datacapture.barcode.count.capture.list` |
 | `BarcodeCountFeedback` | `com.scandit.datacapture.barcode.count.feedback` |
 | `BarcodeCountView`, `BarcodeCountViewListener`, `BarcodeCountViewUiListener`, `BarcodeCountViewStyle`, `BarcodeCountNotInListActionSettings`, `BarcodeCountStatus` | `com.scandit.datacapture.barcode.count.ui.view` |
@@ -114,6 +114,7 @@ import androidx.appcompat.app.AppCompatActivity
 import com.scandit.datacapture.barcode.count.capture.BarcodeCount
 import com.scandit.datacapture.barcode.count.capture.BarcodeCountListener
 import com.scandit.datacapture.barcode.count.capture.BarcodeCountSession
+import com.scandit.datacapture.barcode.count.capture.BarcodeCountSessionSnapshot
 import com.scandit.datacapture.barcode.count.capture.BarcodeCountSettings
 import com.scandit.datacapture.barcode.count.ui.view.BarcodeCountView
 import com.scandit.datacapture.barcode.count.ui.view.BarcodeCountViewUiListener
@@ -205,11 +206,12 @@ class CountActivity : AppCompatActivity(), BarcodeCountListener, BarcodeCountVie
     }
 
     // Step 8: the List / Exit button callbacks. "List" = show progress so far; "Exit" = counting done.
-    override fun onListButtonTapped(view: BarcodeCountView) {
-        // Present a list, e.g. from allRecognizedBarcodes (counting still in progress).
+    // Prefer the (view, snapshot) overloads — the snapshot gives you the barcodes at tap time.
+    override fun onListButtonTapped(view: BarcodeCountView, snapshot: BarcodeCountSessionSnapshot?) {
+        // Present a list, e.g. from snapshot?.recognizedBarcodes (counting still in progress).
     }
 
-    override fun onExitButtonTapped(view: BarcodeCountView) {
+    override fun onExitButtonTapped(view: BarcodeCountView, snapshot: BarcodeCountSessionSnapshot?) {
         // The user finished — present a summary / complete the scanning.
     }
 }
@@ -394,19 +396,23 @@ background/foreground cycle), and `session.recognizedClusters` exposes cluster g
 ## Step 8 — List and Exit callbacks
 
 The built-in UI surfaces buttons whose taps are delivered through `BarcodeCountViewUiListener`
-(`barcodeCountView.uiListener = ...`). Unlike iOS, the callbacks hand you only the **view** (there is no
-session-snapshot parameter), so read your own running tally (`allRecognizedBarcodes`) to populate the
-List screen:
+(`barcodeCountView.uiListener = ...`). Prefer the **`(view, snapshot)` overloads** — each hands you a
+**nullable** `BarcodeCountSessionSnapshot?` with the barcodes at tap time (`recognizedBarcodes`,
+`additionalBarcodes`, `recognizedClusters`, `frameSequenceId`), so you can populate the List screen
+directly (use a safe call, `snapshot?.…`):
 
 ```kotlin
-override fun onListButtonTapped(view: BarcodeCountView) {
-    // Show the current progress, e.g. from allRecognizedBarcodes (not necessarily finished).
+override fun onListButtonTapped(view: BarcodeCountView, snapshot: BarcodeCountSessionSnapshot?) {
+    // Show the current progress, e.g. from snapshot?.recognizedBarcodes (not necessarily finished).
 }
 
-override fun onExitButtonTapped(view: BarcodeCountView) {
+override fun onExitButtonTapped(view: BarcodeCountView, snapshot: BarcodeCountSessionSnapshot?) {
     // The user finished counting — present a summary.
 }
 ```
+
+> The older single-arg `onListButtonTapped(view)` / `onExitButtonTapped(view)` overloads (no snapshot)
+> are **deprecated** — you'll still see them in existing code; prefer the `(view, snapshot)` variants.
 
 `onSingleScanButtonTapped(view)` is also available (optional). Note this `uiListener`
 (`BarcodeCountViewUiListener`) is **separate** from the `listener` (`BarcodeCountViewListener`) used for
@@ -527,9 +533,9 @@ to `enableHardwareTrigger` on the `BarcodeCountView`:
 barcodeCountView.enableHardwareTrigger(android.view.KeyEvent.KEYCODE_VOLUME_DOWN)
 ```
 
-`enableHardwareTrigger(Int?)` takes a nullable key code (pass `null` to use the SDK default key).
-`BarcodeCountView.getHardwareTriggerSupported()` reports whether the device supports it. (This is the
-Android form; the iOS `hardwareTriggerEnabled` boolean does not exist here.)
+`enableHardwareTrigger(Int?)` takes a nullable key code (pass `null` to use the SDK default key). The
+companion property `BarcodeCountView.hardwareTriggerSupported` reports whether the device supports it.
+(This is the Android form; the iOS `hardwareTriggerEnabled` boolean does not exist here.)
 
 ### Carrying a previous batch across a background/foreground cycle
 
