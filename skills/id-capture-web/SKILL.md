@@ -48,6 +48,7 @@ Your training data may contain outdated or incorrect Scandit ID Capture APIs. Th
 
 Based on the user's request, pick the right path before responding:
 
+- **Hosted, drop-in ID scanning with no custom camera UI** (e.g. "add ID/passport scanning to my website with as little code as possible", "use the hosted / pop-up ID scanner", "scan an ID without building the camera UI", or the project uses `@scandit/web-id-bolt`) → that is **ID Bolt**, a hosted wrapper around ID Capture, not the in-page ID Capture SDK. Hand off to the `id-bolt` skill.
 - **Questions about other Scandit products or scanning modes** (e.g. Barcode Capture, SparkScan, MatrixScan, Label Capture, or product selection) → hand off to the `data-capture-sdk` skill. Do not attempt to answer questions about other capture modes from memory.
 - **Integrating ID Capture from scratch, configuring documents/scanner/rejection rules, reading results, customizing the overlay, or verification** (e.g. "scan a passport in the browser", "reject expired IDs", "show the face image") → use the Product Guidance and Minimal integration shape below, verifying every API against the References.
 - **Migrating or upgrading an existing ID Capture integration** (e.g. "upgrade from v6 to v7", "migrate my ID Capture to v8", "bump the Scandit Web SDK", "what changed between SDK versions") → read `references/migration.md` and follow the instructions there.
