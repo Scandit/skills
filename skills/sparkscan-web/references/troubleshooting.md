@@ -26,6 +26,8 @@ Runtime and hosting problems that are easy to misdiagnose. These are environment
 
   The device will show a one-time self-signed-certificate warning — accept it to proceed. (`server.host: true` makes Vite listen on the LAN interface, not just localhost.)
 
+> **⚠️ License key must allow the dev domain.** Scandit license keys are bound to specific domains. The HTTPS host you serve from in development — the portless.sh tunnel domain, the LAN hostname/IP, or `localhost` — must be on the key's allowed-domains list, or licensing fails (`forLicenseKey` rejects / the engine won't start) even though the secure-context problem is solved. Add the dev domains to your key in the [Scandit dashboard](https://ssl.scandit.com), or use a separate dev/test key that permits them. Whichever HTTPS/tunnel tool you use, make sure the dev domain is stable enough to whitelist — a tunnel that hands out a different subdomain each session won't match the key.
+
 This is a development concern; in production you serve over HTTPS anyway, so the secure context is already satisfied.
 
 ## Remote images break after enabling cross-origin isolation — the COOP/COEP trade-off
