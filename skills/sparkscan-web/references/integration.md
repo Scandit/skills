@@ -51,9 +51,11 @@ If the user is using React, use the React get-started guide and SparkScanReactSa
 
 ```typescript
 import {
+  type Barcode,
   barcodeCaptureLoader,
   SparkScan,
   SparkScanBarcodeErrorFeedback,
+  type SparkScanBarcodeFeedback,
   SparkScanBarcodeSuccessFeedback,
   type SparkScanFeedbackDelegate,
   type SparkScanSession,
@@ -107,12 +109,11 @@ async function run() {
     );
 
     const feedbackDelegate: SparkScanFeedbackDelegate = {
-      getFeedbackForBarcode: (barcode) => {
+      getFeedbackForBarcode(barcode: Barcode): SparkScanBarcodeFeedback | null {
           if (barcode.data === "5901234123457") {
             return new SparkScanBarcodeErrorFeedback("Invalid barcode.", 60_000);
-          } else {
-            return new SparkScanBarcodeSuccessFeedback();
           }
+          return new SparkScanBarcodeSuccessFeedback();
       },
     };
 
@@ -136,6 +137,35 @@ async function run() {
 run();
 
 ```
+
+## SparkScan feedback API
+
+`feedbackDelegate.getFeedbackForBarcode` runs for every recognized barcode and decides the feedback the user gets: return `null` for the default, or a `SparkScanBarcodeSuccessFeedback` / `SparkScanBarcodeErrorFeedback`.
+
+```typescript
+import {
+    type Barcode,
+    SparkScanBarcodeErrorFeedback,
+    type SparkScanBarcodeFeedback,
+    SparkScanBarcodeSuccessFeedback,
+    type SparkScanFeedbackDelegate,
+} from "@scandit/web-datacapture-barcode";
+import { Brush, Color } from "@scandit/web-datacapture-core";
+
+const feedbackDelegate: SparkScanFeedbackDelegate = {
+    getFeedbackForBarcode(barcode: Barcode): SparkScanBarcodeFeedback | null {
+        if (isBarcodeRejected(barcode)) {
+            return new SparkScanBarcodeErrorFeedback(message, resumeCapturingDelay, visualFeedbackColor, brush);
+        }
+        return new SparkScanBarcodeSuccessFeedback(visualFeedbackColor, brush);
+    },
+};
+```
+
+For the exact constructor parameters (including the optional trailing arguments), see the API reference:
+
+- Error feedback: <https://docs.scandit.com/data-capture-sdk/web/barcode-capture/api/ui/spark-scan-barcode-feedback.html#class-scandit.datacapture.barcode.spark.feedback.Error>
+- Success feedback: <https://docs.scandit.com/data-capture-sdk/web/barcode-capture/api/ui/spark-scan-barcode-feedback.html#class-scandit.datacapture.barcode.spark.feedback.Success>
 
 ## Capturing the scanned frame image
 
@@ -173,7 +203,60 @@ Adapt `addScanResult` to your app's data model — it receives a `Blob | null` i
 
 ---
 
-## Custom trigger button: always track view state
+## Custom trigger button
+
+Hiding the built-in trigger and driving scanning from your own UI is fully supported. The subsections below cover the behaviors you need to handle when you take over the trigger.
+
+### Driving the scanning lifecycle yourself
+
+Hide the built-in trigger with `triggerButtonVisible = false`, then drive the view through its lifecycle yourself: `prepareScanning()` → `startScanning()` → `pauseScanning()` / `stopScanning()`. (`pauseScanning()` returns the view to idle but keeps it prepared; `stopScanning()` tears scanning down and un-prepares it.)
+
+```typescript
+sparkScanView.triggerButtonVisible = false;
+await sparkScanView.prepareScanning(); // warm up before the first start
+```
+
+### When `prepareScanning()` is required
+
+`prepareScanning()` warms up the engine, and its counterpart is `stopScanning()` (which un-prepares the view). You need to prepare in exactly two situations:
+
+- **Once before the first `startScanning()`**, coming out of the Initial state.
+- **Again after `stopScanning()`**, because stopping un-prepares the view.
+
+You do **not** need to prepare again after `pauseScanning()` — pausing returns the view to idle but keeps it prepared, so you can call `startScanning()` directly. The light pause/start cycle stays within an already-prepared session.
+
+If you call `startScanning()` while the view is un-prepared (from Initial, or after a `stopScanning()`), it throws:
+
+```
+prepare should be called before calling switchToActiveState
+```
+
+So pair every `stopScanning()` with a `prepareScanning()` before the next start:
+
+```typescript
+async function restartAfterStop() {
+    await sparkScanView.prepareScanning(); // required: stopScanning() un-prepared the view
+    await sparkScanView.startScanning();
+}
+```
+
+### Overriding the click-outside behavior (only if needed)
+
+SparkScan binds a **document-level `pointerup`** handler that acts as "click outside to dismiss," returning the view to idle. This default is usually what you want, so normally you don't need to do anything.
+
+Only if you want to override it — for example, so a tap on your custom trigger doesn't also trigger that dismissal — call `stopPropagation()` on your button's `pointerup` so the event never reaches the document handler:
+
+```typescript
+button.addEventListener("pointerup", (event) => {
+    event.stopPropagation(); // opt out of SparkScan's document-level click-outside dismissal
+});
+```
+
+### Preview stacking / z-index
+
+The camera preview is positioned within the stacking context of its mount element. If app chrome creates its own stacking context that out-ranks the mount, the preview can render *under* that chrome even with a high `z-index` on the preview. Make sure the mount element out-ranks the app chrome you want the preview to appear above. (For reference, the official ListBuildingSample mounts the view in a full-size `absolute` container layered over the rest of the page, while sibling controls underneath remain interactive — the view only intercepts pointer events on its own trigger and toolbar.)
+
+### Keep the button in sync with the actual view state
 
 When hiding the default trigger button and providing your own, a naive click-toggle approach breaks in practice:
 
@@ -182,7 +265,7 @@ When hiding the default trigger button and providing your own, a naive click-tog
 3. User clicks again → handler still thinks scanner is active → calls `pauseScanning()` on an already-idle engine → **nothing happens**
 4. Another click is needed to restart, leaving the user stuck
 
-**The fix:** always use `SparkScanViewUiListener.didChangeViewState` to keep the button in sync with the actual scanner state. Drive click behavior from the current state, not from a toggled local flag:
+**The fix:** always use `SparkScanViewUiListener.didChangeViewState` to keep the button in sync with the actual scanner state. Drive click behavior from the current state, not from a toggled local flag. The camera preview is only visible in the `Active` state (the default scanning mode is single-shot and non-persistent), so map your label/preview UI off `Active` specifically — keying off anything else makes the label lag a frame behind the preview.
 
 ```typescript
 let currentViewState: SparkScanViewState = SparkScanViewState.Idle;
