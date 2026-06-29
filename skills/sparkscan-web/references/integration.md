@@ -152,12 +152,25 @@ import {
 } from "@scandit/web-datacapture-barcode";
 import { Brush, Color } from "@scandit/web-datacapture-core";
 
+// Your own validation rule — e.g. accept only barcodes that match your catalog.
+function isValidBarcode(barcode: Barcode): boolean {
+    return barcode.data != null && barcode.data.startsWith("PROD-");
+}
+
+// Optional visuals. Defined once and reused — not recreated on every scan.
+const errorColor = Color.fromHex("#FA4446");
+const successColor = Color.fromHex("#28D380");
+const errorBrush = new Brush(errorColor, errorColor, 1); // fillColor, strokeColor, strokeWidth
+const successBrush = new Brush(successColor, successColor, 1);
+
 const feedbackDelegate: SparkScanFeedbackDelegate = {
     getFeedbackForBarcode(barcode: Barcode): SparkScanBarcodeFeedback | null {
-        if (isBarcodeRejected(barcode)) {
-            return new SparkScanBarcodeErrorFeedback(message, resumeCapturingDelay, visualFeedbackColor, brush);
+        if (!isValidBarcode(barcode)) {
+            const message = "Barcode not in catalog"; // shown to the user
+            const resumeCapturingDelay = 2000;         // ms before scanning resumes
+            return new SparkScanBarcodeErrorFeedback(message, resumeCapturingDelay, errorColor, errorBrush);
         }
-        return new SparkScanBarcodeSuccessFeedback(visualFeedbackColor, brush);
+        return new SparkScanBarcodeSuccessFeedback(successColor, successBrush);
     },
 };
 ```
