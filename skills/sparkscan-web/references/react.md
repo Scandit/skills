@@ -98,7 +98,7 @@ Where disposing is appropriate:
 
 ## Auto-prepare depends on the order you set properties
 
-The view auto-prepares scanning only once it is **connected to the DOM and has both a context and a mode**. With ref-binding the element is already connected when your ref callback runs, so the order in which you assign properties matters: set `sparkScan` **last** so the final assignment triggers the view's internal `_maybeAutoPrepareScanning()`. If you'd rather be explicit, call `prepareScanning()` yourself after setting everything.
+The view auto-prepares scanning only once it is **connected to the DOM and has both a context and a mode**. With ref-binding the element is already connected when your ref callback runs, so the order in which you assign properties matters: set `sparkScan` **last** so the view auto-prepares once both the context and the mode are in place. If you'd rather be explicit, call `prepareScanning()` yourself after setting everything.
 
 ---
 
