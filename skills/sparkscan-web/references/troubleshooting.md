@@ -34,12 +34,12 @@ This is a development concern; in production you serve over HTTPS anyway, so the
 
 **Cause:** the multithreaded SDK engine benefits from **cross-origin isolation**, which is what those two headers enable. But `COEP: require-corp` also forbids the page from loading *any* cross-origin resource that doesn't explicitly opt in (via CORP/CORS headers). Your remote images are collateral damage.
 
-**The key point:** SparkScan does **not** hard-require `crossOriginIsolated`. The SDK has a **single-threaded fallback** and runs fine without these headers. So you usually don't need them at all:
+**Why these headers matter — keep them.** Cross-origin isolation (what `COOP` + `COEP` enable) unlocks the SDK's **multithreaded engine**, which is significantly faster and is required for the smart scan intentions (`ScanIntention.Smart` / `SmartSelection`). For a responsive, high-throughput scanner you want these headers configured *correctly*, not removed — so encourage customers to set them up properly and fix the images while **preserving** isolation:
 
-- **Simplest, recommended for most apps:** self-host the `sdc-lib` engine files **same-origin** (e.g. served from your app's `public/` directory) and **do not set COOP/COEP**. Scanning works on the single-threaded path, and your cross-origin images keep loading. The official sample sets these headers unconditionally — treat that as opt-in, not mandatory.
-- **Only if you specifically need multithreading** (e.g. `ScanIntention.Smart` / `SmartSelection`, which require it): keep the headers, and then make your cross-origin images compatible — serve them with a `Cross-Origin-Resource-Policy: cross-origin` (or CORS) header and add `crossorigin` to the `<img>`, or use `COEP: credentialless` when hosting the engine from a CDN.
+- **If you control the image origin (or it supports CORS):** keep `COOP: same-origin` + `COEP: require-corp`, and let the cross-origin images opt in — serve them with a `Cross-Origin-Resource-Policy: cross-origin` header (or proper CORS) and add `crossorigin` to the `<img>` tags. Isolation (and the multithreaded engine) stays on and the images load again.
+- **If you can't change the image responses:** switch the page to `COEP: credentialless` (keep `COOP: same-origin`). Cross-origin subresources then load without each needing CORP, while the page stays cross-origin-isolated. This pairs well with a CDN-hosted engine.
 
-When in doubt, start without the headers (single-threaded) and only add cross-origin isolation if profiling shows you need the multithreaded engine.
+**Single-threaded fallback (last resort).** SparkScan does not *hard*-require `crossOriginIsolated` — if you truly cannot configure the headers, you can self-host `sdc-lib` same-origin and drop `COOP`/`COEP`, and scanning still works on the single-threaded path. Treat this as a fallback, not the default: expect lower performance, and the smart scan intentions won't be available. Prefer fixing the headers over giving up isolation.
 
 ## "Works for a second, then dies" / `forLicenseKey ... already initializing`
 
