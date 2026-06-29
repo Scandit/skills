@@ -1,0 +1,110 @@
+{
+  "skill_name": "sparkscan-web",
+  "evals": [
+    {
+      "id": 14,
+      "name": "react18-integration",
+      "prompt": "I'm adding SparkScan to my React 18.3 + Vite app. Here's my component (empty-react-app.tsx) and my package.json. I need to scan EAN-13 and Code 128 barcodes.",
+      "files": [
+        "eval-fixtures/empty-react-app.tsx",
+        "eval-fixtures/package-react18.json",
+        "eval-fixtures/spark-scan-view.d.ts"
+      ],
+      "assertions": [
+        { "text": "Determines the React major version from package.json (recognizes React 18)" },
+        { "text": "Binds dataCaptureContext and sparkScan via the element ref (assigns el.sparkScan / el.dataCaptureContext as properties), NOT as declarative JSX attributes" },
+        { "text": "Does NOT pass dataCaptureContext/sparkScan as plain JSX props like <spark-scan-view dataCaptureContext={...} sparkScan={...}> (which would silently fail on React 18)" },
+        { "text": "Both dataCaptureContext and sparkScan are bound via the ref so the view prepares (calling prepareScanning() explicitly is acceptable; a specific assignment order is not required)" },
+        { "text": "DataCaptureContext is configured once for the app (module-scope-once or a React context provider), not re-created per component mount" },
+        { "text": "DataCaptureContext is NOT disposed on component unmount" },
+        { "text": "DataCaptureContext.forLicenseKey( is present with libraryLocation and moduleLoaders including barcodeCaptureLoader()" },
+        { "text": "SparkScanSettings is created and enableSymbologies enables Symbology.EAN13UPCA and Symbology.Code128 (and no others)" },
+        { "text": "SparkScan.forSettings( is present" },
+        { "text": "addListener with a didScan callback is present and removeListener is called in cleanup" },
+        { "text": "SparkScanView.register() is called, guarded against re-registration on HMR (a customElements.get(\"spark-scan-view\") check or a try/catch is acceptable)" }
+      ]
+    },
+    {
+      "id": 15,
+      "name": "react19-integration",
+      "prompt": "Add SparkScan to my React 19 app (Vite). package.json attached. I want to scan QR codes. Here's my component: empty-react-app.tsx.",
+      "files": [
+        "eval-fixtures/empty-react-app.tsx",
+        "eval-fixtures/package-react19.json",
+        "eval-fixtures/spark-scan-view.d.ts"
+      ],
+      "assertions": [
+        { "text": "Determines the React major version from package.json (recognizes React 19)" },
+        { "text": "Uses a valid binding for React 19 — either declarative property props (dataCaptureContext={...} sparkScan={...}) or ref-binding; both acceptable on 19" },
+        { "text": "DataCaptureContext is configured once for the app (module-scope-once or a React context provider)" },
+        { "text": "DataCaptureContext is NOT disposed on component unmount" },
+        { "text": "DataCaptureContext.forLicenseKey( is present with moduleLoaders including barcodeCaptureLoader()" },
+        { "text": "Symbology.QR is enabled (and no unrelated symbologies)" },
+        { "text": "SparkScan.forSettings( is present and SparkScanView.register() is called" },
+        { "text": "addListener/removeListener lifecycle is handled" }
+      ]
+    },
+    {
+      "id": 16,
+      "name": "works-then-dies-singleton",
+      "prompt": "My React SparkScan app works for a second, then dies — in dev the console shows 'forLicenseKey ... already initializing'. Here's the component (broken-react-app.tsx) and my package.json. Please fix it.",
+      "files": [
+        "eval-fixtures/broken-react-app.tsx",
+        "eval-fixtures/package-react18.json",
+        "eval-fixtures/spark-scan-view.d.ts"
+      ],
+      "assertions": [
+        { "text": "Identifies the root cause: DataCaptureContext is a process-wide singleton being disposed on component unmount" },
+        { "text": "Mentions React StrictMode's dev mount/unmount/remount as a contributing factor" },
+        { "text": "Removes the context.dispose() call from the unmount cleanup" },
+        { "text": "Moves one-time configuration into a React context provider (or a module-scope-once initializer) so forLicenseKey runs once for the app" },
+        { "text": "Consumes the context via DataCaptureContext.sharedInstance rather than storing/disposing the instance" },
+        { "text": "Because package.json is React 18, converts the declarative props to ref-binding (assigns element properties via a ref)" },
+        { "text": "Preserves the enabled symbologies and the scan listener" }
+      ]
+    },
+    {
+      "id": 17,
+      "name": "custom-trigger-prepare-lifecycle",
+      "prompt": "I built a custom trigger button that drives scanning myself (I hid the default trigger). After the user stops scanning and taps to start again, I get the error 'prepare should be called before calling switchToActiveState'. How do I fix my start/stop logic? Here's my file: integrated-app.ts.",
+      "files": [
+        "eval-fixtures/integrated-app.ts"
+      ],
+      "assertions": [
+        { "text": "Explains that stopScanning() un-prepares the view, so a later startScanning() throws unless the view is prepared again" },
+        { "text": "Calls prepareScanning() before startScanning() when restarting after a stop" },
+        { "text": "Correctly states that pauseScanning() keeps the view prepared, so no re-prepare is needed after a pause (does not add a redundant prepareScanning() after pauseScanning)" },
+        { "text": "Hides the default trigger with triggerButtonVisible = false (or confirms it is hidden) for the custom-trigger setup" },
+        { "text": "Preserves existing integration code (DataCaptureContext, SparkScan, listener, mount/unmount)" }
+      ]
+    },
+    {
+      "id": 18,
+      "name": "camera-not-opening-on-device",
+      "prompt": "SparkScan works on localhost, but the camera never opens when I load the app on my phone at http://192.168.1.42:5173. It's a Vite app. What's wrong and how do I fix it? package.json attached.",
+      "files": [
+        "eval-fixtures/package-react18.json"
+      ],
+      "assertions": [
+        { "text": "Identifies the secure-context requirement: getUserMedia only runs in a secure context, and a plain http:// LAN IP is not secure (localhost is exempt)" },
+        { "text": "Recommends serving the dev app over HTTPS to fix it" },
+        { "text": "Because the project uses Vite, recommends the @vitejs/plugin-basic-ssl plugin (or otherwise enabling https on the Vite dev server)" },
+        { "text": "Mentions exposing the dev server on the LAN (e.g. server.host) or a tunneling option such as portless.sh" },
+        { "text": "Does NOT misdiagnose it as a code/API bug" }
+      ]
+    },
+    {
+      "id": 19,
+      "name": "coop-coep-breaks-images",
+      "prompt": "After I added Cross-Origin-Embedder-Policy: require-corp and Cross-Origin-Opener-Policy: same-origin to get the Scandit engine running, the product images we load from our CDN stopped showing. How do I keep scanning working without breaking the cross-origin images?",
+      "files": [],
+      "assertions": [
+        { "text": "Explains that COEP: require-corp blocks cross-origin subresources (the CDN images) that don't opt in via CORP/CORS" },
+        { "text": "Frames cross-origin isolation / the multithreaded engine as the higher-performance path worth keeping, and encourages configuring COOP/COEP correctly rather than dropping them by default" },
+        { "text": "Recommends keeping isolation and fixing the images while preserving it — CORP (Cross-Origin-Resource-Policy: cross-origin) / CORS + crossorigin attribute, or switching to COEP: credentialless" },
+        { "text": "Mentions the single-threaded fallback (self-host same-origin + drop COOP/COEP) only as a last resort when isolation cannot be configured, noting reduced performance" },
+        { "text": "Does not suggest removing or relocating the product images as the fix" }
+      ]
+    }
+  ]
+}

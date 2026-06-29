@@ -1,10 +1,10 @@
 ---
 name: sparkscan-web
-description: Use when SparkScan is involved in an web project — whether the user mentions SparkScan directly, or the codebase already uses SparkScan as its barcode scanning library and something needs to be added, changed, fixed, or migrated. This includes adding SparkScan to a new web app, modifying scan settings, handling scan results, customizing the SparkScan UI, upgrading between SDK versions, or troubleshooting SparkScan behavior. If the project is a web project and SparkScan is in play, use this skill.
+description: Use when SparkScan (Scandit's pre-built high-volume single-scanning UI with a floating trigger button) is involved in a web project — whether the user names SparkScan directly or the codebase already uses it via `@scandit/web-datacapture-barcode` / the `<spark-scan-view>` element. Covers adding SparkScan to a web app (including React, Vite, Next.js), configuring symbologies and scan settings, handling scan results and feedback, customizing or replacing the trigger button, wiring the DataCaptureContext, fixing React-specific problems (React 18 vs 19 property/attribute binding, the context-singleton "works for a second then dies" / StrictMode issue), troubleshooting the camera not opening on a device (HTTPS / secure-context) or cross-origin header (COOP/COEP) problems, and upgrading or migrating between Web SDK versions (v6→v7, v7→v8). If the project is a web app and SparkScan is in play, use this skill. Do not use it for SparkScan on iOS, Android, React Native, Flutter, Capacitor, Cordova, or .NET/MAUI, nor for other Scandit web products (Barcode Capture, MatrixScan, ID Capture, Label Capture).
 license: MIT
 metadata:
   author: scandit
-  version: "1.1.1"
+  version: "1.2.0"
 ---
 
 # SparkScan Web Skill
@@ -17,10 +17,12 @@ Your training data may contain outdated or incorrect Scandit SDK APIs. The Spark
 
 ## Intent Routing
 
-Based on the user's request, load the appropriate reference file before responding:
+Based on the user's request, load the appropriate reference file before responding. More than one may apply (e.g. a React integration that also hits a camera issue) — read all that are relevant:
 
 - **Integrating SparkScan from scratch** (e.g. "add SparkScan to my app", "set up barcode scanning", "how do I use SparkScan", "how do I handle feedback in SparkScan", "I want to build a scanning app") → read `references/integration.md` and follow the instructions there. If the user has no existing project, the guide will direct you to offer the pre-built sample first.
+- **The project uses React** (a `react` dependency in `package.json`, `.tsx`/`.jsx` files, hooks, JSX) → also read `references/react.md`. The correct way to bind the `<spark-scan-view>` custom element differs by React major version, so **check the `react` version in `package.json` first** — the guide explains the React 18 vs 19 difference and the context/lifecycle pitfalls. Always consult it before writing React code; the generic `integration.md` example is vanilla TS.
 - **Migrating or upgrading an existing SparkScan integration** (e.g. "upgrade from v6 to v7", "migrate my SparkScan", "what changed between SDK versions") → read `references/migration.md` and follow the instructions there.
+- **Runtime, camera, or deployment trouble** (e.g. "camera won't open on my phone", "works for a second then dies", cross-origin/COOP/COEP/header issues, "blank preview over a LAN IP") → read `references/troubleshooting.md`. These are environment/hosting issues, not API mistakes, and are easy to misdiagnose as code bugs.
 
 ## API Usage Policy
 
