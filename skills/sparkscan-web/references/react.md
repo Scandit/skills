@@ -122,11 +122,11 @@ import { DataCaptureContext } from "@scandit/web-datacapture-core";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useScanditReady } from "./ScanditProvider";
 
-// Guard against double-registration (e.g. a Vite HMR re-eval of this module).
-try {
+// Register the custom element once. On a Vite HMR re-eval this module runs again,
+// and customElements.define() throws if the element is already defined — so only
+// register when it isn't.
+if (!customElements.get("spark-scan-view")) {
     SparkScanView.register();
-} catch {
-    // already defined — safe to ignore
 }
 
 export function Scanner() {

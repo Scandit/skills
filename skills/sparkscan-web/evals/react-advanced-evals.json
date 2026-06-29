@@ -21,7 +21,7 @@
         { "text": "SparkScanSettings is created and enableSymbologies enables Symbology.EAN13UPCA and Symbology.Code128 (and no others)" },
         { "text": "SparkScan.forSettings( is present" },
         { "text": "addListener with a didScan callback is present and removeListener is called in cleanup" },
-        { "text": "SparkScanView.register() is called (a try/catch guard around it is acceptable)" }
+        { "text": "SparkScanView.register() is called, guarded against re-registration on HMR (a customElements.get(\"spark-scan-view\") check or a try/catch is acceptable)" }
       ]
     },
     {
