@@ -14,7 +14,7 @@
         { "text": "Determines the React major version from package.json (recognizes React 18)" },
         { "text": "Binds dataCaptureContext and sparkScan via the element ref (assigns el.sparkScan / el.dataCaptureContext as properties), NOT as declarative JSX attributes" },
         { "text": "Does NOT pass dataCaptureContext/sparkScan as plain JSX props like <spark-scan-view dataCaptureContext={...} sparkScan={...}> (which would silently fail on React 18)" },
-        { "text": "sparkScan is assigned last in the ref (after dataCaptureContext) so auto-prepare fires, or prepareScanning() is called explicitly" },
+        { "text": "Both dataCaptureContext and sparkScan are bound via the ref so the view prepares (calling prepareScanning() explicitly is acceptable; a specific assignment order is not required)" },
         { "text": "DataCaptureContext is configured once for the app (module-scope-once or a React context provider), not re-created per component mount" },
         { "text": "DataCaptureContext is NOT disposed on component unmount" },
         { "text": "DataCaptureContext.forLicenseKey( is present with libraryLocation and moduleLoaders including barcodeCaptureLoader()" },

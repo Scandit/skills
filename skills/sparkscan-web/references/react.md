@@ -96,9 +96,9 @@ Where disposing is appropriate:
 
 - **Leaving an SDK section to free resources** — let the `ScanditProvider` own *both* ends. Because the provider already calls `forLicenseKey` on mount, disposing in its unmount keeps the pair matched: unmounting the provider disposes, and re-entering remounts it and reconfigures. Just don't put `dispose()` on a *child* scanner's unmount, where no `forLicenseKey` follows.
 
-## Auto-prepare depends on the order you set properties
+## Auto-prepare
 
-The view auto-prepares scanning only once it is **connected to the DOM and has both a context and a mode**. With ref-binding the element is already connected when your ref callback runs, so the order in which you assign properties matters: set `sparkScan` **last** so the view auto-prepares once both the context and the mode are in place. If you'd rather be explicit, call `prepareScanning()` yourself after setting everything.
+The view auto-prepares scanning once it is **connected to the DOM and has both a context and a mode** — the order in which you assign those properties doesn't matter. If you'd rather be explicit (or you want to prepare ahead of time), call `prepareScanning()` yourself after setting everything.
 
 ---
 
@@ -183,7 +183,7 @@ export function Scanner() {
                     // Bind as PROPERTIES via the ref — string attributes won't work on React 18.
                     el.dataCaptureContext = DataCaptureContext.sharedInstance;
                     el.feedbackDelegate = feedbackDelegate;
-                    el.sparkScan = sparkScan; // set LAST so auto-prepare fires
+                    el.sparkScan = sparkScan;
                 }}
             />
         </div>
@@ -194,7 +194,7 @@ export function Scanner() {
 Key points:
 - Readiness comes from the provider (`useScanditReady()`); the context is read from `DataCaptureContext.sharedInstance`, never stored in state or a ref.
 - The ref callback assigns real object **properties** (`el.sparkScan = mode`), bypassing React 18's string-attribute serialization.
-- `sparkScan` is assigned last so the view auto-prepares.
+- Once the context and mode are both set, the view auto-prepares (assignment order doesn't matter).
 - Cleanup removes the listener and stops the view but does **not** dispose the shared context — that's not a scanner component's job (see "Disposing the context").
 
 ## React 19 — declarative property pattern
