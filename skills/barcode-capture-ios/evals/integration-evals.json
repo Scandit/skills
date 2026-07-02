@@ -74,9 +74,6 @@
         },
         {
           "text": "camera?.switch(toDesiredState: .off) is called in viewWillDisappear (or equivalent lifecycle hook)"
-        },
-        {
-          "text": "context.removeCurrentMode() is called in deinit (or equivalent cleanup hook)"
         }
       ]
     },
