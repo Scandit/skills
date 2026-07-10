@@ -1,0 +1,95 @@
+{
+  "skill_name": "parser-kmp",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I need to parse GS1 AI barcode data in my shared KMP module. Here's my model: EmptyParserModel.kt. Create the Parser and add a parse(input: String) function that returns the parsed fields.",
+      "expected_output": "The skill reads references/integration.md and writes a Parser created via the forFormat factory for GS1_AI, with a parse function that calls parseString and returns/exposes the ParsedData.",
+      "files": ["fixtures/EmptyParserModel.kt"],
+      "assertions": [
+        {"text": "import com.kmp.datacapture.parser.Parser is present"},
+        {"text": "import com.kmp.datacapture.parser.ParserDataFormat is present"},
+        {"text": "Parser.forFormat( is called to create the parser"},
+        {"text": "ParserDataFormat.GS1_AI is passed as the format"},
+        {"text": "the existing dataCaptureContext field is passed into Parser.forFormat, not a newly constructed DataCaptureContext"},
+        {"text": "com.scandit.datacapture.parser.Parser (the native, non-KMP package) is NOT used"},
+        {"text": "parser.parseString( is called inside the new parse function"},
+        {"text": "a ParsedData value is returned or exposed from the parse function"}
+      ],
+      "tags": ["parser-kmp", "create-parser"]
+    },
+    {
+      "id": 2,
+      "prompt": "After parsing, I want to loop over every field and print its name and parsed value, plus look up one field directly by name. Use EmptyParserModel.kt.",
+      "expected_output": "The skill shows iterating parsedData.fields for name/parsed, and a fieldsByName[...] lookup for the by-name field access, matching the ParsedData/ParsedField shapes in references/integration.md.",
+      "files": ["fixtures/EmptyParserModel.kt"],
+      "assertions": [
+        {"text": "parsedData.fields is iterated (e.g. a for loop or forEach over .fields)"},
+        {"text": "field.name is read inside the loop"},
+        {"text": "field.parsed is read inside the loop"},
+        {"text": "parsedData.fieldsByName[ (or .fieldsByName.get() equivalent) is used for the by-name lookup"},
+        {"text": "field.rawString or field.warnings is not fabricated with properties that don't exist on ParsedField (only name, parsed, rawString, warnings are used)"}
+      ],
+      "tags": ["parser-kmp", "read-fields"]
+    },
+    {
+      "id": 3,
+      "prompt": "My parseString call can throw. I want to catch the Scandit-specific error and show its code and message to the user, and also report any fields that came back with warnings even when parsing succeeds. Use EmptyParserModel.kt.",
+      "expected_output": "The skill wraps parseString in a try/catch that catches ParserException specifically (reading code, message, additionalInfo) before falling back to a generic Exception catch, and separately reads parsedData.fieldsWithIssues / field.warnings for successful-but-warned fields.",
+      "files": ["fixtures/EmptyParserModel.kt"],
+      "assertions": [
+        {"text": "import com.kmp.datacapture.parser.ParserException is present"},
+        {"text": "catch (e: ParserException) is present"},
+        {"text": "e.code is read inside the ParserException catch block"},
+        {"text": "e.message is read inside the ParserException catch block"},
+        {"text": "the ParserException catch block appears before a broader catch (e: Exception) block, not after"},
+        {"text": "parsedData.fieldsWithIssues is read to find fields with warnings"},
+        {"text": "field.warnings is iterated for the fields with issues"}
+      ],
+      "tags": ["parser-kmp", "handle-issues"]
+    },
+    {
+      "id": 4,
+      "prompt": "I'm already scanning barcodes with BarcodeCapture in ScanAndParseModel.kt. Every time a barcode is scanned, run its data through a HIBC Parser and store the parsed result. Don't touch the existing BarcodeCapture wiring.",
+      "expected_output": "The skill adds a HIBC Parser and calls parser.parseString(barcode.data) inside onBarcodeScanned, storing/exposing the ParsedData, while leaving the existing BarcodeCaptureListener overrides, session handling, and lastBarcodeData flow untouched.",
+      "files": ["fixtures/ScanAndParseModel.kt"],
+      "assertions": [
+        {"text": "ParserDataFormat.HIBC is passed when creating the parser"},
+        {"text": "Parser.forFormat( is called to create the parser"},
+        {"text": "barcode.data is passed into parser.parseString( inside onBarcodeScanned"},
+        {"text": "the existing onBarcodeScanned override signature (barcodeCapture, session, data) is preserved"},
+        {"text": "the existing onSessionUpdated override is preserved"},
+        {"text": "session.newlyRecognizedBarcode is still read to obtain the barcode"},
+        {"text": "the existing _lastBarcodeData / lastBarcodeData StateFlow is preserved"},
+        {"text": "camera setup or BarcodeCaptureSettings configuration is NOT added or modified (out of scope, already wired)"}
+      ],
+      "tags": ["parser-kmp", "combine-with-scanning"]
+    },
+    {
+      "id": 5,
+      "prompt": "I have a driver's license PDF417 barcode and I want to use the KMP Parser to pull out the AAMVA fields like name and date of birth. Use EmptyParserModel.kt.",
+      "expected_output": "The skill explains that ParserDataFormat has no AAMVA value and this generic Parser does not decode AAMVA driver's license data, and routes the user to an ID Capture skill instead of inventing a ParserDataFormat.AAMVA value or fabricating AAMVA field names.",
+      "files": ["fixtures/EmptyParserModel.kt"],
+      "assertions": [
+        {"text": "the response states that ParserDataFormat has no AAMVA value / AAMVA is not a supported Parser data format"},
+        {"text": "ParserDataFormat.AAMVA is NOT used as a code literal anywhere in the response"},
+        {"text": "the response directs the user to ID Capture (or an id-capture-* skill) for driver's license/AAMVA data instead of the Parser"}
+      ],
+      "tags": ["parser-kmp", "routing", "unsupported-format"]
+    },
+    {
+      "id": 6,
+      "prompt": "I want my Swiss QR parser to run in strict mode and only accept minimal version 2.0 bills. Use EmptyParserModel.kt.",
+      "expected_output": "The skill creates a Parser for SWISS_QR and calls setOptions with a plain Map containing strictMode and minimalVersion keys, matching the option keys documented in references/integration.md.",
+      "files": ["fixtures/EmptyParserModel.kt"],
+      "assertions": [
+        {"text": "ParserDataFormat.SWISS_QR is passed when creating the parser"},
+        {"text": "parser.setOptions( is called"},
+        {"text": "the options map passed to setOptions includes a strictMode key"},
+        {"text": "the options map passed to setOptions includes a minimalVersion key"},
+        {"text": "setOptions is called with a Map literal (mapOf(...) or equivalent), not a builder class"}
+      ],
+      "tags": ["parser-kmp", "set-options"]
+    }
+  ]
+}
