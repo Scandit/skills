@@ -1,0 +1,127 @@
+{
+  "skill_name": "matrixscan-find-kmp",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Add MatrixScan Find to my KMP app. Here's my empty Android host screen: FindScreen.kt. Wire up the shared BarcodeFind mode and embed the view.",
+      "expected_output": "The skill reads integration.md and writes a minimal end-to-end MatrixScan Find integration: a DataCaptureContext, a BarcodeFind mode built via the forContext factory, and an Android-embedded BarcodeFindView via toAndroidView().",
+      "files": [
+        "fixtures/EmptyFindHost.kt"
+      ],
+      "assertions": [
+        {"text": "DataCaptureContext.initialize( is called with a license key"},
+        {"text": "License key placeholder -- ENTER YOUR SCANDIT LICENSE KEY HERE -- is present"},
+        {"text": "BarcodeFindSettings.barcodeFindSettings() is used to build settings"},
+        {"text": "BarcodeFind.forContext( is used to construct the mode (not a direct BarcodeFind(...) constructor, not forDataCaptureContext)"},
+        {"text": "BarcodeFindViewSettings.barcodeFindViewSettings() is used to build view settings"},
+        {"text": "BarcodeFindView( is constructed with a Context as the first argument (Android construction pattern)"},
+        {"text": "barcodeFindView.toAndroidView() is called to obtain the embeddable View"},
+        {"text": "BarcodeFindListener is implemented and added via addListener("},
+        {"text": "The gradle dependency com.scandit.datacapture.kmp:core is mentioned"},
+        {"text": "The gradle dependency com.scandit.datacapture.kmp:barcode is mentioned"},
+        {"text": "Version 8.6.0 is used for the dependencies"},
+        {"text": "Camera permission (CAMERA or AndroidManifest) is mentioned"}
+      ],
+      "tags": ["integration"]
+    },
+    {
+      "id": 2,
+      "prompt": "I have a list of scanned barcode strings the user wants to find. Build the BarcodeFind item list from ['9783161484100', '4006381333931'] and set it on the mode in FindScreenModel.kt. Dedupe the list first.",
+      "expected_output": "The skill builds a Set<BarcodeFindItem> from BarcodeFindItemSearchOptions/BarcodeFindItemContent pairs, deduplicates the source barcode data, and calls barcodeFind.setItemList(...).",
+      "files": [
+        "fixtures/IntegratedFindScreenModel.kt"
+      ],
+      "assertions": [
+        {"text": "BarcodeFindItem( is constructed"},
+        {"text": "BarcodeFindItemSearchOptions( is constructed with the barcode data string"},
+        {"text": "BarcodeFindItemContent( is constructed (or null is passed for content)"},
+        {"text": "distinctBy or equivalent deduplication is applied to the barcode data before building items"},
+        {"text": "barcodeFind.setItemList( is called with the built Set<BarcodeFindItem>"},
+        {"text": "Existing integration code (dataCaptureContext, barcodeFind, listener) is preserved"}
+      ],
+      "tags": ["item-list"]
+    },
+    {
+      "id": 3,
+      "prompt": "The BarcodeFindView in FindScreen.kt never actually starts searching and freezes when I navigate away. Wire up onResume/onPause and startSearching/stopSearching to the Compose lifecycle.",
+      "expected_output": "The skill adds a lifecycle observer (e.g. DisposableEffect + LifecycleEventObserver) that calls barcodeFindView.onResume() and startSearching() on resume, and stopSearching() and onPause() on pause/dispose.",
+      "files": [
+        "fixtures/IntegratedFindScreen.kt"
+      ],
+      "assertions": [
+        {"text": "barcodeFindView.onResume() is called"},
+        {"text": "barcodeFindView.onPause() is called"},
+        {"text": "barcodeFindView.startSearching() is called"},
+        {"text": "barcodeFindView.stopSearching() is called"},
+        {"text": "The deprecated/iOS-only prepareSearching() method is NOT called from this Android/shared code"},
+        {"text": "Existing integration code (BarcodeFindView construction, toAndroidView embedding) is preserved"}
+      ],
+      "tags": ["view-lifecycle"]
+    },
+    {
+      "id": 4,
+      "prompt": "Normalize scanned barcode data before it's matched: trim whitespace, and ignore any barcode starting with 'IGNORE-' entirely. Set this up on the BarcodeFind mode in FindScreenModel.kt.",
+      "expected_output": "The skill implements BarcodeFindTransformer, returning null for barcodes starting with 'IGNORE-' and the trimmed data otherwise, and registers it via barcodeFind.setBarcodeTransformer(...).",
+      "files": [
+        "fixtures/IntegratedFindScreenModel.kt"
+      ],
+      "assertions": [
+        {"text": "BarcodeFindTransformer is implemented"},
+        {"text": "transformBarcodeData( method is implemented"},
+        {"text": "barcodeFind.setBarcodeTransformer( is called with the transformer instance"},
+        {"text": "null is returned for barcode data starting with IGNORE-"},
+        {"text": "trim() or equivalent whitespace normalization is applied to the returned data"},
+        {"text": "Existing integration code (dataCaptureContext, barcodeFind, listener) is preserved"}
+      ],
+      "tags": ["transformer"]
+    },
+    {
+      "id": 5,
+      "prompt": "When an item is found, keep the default sound but disable vibration. Configure this feedback on the BarcodeFind mode in FindScreenModel.kt.",
+      "expected_output": "The skill builds a BarcodeFindFeedback with a Feedback for the found event that keeps Sound.defaultSound() and sets vibration to null, then assigns it to barcodeFind.feedback.",
+      "files": [
+        "fixtures/IntegratedFindScreenModel.kt"
+      ],
+      "assertions": [
+        {"text": "BarcodeFindFeedback.defaultFeedback() or BarcodeFindFeedback() is used as the base"},
+        {"text": "Feedback() is constructed and assigned to the found property"},
+        {"text": "Sound.defaultSound() is assigned to the found feedback's sound"},
+        {"text": "vibration is set to null on the found feedback"},
+        {"text": "barcodeFind.feedback = is assigned with the configured BarcodeFindFeedback"},
+        {"text": "Existing integration code (dataCaptureContext, barcodeFind, listener) is preserved"}
+      ],
+      "tags": ["feedback"]
+    },
+    {
+      "id": 6,
+      "prompt": "When the user taps the built-in finish button on the BarcodeFindView in FindScreen.kt, I want to show a summary of found items instead of just closing.",
+      "expected_output": "The skill implements BarcodeFindViewUiListener, assigns it to barcodeFindView.uiListener, and handles onFinishButtonTapped with the found items.",
+      "files": [
+        "fixtures/IntegratedFindScreen.kt"
+      ],
+      "assertions": [
+        {"text": "BarcodeFindViewUiListener is implemented"},
+        {"text": "onFinishButtonTapped( method is implemented, receiving the found items set"},
+        {"text": "barcodeFindView.uiListener = is assigned with the listener instance"},
+        {"text": "Existing integration code (BarcodeFindView construction, toAndroidView embedding) is preserved"}
+      ],
+      "tags": ["found-items", "view-customization"]
+    },
+    {
+      "id": 7,
+      "prompt": "Use the Compose Multiplatform BarcodeFindView in ComposeFindScreen.kt to find the barcodes in scannedBarcodeData, and call onFinished when the user taps finish.",
+      "expected_output": "The skill uses the barcode-compose BarcodeFindView composable, passing itemsToFind built from scannedBarcodeData and an onFinishTap callback, without manually wiring onResume/startSearching (the composable owns that lifecycle).",
+      "files": [
+        "fixtures/ComposeFindScreen.kt"
+      ],
+      "assertions": [
+        {"text": "BarcodeFindView( composable from com.kmp.datacapture.barcode.compose is used"},
+        {"text": "itemsToFind parameter is passed with a Set<BarcodeFindItem> built from scannedBarcodeData"},
+        {"text": "onFinishTap parameter is passed and calls onFinished"},
+        {"text": "BarcodeFindSettings.barcodeFindSettings() is used to build settings passed to the composable"},
+        {"text": "No manual barcodeFindView.onResume()/startSearching() calls are added (the composable manages this lifecycle itself)"}
+      ],
+      "tags": ["compose"]
+    }
+  ]
+}
