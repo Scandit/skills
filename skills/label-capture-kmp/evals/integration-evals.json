@@ -1,0 +1,147 @@
+{
+  "skill_name": "label-capture-kmp",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I want to add Scandit Smart Label Capture to my Kotlin Multiplatform app. Here's my shared screen model: LabelScannerScreenModel.kt. The label is a perishable-product sticker with an EAN-13 barcode and an expiry date (both required) and a total price (optional). I want it shared between Android and iOS.",
+      "expected_output": "The skill reads integration.md, walks through the interactive label-definition questions, then writes complete Label Capture integration code into the shared LabelScannerScreenModel.kt using the KMP API (com.kmp.datacapture.label.*), and calls out the label-text Gradle/SPM dependency.",
+      "files": ["fixtures/LabelScannerScreenModel.kt"],
+      "assertions": [
+        { "text": "DataCaptureContext.initialize( is used to create the DataCaptureContext (not DataCaptureContext.forDataCaptureContext, which does not exist)" },
+        { "text": "A license key placeholder string is present (semantic)" },
+        { "text": "labelCaptureSettings { label(\"...\") { ... } } DSL or LabelCaptureSettingsBuilder is used to build the LabelCaptureSettings" },
+        { "text": "customBarcode(...) is used for the barcode field with Symbology.EAN13_UPCA set via setSymbologies" },
+        { "text": "expiryDateText(...) is used for the expiry date field" },
+        { "text": "totalPriceText(...) is used for the total price field and isOptional(true) is called on it" },
+        { "text": "LabelCapture.forContext(dataCaptureContext, settings) is used to construct the mode (not LabelCapture.forDataCaptureContext, which is the Android-only name)" },
+        { "text": "labelCapture.addListener( is used with an onSessionUpdated override that reads session.capturedLabels" },
+        { "text": "field.barcode?.data and field.asDate() (or asDate()) are used to read the captured barcode and expiry date" },
+        { "text": "LabelCaptureBasicOverlay.withLabelCaptureForView( or withLabelCapture( is used to attach the basic overlay" },
+        { "text": "Camera.getDefaultCamera(LabelCapture.createRecommendedCameraSettings()) is called" },
+        { "text": "camera.switchToDesiredState(FrameSourceState.ON) and .switchToDesiredState(FrameSourceState.OFF) are both used for lifecycle" },
+        { "text": "The response mentions the com.scandit.datacapture.kmp:label-text Gradle/SPM dependency is required because pre-built fields are used" },
+        { "text": "LabelCaptureValidationFlowOverlay is NOT used (the user did not ask for the Validation Flow)" }
+      ],
+      "tags": ["basic-integration", "license-init", "label-capture-settings", "label-definition", "captured-field-handling", "basic-overlay", "camera-setup", "lifecycle-handling"]
+    },
+    {
+      "id": 2,
+      "prompt": "I want to add Scandit Smart Label Capture to my Kotlin Multiplatform project.",
+      "expected_output": "The skill asks what fields are on the label (Question A) and presents the supported field-builder checklist. It does NOT generate integration code yet — it waits for the user to describe their label before writing anything.",
+      "files": [],
+      "assertions": [
+        { "text": "The response asks what fields or data are on the label — it does not generate code without knowing the label structure" },
+        { "text": "The supported field types are listed, including at minimum: customBarcode (or Custom barcode), expiryDateText (or Expiry date), totalPriceText (or Total price)" },
+        { "text": "No LabelCaptureSettingsBuilder or labelCaptureSettings { } code block is included — the skill waits for the user to answer before writing any integration code" },
+        { "text": "The response explicitly states it will write the code after the user answers, not before" }
+      ],
+      "tags": ["basic-integration"]
+    },
+    {
+      "id": 3,
+      "prompt": "Add Label Capture with the Validation Flow to my Kotlin Multiplatform app, shared between Android and iOS. Write the code into LabelScannerScreenModel.kt. The label is a perishable-product sticker with an EAN-13 barcode (required) and an expiry date (required). Show me how to customize the placeholder text for the expiry date field, and how to wire up onResume/onPause on the Android host.",
+      "expected_output": "The skill uses LabelCaptureValidationFlowOverlay instead of LabelCaptureBasicOverlay, implements LabelCaptureValidationFlowListener, sets placeholder text for the expiry date field, and shows validationFlowOverlay.onResume()/onPause() forwarded from the Android host's lifecycle (noting these are no-ops on iOS).",
+      "files": ["fixtures/LabelScannerScreenModel.kt"],
+      "assertions": [
+        { "text": "LabelCaptureValidationFlowOverlay.withLabelCaptureForView( is used instead of LabelCaptureBasicOverlay" },
+        { "text": "LabelCaptureValidationFlowSettings.labelCaptureValidationFlowSettings() is called to create the settings object" },
+        { "text": "setPlaceholderTextForLabelDefinition is called on the settings with the expiry date field name and a placeholder string" },
+        { "text": "validationFlowOverlay.applySettings( is called" },
+        { "text": "validationFlowOverlay.listener is assigned with an onValidationFlowLabelCaptured implementation" },
+        { "text": "validationFlowOverlay.onResume() and validationFlowOverlay.onPause() are both shown, forwarded from the Android host's onResume/onPause" },
+        { "text": "The response notes that onResume()/onPause() on the validation flow overlay are no-ops on iOS, which manages its own lifecycle" },
+        { "text": "No separate LabelCaptureListener is added alongside the validation flow overlay to read results (the VF overlay owns the capture lifecycle)" }
+      ],
+      "tags": ["validation-flow", "validation-flow-customization", "lifecycle-handling"]
+    },
+    {
+      "id": 4,
+      "prompt": "Add Scandit Smart Label Capture to my Kotlin Multiplatform app to scan the box of a smartphone. I need to read the IMEI 1, the IMEI 2, and the device's serial number printed on the box. Here is my shared screen model: LabelScannerScreenModel.kt.",
+      "expected_output": "The skill uses the pre-built barcode-semantic field builders imeiOneBarcode, imeiTwoBarcode, and serialNumberBarcode (NOT custom barcode/text fields with hand-written regex), and calls out that the label-text Gradle/SPM dependency is required because barcode-semantic fields load an on-device model even though they are barcode fields.",
+      "files": ["fixtures/LabelScannerScreenModel.kt"],
+      "assertions": [
+        { "text": "imeiOneBarcode(...) (or addImeiOneBarcode()) is used for the IMEI 1 field" },
+        { "text": "imeiTwoBarcode(...) (or addImeiTwoBarcode()) is used for the IMEI 2 field" },
+        { "text": "serialNumberBarcode(...) (or addSerialNumberBarcode()) is used for the serial number field" },
+        { "text": "No hallucinated regex: customText is NOT used with a hand-written IMEI or serial-number regex pattern, and customBarcode is NOT used as a stand-in for IMEI/serial — the pre-built barcode-semantic builders are used instead" },
+        { "text": "The com.scandit.datacapture.kmp:label-text dependency is called out as required" },
+        { "text": "The response does NOT state that label-text can be omitted because the label only has barcode fields (the barcode-semantic fields require it)" },
+        { "text": "LabelCapture.forContext( is used to construct the mode" }
+      ],
+      "tags": ["barcode-semantic-fields", "label-definition"]
+    },
+    {
+      "id": 5,
+      "prompt": "I want to use Scandit Smart Label Capture in my Kotlin Multiplatform retail app to scan printed price shelf labels — the product barcode plus the displayed price. Write the integration into LabelScannerScreenModel.kt.",
+      "expected_output": "The skill recognises this as a price/shelf-label scenario and uses the pre-built whole-label factory LabelDefinition.createPriceCaptureDefinition(...) rather than hand-assembling the label from customBarcode/totalPriceText individual builders. It calls out that BOTH the label-text and price-label dependencies are required.",
+      "files": ["fixtures/LabelScannerScreenModel.kt"],
+      "assertions": [
+        { "text": "LabelDefinition.createPriceCaptureDefinition( is used to define the price/shelf label" },
+        { "text": "The label is NOT hand-assembled from individual totalPriceText/unitPriceText/customBarcode builders when the pre-built price-capture definition covers the scenario" },
+        { "text": "LabelDefinition is imported from com.kmp.datacapture.label.definition" },
+        { "text": "The com.scandit.datacapture.kmp:label-text dependency is called out as required" },
+        { "text": "The com.scandit.datacapture.kmp:price-label dependency is called out as required in addition to label-text for createPriceCaptureDefinition" },
+        { "text": "Captured fields are read by type (LabelFieldType.BARCODE / LabelFieldType.TEXT) rather than by a hardcoded guessed field name" }
+      ],
+      "tags": ["prebuilt-label-definitions"]
+    },
+    {
+      "id": 6,
+      "prompt": "I'm using Smart Label Capture on Kotlin Multiplatform with the Basic Overlay. I want to customize how detected fields are highlighted in the camera feed — make the barcode box cyan, the expiry-date box green, and hide the box around the whole label. Show me how, shared across Android and iOS.",
+      "expected_output": "The skill shows LabelCaptureBasicOverlayListener with brushForField/brushForLabel returning a Brush? built from the KMP core Brush(fillColor, strokeColor, strokeWidth) constructor and Color, all in commonMain, with null/default for fields not being customized and a transparent brush to hide the whole-label box.",
+      "files": [],
+      "assertions": [
+        { "text": "LabelCaptureBasicOverlayListener is implemented and assigned to overlay.listener" },
+        { "text": "brushForField( is overridden and returns a Brush for the barcode and expiry-date field names (and null/default for others)" },
+        { "text": "brushForLabel( is overridden and returns a transparent/null brush to hide the whole-label box" },
+        { "text": "Brush( from com.kmp.datacapture.core.ui.style.Brush is constructed with fillColor, strokeColor, strokeWidth arguments" },
+        { "text": "The response notes that returning null from brushForField/brushForLabel keeps the default brush" },
+        { "text": "The code is written as shared commonMain code, not duplicated per platform" }
+      ],
+      "tags": ["basic-overlay-customization"]
+    },
+    {
+      "id": 7,
+      "prompt": "On Kotlin Multiplatform Smart Label Capture I want a fully custom AR experience: float a small status icon just above the price field, whose color depends on whether the price matches my own reference price (which I look up from the barcode field on the same label). How do I set up the Advanced Overlay?",
+      "expected_output": "The skill uses LabelCaptureAdvancedOverlay. Because the icon's appearance depends on a sibling field (the barcode), it does NOT build the view from the per-field listener callback viewForCapturedLabelField (which carries no label context) — it pushes the view imperatively via setViewForCapturedLabelField(field, capturedLabel, view) from onSessionUpdated, with setAnchorForCapturedLabelField / setOffsetForCapturedLabelField for placement using Anchor and PointWithUnit.",
+      "files": [],
+      "assertions": [
+        { "text": "LabelCaptureAdvancedOverlay.withLabelCaptureForView( or withLabelCapture( is used to create the overlay" },
+        { "text": "The floating view is pushed imperatively with overlay.setViewForCapturedLabelField(field, capturedLabel, view) called from onSessionUpdated, NOT produced from the advanced overlay listener's viewForCapturedLabelField callback" },
+        { "text": "setAnchorForCapturedLabelField and setOffsetForCapturedLabelField are used with an Anchor value and a PointWithUnit offset to position the icon" },
+        { "text": "The response explains that the advanced overlay's per-field listener callback (viewForCapturedLabelField) carries no label context, which is why the imperative push from onSessionUpdated is used instead" },
+        { "text": "Fields are read by type (LabelFieldType.BARCODE / LabelFieldType.TEXT) rather than by hardcoded field names" }
+      ],
+      "tags": ["advanced-overlay"]
+    },
+    {
+      "id": 8,
+      "prompt": "I'm building the scanner screen with Compose Multiplatform. Add Scandit Smart Label Capture with the LabelCaptureView composable, sharing an EAN-13 barcode and expiry date label between Android and iOS. Write it into LabelComposeScreen.kt.",
+      "expected_output": "The skill uses the label-compose module's LabelCaptureView composable with labelCaptureSettings, LabelOverlayStyle.Basic, and an onCapture callback, and calls out the core-compose + label-compose Gradle dependencies.",
+      "files": ["fixtures/LabelComposeScreen.kt"],
+      "assertions": [
+        { "text": "LabelCaptureView( composable from com.kmp.datacapture.label.compose is used" },
+        { "text": "labelCaptureSettings { label(\"...\") { customBarcode(...); expiryDateText(...) } } DSL is passed as the settings parameter" },
+        { "text": "overlayStyle = LabelOverlayStyle.Basic (or another named LabelOverlayStyle value) is passed" },
+        { "text": "onCapture = { ... } is provided to receive the List<CapturedLabel> results" },
+        { "text": "The response calls out adding both com.scandit.datacapture.kmp:core-compose and com.scandit.datacapture.kmp:label-compose to commonMain.dependencies" },
+        { "text": "No manual DataCaptureView, Camera, or overlay wiring is written by hand — the composable owns that" }
+      ],
+      "tags": ["basic-integration", "basic-overlay"]
+    },
+    {
+      "id": 9,
+      "prompt": "My customer's Kotlin Multiplatform Smart Label Capture app misses OCR on worn, low-contrast shipping labels and users keep having to type values manually. Can Scandit fall back to a more powerful cloud model? How do I enable it, shared across Android and iOS?",
+      "expected_output": "The skill explains the Adaptive Recognition Engine (cloud fallback), shows how to enable it via .adaptiveRecognition(AdaptiveRecognitionMode.AUTO) on the label definition builder, and clearly flags that it is in BETA, requires the ARE feature flag on the license key, and that production use requires contacting support@scandit.com.",
+      "files": [],
+      "assertions": [
+        { "text": "The response describes the Adaptive Recognition Engine as a cloud-based OCR fallback that triggers when the on-device model fails" },
+        { "text": "The enabling API is shown: .adaptiveRecognition(AdaptiveRecognitionMode.AUTO) on the LabelDefinitionBuilder (or the settable adaptiveRecognitionMode property on a built LabelDefinition)" },
+        { "text": "The response flags that the Adaptive Recognition API is in BETA" },
+        { "text": "The response states it requires a license key with the ARE feature flag and that enabling it for production requires contacting support@scandit.com" },
+        { "text": "The response does not invent a separate LabelCaptureAdaptiveRecognitionOverlay requirement for this simple per-field fallback case (that overlay is for the structured receipt-scanning flow, a different use case)" }
+      ],
+      "tags": ["adaptive-recognition-cloud"]
+    }
+  ]
+}
