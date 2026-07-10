@@ -127,9 +127,11 @@ features:
   # ---- Migration ----
   - id: version-migration
     required: false
+    excluded_platforms: [kmp]
     evidence: [eval-survey, docs]
     match: ["migrat", "v6|v7|v8", "forlicensekey.*initialize|forcontext.*new", "upgrade.*(version|sdk)", "newlyrecognizedbarcodes"]
   - id: third-party-migration
     required: false
+    excluded_platforms: [kmp]
     evidence: [eval-survey]
     match: ["zxing", "ml ?kit", "mlkit", "avfoundation", "avcapture", "third.?party", "intentintegrator", "mobilebarcodescanner", "google.*barcode|barcode.*google"]

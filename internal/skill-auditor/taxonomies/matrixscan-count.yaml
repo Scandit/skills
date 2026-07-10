@@ -109,5 +109,5 @@ features:
     # BarcodeCount.forDataCaptureContext(...) -> new BarcodeCount(settings); feedback/ctor shape.
     # iOS excluded: no iOS-specific v7->v8 BarcodeCount API change exists (the modern
     # BarcodeCount(context:settings:) init has been the form since 6.14) -> nothing to migrate.
-    excluded_platforms: [ios]
+    excluded_platforms: [ios, kmp]
     match: ["fordatacapturecontext", "new barcodecount\\(settings", "migrat", "\\bv7\\b", "\\bv8\\b", "8\\.0", "upgrade"]
