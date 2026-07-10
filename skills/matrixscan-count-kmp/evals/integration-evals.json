@@ -5,131 +5,336 @@
       "id": 1,
       "prompt": "I want to add MatrixScan Count to my Kotlin Multiplatform app's shared screen model. Here's my starter file: EmptyScreenModel.kt. I need to scan EAN-13 and Code 128 barcodes and show the counting UI using the Compose wrapper on Android.",
       "expected_output": "The skill reads integration.md, writes complete BarcodeCount integration code into EmptyScreenModel.kt: DataCaptureContext.forLicenseKey, BarcodeCountSettings with the requested symbologies enabled, BarcodeCount.forContext(context, settings), a camera obtained via Camera.getDefaultCamera(BarcodeCount.createRecommendedCameraSettings()) attached via dataCaptureContext.setFrameSource, and a BarcodeCountListener implementing onScan. It also explains that the Compose BarcodeCountView composable (com.kmp.datacapture.barcode.compose.BarcodeCountView) is used to host the UI on the Android side.",
-      "files": ["fixtures/EmptyScreenModel.kt"],
-      "assertions": [
-        {"text": "DataCaptureContext.forLicenseKey( is present"},
-        {"text": "'-- ENTER YOUR SCANDIT LICENSE KEY HERE --' is present"},
-        {"text": "BarcodeCountSettings.barcodeCountSettings() is used to construct the settings"},
-        {"text": "Symbology.EAN13_UPCA is enabled"},
-        {"text": "Symbology.CODE128 is enabled"},
-        {"text": "BarcodeCount.forContext( is used to construct the mode (not a context-free constructor)"},
-        {"text": "Camera.getDefaultCamera( is used with BarcodeCount.createRecommendedCameraSettings()"},
-        {"text": "dataCaptureContext.setFrameSource( is called to attach the camera"},
-        {"text": "A class implements BarcodeCountListener and defines onScan("},
-        {"text": "Import from com.kmp.datacapture.barcode.count is present"},
-        {"text": "The com.kmp.datacapture.barcode.compose.BarcodeCountView composable is mentioned or used to host the UI on Android (semantic)"},
-        {"text": "Existing scannedCount / dispose members from the starter file are preserved"}
+      "files": [
+        "fixtures/EmptyScreenModel.kt"
       ],
-      "tags": ["basic-integration", "license-init", "camera-setup", "scan-listener"]
+      "assertions": [
+        {
+          "text": "DataCaptureContext.forLicenseKey( is present"
+        },
+        {
+          "text": "'-- ENTER YOUR SCANDIT LICENSE KEY HERE --' is present"
+        },
+        {
+          "text": "BarcodeCountSettings.barcodeCountSettings() is used to construct the settings"
+        },
+        {
+          "text": "Symbology.EAN13_UPCA is enabled"
+        },
+        {
+          "text": "Symbology.CODE128 is enabled"
+        },
+        {
+          "text": "BarcodeCount.forContext( is used to construct the mode (not a context-free constructor)"
+        },
+        {
+          "text": "Camera.getDefaultCamera( is used with BarcodeCount.createRecommendedCameraSettings()"
+        },
+        {
+          "text": "dataCaptureContext.setFrameSource( is called to attach the camera"
+        },
+        {
+          "text": "A class implements BarcodeCountListener and defines onScan("
+        },
+        {
+          "text": "Import from com.kmp.datacapture.barcode.count is present"
+        },
+        {
+          "text": "The com.kmp.datacapture.barcode.compose.BarcodeCountView composable is mentioned or used to host the UI on Android (semantic)"
+        },
+        {
+          "text": "Existing scannedCount / dispose members from the starter file are preserved"
+        }
+      ],
+      "tags": [
+        "basic-integration",
+        "license-init",
+        "camera-setup",
+        "scan-listener"
+      ]
     },
     {
       "id": 2,
       "prompt": "Add MatrixScan Count scanning to IntegratedScreenModel.kt. When a scan phase completes, keep doing what it already does but also log the total number of scanned barcodes so far.",
       "expected_output": "The skill edits the existing onScan override in IntegratedScreenModel.kt to also log/print the running total, while preserving the existing DataCaptureContext, BarcodeCountSettings, BarcodeCount, camera, and StateFlow wiring untouched.",
-      "files": ["fixtures/IntegratedScreenModel.kt"],
-      "assertions": [
-        {"text": "onScan( is present and still updates _scannedBarcodes"},
-        {"text": "session.recognizedBarcodes is accessed"},
-        {"text": "The running total of scanned barcodes is logged or printed (semantic)"},
-        {"text": "Existing BarcodeCount, DataCaptureContext, camera, and BarcodeCountListener wiring is preserved"},
-        {"text": "Existing resumeFrameSource and pauseFrameSource methods are preserved"}
+      "files": [
+        "fixtures/IntegratedScreenModel.kt"
       ],
-      "tags": ["scan-listener", "basic-integration"]
+      "assertions": [
+        {
+          "text": "onScan( is present and still updates _scannedBarcodes"
+        },
+        {
+          "text": "session.recognizedBarcodes is accessed"
+        },
+        {
+          "text": "The running total of scanned barcodes is logged or printed (semantic)"
+        },
+        {
+          "text": "Existing BarcodeCount, DataCaptureContext, camera, and BarcodeCountListener wiring is preserved"
+        },
+        {
+          "text": "Existing resumeFrameSource and pauseFrameSource methods are preserved"
+        }
+      ],
+      "tags": [
+        "scan-listener",
+        "basic-integration"
+      ]
     },
     {
       "id": 3,
       "prompt": "Hide the toolbar in my MatrixScan Count KMP app and show the floating shutter button instead. File: IntegratedScreenModel.kt",
       "expected_output": "The skill explains that shouldShowToolbar and shouldShowFloatingShutterButton are not exposed by the Compose BarcodeCountView wrapper's parameters, and that reaching them requires the base (non-Compose) BarcodeCountView hosted via toAndroidView()/toUIView() interop. It shows setting shouldShowToolbar = false and shouldShowFloatingShutterButton = true on that base view instance, without inventing a Compose-wrapper parameter for them.",
-      "files": ["fixtures/IntegratedScreenModel.kt"],
-      "assertions": [
-        {"text": "The answer states that the Compose BarcodeCountView composable does not expose shouldShowToolbar / shouldShowFloatingShutterButton as parameters (semantic)"},
-        {"text": "The base (non-Compose) com.kmp.datacapture.barcode.count.BarcodeCountView is used to set these properties"},
-        {"text": "shouldShowToolbar = false is set on the base view"},
-        {"text": "shouldShowFloatingShutterButton = true is set on the base view"},
-        {"text": "toAndroidView() or toUIView() is used to host the base view (semantic)"},
-        {"text": "Existing IntegratedScreenModel.kt integration code (BarcodeCount, DataCaptureContext, listener) is preserved"}
+      "files": [
+        "fixtures/IntegratedScreenModel.kt"
       ],
-      "tags": ["ui-customization"]
+      "assertions": [
+        {
+          "text": "The answer states that the Compose BarcodeCountView composable does not expose shouldShowToolbar / shouldShowFloatingShutterButton as parameters (semantic)"
+        },
+        {
+          "text": "The base (non-Compose) com.kmp.datacapture.barcode.count.BarcodeCountView is used to set these properties"
+        },
+        {
+          "text": "shouldShowToolbar = false is set on the base view"
+        },
+        {
+          "text": "shouldShowFloatingShutterButton = true is set on the base view"
+        },
+        {
+          "text": "toAndroidView() or toUIView() is used to host the base view (semantic)"
+        },
+        {
+          "text": "Existing IntegratedScreenModel.kt integration code (BarcodeCount, DataCaptureContext, listener) is preserved"
+        }
+      ],
+      "tags": [
+        "ui-customization"
+      ]
     },
     {
       "id": 4,
       "prompt": "Add a status overlay to my MatrixScan Count KMP app. When status mode is active, barcodes whose data starts with '4' should be shown as accepted, and all others as rejected. File: IntegratedScreenModel.kt",
       "expected_output": "The skill implements BarcodeCountStatusProvider, builds one BarcodeCountStatusItem per barcode via BarcodeCountStatusItem.create(barcode, icon) using an icon built with ScanditIconBuilder, wraps them in BarcodeCountStatusResult.Success(...), and calls callback.onStatusReady(...). It attaches the provider via view.setStatusProvider(...) on the base BarcodeCountView (not the Compose wrapper, which has no status-provider parameter) and sets shouldShowStatusIconsOnScan or shouldShowStatusModeButton.",
-      "files": ["fixtures/IntegratedScreenModel.kt"],
-      "assertions": [
-        {"text": "A class implements BarcodeCountStatusProvider and defines onStatusRequested("},
-        {"text": "BarcodeCountStatusItem.create( is used to build a status item per barcode"},
-        {"text": "The accepted/rejected decision is based on barcode data starting with '4' (semantic)"},
-        {"text": "BarcodeCountStatusResult.Success( or an equivalent factory is used and passed to callback.onStatusReady("},
-        {"text": "view.setStatusProvider( is called on the base BarcodeCountView (semantic)"},
-        {"text": "shouldShowStatusIconsOnScan or shouldShowStatusModeButton is set to true on the view (semantic)"},
-        {"text": "The answer notes the status provider is not reachable through the Compose BarcodeCountView composable parameters (semantic)"}
+      "files": [
+        "fixtures/IntegratedScreenModel.kt"
       ],
-      "tags": ["highlight-customization"]
+      "assertions": [
+        {
+          "text": "A class implements BarcodeCountStatusProvider and defines onStatusRequested("
+        },
+        {
+          "text": "BarcodeCountStatusItem.create( is used to build a status item per barcode"
+        },
+        {
+          "text": "The accepted/rejected decision is based on barcode data starting with '4' (semantic)"
+        },
+        {
+          "text": "BarcodeCountStatusResult.Success( or an equivalent factory is used and passed to callback.onStatusReady("
+        },
+        {
+          "text": "view.setStatusProvider( is called on the base BarcodeCountView (semantic)"
+        },
+        {
+          "text": "shouldShowStatusIconsOnScan or shouldShowStatusModeButton is set to true on the view (semantic)"
+        },
+        {
+          "text": "The answer notes the status provider is not reachable through the Compose BarcodeCountView composable parameters (semantic)"
+        }
+      ],
+      "tags": [
+        "highlight-customization"
+      ]
     },
     {
       "id": 5,
       "prompt": "My labels have both a Code 128 and a PDF417 barcode, and I only want to count the Code 128 ones. File: IntegratedScreenModel.kt",
       "expected_output": "The skill enables PDF417 so it is decoded, then excludes it from counting via settings.filterSettings.excludedSymbologies = setOf(Symbology.PDF417), configured before BarcodeCount.forContext(...) is called. The rest of the integration is unchanged.",
-      "files": ["fixtures/IntegratedScreenModel.kt"],
-      "assertions": [
-        {"text": "Symbology.PDF417 is enabled on the settings"},
-        {"text": "settings.filterSettings.excludedSymbologies is set to a set containing Symbology.PDF417"},
-        {"text": "The symbology filter is configured before BarcodeCount.forContext( (semantic)"},
-        {"text": "Existing IntegratedScreenModel.kt integration code (BarcodeCount, DataCaptureContext, listener) is preserved"}
+      "files": [
+        "fixtures/IntegratedScreenModel.kt"
       ],
-      "tags": ["filtering"]
+      "assertions": [
+        {
+          "text": "Symbology.PDF417 is enabled on the settings"
+        },
+        {
+          "text": "settings.filterSettings.excludedSymbologies is set to a set containing Symbology.PDF417"
+        },
+        {
+          "text": "The symbology filter is configured before BarcodeCount.forContext( (semantic)"
+        },
+        {
+          "text": "Existing IntegratedScreenModel.kt integration code (BarcodeCount, DataCaptureContext, listener) is preserved"
+        }
+      ],
+      "tags": [
+        "filtering"
+      ]
     },
     {
       "id": 6,
       "prompt": "I want to scan against a fixed pick list of two barcodes in my MatrixScan Count KMP app and show missing/wrong items. File: IntegratedScreenModel.kt",
       "expected_output": "The skill explains that BarcodeCountCaptureList, TargetBarcode, and BarcodeCountCaptureListListener exist on KMP but that there is currently no method on BarcodeCount to attach a capture list to the mode, so scanning-against-a-list cannot be wired up end to end on KMP yet. It does not invent a setBarcodeCountCaptureList(...) or setCaptureList(...) call on BarcodeCount.",
-      "files": ["fixtures/IntegratedScreenModel.kt"],
-      "assertions": [
-        {"text": "The answer states that scanning against a list / capture lists are not currently wired up (attachable) on KMP (semantic)"},
-        {"text": "barcodeCount.setBarcodeCountCaptureList( is NOT called in any code the answer produces"},
-        {"text": "barcodeCount."},
-        {"text": "The answer does not claim session.correctBarcodes / wrongBarcodes / missingBarcodes will populate from an attached list on KMP (semantic)"}
+      "files": [
+        "fixtures/IntegratedScreenModel.kt"
       ],
-      "tags": ["list-scanning"]
+      "assertions": [
+        {
+          "text": "The answer states that scanning against a list / capture lists are not currently wired up (attachable) on KMP (semantic)"
+        },
+        {
+          "text": "barcodeCount.setBarcodeCountCaptureList( is NOT called in any code the answer produces"
+        },
+        {
+          "text": "barcodeCount."
+        },
+        {
+          "text": "The answer does not claim session.correctBarcodes / wrongBarcodes / missingBarcodes will populate from an attached list on KMP (semantic)"
+        }
+      ],
+      "tags": [
+        "list-scanning"
+      ]
     },
     {
       "id": 7,
       "prompt": "I'm sure every barcode in the scene is unique in my MatrixScan Count KMP app — turn on whatever makes scanning faster for that. File: IntegratedScreenModel.kt",
       "expected_output": "The skill sets settings.expectsOnlyUniqueBarcodes = true on the BarcodeCountSettings before BarcodeCount.forContext(...) is called. The rest of the integration is unchanged.",
-      "files": ["fixtures/IntegratedScreenModel.kt"],
-      "assertions": [
-        {"text": "expectsOnlyUniqueBarcodes = true is set on the BarcodeCountSettings"},
-        {"text": "The setting is applied before BarcodeCount.forContext( (semantic)"},
-        {"text": "Existing IntegratedScreenModel.kt integration code (BarcodeCount, DataCaptureContext, listener) is preserved"}
+      "files": [
+        "fixtures/IntegratedScreenModel.kt"
       ],
-      "tags": ["expects-only-unique"]
+      "assertions": [
+        {
+          "text": "expectsOnlyUniqueBarcodes = true is set on the BarcodeCountSettings"
+        },
+        {
+          "text": "The setting is applied before BarcodeCount.forContext( (semantic)"
+        },
+        {
+          "text": "Existing IntegratedScreenModel.kt integration code (BarcodeCount, DataCaptureContext, listener) is preserved"
+        }
+      ],
+      "tags": [
+        "expects-only-unique"
+      ]
     },
     {
       "id": 8,
       "prompt": "In my MatrixScan Count KMP app, when the app goes to the background I want to clear the current count, but when it comes back I want the previously scanned barcodes to still be shown as already counted. File: IntegratedScreenModel.kt",
       "expected_output": "The skill stashes the recognized barcodes before calling barcodeCount.reset() when pausing, then calls barcodeCount.setAdditionalBarcodes(...) with the previously scanned barcodes when resuming so they are restored as already-counted. The core integration is otherwise unchanged.",
-      "files": ["fixtures/IntegratedScreenModel.kt"],
-      "assertions": [
-        {"text": "barcodeCount.setAdditionalBarcodes( is called with the previously scanned barcodes on resume"},
-        {"text": "barcodeCount.reset() is called to clear the current count when pausing (semantic)"},
-        {"text": "The previously scanned barcodes are stashed before reset() is called (semantic)"},
-        {"text": "Existing resumeFrameSource / pauseFrameSource / BarcodeCount wiring is preserved"}
+      "files": [
+        "fixtures/IntegratedScreenModel.kt"
       ],
-      "tags": ["additional-barcodes", "reset-mode"]
+      "assertions": [
+        {
+          "text": "barcodeCount.setAdditionalBarcodes( is called with the previously scanned barcodes on resume"
+        },
+        {
+          "text": "barcodeCount.reset() is called to clear the current count when pausing (semantic)"
+        },
+        {
+          "text": "The previously scanned barcodes are stashed before reset() is called (semantic)"
+        },
+        {
+          "text": "Existing resumeFrameSource / pauseFrameSource / BarcodeCount wiring is preserved"
+        }
+      ],
+      "tags": [
+        "additional-barcodes",
+        "reset-mode"
+      ]
     },
     {
       "id": 9,
       "prompt": "Enable a hardware trigger in my MatrixScan Count KMP app for an enterprise Android scanner, using the default key. File: IntegratedScreenModel.kt",
       "expected_output": "The skill explains that enableHardwareTrigger is only on the base (non-Compose) BarcodeCountView, checks BarcodeCountView.hardwareTriggerSupported, and calls view.enableHardwareTrigger(null) to use the default key. The existing integration is preserved.",
-      "files": ["fixtures/IntegratedScreenModel.kt"],
-      "assertions": [
-        {"text": "BarcodeCountView.hardwareTriggerSupported is checked before enabling (semantic)"},
-        {"text": "enableHardwareTrigger(null) is called on the base BarcodeCountView with a null key code for the default"},
-        {"text": "The answer notes the hardware trigger is only reachable via the base BarcodeCountView, not the Compose wrapper (semantic)"},
-        {"text": "Existing IntegratedScreenModel.kt integration code (BarcodeCount, DataCaptureContext, listener) is preserved"}
+      "files": [
+        "fixtures/IntegratedScreenModel.kt"
       ],
-      "tags": ["hardware-trigger"]
+      "assertions": [
+        {
+          "text": "BarcodeCountView.hardwareTriggerSupported is checked before enabling (semantic)"
+        },
+        {
+          "text": "enableHardwareTrigger(null) is called on the base BarcodeCountView with a null key code for the default"
+        },
+        {
+          "text": "The answer notes the hardware trigger is only reachable via the base BarcodeCountView, not the Compose wrapper (semantic)"
+        },
+        {
+          "text": "Existing IntegratedScreenModel.kt integration code (BarcodeCount, DataCaptureContext, listener) is preserved"
+        }
+      ],
+      "tags": [
+        "hardware-trigger"
+      ]
+    },
+    {
+      "id": 10,
+      "prompt": "Wire up proper camera on/off lifecycle for my KMP MatrixScan Count screen: turn the camera on when the screen appears and off when it leaves (BarcodeCountView does not own the camera).",
+      "expected_output": "Call camera.switchToDesiredState(FrameSourceState.ON/OFF) on the screen's appear/disappear.",
+      "files": [
+        "fixtures/IntegratedScreenModel.kt"
+      ],
+      "assertions": [
+        {
+          "text": "camera.switchToDesiredState(FrameSourceState.ON) is called when the screen becomes active (semantic)"
+        },
+        {
+          "text": "camera.switchToDesiredState(FrameSourceState.OFF) is called when the screen leaves (semantic)"
+        },
+        {
+          "text": "FrameSourceState is used (semantic)"
+        }
+      ],
+      "tags": [
+        "camera-lifecycle"
+      ]
+    },
+    {
+      "id": 11,
+      "prompt": "Hook up the MatrixScan Count list and exit buttons in my KMP app so I can review the scanned list and finish the order.",
+      "expected_output": "Implement BarcodeCountViewUiListener (onListButtonTapped/onExitButtonTapped) and set it on the view.",
+      "files": [
+        "fixtures/IntegratedScreenModel.kt"
+      ],
+      "assertions": [
+        {
+          "text": "a BarcodeCountViewUiListener is implemented (semantic)"
+        },
+        {
+          "text": "onListButtonTapped is overridden (semantic)"
+        },
+        {
+          "text": "onExitButtonTapped is overridden (semantic)"
+        },
+        {
+          "text": "the UI listener is set on the BarcodeCountView (semantic)"
+        }
+      ],
+      "tags": [
+        "scan-review-workflow"
+      ]
+    },
+    {
+      "id": 12,
+      "prompt": "Show the built-in accept/reject 'not in list' dialog when a scanned barcode isn't in my KMP count list.",
+      "expected_output": "Configure BarcodeCountNotInListActionSettings and enable it on the view.",
+      "files": [
+        "fixtures/IntegratedScreenModel.kt"
+      ],
+      "assertions": [
+        {
+          "text": "BarcodeCountNotInListActionSettings is used (semantic)"
+        },
+        {
+          "text": "the not-in-list action is enabled on the view (semantic)"
+        }
+      ],
+      "tags": [
+        "not-in-list-action"
+      ]
     }
   ]
 }
