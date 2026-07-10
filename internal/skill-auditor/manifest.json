@@ -7,7 +7,11 @@
     "id-capture-",
     "matrixscan-ar-",
     "matrixscan-batch-",
-    "matrixscan-count-"
+    "matrixscan-count-",
+    "matrixscan-find-",
+    "matrixscan-pick-",
+    "barcode-selection-",
+    "parser-"
   ],
   "parity_exempt": [
     "matrixscan-ar-annotation-ios",
