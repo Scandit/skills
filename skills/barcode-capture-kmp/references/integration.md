@@ -220,7 +220,15 @@ val settings = BarcodeCaptureSettings.barcodeCaptureSettings().also {
 ```
 
 - `enableSymbologies(symbologies: Set<Symbology>)` enables several at once.
-- `getSymbologySettings(symbology: Symbology): SymbologySettings` returns the per-symbology settings object for extensions, checksums, and active-symbol-count tuning.
+- `getSymbologySettings(symbology: Symbology): SymbologySettings` returns the per-symbology settings object for extensions, checksums, active-symbol-count, and color-inversion tuning:
+
+```kotlin
+val code39 = settings.getSymbologySettings(Symbology.CODE39)
+code39.setExtensionEnabled("full_ascii", true)   // enable a symbology extension
+code39.checksums = setOf(Checksum.MOD_43)         // checksums: Set<Checksum>
+code39.activeSymbolCounts = setOf<Short>(6, 7, 8, 9, 10) // NOTE: Set<Short> — annotate, or setOf(6,7) infers Set<Int> and won't compile
+settings.getSymbologySettings(Symbology.QR).isColorInvertedEnabled = true // scan white-on-black codes
+```
 - `enabledSymbologies: Set<Symbology>` reads back the currently enabled set.
 - Apply settings changes after mode creation with `barcodeCapture.applySettings(settings)`.
 

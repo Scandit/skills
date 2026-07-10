@@ -9,24 +9,64 @@
         "fixtures/EmptyScannerScreenModel.kt"
       ],
       "assertions": [
-        {"text": "Setup checklist is shown and mentions adding com.scandit.datacapture.kmp:core and com.scandit.datacapture.kmp:barcode dependencies to commonMain"},
-        {"text": "Setup checklist mentions adding CAMERA permission (AndroidManifest.xml) and NSCameraUsageDescription (Info.plist)"},
-        {"text": "A license key placeholder string '-- ENTER YOUR SCANDIT LICENSE KEY HERE --' is present"},
-        {"text": "DataCaptureContext.initialize( is used"},
-        {"text": "BarcodeArSettings.barcodeArSettings() is used to construct settings (not a BarcodeArSettings() constructor)"},
-        {"text": "Symbology.EAN13_UPCA is enabled"},
-        {"text": "Symbology.QR is enabled"},
-        {"text": "No symbologies other than EAN13_UPCA and QR are enabled"},
-        {"text": "BarcodeAr.forContext( is used to construct the mode (not a BarcodeAr(...) direct constructor)"},
-        {"text": "BarcodeArHighlightProvider is implemented"},
-        {"text": "highlightForBarcode is overridden and returns a BarcodeArRectangleHighlight(barcode) constructed without a Context argument"},
-        {"text": "The highlight callback is invoked as a function call (callback(highlight) or equivalent), not callback.onData("},
-        {"text": "A function that accepts an already-constructed BarcodeArView (e.g. registerView(view: BarcodeArView)) is present, since BarcodeArView cannot be constructed directly in shared code"},
-        {"text": "view.highlightProvider is assigned"},
-        {"text": "view.start() is called after the provider is assigned"},
-        {"text": "start() and pause() are used to drive the view's lifecycle rather than onResume()/onPause()/onDestroy()"}
+        {
+          "text": "Setup checklist is shown and mentions adding com.scandit.datacapture.kmp:core and com.scandit.datacapture.kmp:barcode dependencies to commonMain"
+        },
+        {
+          "text": "Setup checklist mentions adding CAMERA permission (AndroidManifest.xml) and NSCameraUsageDescription (Info.plist)"
+        },
+        {
+          "text": "A license key placeholder string '-- ENTER YOUR SCANDIT LICENSE KEY HERE --' is present"
+        },
+        {
+          "text": "DataCaptureContext.initialize( is used"
+        },
+        {
+          "text": "BarcodeArSettings.barcodeArSettings() is used to construct settings (not a BarcodeArSettings() constructor)"
+        },
+        {
+          "text": "Symbology.EAN13_UPCA is enabled"
+        },
+        {
+          "text": "Symbology.QR is enabled"
+        },
+        {
+          "text": "No symbologies other than EAN13_UPCA and QR are enabled"
+        },
+        {
+          "text": "BarcodeAr.forContext( is used to construct the mode (not a BarcodeAr(...) direct constructor)"
+        },
+        {
+          "text": "BarcodeArHighlightProvider is implemented"
+        },
+        {
+          "text": "highlightForBarcode is overridden and returns a BarcodeArRectangleHighlight(barcode) constructed without a Context argument"
+        },
+        {
+          "text": "The highlight callback is invoked as a function call (callback(highlight) or equivalent), not callback.onData("
+        },
+        {
+          "text": "A function that accepts an already-constructed BarcodeArView (e.g. registerView(view: BarcodeArView)) is present, since BarcodeArView cannot be constructed directly in shared code"
+        },
+        {
+          "text": "view.highlightProvider is assigned"
+        },
+        {
+          "text": "view.start() is called after the provider is assigned"
+        },
+        {
+          "text": "start() and pause() are used to drive the view's lifecycle rather than onResume()/onPause()/onDestroy()"
+        }
       ],
-      "tags": ["basic-integration", "license-init", "barcode-ar-view", "view-lifecycle", "symbology-config", "highlight-basic", "highlight-provider"]
+      "tags": [
+        "basic-integration",
+        "license-init",
+        "barcode-ar-view",
+        "view-lifecycle",
+        "symbology-config",
+        "highlight-basic",
+        "highlight-provider"
+      ]
     },
     {
       "id": 2,
@@ -36,15 +76,33 @@
         "fixtures/IntegratedScannerScreenModel.kt"
       ],
       "assertions": [
-        {"text": "BarcodeArAnnotationProvider is implemented"},
-        {"text": "annotationForBarcode is overridden"},
-        {"text": "BarcodeArInfoAnnotation(barcode) is constructed without a Context argument"},
-        {"text": "The barcode data (barcode.data) is used as annotation body content via a BarcodeArInfoAnnotationBodyComponent"},
-        {"text": "The annotation callback is invoked as a function call (callback(annotation) or equivalent), not callback.onData("},
-        {"text": "view.annotationProvider is assigned"},
-        {"text": "Existing integration code (BarcodeAr, BarcodeArView registration, highlight provider) is preserved"}
+        {
+          "text": "BarcodeArAnnotationProvider is implemented"
+        },
+        {
+          "text": "annotationForBarcode is overridden"
+        },
+        {
+          "text": "BarcodeArInfoAnnotation(barcode) is constructed without a Context argument"
+        },
+        {
+          "text": "The barcode data (barcode.data) is used as annotation body content via a BarcodeArInfoAnnotationBodyComponent"
+        },
+        {
+          "text": "The annotation callback is invoked as a function call (callback(annotation) or equivalent), not callback.onData("
+        },
+        {
+          "text": "view.annotationProvider is assigned"
+        },
+        {
+          "text": "Existing integration code (BarcodeAr, BarcodeArView registration, highlight provider) is preserved"
+        }
       ],
-      "tags": ["annotation-basic", "annotation-provider", "info-annotation-content"]
+      "tags": [
+        "annotation-basic",
+        "annotation-provider",
+        "info-annotation-content"
+      ]
     },
     {
       "id": 3,
@@ -54,11 +112,19 @@
         "fixtures/IntegratedScannerScreenModel.kt"
       ],
       "assertions": [
-        {"text": "barcodeAr.feedback is reassigned to a BarcodeArFeedback() to suppress audio and haptic feedback"},
-        {"text": "BarcodeArFeedback.defaultFeedback() is NOT used for this silent-scanning change"},
-        {"text": "Existing integration code (BarcodeAr, BarcodeArView registration, highlight provider) is preserved"}
+        {
+          "text": "barcodeAr.feedback is reassigned to a BarcodeArFeedback() to suppress audio and haptic feedback"
+        },
+        {
+          "text": "BarcodeArFeedback.defaultFeedback() is NOT used for this silent-scanning change"
+        },
+        {
+          "text": "Existing integration code (BarcodeAr, BarcodeArView registration, highlight provider) is preserved"
+        }
       ],
-      "tags": ["feedback-control"]
+      "tags": [
+        "feedback-control"
+      ]
     },
     {
       "id": 4,
@@ -68,13 +134,26 @@
         "fixtures/IntegratedScannerScreenModel.kt"
       ],
       "assertions": [
-        {"text": "BarcodeArCircleHighlight(barcode, ...) is constructed with a BarcodeArCircleHighlightPreset"},
-        {"text": "highlight.isPulsing is set to true"},
-        {"text": "highlight.brush is assigned using Color.fromRgba( for a green color"},
-        {"text": "BarcodeArRectangleHighlight is NOT used for this highlight in the updated code"},
-        {"text": "Existing integration code (BarcodeAr, BarcodeArView registration, session listener) is preserved"}
+        {
+          "text": "BarcodeArCircleHighlight(barcode, ...) is constructed with a BarcodeArCircleHighlightPreset"
+        },
+        {
+          "text": "highlight.isPulsing is set to true"
+        },
+        {
+          "text": "highlight.brush is assigned using Color.fromRgba( for a green color"
+        },
+        {
+          "text": "BarcodeArRectangleHighlight is NOT used for this highlight in the updated code"
+        },
+        {
+          "text": "Existing integration code (BarcodeAr, BarcodeArView registration, session listener) is preserved"
+        }
       ],
-      "tags": ["circle-highlight", "highlight-brush-icon"]
+      "tags": [
+        "circle-highlight",
+        "highlight-brush-icon"
+      ]
     },
     {
       "id": 5,
@@ -84,13 +163,25 @@
         "fixtures/IntegratedScannerScreenModel.kt"
       ],
       "assertions": [
-        {"text": "BarcodeArStatusIconAnnotation(barcode) is constructed"},
-        {"text": "annotation.text is set to a string containing 'Expired'"},
-        {"text": "annotation.icon is built with ScanditIcon.builder() using ScanditIconType.EXCLAMATION_MARK"},
-        {"text": "view.annotationProvider is assigned"},
-        {"text": "Existing integration code (BarcodeAr, BarcodeArView registration, highlight provider) is preserved"}
+        {
+          "text": "BarcodeArStatusIconAnnotation(barcode) is constructed"
+        },
+        {
+          "text": "annotation.text is set to a string containing 'Expired'"
+        },
+        {
+          "text": "annotation.icon is built with ScanditIcon.builder() using ScanditIconType.EXCLAMATION_MARK"
+        },
+        {
+          "text": "view.annotationProvider is assigned"
+        },
+        {
+          "text": "Existing integration code (BarcodeAr, BarcodeArView registration, highlight provider) is preserved"
+        }
       ],
-      "tags": ["status-icon-annotation"]
+      "tags": [
+        "status-icon-annotation"
+      ]
     },
     {
       "id": 6,
@@ -100,13 +191,26 @@
         "fixtures/IntegratedScannerScreenModel.kt"
       ],
       "assertions": [
-        {"text": "BarcodeArPopoverAnnotation(barcode, listOf(...)) is constructed with a list of BarcodeArPopoverAnnotationButton"},
-        {"text": "A button labeled 'Accept' and a button labeled 'Reject' are created via BarcodeArPopoverAnnotationButton"},
-        {"text": "BarcodeArPopoverAnnotationListener is implemented with onPopoverButtonTapped overridden"},
-        {"text": "view.annotationProvider is assigned"},
-        {"text": "Existing integration code (BarcodeAr, BarcodeArView registration, highlight provider) is preserved"}
+        {
+          "text": "BarcodeArPopoverAnnotation(barcode, listOf(...)) is constructed with a list of BarcodeArPopoverAnnotationButton"
+        },
+        {
+          "text": "A button labeled 'Accept' and a button labeled 'Reject' are created via BarcodeArPopoverAnnotationButton"
+        },
+        {
+          "text": "BarcodeArPopoverAnnotationListener is implemented with onPopoverButtonTapped overridden"
+        },
+        {
+          "text": "view.annotationProvider is assigned"
+        },
+        {
+          "text": "Existing integration code (BarcodeAr, BarcodeArView registration, highlight provider) is preserved"
+        }
       ],
-      "tags": ["popover-annotation", "annotation-tap"]
+      "tags": [
+        "popover-annotation",
+        "annotation-tap"
+      ]
     },
     {
       "id": 7,
@@ -116,12 +220,22 @@
         "fixtures/IntegratedScannerScreenModel.kt"
       ],
       "assertions": [
-        {"text": "BarcodeArResponsiveAnnotation(barcode, closeUpAnnotation, farAwayAnnotation) is constructed from two BarcodeArInfoAnnotation instances"},
-        {"text": "The close-up and far-away BarcodeArInfoAnnotation instances use different BarcodeArInfoAnnotationWidthPreset values"},
-        {"text": "view.annotationProvider is assigned"},
-        {"text": "Existing integration code (BarcodeAr, BarcodeArView registration, highlight provider) is preserved"}
+        {
+          "text": "BarcodeArResponsiveAnnotation(barcode, closeUpAnnotation, farAwayAnnotation) is constructed from two BarcodeArInfoAnnotation instances"
+        },
+        {
+          "text": "The close-up and far-away BarcodeArInfoAnnotation instances use different BarcodeArInfoAnnotationWidthPreset values"
+        },
+        {
+          "text": "view.annotationProvider is assigned"
+        },
+        {
+          "text": "Existing integration code (BarcodeAr, BarcodeArView registration, highlight provider) is preserved"
+        }
       ],
-      "tags": ["responsive-annotation"]
+      "tags": [
+        "responsive-annotation"
+      ]
     },
     {
       "id": 8,
@@ -131,12 +245,22 @@
         "fixtures/IntegratedScannerScreenModel.kt"
       ],
       "assertions": [
-        {"text": "BarcodeArViewUiListener is implemented"},
-        {"text": "onHighlightForBarcodeTapped is overridden with exactly three parameters (barcodeAr, barcode, highlight) and no View/highlightView parameter"},
-        {"text": "view.uiListener is assigned"},
-        {"text": "Existing integration code (BarcodeAr, BarcodeArView registration, highlight provider) is preserved"}
+        {
+          "text": "BarcodeArViewUiListener is implemented"
+        },
+        {
+          "text": "onHighlightForBarcodeTapped is overridden with exactly three parameters (barcodeAr, barcode, highlight) and no View/highlightView parameter"
+        },
+        {
+          "text": "view.uiListener is assigned"
+        },
+        {
+          "text": "Existing integration code (BarcodeAr, BarcodeArView registration, highlight provider) is preserved"
+        }
       ],
-      "tags": ["highlight-tap"]
+      "tags": [
+        "highlight-tap"
+      ]
     },
     {
       "id": 9,
@@ -146,12 +270,60 @@
         "fixtures/IntegratedScannerScreenModel.kt"
       ],
       "assertions": [
-        {"text": "BarcodeArFilter is implemented"},
-        {"text": "filterBarcodes(barcodes: List<Barcode>) is overridden and filters using barcode.data starting with 'PROD-'"},
-        {"text": "barcodeAr.setBarcodeFilter( is called to register the filter"},
-        {"text": "Existing integration code (BarcodeAr, BarcodeArView registration, highlight provider) is preserved"}
+        {
+          "text": "BarcodeArFilter is implemented"
+        },
+        {
+          "text": "filterBarcodes(barcodes: List<Barcode>) is overridden and filters using barcode.data starting with 'PROD-'"
+        },
+        {
+          "text": "barcodeAr.setBarcodeFilter( is called to register the filter"
+        },
+        {
+          "text": "Existing integration code (BarcodeAr, BarcodeArView registration, highlight provider) is preserved"
+        }
       ],
-      "tags": ["barcode-filter"]
+      "tags": [
+        "barcode-filter"
+      ]
+    },
+    {
+      "id": 10,
+      "prompt": "In my KMP MatrixScan AR app, only show the info annotation after the user taps a highlight, not automatically.",
+      "expected_output": "Set the annotation's annotationTrigger to BarcodeArAnnotationTrigger.HIGHLIGHT_TAP.",
+      "files": [
+        "fixtures/IntegratedScannerScreenModel.kt"
+      ],
+      "assertions": [
+        {
+          "text": "annotationTrigger is set on the annotation (semantic)"
+        },
+        {
+          "text": "BarcodeArAnnotationTrigger.HIGHLIGHT_TAP is present"
+        }
+      ],
+      "tags": [
+        "annotation-trigger"
+      ]
+    },
+    {
+      "id": 11,
+      "prompt": "Show the torch and zoom controls on my KMP MatrixScan AR view.",
+      "expected_output": "Set shouldShowTorchControl and shouldShowZoomControl to true on the BarcodeArView.",
+      "files": [
+        "fixtures/IntegratedScannerScreenModel.kt"
+      ],
+      "assertions": [
+        {
+          "text": "shouldShowTorchControl is set to true on the BarcodeArView (semantic)"
+        },
+        {
+          "text": "shouldShowZoomControl is set to true on the BarcodeArView (semantic)"
+        }
+      ],
+      "tags": [
+        "view-controls"
+      ]
     }
   ]
 }

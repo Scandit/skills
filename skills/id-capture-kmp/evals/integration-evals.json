@@ -5,158 +5,353 @@
       "id": 1,
       "prompt": "Add ID Capture to this shared IdScannerScreenModel to scan passports, driver's licenses, and ID cards from any region. I need data from both sides of the document. When a document is recognized, show the full name and document number. When a document is rejected, show an appropriate message.",
       "expected_output": "IdScannerScreenModel implementing IdCaptureListener with a shared DataCaptureContext, IdCaptureSettings built via IdCaptureSettings.idCaptureSettings() with acceptedDocuments for IdCard, DriverLicense and Passport, scannerType set to FullDocumentScanner(), IdCapture.forContext(...), a DataCaptureView + IdCaptureOverlay set up in setupDataCaptureView, and onIdCaptured/onIdRejected handling.",
-      "files": ["fixtures/EmptyScreenModel.kt"],
-      "assertions": [
-        {"text": "Imports from com.kmp.datacapture.id.* and com.kmp.datacapture.core.* — does NOT import com.scandit.datacapture.* (native Android/iOS namespace)"},
-        {"text": "Creates settings with IdCaptureSettings.idCaptureSettings() — does NOT use a bare IdCaptureSettings() constructor"},
-        {"text": "Sets acceptedDocuments to include IdCard(IdCaptureRegion.ANY), DriverLicense(IdCaptureRegion.ANY), and Passport(IdCaptureRegion.ANY)"},
-        {"text": "Sets settings.scannerType = FullDocumentScanner() — does NOT wrap it in an IdCaptureScanner(...) constructor and does NOT use SingleSideScanner"},
-        {"text": "Creates the mode with IdCapture.forContext(dataCaptureContext, settings) — does NOT use IdCapture.forDataCaptureContext (native Android) or an IdCapture(context:settings:) initializer (iOS)"},
-        {"text": "Uses Camera.getDefaultCamera(IdCapture.createRecommendedCameraSettings()) and calls dataCaptureContext.setFrameSource(...) with it"},
-        {"text": "Creates the overlay with IdCaptureOverlay.withIdCapture(idCapture) or IdCaptureOverlay.withIdCaptureForView(idCapture, view) — does NOT use IdCaptureOverlay.newInstance(...)"},
-        {"text": "Implements IdCaptureListener with onIdCaptured(mode: IdCapture, id: CapturedId) and onIdRejected(mode: IdCapture, id: CapturedId?, reason: RejectionReason)"},
-        {"text": "Sets mode.isEnabled = false at the top of onIdCaptured and onIdRejected"},
-        {"text": "Reads capturedId.fullName and capturedId.documentNumber from the CapturedId"},
-        {"text": "Registers the listener once via addListener when the mode is created, not repeatedly per lifecycle event"},
-        {"text": "Does NOT reference AamvaBarcodeVerifier or DataConsistencyVerifier"}
+      "files": [
+        "fixtures/EmptyScreenModel.kt"
       ],
-      "tags": ["basic-integration", "license-init", "capture-listener", "captured-id-result", "accepted-rejected-documents", "scanner-type", "capture-overlay", "camera-setup"]
+      "assertions": [
+        {
+          "text": "Imports from com.kmp.datacapture.id.* and com.kmp.datacapture.core.* — does NOT import com.scandit.datacapture.* (native Android/iOS namespace)"
+        },
+        {
+          "text": "Creates settings with IdCaptureSettings.idCaptureSettings() — does NOT use a bare IdCaptureSettings() constructor"
+        },
+        {
+          "text": "Sets acceptedDocuments to include IdCard(IdCaptureRegion.ANY), DriverLicense(IdCaptureRegion.ANY), and Passport(IdCaptureRegion.ANY)"
+        },
+        {
+          "text": "Sets settings.scannerType = FullDocumentScanner() — does NOT wrap it in an IdCaptureScanner(...) constructor and does NOT use SingleSideScanner"
+        },
+        {
+          "text": "Creates the mode with IdCapture.forContext(dataCaptureContext, settings) — does NOT use IdCapture.forDataCaptureContext (native Android) or an IdCapture(context:settings:) initializer (iOS)"
+        },
+        {
+          "text": "Uses Camera.getDefaultCamera(IdCapture.createRecommendedCameraSettings()) and calls dataCaptureContext.setFrameSource(...) with it"
+        },
+        {
+          "text": "Creates the overlay with IdCaptureOverlay.withIdCapture(idCapture) or IdCaptureOverlay.withIdCaptureForView(idCapture, view) — does NOT use IdCaptureOverlay.newInstance(...)"
+        },
+        {
+          "text": "Implements IdCaptureListener with onIdCaptured(mode: IdCapture, id: CapturedId) and onIdRejected(mode: IdCapture, id: CapturedId?, reason: RejectionReason)"
+        },
+        {
+          "text": "Sets mode.isEnabled = false at the top of onIdCaptured and onIdRejected"
+        },
+        {
+          "text": "Reads capturedId.fullName and capturedId.documentNumber from the CapturedId"
+        },
+        {
+          "text": "Registers the listener once via addListener when the mode is created, not repeatedly per lifecycle event"
+        },
+        {
+          "text": "Does NOT reference AamvaBarcodeVerifier or DataConsistencyVerifier"
+        }
+      ],
+      "tags": [
+        "basic-integration",
+        "license-init",
+        "capture-listener",
+        "captured-id-result",
+        "accepted-rejected-documents",
+        "scanner-type",
+        "capture-overlay",
+        "camera-setup"
+      ]
     },
     {
       "id": 2,
       "prompt": "Update the ID Capture integration to reject expired IDs and holders under 21 years old. Show a distinct message for each rejection reason: expired document, underage holder, timeout, and any other rejection.",
       "expected_output": "IdCaptureSettings updated with rejectExpiredIds = true and rejectHolderBelowAge = 21, and onIdRejected updated with a when on RejectionReason showing distinct messages for DOCUMENT_EXPIRED, HOLDER_UNDERAGE, TIMEOUT, and an else branch.",
-      "files": ["fixtures/IntegratedScreenModel.kt"],
-      "assertions": [
-        {"text": "Sets settings.rejectExpiredIds = true"},
-        {"text": "Sets settings.rejectHolderBelowAge = 21 as an Int literal, not a String"},
-        {"text": "Uses a when statement on the RejectionReason parameter in onIdRejected"},
-        {"text": "Has a branch for RejectionReason.DOCUMENT_EXPIRED with a distinct message about the document being expired"},
-        {"text": "Has a branch for RejectionReason.HOLDER_UNDERAGE with a distinct message about the age requirement"},
-        {"text": "Has a branch for RejectionReason.TIMEOUT with a distinct message about the capture timing out"},
-        {"text": "Has an else branch for all other rejection reasons"}
+      "files": [
+        "fixtures/IntegratedScreenModel.kt"
       ],
-      "tags": ["expiry-age-rejection", "rejection-handling"]
+      "assertions": [
+        {
+          "text": "Sets settings.rejectExpiredIds = true"
+        },
+        {
+          "text": "Sets settings.rejectHolderBelowAge = 21 as an Int literal, not a String"
+        },
+        {
+          "text": "Uses a when statement on the RejectionReason parameter in onIdRejected"
+        },
+        {
+          "text": "Has a branch for RejectionReason.DOCUMENT_EXPIRED with a distinct message about the document being expired"
+        },
+        {
+          "text": "Has a branch for RejectionReason.HOLDER_UNDERAGE with a distinct message about the age requirement"
+        },
+        {
+          "text": "Has a branch for RejectionReason.TIMEOUT with a distinct message about the capture timing out"
+        },
+        {
+          "text": "Has an else branch for all other rejection reasons"
+        }
+      ],
+      "tags": [
+        "expiry-age-rejection",
+        "rejection-handling"
+      ]
     },
     {
       "id": 3,
       "prompt": "Configure ID Capture to accept ID cards and driver's licenses from the US, but explicitly reject passports.",
       "expected_output": "IdCaptureSettings with acceptedDocuments containing IdCard(IdCaptureRegion.US) and DriverLicense(IdCaptureRegion.US), and rejectedDocuments containing Passport(IdCaptureRegion.ANY).",
-      "files": ["fixtures/EmptyScreenModel.kt"],
-      "assertions": [
-        {"text": "Sets acceptedDocuments to listOf(IdCard(IdCaptureRegion.US), DriverLicense(IdCaptureRegion.US)) — does NOT put passports in acceptedDocuments"},
-        {"text": "Sets rejectedDocuments to contain Passport — does NOT try to exclude passports via acceptedDocuments alone"},
-        {"text": "Builds settings via IdCaptureSettings.idCaptureSettings()"}
+      "files": [
+        "fixtures/EmptyScreenModel.kt"
       ],
-      "tags": ["accepted-rejected-documents"]
+      "assertions": [
+        {
+          "text": "Sets acceptedDocuments to listOf(IdCard(IdCaptureRegion.US), DriverLicense(IdCaptureRegion.US)) — does NOT put passports in acceptedDocuments"
+        },
+        {
+          "text": "Sets rejectedDocuments to contain Passport — does NOT try to exclude passports via acceptedDocuments alone"
+        },
+        {
+          "text": "Builds settings via IdCaptureSettings.idCaptureSettings()"
+        }
+      ],
+      "tags": [
+        "accepted-rejected-documents"
+      ]
     },
     {
       "id": 4,
       "prompt": "I only need to read the barcode from US driver's licenses — I don't need the VIZ or MRZ.",
       "expected_output": "IdCaptureSettings with acceptedDocuments containing DriverLicense(IdCaptureRegion.US) and scannerType set directly to SingleSideScanner(barcode = true, machineReadableZone = false, visualInspectionZone = false).",
-      "files": ["fixtures/EmptyScreenModel.kt"],
-      "assertions": [
-        {"text": "Sets acceptedDocuments to listOf(DriverLicense(IdCaptureRegion.US))"},
-        {"text": "Sets settings.scannerType = SingleSideScanner(barcode = true, machineReadableZone = false, visualInspectionZone = false) — does NOT use FullDocumentScanner"},
-        {"text": "Assigns the SingleSideScanner directly to scannerType — does NOT wrap it in an IdCaptureScanner(...) constructor"}
+      "files": [
+        "fixtures/EmptyScreenModel.kt"
       ],
-      "tags": ["scanner-type", "barcode-scanning"]
+      "assertions": [
+        {
+          "text": "Sets acceptedDocuments to listOf(DriverLicense(IdCaptureRegion.US))"
+        },
+        {
+          "text": "Sets settings.scannerType = SingleSideScanner(barcode = true, machineReadableZone = false, visualInspectionZone = false) — does NOT use FullDocumentScanner"
+        },
+        {
+          "text": "Assigns the SingleSideScanner directly to scannerType — does NOT wrap it in an IdCaptureScanner(...) constructor"
+        }
+      ],
+      "tags": [
+        "scanner-type",
+        "barcode-scanning"
+      ]
     },
     {
       "id": 5,
       "prompt": "I only need to read the MRZ from passports — I don't need the VIZ or barcode.",
       "expected_output": "IdCaptureSettings with acceptedDocuments containing Passport and scannerType set directly to SingleSideScanner(barcode = false, machineReadableZone = true, visualInspectionZone = false).",
-      "files": ["fixtures/EmptyScreenModel.kt"],
-      "assertions": [
-        {"text": "Sets acceptedDocuments to include Passport"},
-        {"text": "Sets settings.scannerType = SingleSideScanner(barcode = false, machineReadableZone = true, visualInspectionZone = false) — does NOT use FullDocumentScanner"},
-        {"text": "Assigns the SingleSideScanner directly to scannerType — does NOT wrap it in an IdCaptureScanner(...) constructor"}
+      "files": [
+        "fixtures/EmptyScreenModel.kt"
       ],
-      "tags": ["scanner-type", "mrz-scanning"]
+      "assertions": [
+        {
+          "text": "Sets acceptedDocuments to include Passport"
+        },
+        {
+          "text": "Sets settings.scannerType = SingleSideScanner(barcode = false, machineReadableZone = true, visualInspectionZone = false) — does NOT use FullDocumentScanner"
+        },
+        {
+          "text": "Assigns the SingleSideScanner directly to scannerType — does NOT wrap it in an IdCaptureScanner(...) constructor"
+        }
+      ],
+      "tags": [
+        "scanner-type",
+        "mrz-scanning"
+      ]
     },
     {
       "id": 6,
       "prompt": "Configure ID Capture to scan US driver's licenses only and verify them for forged AAMVA barcodes and data inconsistency between the front and back of the document. Also reject expired IDs. On rejection for inconsistent data, extract and display the front review image from the verification result.",
       "expected_output": "IdCaptureSettings targeting DriverLicense(IdCaptureRegion.US) with rejectForgedAamvaBarcodes, rejectInconsistentData, and rejectExpiredIds flags, setShouldPassImageTypeToResult for CROPPED_DOCUMENT, plus a note that the id-aamva-barcode-verification Gradle/SPM add-on dependency is required, and correct VerificationResult access in onIdRejected.",
-      "files": ["fixtures/IntegratedScreenModel.kt"],
-      "assertions": [
-        {"text": "Sets acceptedDocuments to listOf(DriverLicense(IdCaptureRegion.US)) only"},
-        {"text": "Sets settings.rejectForgedAamvaBarcodes = true"},
-        {"text": "Sets settings.rejectInconsistentData = true"},
-        {"text": "Sets settings.rejectExpiredIds = true"},
-        {"text": "Calls settings.setShouldPassImageTypeToResult(IdImageType.CROPPED_DOCUMENT, true) — required for frontReviewImage to be populated"},
-        {"text": "Does NOT use a standalone AamvaBarcodeVerifier or DataConsistencyVerifier class — verification is settings-driven (semantic)"},
-        {"text": "In onIdRejected, accesses id?.verificationResult?.dataConsistency?.frontReviewImage when the reason is RejectionReason.INCONSISTENT_DATA"},
-        {"text": "Handles RejectionReason.INCONSISTENT_DATA, RejectionReason.FORGED_AAMVA_BARCODE, and RejectionReason.DOCUMENT_EXPIRED in onIdRejected with distinct messages"},
-        {"text": "Mentions or implies that the id-aamva-barcode-verification Gradle/SPM dependency must be added alongside id for the settings flags to take effect at runtime (semantic)"}
+      "files": [
+        "fixtures/IntegratedScreenModel.kt"
       ],
-      "tags": ["aamva-barcode-verification", "data-consistency-verification", "image-extraction"]
+      "assertions": [
+        {
+          "text": "Sets acceptedDocuments to listOf(DriverLicense(IdCaptureRegion.US)) only"
+        },
+        {
+          "text": "Sets settings.rejectForgedAamvaBarcodes = true"
+        },
+        {
+          "text": "Sets settings.rejectInconsistentData = true"
+        },
+        {
+          "text": "Sets settings.rejectExpiredIds = true"
+        },
+        {
+          "text": "Calls settings.setShouldPassImageTypeToResult(IdImageType.CROPPED_DOCUMENT, true) — required for frontReviewImage to be populated"
+        },
+        {
+          "text": "Does NOT use a standalone AamvaBarcodeVerifier or DataConsistencyVerifier class — verification is settings-driven (semantic)"
+        },
+        {
+          "text": "In onIdRejected, accesses id?.verificationResult?.dataConsistency?.frontReviewImage when the reason is RejectionReason.INCONSISTENT_DATA"
+        },
+        {
+          "text": "Handles RejectionReason.INCONSISTENT_DATA, RejectionReason.FORGED_AAMVA_BARCODE, and RejectionReason.DOCUMENT_EXPIRED in onIdRejected with distinct messages"
+        },
+        {
+          "text": "Mentions or implies that the id-aamva-barcode-verification Gradle/SPM dependency must be added alongside id for the settings flags to take effect at runtime (semantic)"
+        }
+      ],
+      "tags": [
+        "aamva-barcode-verification",
+        "data-consistency-verification",
+        "image-extraction"
+      ]
     },
     {
       "id": 7,
       "prompt": "Configure this ID Capture integration so that sensitive fields are redacted AND obscured with black boxes on the returned document images, not just removed from the data.",
       "expected_output": "IdCaptureSettings with anonymizationMode set to IdAnonymizationMode.FIELDS_AND_IMAGES so that anonymized fields are both nulled in the CapturedId and covered on the returned images.",
-      "files": ["fixtures/IntegratedScreenModel.kt"],
-      "assertions": [
-        {"text": "Sets settings.anonymizationMode = IdAnonymizationMode.FIELDS_AND_IMAGES"},
-        {"text": "Uses the IdAnonymizationMode enum value FIELDS_AND_IMAGES — does NOT use a string literal"},
-        {"text": "Does NOT set anonymizationMode to NONE, FIELDS_ONLY, or IMAGES_ONLY (semantic)"}
+      "files": [
+        "fixtures/IntegratedScreenModel.kt"
       ],
-      "tags": ["data-anonymization"]
+      "assertions": [
+        {
+          "text": "Sets settings.anonymizationMode = IdAnonymizationMode.FIELDS_AND_IMAGES"
+        },
+        {
+          "text": "Uses the IdAnonymizationMode enum value FIELDS_AND_IMAGES — does NOT use a string literal"
+        },
+        {
+          "text": "Does NOT set anonymizationMode to NONE, FIELDS_ONLY, or IMAGES_ONLY (semantic)"
+        }
+      ],
+      "tags": [
+        "data-anonymization"
+      ]
     },
     {
       "id": 8,
       "prompt": "Update ID Capture to reject voided documents (for example a hole-punched or VOID-stamped US driver's license) and show a distinct message when that happens. Also make sure I've added the right dependency for this to actually work.",
       "expected_output": "IdCaptureSettings with rejectVoidedIds = true, an onIdRejected when that handles RejectionReason.DOCUMENT_VOIDED with a distinct message, and a note that the id-voided-detection Gradle/SPM add-on dependency is required alongside id.",
-      "files": ["fixtures/IntegratedScreenModel.kt"],
-      "assertions": [
-        {"text": "Sets settings.rejectVoidedIds = true"},
-        {"text": "Handles the RejectionReason.DOCUMENT_VOIDED case in onIdRejected with a distinct voided-document message"},
-        {"text": "Does NOT use a standalone verifier class for voided detection — rejection is settings-driven (semantic)"},
-        {"text": "Mentions that the id-voided-detection Gradle/SPM dependency must be added for the flag to take effect at runtime (semantic)"}
+      "files": [
+        "fixtures/IntegratedScreenModel.kt"
       ],
-      "tags": ["voided-detection"]
+      "assertions": [
+        {
+          "text": "Sets settings.rejectVoidedIds = true"
+        },
+        {
+          "text": "Handles the RejectionReason.DOCUMENT_VOIDED case in onIdRejected with a distinct voided-document message"
+        },
+        {
+          "text": "Does NOT use a standalone verifier class for voided detection — rejection is settings-driven (semantic)"
+        },
+        {
+          "text": "Mentions that the id-voided-detection Gradle/SPM dependency must be added for the flag to take effect at runtime (semantic)"
+        }
+      ],
+      "tags": [
+        "voided-detection"
+      ]
     },
     {
       "id": 9,
       "prompt": "I need the vehicle category data from the back of European driving licenses. Enable extraction of that data, and in onIdCaptured iterate over the driving license categories and log each category's code.",
       "expected_output": "IdCaptureSettings with decodeBackOfEuropeanDrivingLicense = true, and onIdCaptured reading capturedId.viz?.drivingLicenseDetails?.drivingLicenseCategories and accessing each category's .code, plus a note that the id-europe-driving-license add-on dependency is required.",
-      "files": ["fixtures/IntegratedScreenModel.kt"],
-      "assertions": [
-        {"text": "Sets settings.decodeBackOfEuropeanDrivingLicense = true"},
-        {"text": "Reads id.viz?.drivingLicenseDetails?.drivingLicenseCategories in onIdCaptured — NOT id.vizResult"},
-        {"text": "Accesses the category code as .code on each category — does NOT use .categoryCode"},
-        {"text": "Mentions that the id-europe-driving-license Gradle/SPM dependency must be added for the flag to take effect at runtime (semantic)"}
+      "files": [
+        "fixtures/IntegratedScreenModel.kt"
       ],
-      "tags": ["europe-driving-license"]
+      "assertions": [
+        {
+          "text": "Sets settings.decodeBackOfEuropeanDrivingLicense = true"
+        },
+        {
+          "text": "Reads id.viz?.drivingLicenseDetails?.drivingLicenseCategories in onIdCaptured — NOT id.vizResult"
+        },
+        {
+          "text": "Accesses the category code as .code on each category — does NOT use .categoryCode"
+        },
+        {
+          "text": "Mentions that the id-europe-driving-license Gradle/SPM dependency must be added for the flag to take effect at runtime (semantic)"
+        }
+      ],
+      "tags": [
+        "europe-driving-license"
+      ]
     },
     {
       "id": 10,
       "prompt": "I need to scan mobile driver's licenses (mDL, ISO 18013-5) and read the holder's name and date of birth. Set that up in IntegratedScreenModel.kt.",
       "expected_output": "IdCaptureSettings whose scannerType is set directly to MobileDocumentScanner(iso180135 = true, ...), and onIdCaptured reading capturedId.mobileDocument (or the harmonized top-level fields).",
-      "files": ["fixtures/IntegratedScreenModel.kt"],
-      "assertions": [
-        {"text": "Sets settings.scannerType = MobileDocumentScanner(iso180135 = true, ...) (semantic)"},
-        {"text": "Assigns the MobileDocumentScanner directly to scannerType — does NOT wrap it in an IdCaptureScanner(physicalDocument:, mobileDocument:) combined constructor, which does not exist on KMP (semantic)"},
-        {"text": "onIdCaptured reads id.mobileDocument, or the harmonized top-level fields the mobile document populates (semantic)"},
-        {"text": "Does NOT invent a separate add-on dependency for mobile documents — MobileDocumentScanner is in the base id module (semantic)"}
+      "files": [
+        "fixtures/IntegratedScreenModel.kt"
       ],
-      "tags": ["mobile-document-mdl"]
+      "assertions": [
+        {
+          "text": "Sets settings.scannerType = MobileDocumentScanner(iso180135 = true, ...) (semantic)"
+        },
+        {
+          "text": "Assigns the MobileDocumentScanner directly to scannerType — does NOT wrap it in an IdCaptureScanner(physicalDocument:, mobileDocument:) combined constructor, which does not exist on KMP (semantic)"
+        },
+        {
+          "text": "onIdCaptured reads id.mobileDocument, or the harmonized top-level fields the mobile document populates (semantic)"
+        },
+        {
+          "text": "Does NOT invent a separate add-on dependency for mobile documents — MobileDocumentScanner is in the base id module (semantic)"
+        }
+      ],
+      "tags": [
+        "mobile-document-mdl"
+      ]
     },
     {
       "id": 11,
       "prompt": "I want to build the ID scanning screen using Jetpack Compose Multiplatform instead of hosting a DataCaptureView manually. Set it up to scan any ID card, driver's license, or passport, showing a rounded overlay, and log the captured document's full name.",
       "expected_output": "A @Composable function using IdCaptureView from the id-compose module with settings from IdCaptureSettings.idCaptureSettings(), overlayStyle = IdLayoutStyle.ROUNDED, and an onCapture callback reading capturedId.fullName, plus the core-compose and id-compose Gradle dependencies.",
-      "files": ["fixtures/EmptyScreenModel.kt"],
-      "assertions": [
-        {"text": "Uses the @Composable IdCaptureView function from com.kmp.datacapture.id.compose"},
-        {"text": "Passes settings = IdCaptureSettings.idCaptureSettings() to IdCaptureView"},
-        {"text": "Sets overlayStyle = IdLayoutStyle.ROUNDED"},
-        {"text": "Implements onCapture to read the captured document's fullName"},
-        {"text": "Mentions adding both the core-compose and id-compose Gradle/SPM dependencies (semantic)"},
-        {"text": "Does NOT manually construct a DataCaptureView or IdCaptureOverlay for this composable-based setup (semantic)"}
+      "files": [
+        "fixtures/EmptyScreenModel.kt"
       ],
-      "tags": ["basic-integration", "capture-overlay"]
+      "assertions": [
+        {
+          "text": "Uses the @Composable IdCaptureView function from com.kmp.datacapture.id.compose"
+        },
+        {
+          "text": "Passes settings = IdCaptureSettings.idCaptureSettings() to IdCaptureView"
+        },
+        {
+          "text": "Sets overlayStyle = IdLayoutStyle.ROUNDED"
+        },
+        {
+          "text": "Implements onCapture to read the captured document's fullName"
+        },
+        {
+          "text": "Mentions adding both the core-compose and id-compose Gradle/SPM dependencies (semantic)"
+        },
+        {
+          "text": "Does NOT manually construct a DataCaptureView or IdCaptureOverlay for this composable-based setup (semantic)"
+        }
+      ],
+      "tags": [
+        "basic-integration",
+        "capture-overlay"
+      ]
+    },
+    {
+      "id": 12,
+      "prompt": "In my KMP app I need to scan a passport with ID Capture AND a boarding-pass barcode with BarcodeCapture on the same DataCaptureContext (airport use case).",
+      "expected_output": "Attach both IdCapture and BarcodeCapture to the same DataCaptureContext with addMode; never setMode.",
+      "files": [
+        "fixtures/IntegratedScreenModel.kt"
+      ],
+      "assertions": [
+        {
+          "text": "both IdCapture and BarcodeCapture are attached to the same DataCaptureContext (semantic)"
+        },
+        {
+          "text": "each mode is attached to the same DataCaptureContext (via forContext(dataCaptureContext, ...) or addMode); setMode is not used to swap them out (semantic)"
+        },
+        {
+          "text": "the two modes share one DataCaptureContext (semantic)"
+        }
+      ],
+      "tags": [
+        "barcode-coexistence"
+      ]
     }
   ]
 }
