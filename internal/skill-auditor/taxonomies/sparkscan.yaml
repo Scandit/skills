@@ -54,10 +54,14 @@ features:
   - id: v6-v7-migration
     required: true
     evidence: [docs]
+    # kmp launched at 8.6 with no prior released version -> nothing to migrate.
+    excluded_platforms: [kmp]
     match: ["v6", "migrat.*(v7|version)", "upgrade", "6\\.x", "7\\.x"]
   - id: third-party-migration
     required: true
     evidence: [docs]
+    # kmp: new-SDK integration-only skill, no third-party migration guide shipped.
+    excluded_platforms: [kmp]
     match: ["third.?party", "mlkit", "ml kit", "zxing", "avfoundation", "vision", "replace.*(scanner|scanning library)"]
   - id: error-troubleshooting
     required: false
