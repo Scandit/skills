@@ -5,138 +5,326 @@
       "id": 1,
       "prompt": "I want to add MatrixScan Batch to my Kotlin Multiplatform app. Here's my empty shared screen model: EmptyScreenModel.kt. I need to scan EAN-13 and QR barcodes. Please show me the complete updated screen model code in your response.",
       "expected_output": "The skill reads integration.md and returns complete BarcodeBatch integration code inline in the shared commonMain screen model (DataCaptureContext.initialize, Camera + createRecommendedCameraSettings, BarcodeBatch.forContext, BarcodeBatchSettings.barcodeBatchSettings(), a BarcodeBatchBasicOverlay wired via addOverlay, BarcodeBatchListener with onSessionUpdated, lifecycle hooks, and teardown), and shows the setup checklist.",
-      "files": ["fixtures/EmptyScreenModel.kt"],
-      "assertions": [
-        {"text": "Setup checklist is shown and mentions the com.scandit.datacapture.kmp:core and com.scandit.datacapture.kmp:barcode Gradle dependencies"},
-        {"text": "Setup checklist mentions the Scandit/datacapture-kmp-spm Swift package for iOS"},
-        {"text": "Setup checklist mentions CAMERA permission (Android) and NSCameraUsageDescription (iOS)"},
-        {"text": "A license key placeholder string is present"},
-        {"text": "DataCaptureContext.initialize( is used (not forLicenseKey, which is not the KMP idiom shown in the reference)"},
-        {"text": "BarcodeBatchSettings.barcodeBatchSettings() is used to construct settings (not a direct BarcodeBatchSettings() constructor)"},
-        {"text": "Symbology.EAN13_UPCA is enabled"},
-        {"text": "Symbology.QR is enabled"},
-        {"text": "BarcodeBatch.createRecommendedCameraSettings() is used"},
-        {"text": "Camera.getDefaultCamera( is used and its nullable result is handled (semantic)"},
-        {"text": "dataCaptureContext.setFrameSource( is called"},
-        {"text": "BarcodeBatch.forContext( is used (not a direct BarcodeBatch constructor, and not forDataCaptureContext which is the native Android name)"},
-        {"text": "addListener( is called or equivalent listener registration"},
-        {"text": "A BarcodeBatchBasicOverlay is created via withBarcodeBatch( or withBarcodeBatchForView("},
-        {"text": "The overlay is explicitly added to the view with addOverlay( — not assumed to auto-attach (semantic)"},
-        {"text": "BarcodeBatchListener is implemented with onSessionUpdated"},
-        {"text": "onSessionUpdated signature has parameters (barcodeBatch: BarcodeBatch, session: BarcodeBatchSession, frameData: FrameData)"},
-        {"text": "Camera is turned on with switchToDesiredState(FrameSourceState.ON) in a start/resume lifecycle hook"},
-        {"text": "Camera is turned off with switchToDesiredState(FrameSourceState.OFF) in a stop/pause lifecycle hook"},
-        {"text": "barcodeBatch.removeListener( is called during teardown"},
-        {"text": "dataCaptureContext.removeMode(barcodeBatch) is called during teardown (not removeCurrentMode())"}
+      "files": [
+        "fixtures/EmptyScreenModel.kt"
       ],
-      "tags": ["basic-integration", "license-init", "camera-setup", "capture-view", "symbology-config", "session-listener", "basic-overlay", "lifecycle"]
+      "assertions": [
+        {
+          "text": "Setup checklist is shown and mentions the com.scandit.datacapture.kmp:core and com.scandit.datacapture.kmp:barcode Gradle dependencies"
+        },
+        {
+          "text": "Setup checklist mentions the Scandit/datacapture-kmp-spm Swift package for iOS"
+        },
+        {
+          "text": "Setup checklist mentions CAMERA permission (Android) and NSCameraUsageDescription (iOS)"
+        },
+        {
+          "text": "A license key placeholder string is present"
+        },
+        {
+          "text": "DataCaptureContext.initialize( is used (not forLicenseKey, which is not the KMP idiom shown in the reference)"
+        },
+        {
+          "text": "BarcodeBatchSettings.barcodeBatchSettings() is used to construct settings (not a direct BarcodeBatchSettings() constructor)"
+        },
+        {
+          "text": "Symbology.EAN13_UPCA is enabled"
+        },
+        {
+          "text": "Symbology.QR is enabled"
+        },
+        {
+          "text": "BarcodeBatch.createRecommendedCameraSettings() is used"
+        },
+        {
+          "text": "Camera.getDefaultCamera( is used and its nullable result is handled (semantic)"
+        },
+        {
+          "text": "dataCaptureContext.setFrameSource( is called"
+        },
+        {
+          "text": "BarcodeBatch.forContext( is used (not a direct BarcodeBatch constructor, and not forDataCaptureContext which is the native Android name)"
+        },
+        {
+          "text": "addListener( is called or equivalent listener registration"
+        },
+        {
+          "text": "A BarcodeBatchBasicOverlay is created via withBarcodeBatch( or withBarcodeBatchForView("
+        },
+        {
+          "text": "The overlay is explicitly added to the view with addOverlay( — not assumed to auto-attach (semantic)"
+        },
+        {
+          "text": "BarcodeBatchListener is implemented with onSessionUpdated"
+        },
+        {
+          "text": "onSessionUpdated signature has parameters (barcodeBatch: BarcodeBatch, session: BarcodeBatchSession, frameData: FrameData)"
+        },
+        {
+          "text": "Camera is turned on with switchToDesiredState(FrameSourceState.ON) in a start/resume lifecycle hook"
+        },
+        {
+          "text": "Camera is turned off with switchToDesiredState(FrameSourceState.OFF) in a stop/pause lifecycle hook"
+        },
+        {
+          "text": "barcodeBatch.removeListener( is called during teardown"
+        },
+        {
+          "text": "dataCaptureContext.removeMode(barcodeBatch) is called during teardown (not removeCurrentMode())"
+        }
+      ],
+      "tags": [
+        "basic-integration",
+        "license-init",
+        "camera-setup",
+        "capture-view",
+        "symbology-config",
+        "session-listener",
+        "basic-overlay",
+        "lifecycle"
+      ]
     },
     {
       "id": 2,
       "prompt": "I want to highlight EAN-13 barcodes in green and CODE128 barcodes in blue in my MatrixScan Batch screen model. Here is my screen model: IntegratedScreenModel.kt",
       "expected_output": "The skill implements BarcodeBatchBasicOverlayListener, overrides brushForTrackedBarcode to return colored brushes per symbology, and assigns the listener via overlay.setListener(this) — a function call, not a property assignment.",
-      "files": ["fixtures/IntegratedScreenModel.kt"],
-      "assertions": [
-        {"text": "BarcodeBatchBasicOverlayListener is implemented"},
-        {"text": "brushForTrackedBarcode is overridden"},
-        {"text": "EAN13_UPCA returns a green Brush"},
-        {"text": "CODE128 returns a blue Brush"},
-        {"text": "The listener is assigned with overlay.setListener(this) as a function call, not overlay.listener = this as a property assignment (semantic)"},
-        {"text": "The answer mentions this customization requires the MatrixScan AR add-on license"},
-        {"text": "Existing integration code (BarcodeBatch factory, camera setup, DataCaptureView, BarcodeBatchListener, lifecycle) is preserved"}
+      "files": [
+        "fixtures/IntegratedScreenModel.kt"
       ],
-      "tags": ["basic-overlay-brush"]
+      "assertions": [
+        {
+          "text": "BarcodeBatchBasicOverlayListener is implemented"
+        },
+        {
+          "text": "brushForTrackedBarcode is overridden"
+        },
+        {
+          "text": "EAN13_UPCA returns a green Brush"
+        },
+        {
+          "text": "CODE128 returns a blue Brush"
+        },
+        {
+          "text": "The listener is assigned with overlay.setListener(this) as a function call, not overlay.listener = this as a property assignment (semantic)"
+        },
+        {
+          "text": "The answer mentions this customization requires the MatrixScan AR add-on license"
+        },
+        {
+          "text": "Existing integration code (BarcodeBatch factory, camera setup, DataCaptureView, BarcodeBatchListener, lifecycle) is preserved"
+        }
+      ],
+      "tags": [
+        "basic-overlay-brush"
+      ]
     },
     {
       "id": 3,
       "prompt": "In my MatrixScan Batch screen model I want to log all currently tracked barcodes — their tracking ID and data — on every frame. Here is my screen model: IntegratedScreenModel.kt",
       "expected_output": "The skill updates onSessionUpdated to iterate over session.trackedBarcodes, logging each TrackedBarcode's identifier and barcode.data.",
-      "files": ["fixtures/IntegratedScreenModel.kt"],
-      "assertions": [
-        {"text": "session.trackedBarcodes is accessed"},
-        {"text": "Each TrackedBarcode's identifier is used"},
-        {"text": "Each TrackedBarcode's barcode.data is used"},
-        {"text": "Existing integration code (BarcodeBatch factory, camera setup, overlay, lifecycle) is preserved"}
+      "files": [
+        "fixtures/IntegratedScreenModel.kt"
       ],
-      "tags": ["tracked-barcode-data"]
+      "assertions": [
+        {
+          "text": "session.trackedBarcodes is accessed"
+        },
+        {
+          "text": "Each TrackedBarcode's identifier is used"
+        },
+        {
+          "text": "Each TrackedBarcode's barcode.data is used"
+        },
+        {
+          "text": "Existing integration code (BarcodeBatch factory, camera setup, overlay, lifecycle) is preserved"
+        }
+      ],
+      "tags": [
+        "tracked-barcode-data"
+      ]
     },
     {
       "id": 4,
       "prompt": "When the user taps a highlighted barcode in my MatrixScan Batch screen model, I want to notify the UI with that barcode's data. Here is my screen model: IntegratedScreenModel.kt",
       "expected_output": "The skill implements BarcodeBatchBasicOverlayListener, overrides onTrackedBarcodeTapped to read trackedBarcode.barcode.data, and assigns the listener via overlay.setListener(this).",
-      "files": ["fixtures/IntegratedScreenModel.kt"],
-      "assertions": [
-        {"text": "BarcodeBatchBasicOverlayListener is implemented"},
-        {"text": "onTrackedBarcodeTapped is overridden"},
-        {"text": "onTrackedBarcodeTapped signature has parameters (overlay: BarcodeBatchBasicOverlay, trackedBarcode: TrackedBarcode)"},
-        {"text": "trackedBarcode.barcode.data is read inside onTrackedBarcodeTapped"},
-        {"text": "The listener is assigned with overlay.setListener(this) as a function call, not a property assignment (semantic)"},
-        {"text": "Existing integration code (BarcodeBatch factory, camera setup, BarcodeBatchListener, lifecycle) is preserved"}
+      "files": [
+        "fixtures/IntegratedScreenModel.kt"
       ],
-      "tags": ["basic-overlay-tap"]
+      "assertions": [
+        {
+          "text": "BarcodeBatchBasicOverlayListener is implemented"
+        },
+        {
+          "text": "onTrackedBarcodeTapped is overridden"
+        },
+        {
+          "text": "onTrackedBarcodeTapped signature has parameters (overlay: BarcodeBatchBasicOverlay, trackedBarcode: TrackedBarcode)"
+        },
+        {
+          "text": "trackedBarcode.barcode.data is read inside onTrackedBarcodeTapped"
+        },
+        {
+          "text": "The listener is assigned with overlay.setListener(this) as a function call, not a property assignment (semantic)"
+        },
+        {
+          "text": "Existing integration code (BarcodeBatch factory, camera setup, BarcodeBatchListener, lifecycle) is preserved"
+        }
+      ],
+      "tags": [
+        "basic-overlay-tap"
+      ]
     },
     {
       "id": 5,
       "prompt": "I want to overlay a custom native label showing the barcode's data on top of each tracked barcode in my MatrixScan Batch screen model, for both Android and iOS. Here is my screen model: IntegratedScreenModel.kt",
       "expected_output": "The skill adds a BarcodeBatchAdvancedOverlay via withBarcodeBatch and an explicit addOverlay call, implements BarcodeBatchAdvancedOverlayListener.viewForTrackedBarcode returning a NativeView built by a platform-supplied factory lambda, assigns the listener via the overlay.listener property, and notes the MatrixScan AR add-on requirement.",
-      "files": ["fixtures/IntegratedScreenModel.kt"],
-      "assertions": [
-        {"text": "BarcodeBatchAdvancedOverlay.withBarcodeBatch(barcodeBatch) is used"},
-        {"text": "The advanced overlay is explicitly added to the view with addOverlay( (semantic — no ForView factory exists for the advanced overlay)"},
-        {"text": "BarcodeBatchAdvancedOverlayListener is implemented"},
-        {"text": "viewForTrackedBarcode is overridden and returns a NativeView?"},
-        {"text": "viewForTrackedBarcode signature has parameters (overlay: BarcodeBatchAdvancedOverlay, trackedBarcode: TrackedBarcode)"},
-        {"text": "The view is built by a platform-supplied factory (e.g. a lambda) rather than constructed directly in shared code (semantic — commonMain cannot construct android.view.View or UIView directly)"},
-        {"text": "The listener is assigned with advancedOverlay.listener = ... as a property assignment, not a setListener( function call (semantic)"},
-        {"text": "The MatrixScan AR add-on requirement is mentioned"},
-        {"text": "Existing integration code (BarcodeBatch factory, camera setup, BarcodeBatchListener, lifecycle) is preserved"}
+      "files": [
+        "fixtures/IntegratedScreenModel.kt"
       ],
-      "tags": ["advanced-overlay"]
+      "assertions": [
+        {
+          "text": "BarcodeBatchAdvancedOverlay.withBarcodeBatch(barcodeBatch) is used"
+        },
+        {
+          "text": "The advanced overlay is explicitly added to the view with addOverlay( (semantic — no ForView factory exists for the advanced overlay)"
+        },
+        {
+          "text": "BarcodeBatchAdvancedOverlayListener is implemented"
+        },
+        {
+          "text": "viewForTrackedBarcode is overridden and returns a NativeView?"
+        },
+        {
+          "text": "viewForTrackedBarcode signature has parameters (overlay: BarcodeBatchAdvancedOverlay, trackedBarcode: TrackedBarcode)"
+        },
+        {
+          "text": "The view is built by a platform-supplied factory (e.g. a lambda) rather than constructed directly in shared code (semantic — commonMain cannot construct android.view.View or UIView directly)"
+        },
+        {
+          "text": "The listener is assigned with advancedOverlay.listener = ... as a property assignment, not a setListener( function call (semantic)"
+        },
+        {
+          "text": "The MatrixScan AR add-on requirement is mentioned"
+        },
+        {
+          "text": "Existing integration code (BarcodeBatch factory, camera setup, BarcodeBatchListener, lifecycle) is preserved"
+        }
+      ],
+      "tags": [
+        "advanced-overlay"
+      ]
     },
     {
       "id": 6,
       "prompt": "I already show a custom view via BarcodeBatchAdvancedOverlay in my MatrixScan Batch screen model, but it sits on top of the barcode. I want it anchored to the top-center of the barcode and offset upward so it floats just above the code. Here is my screen model: IntegratedScreenModel.kt",
       "expected_output": "The skill overrides anchorForTrackedBarcode to return Anchor.TOP_CENTER and offsetForTrackedBarcode to return a PointWithUnit built from FloatWithUnit values in MeasureUnit.FRACTION (e.g. y = -1f) so the view floats above the barcode.",
-      "files": ["fixtures/IntegratedScreenModel.kt"],
-      "assertions": [
-        {"text": "anchorForTrackedBarcode is overridden and returns Anchor.TOP_CENTER"},
-        {"text": "offsetForTrackedBarcode is overridden and returns a PointWithUnit"},
-        {"text": "The PointWithUnit is constructed from FloatWithUnit values (not DoubleWithUnit, which is the Flutter name) (semantic)"},
-        {"text": "MeasureUnit.FRACTION is used for the offset unit"},
-        {"text": "Anchor is imported from com.kmp.datacapture.core.common.geometry"},
-        {"text": "offsetForTrackedBarcode signature has parameters (overlay: BarcodeBatchAdvancedOverlay, trackedBarcode: TrackedBarcode) with no extra view parameter (semantic — the KMP signature has no third view argument)"},
-        {"text": "Existing advanced overlay and integration code is preserved"}
+      "files": [
+        "fixtures/IntegratedScreenModel.kt"
       ],
-      "tags": ["advanced-overlay-positioning"]
+      "assertions": [
+        {
+          "text": "anchorForTrackedBarcode is overridden and returns Anchor.TOP_CENTER"
+        },
+        {
+          "text": "offsetForTrackedBarcode is overridden and returns a PointWithUnit"
+        },
+        {
+          "text": "The PointWithUnit is constructed from FloatWithUnit values (not DoubleWithUnit, which is the Flutter name) (semantic)"
+        },
+        {
+          "text": "MeasureUnit.FRACTION is used for the offset unit"
+        },
+        {
+          "text": "Anchor is imported from com.kmp.datacapture.core.common.geometry"
+        },
+        {
+          "text": "offsetForTrackedBarcode signature has parameters (overlay: BarcodeBatchAdvancedOverlay, trackedBarcode: TrackedBarcode) with no extra view parameter (semantic — the KMP signature has no third view argument)"
+        },
+        {
+          "text": "Existing advanced overlay and integration code is preserved"
+        }
+      ],
+      "tags": [
+        "advanced-overlay-positioning"
+      ]
     },
     {
       "id": 7,
       "prompt": "In my MatrixScan Batch screen model I want to remove a barcode from my own on-screen list as soon as it leaves the camera view. Here is my screen model: IntegratedScreenModel.kt",
       "expected_output": "The skill reads session.removedTrackedBarcodes in onSessionUpdated and removes matching entries from the app's own state keyed by tracking ID, explaining that removedTrackedBarcodes contains only Int identifiers.",
-      "files": ["fixtures/IntegratedScreenModel.kt"],
-      "assertions": [
-        {"text": "session.removedTrackedBarcodes is accessed in onSessionUpdated"},
-        {"text": "removedTrackedBarcodes is treated as a list of Int tracking identifiers, not TrackedBarcode objects (semantic)"},
-        {"text": "The removed tracking IDs are used to remove entries from the app's own collection"},
-        {"text": "Existing integration code (BarcodeBatch factory, camera setup, overlay, lifecycle) is preserved"}
+      "files": [
+        "fixtures/IntegratedScreenModel.kt"
       ],
-      "tags": ["removed-barcodes"]
+      "assertions": [
+        {
+          "text": "session.removedTrackedBarcodes is accessed in onSessionUpdated"
+        },
+        {
+          "text": "removedTrackedBarcodes is treated as a list of Int tracking identifiers, not TrackedBarcode objects (semantic)"
+        },
+        {
+          "text": "The removed tracking IDs are used to remove entries from the app's own collection"
+        },
+        {
+          "text": "Existing integration code (BarcodeBatch factory, camera setup, overlay, lifecycle) is preserved"
+        }
+      ],
+      "tags": [
+        "removed-barcodes"
+      ]
     },
     {
       "id": 8,
       "prompt": "I want my MatrixScan Batch screen model to beep and vibrate each time a new barcode starts being tracked. Here is my screen model: IntegratedScreenModel.kt",
       "expected_output": "The skill explains BarcodeBatch has no automatic feedback and emits it manually: creates a single reusable Feedback via Feedback.defaultFeedback() (KMP has no public Feedback constructor) and calls emit() in onSessionUpdated when session.addedTrackedBarcodes is non-empty.",
-      "files": ["fixtures/IntegratedScreenModel.kt"],
-      "assertions": [
-        {"text": "The answer explains BarcodeBatch does not emit feedback automatically and it must be emitted manually (semantic)"},
-        {"text": "Feedback.defaultFeedback() is used to create the Feedback instance (not a multi-argument Feedback constructor, which does not exist on KMP) (semantic)"},
-        {"text": "Feedback is imported from com.kmp.datacapture.core.feedback"},
-        {"text": "feedback.emit() is called inside onSessionUpdated"},
-        {"text": "emit() is gated on session.addedTrackedBarcodes being non-empty (so it fires only on newly tracked barcodes)"},
-        {"text": "A single Feedback instance is created once and reused, not constructed every frame (semantic)"},
-        {"text": "Existing integration code (BarcodeBatch factory, camera setup, overlay, lifecycle) is preserved"}
+      "files": [
+        "fixtures/IntegratedScreenModel.kt"
       ],
-      "tags": ["feedback"]
+      "assertions": [
+        {
+          "text": "The answer explains BarcodeBatch does not emit feedback automatically and it must be emitted manually (semantic)"
+        },
+        {
+          "text": "Feedback.defaultFeedback() is used to create the Feedback instance (not a multi-argument Feedback constructor, which does not exist on KMP) (semantic)"
+        },
+        {
+          "text": "Feedback is imported from com.kmp.datacapture.core.feedback"
+        },
+        {
+          "text": "feedback.emit() is called inside onSessionUpdated"
+        },
+        {
+          "text": "emit() is gated on session.addedTrackedBarcodes being non-empty (so it fires only on newly tracked barcodes)"
+        },
+        {
+          "text": "A single Feedback instance is created once and reused, not constructed every frame (semantic)"
+        },
+        {
+          "text": "Existing integration code (BarcodeBatch factory, camera setup, overlay, lifecycle) is preserved"
+        }
+      ],
+      "tags": [
+        "feedback"
+      ]
+    },
+    {
+      "id": 9,
+      "prompt": "Use the dot style instead of frames for tracked barcodes in my KMP MatrixScan Batch overlay.",
+      "expected_output": "Create/configure the BarcodeBatchBasicOverlay with BarcodeBatchBasicOverlayStyle.DOT.",
+      "files": [
+        "fixtures/IntegratedScreenModel.kt"
+      ],
+      "assertions": [
+        {
+          "text": "the BarcodeBatchBasicOverlay uses BarcodeBatchBasicOverlayStyle.DOT (semantic)"
+        },
+        {
+          "text": "BarcodeBatchBasicOverlayStyle.DOT is present"
+        }
+      ],
+      "tags": [
+        "basic-overlay-style"
+      ]
     }
   ]
 }
