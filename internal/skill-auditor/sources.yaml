@@ -39,6 +39,9 @@ samples: # per-platform sample-app repos — bulk mining via cached clone or loc
   dotnet: https://github.com/Scandit/datacapture-dotnet-samples
   capacitor: https://github.com/Scandit/datacapture-capacitor-samples
   cordova: https://github.com/Scandit/datacapture-cordova-samples
+  # kmp: no public samples repo yet — samples live in-tree in sdk_source at
+  #   frameworks/kmp/samples (register a local path in sources.local.yaml).
+  #   KMP API-availability truth: sdk_source docs/api_availability/assets/exclusions/frameworks/kmp.yaml
   used_by: [taxonomy-mining, eval-drafting, sample-path-validation]
 
 sdk_source: # private (GitLab) — resolved only via sources.local.yaml

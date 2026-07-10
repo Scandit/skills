@@ -55,12 +55,15 @@ Per-platform — who runs the gate:
 | .NET (net-android/net-ios/maui, C#) | scratch project + `dotnet restore` the Scandit NuGet + `dotnet build` | yes |
 | Android (Kotlin) | gradle project w/ `com.scandit.datacapture:*` + Android SDK → `./gradlew compileDebugKotlin` | NO — heavy toolchain |
 | iOS (Swift) | SPM/xcodebuild w/ the Scandit frameworks → `swift build` / `xcodebuild` | NO — heavy toolchain |
+| KMP (Kotlin Multiplatform) | inject the file into the KMP SDK's `DebugApp` umbrella (already resolves every `scandit-kmp-datacapture-*` module + Compose MP) → `./gradlew :shared:compileDebugKotlinAndroid` | YES — incremental compile is seconds with a warm cache (needs the SDK checkout + `GITLAB_PRIVATE_TOKEN`) |
 
 **Decision rule (Option C):**
 
 1. If a cheap deps-resolved gate exists for the platform → the auditor MUST run it and the
    fixture/snippet must pass BEFORE the change is committed. Compile before commit, not after.
-2. If the gate is heavy (Kotlin, Swift) → the auditor does NOT bare-compile (toothless) and
+   (KMP is an exception among Kotlin targets: it has a cheap deps-resolved gate via the SDK's
+   DebugApp umbrella — `scripts/fix_gate_kmp.sh` — so the auditor MUST run it, per rule 1.)
+2. If the gate is heavy (plain-Android Kotlin, Swift) → the auditor does NOT bare-compile (toothless) and
    does NOT commit unverified code. It stays **audit-only** for that platform: it emits the
    proposed fixture/snippet to the report as UNVERIFIED and hands it to `skill-creator`,
    which builds the local sample app and compiles it. The auditor never self-commits
@@ -78,6 +81,7 @@ drafted; each resolves the real Scandit packages, compiles, and prints `GATE-PAS
     scripts/fix_gate_ts.sh      <web|rn|capacitor> <ts-file> [version]
     scripts/fix_gate_swift.sh   <swift-file> [frameworks-csv]
     scripts/fix_gate_dotnet.sh  <cs-file> [version] [extra-pkg ...]   # covers net-android/net-ios/maui
+    scripts/fix_gate_kmp.sh     <kotlin-file>   # KMP; needs SDK checkout + $GITLAB_PRIVATE_TOKEN
 
 Notes: default version 8.4.0. `dotnet` builds a plain net8.0 project against the package's
 net8.0 managed slice — no android/ios workloads needed (keep platform-UI-only types like

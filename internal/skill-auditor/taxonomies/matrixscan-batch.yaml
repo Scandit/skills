@@ -107,15 +107,17 @@ features:
   - id: swiftui-integration
     required: false
     evidence: [docs, eval-survey]
-    excluded_platforms: [android, capacitor, cordova, flutter, maui, net-android, net-ios, rn, web]
+    excluded_platforms: [android, capacitor, cordova, flutter, maui, net-android, net-ios, rn, web, kmp]
     match: ["swiftui", "uiviewcontrollerrepresentable", "uiviewrepresentable", "swift ?ui"]
 
   # ---- Migration ----
   - id: version-migration
     required: false
+    excluded_platforms: [kmp]
     evidence: [eval-survey, docs]
     match: ["migrat", "barcodetracking", "v6|v7|v8", "upgrade.*(version|sdk)"]
   - id: third-party-migration
     required: false
+    excluded_platforms: [kmp]
     evidence: [eval-survey]
     match: ["zxing", "ml ?kit", "mlkit", "avfoundation", "avcapture", "third.?party", "mobilebarcodescanner", "google.*barcode|barcode.*google"]

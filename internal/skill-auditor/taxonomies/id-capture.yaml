@@ -156,6 +156,7 @@ features:
     match: ["aamvabarcodeverifier", "scannertype", "idcapturescanner", "v7 to v8", "7\\.x", "8\\.0"]
   - id: migration-v6-to-v7
     required: false
+    excluded_platforms: [kmp]
     evidence: [docs]
     # supportedDocuments bitmask -> acceptedDocuments; documentType -> document; result restructure
     match: ["supporteddocuments", "supportedsides", "iddocumenttype", "\\bv6\\b", "6\\.x", "onidcapturedtimedout", "bitmask"]

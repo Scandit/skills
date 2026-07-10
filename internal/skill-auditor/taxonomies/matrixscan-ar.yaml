@@ -129,12 +129,12 @@ features:
   - id: custom-highlight
     required: false
     evidence: [docs, sample, sdk]
-    excluded_platforms: [web, capacitor, cordova, net-android, net-ios, maui]
+    excluded_platforms: [web, capacitor, cordova, net-android, net-ios, maui, kmp]
     match: ["barcodearcustomhighlight", "custom highlight", "subclass.*highlight|highlight.*subclass", "custom.*barcodearhighlight"]
   - id: custom-annotation
     required: false
     evidence: [docs, sample, sdk]
-    excluded_platforms: [web, capacitor, cordova, net-android, net-ios, maui]
+    excluded_platforms: [web, capacitor, cordova, net-android, net-ios, maui, kmp]
     match: ["barcodearcustomannotation", "custom annotation", "subclass.*annotation|annotation.*subclass", "custom.*barcodearannotation"]
   # barcode-filter: BarcodeArFilter ships in the PUBLISHED SDK only for ios/android (=8.1). It is
   # documented at 8.5 (flutter/rn/cordova/capacitor) and 8.6 (.NET) but those packages are NOT yet
@@ -143,14 +143,15 @@ features:
   - id: barcode-filter
     required: false
     evidence: [docs, sdk]
-    excluded_platforms: [web, flutter, rn, capacitor, cordova, net-android, net-ios, maui]
+    excluded_platforms: [web, flutter, rn, capacitor, cordova, net-android, net-ios, maui, kmp]
     match: ["barcodearfilter", "barcode filter", "setbarcodefilter", "barcodefilter", "filter.*(barcode|highlight)"]
   - id: swiftui-integration
     required: false
     evidence: [docs, eval-survey]
-    excluded_platforms: [android, capacitor, cordova, flutter, maui, net-android, net-ios, rn, web]
+    excluded_platforms: [android, capacitor, cordova, flutter, maui, net-android, net-ios, rn, web, kmp]
     match: ["swiftui", "uiviewrepresentable", "uiviewcontrollerrepresentable", "swift ?ui"]
   - id: migration
     required: false
+    excluded_platforms: [kmp]
     evidence: [eval-survey, docs]
     match: ["migrat", "barcodebatch to barcodear|barcodebatch.*barcodear", "barcodetracking.*barcodear|barcodetracking to", "upgrade.*(v7|v8|version)", "from (barcodebatch|barcodetracking|matrixscan)"]
