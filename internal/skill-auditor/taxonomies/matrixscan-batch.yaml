@@ -94,7 +94,7 @@ features:
   - id: advanced-overlay-tap
     required: false
     evidence: [docs, sample, sdk]
-    excluded_platforms: [android, ios, net-android, net-ios, maui]
+    excluded_platforms: [android, ios, net-android, net-ios, maui, kmp]
     match: ["didtapviewfortrackedbarcode", "tap.*(view|advanced).*tracked"]
   - id: removed-barcodes
     required: false
