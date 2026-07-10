@@ -151,6 +151,8 @@ features:
     required: true
     evidence: [docs]
     # scannerType -> scanner/IdCaptureScanner wrapper; AamvaBarcodeVerifier class removed
+    # kmp launched at 8.6 with no v7 predecessor -> nothing to migrate.
+    excluded_platforms: [kmp]
     match: ["aamvabarcodeverifier", "scannertype", "idcapturescanner", "v7 to v8", "7\\.x", "8\\.0"]
   - id: migration-v6-to-v7
     required: false

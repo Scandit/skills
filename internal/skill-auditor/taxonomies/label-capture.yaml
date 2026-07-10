@@ -139,7 +139,8 @@ features:
     # .NET launched at 8.1+ (no pre-8.0 code to migrate) -> excluded.
     # Flutter: the field/regex API was introduced fresh at 8.0 with valueRegex/
     # anchorRegex naming (no pre-8.0 setPattern existed) -> no rename to migrate.
-    excluded_platforms: [net-android, net-ios, net-maui, flutter]
+    # kmp launched at 8.6 with valueRegex/anchorRegex naming from the start -> no rename to migrate.
+    excluded_platforms: [net-android, net-ios, net-maui, flutter, kmp]
     match: ["setpattern", "setdatatypepattern", "regex method rename", "setvalueregex", "setanchorregex"]
   - id: migration-validation-flow-listeners
     required: false
