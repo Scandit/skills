@@ -1,0 +1,123 @@
+{
+  "skill_name": "matrixscan-pick-kmp",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Add MatrixScan Pick to my KMP screen model. The real product list will come later — use a small placeholder product list and a reasonable default symbology set. File: NonScanditScreenModel.kt",
+      "expected_output": "The skill wires MatrixScan Pick into PickingScreenModel: DataCaptureContext.initialize(...) with the license placeholder, BarcodePickSettings.barcodePickSettings() with at least two symbologies enabled via enableSymbology(symbology, true), a Set<BarcodePickProduct>, a BarcodePickAsyncMapperProductProvider built with a BarcodePickAsyncMapperProductProviderCallback implementing mapItems, BarcodePick.forContext(context, settings, productProvider), addListener/addScanningListener on the mode, and a BarcodePickViewSettings instance. It explains that BarcodePickView construction and addActionListener/uiListener registration happen on the platform host (Android/iOS), not in commonMain, and shows the setup checklist.",
+      "files": ["fixtures/NonScanditScreenModel.kt"],
+      "assertions": [
+        {"text": "DataCaptureContext.initialize(\"-- ENTER YOUR SCANDIT LICENSE KEY HERE --\") (or an equivalent license-key placeholder call) is used to construct the DataCaptureContext"},
+        {"text": "BarcodePickSettings.barcodePickSettings() is used to construct the settings (not a bare constructor, since BarcodePickSettings has no public constructor)"},
+        {"text": "At least two symbologies are enabled via settings.enableSymbology(symbology, true)"},
+        {"text": "A Set<BarcodePickProduct> is built with BarcodePickProduct(identifier, quantityToPick) values"},
+        {"text": "A BarcodePickAsyncMapperProductProvider is constructed with the product set and a BarcodePickAsyncMapperProductProviderCallback"},
+        {"text": "The callback implements mapItems(itemsData: Set<String>, callback: BarcodePickProductProviderCallback) and calls callback.onData(...) with BarcodePickProductProviderCallbackItem(itemData, productIdentifier) values"},
+        {"text": "BarcodePick.forContext(dataCaptureContext, settings, productProvider) is used to construct the mode (not a bare BarcodePick(...) constructor)"},
+        {"text": "barcodePick.addListener(...) and barcodePick.addScanningListener(...) are both called to register on the MODE"},
+        {"text": "A BarcodePickViewSettings instance is created via BarcodePickViewSettings.barcodePickViewSettings()"},
+        {"text": "The response explains that BarcodePickView construction differs per platform (Android needs a Context, iOS does not) and is done by the platform host, not in this commonMain file"},
+        {"text": "The response mentions that BarcodePickActionListener registration (addActionListener) is required on the view for picks to actually finalize"},
+        {"text": "The response includes the setup checklist: the com.scandit.datacapture.kmp:core / :barcode Maven dependencies at version 8.6.0, the iOS Scandit/datacapture-kmp-spm umbrella package, camera permission per platform, and replacing the license key placeholder"},
+        {"text": "No highlight-style customization (BarcodePickViewHighlightStyleCustomView, etc.) is added — the default highlight is fine for a basic integration"}
+      ],
+      "tags": ["integration", "product-provider"]
+    },
+    {
+      "id": 2,
+      "prompt": "In my MatrixScan Pick KMP app, what's the difference between BarcodePickView.pause() and BarcodePickView.stop()?",
+      "expected_output": "The skill explains that stop() tears the view down for good (releases resources, the view is no longer usable afterwards) while pause() halts picking without tearing anything down (the view stays alive and can be resumed with start()). Mentions the RestockingSample pattern of calling stop() once as a terminal teardown on dispose and pause()/start() around the host's own resume/pause lifecycle. Includes a link to the docs.",
+      "files": [],
+      "assertions": [
+        {"text": "The response explains that stop() tears the view down for good and the view is not usable afterwards"},
+        {"text": "The response explains that pause() halts picking WITHOUT tearing the view down — it can be resumed with start()"},
+        {"text": "The response mentions start() as the way to resume after pause()"},
+        {"text": "The response does not invent lifecycle methods that aren't documented (e.g. resume(), destroy(), unpause())"},
+        {"text": "The response mentions freeze() as a distinct lifecycle method that freezes the camera/highlights without tearing the view down, if it discusses the full lifecycle"},
+        {"text": "The response includes a link to the Scandit KMP documentation (scandit.com/sdks/kmp/matrixscan-pick or scandit.com/data-capture-sdk/kmp)"},
+        {"text": "No files are written or edited"}
+      ],
+      "tags": ["lifecycle"]
+    },
+    {
+      "id": 3,
+      "prompt": "Change the highlight in my MatrixScan Pick app to a rectangle that's orange while an item still needs picking and green once it's picked. File: IntegratedPickingScreenModel.kt",
+      "expected_output": "The skill constructs a BarcodePickViewHighlightStyleRectangular, calls setBrushForState with an orange-ish Brush for BarcodePickState.TO_PICK and a green-ish Brush for BarcodePickState.PICKED, and assigns it to barcodePickViewSettings.highlightStyle before any BarcodePickView is constructed. The existing integration (context, settings, provider, mode, listeners) is preserved.",
+      "files": ["fixtures/IntegratedPickingScreenModel.kt"],
+      "assertions": [
+        {"text": "A BarcodePickViewHighlightStyleRectangular is constructed"},
+        {"text": "setBrushForState(brush, BarcodePickState.TO_PICK) is called with a Brush whose color is orange-ish"},
+        {"text": "setBrushForState(brush, BarcodePickState.PICKED) is called with a Brush whose color is green"},
+        {"text": "The Brush is constructed via Brush(fillColor:, strokeColor:, strokeWidth:) (or Brush() plus a copy call) — not an invented constructor"},
+        {"text": "The style is assigned to barcodePickViewSettings.highlightStyle"},
+        {"text": "No icon-capable or custom-view style is introduced (a plain Rectangular style with brushes is sufficient for this request)"},
+        {"text": "Existing integration is preserved: DataCaptureContext, BarcodePickSettings + symbologies, BarcodePickAsyncMapperProductProvider, BarcodePick.forContext construction, the BarcodePickListener/BarcodePickScanningListener registrations, and BarcodePickActionListener/BarcodePickViewUiListener conformances are all left intact — no duplicate mode/context"}
+      ],
+      "tags": ["highlights", "highlight-styles"]
+    },
+    {
+      "id": 4,
+      "prompt": "Add a low-stock warning status badge to each MatrixScan Pick highlight, using the built-in Scandit low-stock icon. File: IntegratedPickingScreenModel.kt",
+      "expected_output": "The skill switches to an icon-capable style (BarcodePickViewHighlightStyleDotWithIcons or RectangularWithIcons), sets an asyncStyleProvider implementing BarcodePickViewHighlightStyleAsyncProvider, and in styleForRequest returns a BarcodePickViewHighlightStyleResponse whose statusIconStyle is built via BarcodePickStatusIconStyle.withIcon using a ScanditIcon built from ScanditIcon.builder().withIcon(ScanditIconType.LOW_STOCK) with an explicit non-white withIconColor. Existing integration preserved.",
+      "files": ["fixtures/IntegratedPickingScreenModel.kt"],
+      "assertions": [
+        {"text": "An icon-capable style (BarcodePickViewHighlightStyleDotWithIcons or BarcodePickViewHighlightStyleRectangularWithIcons) is used and assigned to barcodePickViewSettings.highlightStyle"},
+        {"text": "The style's asyncStyleProvider is set to an object implementing BarcodePickViewHighlightStyleAsyncProvider with styleForRequest(request, callback)"},
+        {"text": "A ScanditIcon is built via ScanditIcon.builder().withIcon(ScanditIconType.LOW_STOCK) — not a guessed enum name like LowStock or LOW_STOCK_ICON"},
+        {"text": "The ScanditIcon sets an explicit, non-white withIconColor (the status-badge background is light, so a default/white glyph would be invisible)"},
+        {"text": "The returned response is a BarcodePickViewHighlightStyleResponse constructed via withBrushAndIcon(brush, icon, statusIconStyle) or withBrushAndSelectedIcon(...), whose statusIconStyle is built via BarcodePickStatusIconStyle.withIcon(icon, text) — not an invented constructor"},
+        {"text": "The callback (the second lambda parameter of styleForRequest) is invoked with the constructed response"},
+        {"text": "Existing integration is preserved (context, settings, provider, mode, listener conformances) — no duplicate mode/context"}
+      ],
+      "tags": ["highlights", "status-icons"]
+    },
+    {
+      "id": 5,
+      "prompt": "Users say tapping a barcode in my MatrixScan Pick screen does nothing — items never become picked. Here's my current screen model, what's missing? File: IntegratedPickingScreenModel.kt",
+      "expected_output": "The skill identifies that PickingScreenModel implements BarcodePickActionListener (onPick/onUnpick) but nothing registers it on the BarcodePickView via addActionListener — that registration happens on the platform host when the view is constructed, not in commonMain. It explains that without addActionListener(listener), the SDK never routes taps through onPick/onUnpick and the item never transitions to PICKED, and shows the Android/iOS host snippet that calls barcodePickView.addActionListener(screenModel) (and sets view.uiListener) alongside registerBarcodePickView(...).",
+      "files": ["fixtures/IntegratedPickingScreenModel.kt"],
+      "assertions": [
+        {"text": "The response identifies that BarcodePickActionListener (onPick/onUnpick) is implemented on PickingScreenModel but never registered via addActionListener on a BarcodePickView"},
+        {"text": "The response explains that BarcodePickActionListener is registered on the VIEW (barcodePickView.addActionListener(listener)), not on the BarcodePick mode"},
+        {"text": "The response explains that without this registration, callback.onFinish(true)/onPick/onUnpick are never invoked and a tapped item never transitions to PICKED"},
+        {"text": "The response shows platform host code (Android and/or iOS) that constructs BarcodePickView and calls addActionListener(screenModel), since the fixture's commonMain file has no platform view construction"},
+        {"text": "The response does not claim the mode-level addListener/addScanningListener registrations (already present) are the cause or the fix — those are for session tracking, not pick confirmation"},
+        {"text": "Existing commonMain integration in the file is preserved / not needlessly rewritten"}
+      ],
+      "tags": ["action-listener", "integration"]
+    },
+    {
+      "id": 6,
+      "prompt": "I want to use the Compose barcode-compose module instead of building the platform view myself. Show the MatrixScan Pick UI on this screen using the Compose BarcodePickView composable, with a placeholder product provider. File: PickComposeScreen.kt",
+      "expected_output": "The skill imports com.kmp.datacapture.barcode.compose.BarcodePickView and calls it with settings and productProvider parameters (a BarcodePickSettings and a BarcodePickAsyncMapperProductProvider built the same way as the base integration), sets onFinishTap for the finish button, and optionally uses rememberBarcodePickViewState()/state for imperative control. It notes that this composable does not currently expose a parameter for registering BarcodePickActionListener, so pick/unpick confirmation may need the base-module BarcodePickView pattern instead if that is required.",
+      "files": ["fixtures/PickComposeScreen.kt"],
+      "assertions": [
+        {"text": "import com.kmp.datacapture.barcode.compose.BarcodePickView is present"},
+        {"text": "The BarcodePickView composable is called with settings (a BarcodePickSettings) and productProvider (a BarcodePickAsyncMapperProductProvider) arguments"},
+        {"text": "onFinishTap is set to a lambda handling the finish button tap"},
+        {"text": "rememberBarcodePickViewState() (or an equivalent BarcodePickViewState) is used if imperative start/pause/stop/freeze control is needed"},
+        {"text": "The response does NOT claim the composable exposes a BarcodePickActionListener parameter — if action-listener/pick-confirmation is discussed, the response flags that this composable currently has no such parameter and suggests the base-module BarcodePickView pattern as the alternative"},
+        {"text": "The response does not call view.start()/view.stop() manually on the composable's underlying view (the composable manages start/stop itself as its mount/dispose steps)"},
+        {"text": "No context/DataCaptureContext.initialize call is duplicated if DataCaptureContext.sharedInstance (the composable's default) is relied on instead"}
+      ],
+      "tags": ["compose", "integration"]
+    },
+    {
+      "id": 7,
+      "prompt": "In my MatrixScan Pick KMP app, I want a separate 'confirm pick' button in my own UI (outside the camera view) that picks a specific barcode by its data, rather than relying on the user tapping the highlight. How do I do that?",
+      "expected_output": "The skill describes the explicit selection API on BarcodePick: call barcodePick.selectItemWithData(itemData, callback) to find out what action (BarcodePickAction.NONE/PICK/UNPICK) would happen, then barcodePick.confirmActionForItemWithData(itemData) to finalize it (or cancelActionForItemWithData(itemData) to cancel), noting this still routes through the BarcodePickActionListener registered on the view exactly like a tap would, and that no action occurs if the item is not currently selected.",
+      "files": [],
+      "assertions": [
+        {"text": "barcodePick.selectItemWithData(data, callback) is described, with the callback being a BarcodePickSelectItemActionCallback whose onFinish(action: BarcodePickAction) reports the action that WILL happen"},
+        {"text": "barcodePick.confirmActionForItemWithData(data) is described as the call that actually finalizes the pending pick/unpick"},
+        {"text": "barcodePick.cancelActionForItemWithData(data) is mentioned as the way to cancel a pending selection"},
+        {"text": "The response explains that confirmActionForItemWithData/cancelActionForItemWithData still route through the BarcodePickActionListener registered on the view (onPick/onUnpick), the same as a tap"},
+        {"text": "The response mentions that no action is performed if the item is not currently selected"},
+        {"text": "The response does not invent a direct 'pick(itemData)' one-shot method — the real API is the select/confirm/cancel triple"},
+        {"text": "The response includes a link to the Scandit KMP documentation (scandit.com/sdks/kmp/matrixscan-pick or scandit.com/data-capture-sdk/kmp)"},
+        {"text": "No files are written or edited"}
+      ],
+      "tags": ["explicit-selection", "action-listener"]
+    }
+  ]
+}
