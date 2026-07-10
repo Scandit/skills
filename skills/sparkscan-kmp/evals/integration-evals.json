@@ -1,0 +1,151 @@
+{
+  "skill_name": "sparkscan-kmp",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I want to add SparkScan to my Kotlin Multiplatform app. Here's my shared screen model: ScanScreenModel.kt. I need to scan EAN-13 and QR codes for a retail app that runs on Android and iOS.",
+      "expected_output": "The skill reads integration.md, writes a complete shared SparkScan integration into ScanScreenModel.kt (DataCaptureContext, SparkScanSettings, SparkScan, SparkScanListener), and shows the setup checklist covering the Gradle dependencies, iOS SPM package, camera permissions on both platforms, and the license key.",
+      "files": ["fixtures/EmptyScreenModel.kt"],
+      "assertions": [
+        {"text": "Setup checklist is shown"},
+        {"text": "Setup checklist mentions com.scandit.datacapture.kmp:core as a Gradle dependency"},
+        {"text": "Setup checklist mentions com.scandit.datacapture.kmp:barcode as a Gradle dependency"},
+        {"text": "Version 8.6.0 is used for the Gradle dependencies (not a [version] placeholder)"},
+        {"text": "Setup checklist mentions adding the Scandit/datacapture-kmp-spm Swift Package to the iOS app"},
+        {"text": "Setup checklist mentions the CAMERA permission in AndroidManifest.xml"},
+        {"text": "Setup checklist mentions NSCameraUsageDescription in Info.plist"},
+        {"text": "DataCaptureContext.initialize( is present"},
+        {"text": "License key placeholder -- ENTER YOUR SCANDIT LICENSE KEY HERE -- is present"},
+        {"text": "SparkScanSettings.sparkScanSettings() is present"},
+        {"text": "enableSymbologies( is called"},
+        {"text": "Symbology.EAN13_UPCA is enabled"},
+        {"text": "Symbology.QR is enabled"},
+        {"text": "No symbologies except EAN13_UPCA and QR are enabled"},
+        {"text": "SparkScan( is constructed with settings"},
+        {"text": "sparkScan.addListener(this) is present or equivalent listener registration"},
+        {"text": "SparkScanListener is implemented"},
+        {"text": "onBarcodeScanned( is present"},
+        {"text": "onSessionUpdated( is present"},
+        {"text": "session.newlyRecognizedBarcode is read inside onBarcodeScanned"},
+        {"text": "SparkScanViewSettings.sparkScanViewSettings() is present"}
+      ],
+      "tags": ["basic-integration", "license-init-v7", "symbology-config", "scan-result-handling"]
+    },
+    {
+      "id": 2,
+      "prompt": "Add SparkScan scanning to ProductListScreenModel.kt. Only Code 128 and Code 39 barcodes should be scanned, and each scanned barcode should be added via the existing addProduct() method.",
+      "expected_output": "The skill adds SparkScan to ProductListScreenModel alongside the existing product-list state. All existing fields and helper methods are preserved, and onBarcodeScanned calls addProduct() with the scanned barcode data.",
+      "files": ["fixtures/ProductListScreenModel.kt"],
+      "assertions": [
+        {"text": "DataCaptureContext.initialize( is present"},
+        {"text": "SparkScanSettings.sparkScanSettings() is present"},
+        {"text": "enableSymbologies( is called"},
+        {"text": "Symbology.CODE128 is enabled"},
+        {"text": "Symbology.CODE39 is enabled"},
+        {"text": "No symbologies except CODE128 and CODE39 are enabled"},
+        {"text": "SparkScan( is constructed with settings"},
+        {"text": "SparkScanListener is implemented"},
+        {"text": "onBarcodeScanned( is present"},
+        {"text": "session.newlyRecognizedBarcode is read inside onBarcodeScanned"},
+        {"text": "addProduct( is called from within onBarcodeScanned with the scanned barcode's data"},
+        {"text": "scannedProducts StateFlow field is preserved"},
+        {"text": "total StateFlow field is preserved"},
+        {"text": "addProduct() method is preserved"},
+        {"text": "updateTotal() method is preserved"}
+      ],
+      "tags": ["symbology-config", "scan-result-handling"]
+    },
+    {
+      "id": 3,
+      "prompt": "When a barcode is scanned in IntegratedScreenModel.kt, I want to reject it if the data is '000000' and show an error message 'Invalid barcode' for 45 seconds before resuming scanning. All other barcodes should show success feedback.",
+      "expected_output": "The skill adds SparkScanFeedbackDelegate conformance to IntegratedScreenModel, implements getFeedbackForBarcode to return SparkScanBarcodeError Feedback for rejected barcodes and SparkScanBarcodeSuccessFeedback for valid ones, and explains that the platform host must assign the screen model to the constructed SparkScanView's feedbackDelegate property.",
+      "files": ["fixtures/IntegratedScreenModel.kt"],
+      "assertions": [
+        {"text": "SparkScanFeedbackDelegate is implemented"},
+        {"text": "getFeedbackForBarcode( method is implemented"},
+        {"text": "SparkScanBarcodeErrorFeedback( is present"},
+        {"text": "errorMessage parameter (not 'message') is used on the error feedback"},
+        {"text": "resumeCapturingDelay is set to 45000L or an equivalent 45-second millisecond value"},
+        {"text": "SparkScanBarcodeSuccessFeedback() is returned for non-rejected barcodes"},
+        {"text": "The rejection condition checks barcode.data == \"000000\" or equivalent"},
+        {"text": "The response explains or shows that the platform host must assign feedbackDelegate on the constructed SparkScanView instance (semantic)"},
+        {"text": "Existing SparkScanListener implementation is preserved"},
+        {"text": "Existing integration code (dataCaptureContext, sparkScan, sparkScanViewSettings) is preserved"}
+      ],
+      "tags": ["scan-feedback"]
+    },
+    {
+      "id": 4,
+      "prompt": "I'd rather not implement SparkScanListener as a class in ReactiveScreenModel.kt — collect scanned barcodes reactively with Kotlin Flow instead, and append each one's data to scannedBarcodes.",
+      "expected_output": "The skill wires up sparkScan.recognizedBarcodes as a Flow, collects it in a coroutine scope, and updates the scannedBarcodes StateFlow on each emission, without implementing SparkScanListener directly.",
+      "files": ["fixtures/ReactiveScreenModel.kt"],
+      "assertions": [
+        {"text": "sparkScan.recognizedBarcodes is referenced"},
+        {"text": "The Flow is collected (e.g. .collect { } or .onEach { })"},
+        {"text": "A CoroutineScope is used to launch the collection"},
+        {"text": "_scannedBarcodes.value is updated with the collected barcode's data"},
+        {"text": "SparkScanListener is NOT implemented as a class-level interface for this task (semantic)"},
+        {"text": "Existing dataCaptureContext, settings, and sparkScan initialization are preserved"}
+      ],
+      "tags": ["scan-result-handling"]
+    },
+    {
+      "id": 5,
+      "prompt": "This is a Compose Multiplatform screen (ComposeProductScreen.kt). Replace the placeholder content with SparkScan scanning using the Compose Multiplatform SparkScanView composable, enabling EAN-13 and Code 128, and print each scanned barcode's data.",
+      "expected_output": "The skill adds the barcode-compose dependency and uses the @Composable SparkScanView(...) function with settings built from SparkScanSettings.sparkScanSettings() and an onScan lambda, without adding any manual lifecycle calls.",
+      "files": ["fixtures/ComposeProductScreen.kt"],
+      "assertions": [
+        {"text": "Setup checklist or response mentions com.scandit.datacapture.kmp:barcode-compose as a Gradle dependency"},
+        {"text": "SparkScanView( is called"},
+        {"text": "SparkScanSettings.sparkScanSettings() is present"},
+        {"text": "enableSymbologies( is called"},
+        {"text": "Symbology.EAN13_UPCA is enabled"},
+        {"text": "Symbology.CODE128 is enabled"},
+        {"text": "onScan = is provided as a parameter to the composable"},
+        {"text": "No manual sparkScanView.onResume()/onPause()/startScanning() calls are added since the Compose wrapper manages the lifecycle (semantic)"},
+        {"text": "ProductListScreen composable function is preserved or replaced with an equivalently named scanning screen"}
+      ],
+      "tags": ["basic-integration", "symbology-config"]
+    },
+    {
+      "id": 6,
+      "prompt": "In WarehouseScanScreen (ComposeIntegratedScreen.kt), hide the built-in trigger button and torch control — this workflow uses a custom scan button and doesn't need the torch toggle.",
+      "expected_output": "The skill sets triggerButtonVisible = false and torchControlVisible = false on the SparkScanView composable call, preserving the existing settings and onScan handling.",
+      "files": ["fixtures/ComposeIntegratedScreen.kt"],
+      "assertions": [
+        {"text": "triggerButtonVisible = false is passed to the SparkScanView composable"},
+        {"text": "torchControlVisible = false is passed to the SparkScanView composable"},
+        {"text": "Existing SparkScanSettings / enableSymbologies configuration is preserved"},
+        {"text": "Existing onScan handling (onBarcodeScanned callback parameter) is preserved"}
+      ],
+      "tags": ["ui-customization"]
+    },
+    {
+      "id": 7,
+      "prompt": "Workers in our warehouse need to scan many items back-to-back without tapping the trigger button for every single scan. Enable continuous scanning on IntegratedScreenModel.kt.",
+      "expected_output": "The skill sets scanningBehavior = SparkScanScanningBehavior.CONTINUOUS on the existing SparkScanViewSettings instance, preserving the rest of the integration.",
+      "files": ["fixtures/IntegratedScreenModel.kt"],
+      "assertions": [
+        {"text": "SparkScanScanningBehavior.CONTINUOUS is assigned to scanningBehavior"},
+        {"text": "The existing sparkScanViewSettings instance (from SparkScanViewSettings.sparkScanViewSettings()) is configured, not a fresh unrelated instance"},
+        {"text": "SparkScanScanningMode.Target or a similarly named combined target-mode API is NOT used (semantic)"},
+        {"text": "Existing integration code (dataCaptureContext, sparkScan, SparkScanListener implementation) is preserved"}
+      ],
+      "tags": ["continuous-scanning"]
+    },
+    {
+      "id": 8,
+      "prompt": "My screen model (LeakyScreenModel.kt) doesn't clean up properly when the user navigates away from the scan screen. Add a dispose() function that removes the SparkScan listener and detaches the SparkScan mode from the DataCaptureContext.",
+      "expected_output": "The skill adds a dispose() function that calls sparkScan.removeListener(this) followed by dataCaptureContext.removeMode(sparkScan), matching the canonical sample's teardown order, and preserves the existing scanning setup.",
+      "files": ["fixtures/LeakyScreenModel.kt"],
+      "assertions": [
+        {"text": "A dispose() function is added"},
+        {"text": "sparkScan.removeListener(this) is called inside dispose()"},
+        {"text": "dataCaptureContext.removeMode(sparkScan) is called inside dispose()"},
+        {"text": "removeListener is called before removeMode within dispose()"},
+        {"text": "Existing dataCaptureContext, settings, sparkScan, and SparkScanListener implementation are preserved"}
+      ],
+      "tags": ["lifecycle-handling"]
+    }
+  ]
+}
