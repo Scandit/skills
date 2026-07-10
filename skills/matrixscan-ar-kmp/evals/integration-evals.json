@@ -1,0 +1,157 @@
+{
+  "skill_name": "matrixscan-ar-kmp",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I want to add MatrixScan AR to my Kotlin Multiplatform app. Here's my empty shared screen model: EmptyScannerScreenModel.kt. I need to scan EAN-13 and QR barcodes and show a rectangle highlight on each one.",
+      "expected_output": "The skill reads integration.md and writes a complete BarcodeAr integration into EmptyScannerScreenModel.kt: DataCaptureContext.initialize with a license key placeholder, BarcodeArSettings.barcodeArSettings() with only EAN13_UPCA and QR enabled, BarcodeAr.forContext(...), a BarcodeArHighlightProvider returning a BarcodeArRectangleHighlight, a registerView(view: BarcodeArView) function that assigns the provider and calls start(), and start()/pause()/stop() lifecycle hooks. It also explains that BarcodeArView must be constructed by the Android/iOS host and passed into shared code, and shows the setup checklist.",
+      "files": [
+        "fixtures/EmptyScannerScreenModel.kt"
+      ],
+      "assertions": [
+        {"text": "Setup checklist is shown and mentions adding com.scandit.datacapture.kmp:core and com.scandit.datacapture.kmp:barcode dependencies to commonMain"},
+        {"text": "Setup checklist mentions adding CAMERA permission (AndroidManifest.xml) and NSCameraUsageDescription (Info.plist)"},
+        {"text": "A license key placeholder string '-- ENTER YOUR SCANDIT LICENSE KEY HERE --' is present"},
+        {"text": "DataCaptureContext.initialize( is used"},
+        {"text": "BarcodeArSettings.barcodeArSettings() is used to construct settings (not a BarcodeArSettings() constructor)"},
+        {"text": "Symbology.EAN13_UPCA is enabled"},
+        {"text": "Symbology.QR is enabled"},
+        {"text": "No symbologies other than EAN13_UPCA and QR are enabled"},
+        {"text": "BarcodeAr.forContext( is used to construct the mode (not a BarcodeAr(...) direct constructor)"},
+        {"text": "BarcodeArHighlightProvider is implemented"},
+        {"text": "highlightForBarcode is overridden and returns a BarcodeArRectangleHighlight(barcode) constructed without a Context argument"},
+        {"text": "The highlight callback is invoked as a function call (callback(highlight) or equivalent), not callback.onData("},
+        {"text": "A function that accepts an already-constructed BarcodeArView (e.g. registerView(view: BarcodeArView)) is present, since BarcodeArView cannot be constructed directly in shared code"},
+        {"text": "view.highlightProvider is assigned"},
+        {"text": "view.start() is called after the provider is assigned"},
+        {"text": "start() and pause() are used to drive the view's lifecycle rather than onResume()/onPause()/onDestroy()"}
+      ],
+      "tags": ["basic-integration", "license-init", "barcode-ar-view", "view-lifecycle", "symbology-config", "highlight-basic", "highlight-provider"]
+    },
+    {
+      "id": 2,
+      "prompt": "Add an info annotation to each tracked barcode in my MatrixScan AR screen model. The annotation should show the barcode's data as a single body row. Here is my screen model: IntegratedScannerScreenModel.kt",
+      "expected_output": "The skill adds a BarcodeArAnnotationProvider implementation to the screen model, implements annotationForBarcode to return a BarcodeArInfoAnnotation with the barcode data as a body row, assigns it in registerView (view.annotationProvider), and preserves the existing highlight provider and lifecycle code.",
+      "files": [
+        "fixtures/IntegratedScannerScreenModel.kt"
+      ],
+      "assertions": [
+        {"text": "BarcodeArAnnotationProvider is implemented"},
+        {"text": "annotationForBarcode is overridden"},
+        {"text": "BarcodeArInfoAnnotation(barcode) is constructed without a Context argument"},
+        {"text": "The barcode data (barcode.data) is used as annotation body content via a BarcodeArInfoAnnotationBodyComponent"},
+        {"text": "The annotation callback is invoked as a function call (callback(annotation) or equivalent), not callback.onData("},
+        {"text": "view.annotationProvider is assigned"},
+        {"text": "Existing integration code (BarcodeAr, BarcodeArView registration, highlight provider) is preserved"}
+      ],
+      "tags": ["annotation-basic", "annotation-provider", "info-annotation-content"]
+    },
+    {
+      "id": 3,
+      "prompt": "I want to suppress the default beep and vibration in my MatrixScan AR KMP app — silent scanning. Update the BarcodeAr feedback.",
+      "expected_output": "The skill sets barcodeAr.feedback to a BarcodeArFeedback() (empty constructor, which produces silent feedback) and preserves the rest of the integration.",
+      "files": [
+        "fixtures/IntegratedScannerScreenModel.kt"
+      ],
+      "assertions": [
+        {"text": "barcodeAr.feedback is reassigned to a BarcodeArFeedback() to suppress audio and haptic feedback"},
+        {"text": "BarcodeArFeedback.defaultFeedback() is NOT used for this silent-scanning change"},
+        {"text": "Existing integration code (BarcodeAr, BarcodeArView registration, highlight provider) is preserved"}
+      ],
+      "tags": ["feedback-control"]
+    },
+    {
+      "id": 4,
+      "prompt": "Switch the highlight in my MatrixScan AR screen model from a rectangle to a pulsing circle highlight with a green brush. Here is my screen model: IntegratedScannerScreenModel.kt",
+      "expected_output": "The skill replaces the BarcodeArRectangleHighlight with a BarcodeArCircleHighlight, sets isPulsing to true, and customizes the brush with a green Color via Color.fromRgba, preserving the rest of the integration.",
+      "files": [
+        "fixtures/IntegratedScannerScreenModel.kt"
+      ],
+      "assertions": [
+        {"text": "BarcodeArCircleHighlight(barcode, ...) is constructed with a BarcodeArCircleHighlightPreset"},
+        {"text": "highlight.isPulsing is set to true"},
+        {"text": "highlight.brush is assigned using Color.fromRgba( for a green color"},
+        {"text": "BarcodeArRectangleHighlight is NOT used for this highlight in the updated code"},
+        {"text": "Existing integration code (BarcodeAr, BarcodeArView registration, session listener) is preserved"}
+      ],
+      "tags": ["circle-highlight", "highlight-brush-icon"]
+    },
+    {
+      "id": 5,
+      "prompt": "Add a status icon annotation to my MatrixScan AR screen model that shows 'Expired' with a red exclamation-mark icon over each tracked barcode. Here is my screen model: IntegratedScannerScreenModel.kt",
+      "expected_output": "The skill implements BarcodeArAnnotationProvider returning a BarcodeArStatusIconAnnotation with text set to 'Expired' and an icon built via ScanditIcon.builder() with a red background and an exclamation-mark icon type, assigned to view.annotationProvider.",
+      "files": [
+        "fixtures/IntegratedScannerScreenModel.kt"
+      ],
+      "assertions": [
+        {"text": "BarcodeArStatusIconAnnotation(barcode) is constructed"},
+        {"text": "annotation.text is set to a string containing 'Expired'"},
+        {"text": "annotation.icon is built with ScanditIcon.builder() using ScanditIconType.EXCLAMATION_MARK"},
+        {"text": "view.annotationProvider is assigned"},
+        {"text": "Existing integration code (BarcodeAr, BarcodeArView registration, highlight provider) is preserved"}
+      ],
+      "tags": ["status-icon-annotation"]
+    },
+    {
+      "id": 6,
+      "prompt": "Add a popover annotation to my MatrixScan AR screen model with Accept and Reject buttons that appears when the highlight is tapped. Log which button was tapped. Here is my screen model: IntegratedScannerScreenModel.kt",
+      "expected_output": "The skill implements BarcodeArAnnotationProvider returning a BarcodeArPopoverAnnotation constructed with two BarcodeArPopoverAnnotationButton instances (Accept, Reject), assigns a BarcodeArPopoverAnnotationListener that handles onPopoverButtonTapped, and wires the annotation provider into the view.",
+      "files": [
+        "fixtures/IntegratedScannerScreenModel.kt"
+      ],
+      "assertions": [
+        {"text": "BarcodeArPopoverAnnotation(barcode, listOf(...)) is constructed with a list of BarcodeArPopoverAnnotationButton"},
+        {"text": "A button labeled 'Accept' and a button labeled 'Reject' are created via BarcodeArPopoverAnnotationButton"},
+        {"text": "BarcodeArPopoverAnnotationListener is implemented with onPopoverButtonTapped overridden"},
+        {"text": "view.annotationProvider is assigned"},
+        {"text": "Existing integration code (BarcodeAr, BarcodeArView registration, highlight provider) is preserved"}
+      ],
+      "tags": ["popover-annotation", "annotation-tap"]
+    },
+    {
+      "id": 7,
+      "prompt": "Show a small info annotation when a barcode is far away and a larger, more detailed one when it's close up, in my MatrixScan AR screen model. Here is my screen model: IntegratedScannerScreenModel.kt",
+      "expected_output": "The skill implements BarcodeArAnnotationProvider returning a BarcodeArResponsiveAnnotation constructed from a close-up BarcodeArInfoAnnotation and a far-away BarcodeArInfoAnnotation, using the width presets to differentiate size.",
+      "files": [
+        "fixtures/IntegratedScannerScreenModel.kt"
+      ],
+      "assertions": [
+        {"text": "BarcodeArResponsiveAnnotation(barcode, closeUpAnnotation, farAwayAnnotation) is constructed from two BarcodeArInfoAnnotation instances"},
+        {"text": "The close-up and far-away BarcodeArInfoAnnotation instances use different BarcodeArInfoAnnotationWidthPreset values"},
+        {"text": "view.annotationProvider is assigned"},
+        {"text": "Existing integration code (BarcodeAr, BarcodeArView registration, highlight provider) is preserved"}
+      ],
+      "tags": ["responsive-annotation"]
+    },
+    {
+      "id": 8,
+      "prompt": "When the user taps a highlight in my MatrixScan AR screen model, I want to log the barcode data that was tapped. Here is my screen model: IntegratedScannerScreenModel.kt",
+      "expected_output": "The skill implements BarcodeArViewUiListener with onHighlightForBarcodeTapped(barcodeAr, barcode, highlight) (three parameters, no View parameter) and assigns it to view.uiListener in registerView.",
+      "files": [
+        "fixtures/IntegratedScannerScreenModel.kt"
+      ],
+      "assertions": [
+        {"text": "BarcodeArViewUiListener is implemented"},
+        {"text": "onHighlightForBarcodeTapped is overridden with exactly three parameters (barcodeAr, barcode, highlight) and no View/highlightView parameter"},
+        {"text": "view.uiListener is assigned"},
+        {"text": "Existing integration code (BarcodeAr, BarcodeArView registration, highlight provider) is preserved"}
+      ],
+      "tags": ["highlight-tap"]
+    },
+    {
+      "id": 9,
+      "prompt": "I only want barcodes starting with 'PROD-' to be augmented in my MatrixScan AR screen model — filter out everything else. Here is my screen model: IntegratedScannerScreenModel.kt",
+      "expected_output": "The skill implements BarcodeArFilter with filterBarcodes(barcodes) returning only barcodes whose data starts with 'PROD-', and registers it via barcodeAr.setBarcodeFilter(filter).",
+      "files": [
+        "fixtures/IntegratedScannerScreenModel.kt"
+      ],
+      "assertions": [
+        {"text": "BarcodeArFilter is implemented"},
+        {"text": "filterBarcodes(barcodes: List<Barcode>) is overridden and filters using barcode.data starting with 'PROD-'"},
+        {"text": "barcodeAr.setBarcodeFilter( is called to register the filter"},
+        {"text": "Existing integration code (BarcodeAr, BarcodeArView registration, highlight provider) is preserved"}
+      ],
+      "tags": ["barcode-filter"]
+    }
+  ]
+}
