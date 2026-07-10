@@ -32,6 +32,7 @@ features:
     match: ["continuous", "scanningmode", "scanning mode"]
   - id: target-selection-mode
     required: false
+    excluded_platforms: [kmp]
     evidence: [docs]
     match: ["target mode", "targetmode", "aim", "selection mode"]
   - id: ui-customization

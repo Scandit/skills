@@ -144,6 +144,7 @@ features:
     match: ["setpattern", "setdatatypepattern", "regex method rename", "setvalueregex", "setanchorregex"]
   - id: migration-validation-flow-listeners
     required: false
+    excluded_platforms: [kmp]
     evidence: [docs]
     # 8.2 manual-input + keyboard-inset, 8.4 partial result update
     match: ["didsubmitmanualinput", "onmanualinput", "didupdatevalidationflowresult", "onvalidationflowresultupdate", "keyboard inset", "labelresultupdatetype", "validationflowextendedlistener", "partial result"]
