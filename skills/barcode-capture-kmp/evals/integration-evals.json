@@ -1,0 +1,140 @@
+{
+  "skill_name": "barcode-capture-kmp",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I want to add BarcodeCapture to my Kotlin Multiplatform app. Here's my shared screen model with no scanning wired up yet: EmptyScreenModel.kt. I need to scan EAN-13 and Code 128 barcodes for a retail app, shared between Android and iOS.",
+      "expected_output": "The skill reads integration.md and writes a complete BarcodeCapture integration into EmptyScreenModel.kt: DataCaptureContext.initialize with a license key placeholder, BarcodeCapture.forContext with BarcodeCaptureSettings.barcodeCaptureSettings() enabling EAN13_UPCA and CODE128, a Camera wired via setFrameSource, a BarcodeCaptureListener implementation, and a setupDataCaptureView function the platform hosts call. It also explains that Android and iOS each construct their own DataCaptureView (different constructor signatures) and embed it via toAndroidView()/toUIView().",
+      "files": [
+        "fixtures/EmptyScreenModel.kt"
+      ],
+      "assertions": [
+        {"text": "com.kmp.datacapture.barcode.capture.BarcodeCapture is imported (not com.scandit.datacapture.*)"},
+        {"text": "A license key placeholder string is present (e.g. -- ENTER YOUR SCANDIT LICENSE KEY HERE --)"},
+        {"text": "DataCaptureContext.initialize( is used to create the context"},
+        {"text": "BarcodeCapture.createRecommendedCameraSettings() is used to configure the camera"},
+        {"text": "Camera.getDefaultCamera( is used to obtain the camera"},
+        {"text": "dataCaptureContext.setFrameSource( is called with the camera"},
+        {"text": "BarcodeCaptureSettings.barcodeCaptureSettings() factory is used (not a bare BarcodeCaptureSettings() constructor)"},
+        {"text": "Symbology.EAN13_UPCA is enabled"},
+        {"text": "Symbology.CODE128 is enabled"},
+        {"text": "No symbologies other than EAN13_UPCA and CODE128 are enabled"},
+        {"text": "BarcodeCapture.forContext(dataCaptureContext, settings) is used to create the mode (not forDataCaptureContext)"},
+        {"text": "addListener( is called or equivalent listener registration"},
+        {"text": "The screen model implements BarcodeCaptureListener with onBarcodeScanned and onSessionUpdated"},
+        {"text": "onBarcodeScanned reads session.newlyRecognizedBarcode"},
+        {"text": "A setupDataCaptureView (or equivalently named) function accepts a DataCaptureView and attaches a BarcodeCaptureOverlay via addOverlay"},
+        {"text": "The response explains that Android's DataCaptureView constructor needs a Context while iOS's does not, so the view must be constructed on each platform host rather than in the shared screen model"}
+      ],
+      "tags": ["basic-integration", "license-init", "camera-setup", "capture-view-overlay", "symbology-config", "scan-listener"]
+    },
+    {
+      "id": 2,
+      "prompt": "In my KMP BarcodeCapture screen model (IntegratedScreenModel.kt), when a barcode is scanned I want to disable scanning, look up the barcode in a remote API with a suspend function, and re-enable scanning once the lookup completes.",
+      "expected_output": "The skill keeps barcodeCapture.isEnabled = false being set at the start of onBarcodeScanned (already present), launches a coroutine (e.g. via a CoroutineScope on the screen model) to perform the async lookup, and sets barcodeCapture.isEnabled = true once the lookup completes. Existing integration code is preserved.",
+      "files": [
+        "fixtures/IntegratedScreenModel.kt"
+      ],
+      "assertions": [
+        {"text": "barcodeCapture.isEnabled = false is set inside onBarcodeScanned before the async lookup"},
+        {"text": "A coroutine (launch or async on a CoroutineScope) is used to perform the async lookup"},
+        {"text": "barcodeCapture.isEnabled = true is set after the lookup completes"},
+        {"text": "Existing integration code (DataCaptureContext, barcodeCapture, camera, settings, listener) is preserved"}
+      ],
+      "tags": ["scan-listener", "single-scan-disable"]
+    },
+    {
+      "id": 3,
+      "prompt": "I want silent scanning in my KMP BarcodeCapture app — suppress the default beep and vibration. Update IntegratedScreenModel.kt.",
+      "expected_output": "The skill reassigns barcodeCapture.feedback to a BarcodeCaptureFeedback with no sound or vibration (the BarcodeCaptureFeedback() empty constructor, as opposed to BarcodeCaptureFeedback.defaultFeedback() which has sound/vibration). Existing integration is preserved.",
+      "files": [
+        "fixtures/IntegratedScreenModel.kt"
+      ],
+      "assertions": [
+        {"text": "barcodeCapture.feedback is reassigned to suppress audio and haptic feedback (BarcodeCaptureFeedback() empty constructor or a Feedback with sound and vibration set to null, not BarcodeCaptureFeedback.defaultFeedback())"},
+        {"text": "Existing integration code (DataCaptureContext, barcodeCapture, camera, settings, listener) is preserved"}
+      ],
+      "tags": ["feedback-control"]
+    },
+    {
+      "id": 4,
+      "prompt": "Add a square rectangular viewfinder to my KMP BarcodeCapture preview so users can see where to aim. Update IntegratedScreenModel.kt.",
+      "expected_output": "The skill constructs a RectangularViewfinder via RectangularViewfinder.withStyleAndLineStyle (or withStyle) with a SQUARE style, and assigns it to the BarcodeCaptureOverlay's viewfinder property. Existing integration is preserved.",
+      "files": [
+        "fixtures/IntegratedScreenModel.kt"
+      ],
+      "assertions": [
+        {"text": "RectangularViewfinder.withStyle( or RectangularViewfinder.withStyleAndLineStyle( is used with RectangularViewfinderStyle.SQUARE"},
+        {"text": "The viewfinder is assigned to the overlay via overlay.viewfinder ="},
+        {"text": "Existing integration code (DataCaptureContext, barcodeCapture, camera, settings, listener) is preserved"}
+      ],
+      "tags": ["capture-view-overlay", "rectangular-viewfinder"]
+    },
+    {
+      "id": 5,
+      "prompt": "I need an aimer-style crosshair viewfinder instead, for my KMP BarcodeCapture preview. Update IntegratedScreenModel.kt.",
+      "expected_output": "The skill constructs an AimerViewfinder() and assigns it to the BarcodeCaptureOverlay's viewfinder property. The skill does not suggest LaserlineViewfinder since it is not available on KMP. Existing integration is preserved.",
+      "files": [
+        "fixtures/IntegratedScreenModel.kt"
+      ],
+      "assertions": [
+        {"text": "AimerViewfinder() is constructed with no arguments"},
+        {"text": "The viewfinder is assigned to the overlay via overlay.viewfinder ="},
+        {"text": "The deprecated-for-KMP LaserlineViewfinder is NOT suggested or used, since it does not exist in the KMP viewfinder package"},
+        {"text": "Existing integration code (DataCaptureContext, barcodeCapture, camera, settings, listener) is preserved"}
+      ],
+      "tags": ["aimer-viewfinder"]
+    },
+    {
+      "id": 6,
+      "prompt": "My KMP BarcodeCapture screen model (IntegratedScreenModel.kt) doesn't clean up properly when the screen is left. Add a dispose function that removes the listener, removes the mode from the context, and turns off the camera.",
+      "expected_output": "The skill adds a dispose() function that sets barcodeCapture.isEnabled = false, calls barcodeCapture.removeListener(this), calls dataCaptureContext.removeMode(barcodeCapture), and calls camera?.switchToDesiredState(FrameSourceState.OFF), in that order. Existing integration is preserved.",
+      "files": [
+        "fixtures/IntegratedScreenModel.kt"
+      ],
+      "assertions": [
+        {"text": "barcodeCapture.removeListener( is called in the new dispose function"},
+        {"text": "dataCaptureContext.removeMode(barcodeCapture) is called (not removeCurrentMode or removeAllModes)"},
+        {"text": "camera?.switchToDesiredState(FrameSourceState.OFF) (or non-null equivalent) is called to turn off the camera"},
+        {"text": "barcodeCapture.isEnabled = false is set before removing the listener"},
+        {"text": "Existing integration code (DataCaptureContext, barcodeCapture, camera, settings, listener) is preserved"}
+      ],
+      "tags": ["lifecycle"]
+    },
+    {
+      "id": 7,
+      "prompt": "I need to filter scans so duplicates of the same code within 500 milliseconds are ignored, in my KMP BarcodeCapture app (IntegratedScreenModel.kt).",
+      "expected_output": "The skill sets settings.codeDuplicateFilter = 500L (a plain Long, not a TimeInterval/TimeSpan wrapper type) on the BarcodeCaptureSettings before the mode is created, or applies it via barcodeCapture.applySettings(settings). Existing integration is preserved.",
+      "files": [
+        "fixtures/IntegratedScreenModel.kt"
+      ],
+      "assertions": [
+        {"text": "codeDuplicateFilter is set to a Long value of 500 (500L or 500), not wrapped in TimeInterval or TimeSpan"},
+        {"text": "codeDuplicateFilter is set on the BarcodeCaptureSettings before BarcodeCapture.forContext( or applied via barcodeCapture.applySettings("},
+        {"text": "Existing integration code (DataCaptureContext, barcodeCapture, camera, settings, listener) is preserved"}
+      ],
+      "tags": ["code-duplicate-filter"]
+    },
+    {
+      "id": 8,
+      "prompt": "I want to use Compose Multiplatform for my KMP BarcodeCapture screen instead of the imperative shared-ScreenModel pattern. Here's my empty Compose screen: EmptyComposeScreen.kt. Scan EAN-13 and QR codes.",
+      "expected_output": "The skill uses the core-compose DataCaptureView composable: rememberDataCaptureContext(licenseKey) to create the context, rememberCamera(context) to wire and drive the camera, BarcodeCapture.forContext with BarcodeCaptureSettings.barcodeCaptureSettings() enabling EAN13_UPCA and QR, a remembered BarcodeCaptureOverlay.withBarcodeCapture(barcodeCapture), and passes overlays = listOf(overlay) into the DataCaptureView composable. It does not look for a BarcodeCaptureView composable (none exists) and flags that the overlay must be remember-ed to avoid recomposition churn.",
+      "files": [
+        "fixtures/EmptyComposeScreen.kt"
+      ],
+      "assertions": [
+        {"text": "rememberDataCaptureContext( is used to create the DataCaptureContext"},
+        {"text": "rememberCamera( is used to wire the camera"},
+        {"text": "BarcodeCapture.forContext( is used to create the mode"},
+        {"text": "BarcodeCaptureSettings.barcodeCaptureSettings() is used"},
+        {"text": "Symbology.EAN13_UPCA is enabled"},
+        {"text": "Symbology.QR is enabled"},
+        {"text": "BarcodeCaptureOverlay.withBarcodeCapture( is used (not withBarcodeCaptureForView, since there is no imperative DataCaptureView to bind to)"},
+        {"text": "The overlay instance is wrapped in remember( to keep it stable across recompositions"},
+        {"text": "The DataCaptureView composable is called with overlays = listOf(overlay)"},
+        {"text": "No BarcodeCaptureView composable is used or suggested, since BarcodeCapture has no dedicated Compose companion"}
+      ],
+      "tags": ["basic-integration", "camera-setup", "capture-view-overlay", "symbology-config"]
+    }
+  ]
+}
