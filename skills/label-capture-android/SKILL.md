@@ -1,10 +1,10 @@
 ---
 name: label-capture-android
-description: Use when Label Capture (Smart Label Capture) is involved in an Android project — whether the user mentions Label Capture directly, or the codebase already uses it and something needs to be added, changed, fixed, or customized. This includes adding Label Capture to a new Android app, defining label structures (barcode fields + text fields with regex patterns), using pre-built whole-label definitions like price capture, handling captured sessions, customizing overlays (coloring fields with brushes, floating badges/icons via the advanced overlay), enabling the Validation Flow, or migrating between SDK versions. If the project is an Android project and Label Capture is in play, use this skill.
+description: Smart Label Capture (Scandit `LabelCapture`) in native Android projects — extracting multiple fields (price, expiry date, serial or lot number, weight) from a label in one scan, using barcode fields plus text fields with regex patterns and pre-built definitions like price capture. Use for integration, label-definition configuration, captured-session handling, overlay customization (brushes, floating badges), the Validation Flow, and SDK version migration.
 license: MIT
 metadata:
   author: scandit
-  version: "1.2.0"
+  version: "1.2.1"
 ---
 
 # Label Capture Android Skill

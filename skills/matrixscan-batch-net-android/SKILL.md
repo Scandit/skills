@@ -1,10 +1,10 @@
 ---
 name: matrixscan-batch-net-android
-description: Use when MatrixScan Batch (BarcodeBatch / BarcodeTracking) is involved in a .NET for Android project (`net*-android` target framework, `Scandit.DataCapture.Barcode` NuGet) — whether the user mentions MatrixScan, MatrixScan Batch, BarcodeBatch, or BarcodeTracking directly, or the codebase already uses `BarcodeBatch*` classes and something needs to be added, changed, fixed, or migrated. This includes adding MatrixScan Batch to a new .NET Android app, configuring `BarcodeBatchSettings` and symbologies, handling tracked barcodes via `IBarcodeBatchListener` or the `SessionUpdated` event, customizing highlights via `BarcodeBatchBasicOverlay`, anchoring custom Android `View`s with `BarcodeBatchAdvancedOverlay`, managing the `OnResume`/`OnPause` camera lifecycle, upgrading or migrating between Scandit SDK versions (v6→v7, v7→v8, or any bump of the Scandit .NET SDK), troubleshooting MatrixScan Batch behavior, or replacing a third-party multi-barcode scanner (ZXing.Net.Mobile loops, ZXing.Net, Google ML Kit bindings) with MatrixScan Batch. If the project targets `net*-android` and is **not** a MAUI app (`<UseMaui>true</UseMaui>`) and MatrixScan Batch (`BarcodeBatch`) is in play — including any question about upgrading the Scandit .NET Android SDK — use this skill.
+description: MatrixScan Batch (MatrixScan, BarcodeBatch, legacy BarcodeTracking) in .NET for Android projects (`net*-android` TFM, `Scandit.DataCapture.Barcode` NuGet, non-MAUI — MAUI apps use matrixscan-batch-maui) — tracking and scanning multiple barcodes at once. Use for integration, settings and symbologies, listeners/events, basic/advanced overlay customization, camera lifecycle, SDK version migration, or troubleshooting.
 license: MIT
 metadata:
   author: scandit
-  version: "1.0.0"
+  version: "1.0.1"
 ---
 
 # MatrixScan Batch .NET for Android Skill

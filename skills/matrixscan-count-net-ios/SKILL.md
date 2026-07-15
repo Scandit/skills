@@ -1,10 +1,10 @@
 ---
 name: matrixscan-count-net-ios
-description: Use when MatrixScan Count (`BarcodeCount*` / Barcode Count) is involved in a .NET for iOS project (`net*-ios` target framework, `Scandit.DataCapture.Barcode` NuGet) — whether the user mentions MatrixScan Count, Barcode Count, counting/receiving barcodes, or `BarcodeCount` directly, or the codebase already uses `BarcodeCount` as its high-volume barcode counting library and something needs to be added, changed, fixed, or migrated. This includes adding `BarcodeCount` to a new .NET iOS app, configuring `BarcodeCountSettings`, wiring up `IBarcodeCountListener` or the `Scanned` event, hosting the counting UI with `BarcodeCountView` (`BarcodeCountViewStyle.Icon`/`Dot`) inside a `UIViewController`, handling the camera frame source (`Camera` + `SetFrameSourceAsync`) and `barcodeCount.Enabled` across `ViewWillAppear`/`ViewWillDisappear`, storing scanned barcodes from `BarcodeCountSession.RecognizedBarcodes`, implementing a capture/receiving list with `BarcodeCountCaptureList` + `TargetBarcode` + `IBarcodeCountCaptureListListener`, reading the spatial map (`BarcodeSpatialGrid`), customizing `BarcodeCountFeedback`, handling List/Exit/SingleScan button taps, customizing brushes via `IBarcodeCountViewListener`, the status mode (`IBarcodeCountStatusProvider`), the not-in-list action, the hardware trigger (`HardwareTriggerEnabled`), upgrading or migrating between Scandit SDK versions (v6→v7, v7→v8, or any bump of the Scandit .NET SDK), troubleshooting `BarcodeCount` behavior, or replacing a manual multi-barcode-counting approach with `BarcodeCount`. If the project targets `net*-ios` and is **not** a MAUI app (`<UseMaui>true</UseMaui>`) and `BarcodeCount` is in play — including any question about upgrading the Scandit .NET iOS SDK — use this skill.
+description: MatrixScan Count (BarcodeCount) in .NET for iOS projects (net*-ios, Scandit.DataCapture.Barcode NuGet, non-MAUI) — counting/receiving barcodes in bulk with BarcodeCountView in a UIViewController, capture/receiving lists, spatial map, explicitly managed camera. For MAUI apps use matrixscan-count-maui. Use for integration, settings configuration, result handling, UI customization, SDK version migration, or troubleshooting counting workflows.
 license: MIT
 metadata:
   author: scandit
-  version: "1.0.0"
+  version: "1.0.1"
 ---
 
 # MatrixScan Count .NET for iOS Skill

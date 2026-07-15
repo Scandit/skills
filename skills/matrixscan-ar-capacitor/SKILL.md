@@ -1,10 +1,10 @@
 ---
 name: matrixscan-ar-capacitor
-description: Use when MatrixScan AR or Barcode AR is involved in a Capacitor project — whether the user mentions MatrixScan AR or Barcode AR directly, or the codebase already uses BarcodeAr* classes and something needs to be added, changed, fixed, or configured. This includes adding MatrixScan AR to a new Capacitor app, configuring symbologies, setting up BarcodeArView with a DOM element, implementing highlight or annotation providers, customizing highlights and annotations, handling session updates, or troubleshooting BarcodeAr behavior. If the project is Capacitor and MatrixScan AR is in play, use this skill.
+description: Capacitor MatrixScan AR (Barcode AR, BarcodeAr) — scanning multiple barcodes at once with AR highlights and annotations, BarcodeArView attached to a DOM element, in Capacitor iOS/Android apps (not the plain-web sibling). Use for integration, symbology configuration, highlight and annotation providers, session handling, migration from BarcodeBatch/BarcodeTracking, or troubleshooting.
 license: MIT
 metadata:
   author: scandit
-  version: "1.0.0"
+  version: "1.0.1"
 ---
 
 # MatrixScan AR Capacitor Skill

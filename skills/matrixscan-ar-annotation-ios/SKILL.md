@@ -1,10 +1,10 @@
 ---
 name: matrixscan-ar-annotation-ios
-description: Use when MatrixScan AR is involved in an iOS project — whether the user mentions MatrixScan AR directly, or the codebase already uses MatrixScan AR as its barcode scanning library, and asks any question related to MatrixScan AR annotations. This includes adding MatrixScan AR annotations to an iOS app, customizing their appearance and content, controlling when they appear, or handling interaction with them. If the project is iOS and MatrixScan AR annotations are in play, use this skill.
+description: MatrixScan AR annotations in native iOS Swift projects (UIKit/SwiftUI — Swift only, not C#/.NET) — info annotations, popovers, status icons, and responsive annotations attached to tracked barcodes. Use for adding annotations, customizing their appearance and content, controlling when they appear, or handling annotation taps — pipeline setup belongs to matrixscan-ar-ios; C#/.NET apps use matrixscan-ar-net-ios or matrixscan-ar-maui.
 license: MIT
 metadata:
   author: scandit
-  version: "1.0.0"
+  version: "1.0.1"
 ---
 
 # MatrixScan AR annotation iOS Skill

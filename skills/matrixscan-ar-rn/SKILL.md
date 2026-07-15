@@ -1,10 +1,10 @@
 ---
 name: matrixscan-ar-rn
-description: Use when MatrixScan AR, Barcode AR, AR overlays, AR annotations, or AR highlights are involved in a React Native project — whether the user mentions MatrixScan AR or Barcode AR directly, or the codebase already uses BarcodeAr* classes and something needs to be added, changed, fixed, or extended. This includes adding MatrixScan AR to a new React Native app, configuring BarcodeArSettings and symbologies, wiring highlight providers (BarcodeArCircleHighlight, BarcodeArRectangleHighlight, BarcodeArCustomHighlight), wiring annotation providers (BarcodeArInfoAnnotation, BarcodeArPopoverAnnotation, BarcodeArStatusIconAnnotation, BarcodeArResponsiveAnnotation, BarcodeArCustomAnnotation), handling session updates via BarcodeArListener, customizing BarcodeArFeedback, or troubleshooting BarcodeAr* behavior. If the project is React Native and MatrixScan AR / Barcode AR is in play, use this skill.
+description: MatrixScan AR (Barcode AR, BarcodeAr) in React Native projects — scanning multiple barcodes at once with AR overlays, highlights, and annotations on tracked barcodes. Use for integration, symbology configuration, highlight and annotation providers, session handling, feedback, migration from BarcodeBatch, or troubleshooting.
 license: MIT
 metadata:
   author: scandit
-  version: "1.0.0"
+  version: "1.0.1"
 ---
 
 # MatrixScan AR React Native Skill

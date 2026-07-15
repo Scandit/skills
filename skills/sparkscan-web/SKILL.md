@@ -1,10 +1,10 @@
 ---
 name: sparkscan-web
-description: Use when SparkScan (Scandit's pre-built high-volume single-scanning UI with a floating trigger button) is involved in a web project — whether the user names SparkScan directly or the codebase already uses it via `@scandit/web-datacapture-barcode` / the `<spark-scan-view>` element. Covers adding SparkScan to a web app (including React, Vite, Next.js), configuring symbologies and scan settings, handling scan results and feedback, customizing or replacing the trigger button, wiring the DataCaptureContext, fixing React-specific problems (React 18 vs 19 property/attribute binding, the context-singleton "works for a second then dies" / StrictMode issue), troubleshooting the camera not opening on a device (HTTPS / secure-context) or cross-origin header (COOP/COEP) problems, and upgrading or migrating between Web SDK versions (v6→v7, v7→v8). If the project is a web app and SparkScan is in play, use this skill. Do not use it for SparkScan on iOS, Android, React Native, Flutter, Capacitor, Cordova, or .NET/MAUI, nor for other Scandit web products (Barcode Capture, MatrixScan, ID Capture, Label Capture).
+description: SparkScan single-barcode scanning with the pre-built scanning UI (floating trigger button, `<spark-scan-view>`) in web/browser projects (`@scandit/web-datacapture-barcode`), including React/Vite/Next.js apps. Use for integration, scan settings, result handling, trigger-button customization, React-specific issues (StrictMode, React 18 vs 19 binding), camera/HTTPS/COOP-COEP troubleshooting, or SDK version migration — not for SparkScan on native or hybrid platforms.
 license: MIT
 metadata:
   author: scandit
-  version: "1.2.0"
+  version: "1.2.1"
 ---
 
 # SparkScan Web Skill

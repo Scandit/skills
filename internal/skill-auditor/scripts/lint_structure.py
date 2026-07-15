@@ -4,7 +4,8 @@
 Usage: python3 lint_structure.py [--prefix sparkscan-] [--repo-root PATH]
 
 Checks (per skill, and across siblings sharing a product prefix):
-  frontmatter   name matches directory, description present, license, author, version
+  frontmatter   name matches directory, description present, license, author, version,
+                description within the always-on token budget and naming the product
   layout        every sibling has the same reference files and eval suite files
   routing       every skills/<dir> is referenced in the router skill's SKILL.md and vice versa
 
@@ -19,6 +20,10 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from common import REPO_ROOT, frontmatter, list_skill_dirs, load_manifest
+
+# Descriptions are injected into every user session for every installed skill —
+# they are trigger metadata, not documentation. 600 chars ≈ 150 tokens each.
+DESCRIPTION_BUDGET = 600
 
 
 def main():
@@ -51,6 +56,22 @@ def main():
         for field in ("description", "license", "author", "version"):
             if not fm.get(field):
                 findings.append(f"{d.name}: frontmatter missing `{field}`")
+        desc = fm.get("description") or ""
+        if len(desc) > DESCRIPTION_BUDGET:
+            findings.append(
+                f"{d.name}: description {len(desc)} chars > budget {DESCRIPTION_BUDGET} "
+                "(descriptions are always-on context for every installed user; "
+                "trigger metadata only — teaching content belongs in the body)"
+            )
+        product = product_of(d.name)
+        if product and desc:
+            product_tokens = product.rstrip("-").replace("-", " ")
+            normalized = re.sub(r"[^a-z0-9]+", " ", desc.lower())
+            if product_tokens not in normalized:
+                findings.append(
+                    f"{d.name}: description does not mention product name "
+                    f"{product_tokens!r} — the product name is the primary trigger token"
+                )
 
     # --- sibling layout parity per product
     by_product: dict[str, list[Path]] = defaultdict(list)

@@ -1,10 +1,10 @@
 ---
 name: matrixscan-pick-ios
-description: Use when MatrixScan Pick is involved in an iOS project — whether the user mentions MatrixScan Pick directly, or the codebase already uses MatrixScan Pick and the picking flow needs changes. This includes adding MatrixScan Pick to an app for the first time, adjusting the DataCaptureContext, BarcodePick mode, BarcodePickSettings (symbologies, picking behavior such as auto-pick vs tap-to-pick), BarcodePickView, BarcodePickViewSettings, the product provider (BarcodePickAsyncMapperProductProvider), highlight configuration and styling (the highlight styles — dot, rectangular, with-icons, and CustomView — plus per-state brushes, icons, and status-icon badges), the finish button and handler, sound/haptic feedback, camera settings, or control visibility on an existing MatrixScan Pick integration. If the project is iOS and MatrixScan Pick is in play, use this skill.
+description: MatrixScan Pick (BarcodePick) in native iOS projects (Swift, ScanditBarcodeCapture) — pick/put verification workflows where the app confirms each item picked, with BarcodePickView, product provider, highlight styles, and auto-pick or tap-to-pick behavior. Use for integration, settings configuration, highlight styling, feedback, finish-button handling, or troubleshooting pick workflows.
 license: MIT
 metadata:
   author: scandit
-  version: "0.1.0"
+  version: "0.1.1"
 ---
 
 # MatrixScan Pick iOS Skill

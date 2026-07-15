@@ -1,10 +1,10 @@
 ---
 name: sparkscan-maui
-description: Use when SparkScan is involved in a .NET MAUI project (`<UseMaui>true</UseMaui>`, `Scandit.DataCapture.Barcode.Maui` NuGet) — whether the user mentions SparkScan directly, or the codebase already uses SparkScan as its barcode scanning UI and something needs to be added, changed, fixed, or migrated. This includes adding SparkScan to a new MAUI app, registering the `UseScanditCore().UseScanditBarcode(c => c.AddSparkScanView())` builder chain, declaring `<scandit:SparkScanView>` in XAML, configuring `SparkScanSettings`/`SparkScanViewSettings`, wiring the `BarcodeScanned` event on the view model, customizing feedback through `ISparkScanFeedbackDelegate` (`SparkScanBarcodeSuccessFeedback`/`SparkScanBarcodeErrorFeedback`), forwarding `OnAppearing`/`OnDisappearing` into the SparkScan MAUI control, upgrading or migrating between Scandit SDK versions (v6→v7, v7→v8, or any bump of the Scandit .NET SDK), troubleshooting SparkScan behavior in MAUI (black preview, builder-chain mismatches), or replacing a third-party MAUI barcode scanning library (ZXing.Net.Maui, BarcodeScanning.Native.Maui) with SparkScan. If the project file has `<UseMaui>true</UseMaui>` and SparkScan is in play — including any question about upgrading the Scandit .NET MAUI SDK — use this skill.
+description: SparkScan single-barcode scanning with the pre-built `SparkScanView` UI in .NET MAUI projects (`<UseMaui>true</UseMaui>`, `Scandit.DataCapture.Barcode.Maui` NuGet) — for non-MAUI .NET projects use sparkscan-net-android or sparkscan-net-ios. Use for integration, scan settings, result handling, feedback and UI customization, SDK version migration (v6→v7→v8), replacing third-party MAUI scanners (ZXing.Net.Maui), or troubleshooting.
 license: MIT
 metadata:
   author: scandit
-  version: "1.0.0"
+  version: "1.0.1"
 ---
 
 # SparkScan .NET MAUI Skill

@@ -1,10 +1,10 @@
 ---
 name: barcode-capture-cordova
-description: Use when BarcodeCapture is involved in a Cordova project — whether the user mentions BarcodeCapture directly, or the codebase already uses BarcodeCapture as its barcode scanning mode and something needs to be added, changed, fixed, or migrated. This includes adding BarcodeCapture to a new Cordova app, modifying scan settings, handling scan results, wiring the DataCaptureView and BarcodeCaptureOverlay, upgrading between SDK versions, or troubleshooting BarcodeCapture behavior. If the project is Cordova and BarcodeCapture is in play, use this skill.
+description: Cordova — Scandit Barcode Capture (`BarcodeCapture`) in Apache Cordova hybrid apps via the `scandit-cordova-datacapture-*` plugins (global `window.Scandit`), the low-level, full-control single-barcode scanning mode (BarcodeCapture + DataCaptureView + BarcodeCaptureOverlay) without the pre-built SparkScan UI, not the browser-only web SDK. Use for integration, scan settings, result handling, overlay wiring, SDK version migration, or troubleshooting.
 license: MIT
 metadata:
   author: scandit
-  version: "1.0.0"
+  version: "1.0.1"
 ---
 
 # BarcodeCapture Cordova Skill

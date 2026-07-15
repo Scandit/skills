@@ -1,10 +1,10 @@
 ---
 name: matrixscan-ar-ios
-description: Use when MatrixScan AR is involved in an iOS project — whether the user mentions MatrixScan AR directly, or the codebase already uses MatrixScan AR and needs the scanning pipeline changed. This includes adding MatrixScan AR to an app for the first time, adjusting the DataCaptureContext, BarcodeAr mode, BarcodeArSettings (symbologies), BarcodeArView, BarcodeArViewSettings, BarcodeArListener, feedback (sound/vibration), camera settings, or control visibility (torch/zoom/camera switch/macro) on an existing MatrixScan AR integration, or migrating a project from MatrixScan Batch (BarcodeBatch / BarcodeTracking) to MatrixScan AR. If the project is iOS and MatrixScan AR is in play, use this skill. Highlight-specific and annotation-specific work is handled by the sibling skills matrixscan-ar-highlight-ios and matrixscan-ar-annotation-ios — route there instead.
+description: MatrixScan AR scanning pipeline in iOS projects (Swift, UIKit/SwiftUI) — BarcodeAr mode and settings, BarcodeArView, listener, feedback, camera and controls, plus migration from MatrixScan Batch (BarcodeBatch/BarcodeTracking). Use for integration, configuration, or troubleshooting — highlight and annotation work routes to the sibling skills matrixscan-ar-highlight-ios and matrixscan-ar-annotation-ios.
 license: MIT
 metadata:
   author: scandit
-  version: "1.0.0"
+  version: "1.0.1"
 ---
 
 # MatrixScan AR iOS Skill

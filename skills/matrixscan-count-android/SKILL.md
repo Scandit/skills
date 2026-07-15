@@ -1,10 +1,10 @@
 ---
 name: matrixscan-count-android
-description: Use when MatrixScan Count (Barcode Count) is involved in an Android project (Kotlin / Java, `com.scandit.datacapture:barcode`) — whether the user mentions MatrixScan Count, Barcode Count, counting or receiving barcodes in bulk, or `BarcodeCount` directly, or the codebase already uses `BarcodeCount` as its high-volume counting library and the counting flow needs changes. This includes adding MatrixScan Count to an app for the first time, configuring the DataCaptureContext, the `BarcodeCount` mode, `BarcodeCountSettings` (symbologies, `expectsOnlyUniqueBarcodes`, clustering), hosting the counting UI with `BarcodeCountView` (Icon vs Dot style) in an Activity or Fragment, managing the camera frame source and lifecycle (the view does NOT own the camera — you create `Camera.getDefaultCamera`, apply `BarcodeCount.createRecommendedCameraSettings()`, call `dataCaptureContext.setFrameSource`, and toggle camera state across `onResume`/`onPause`), implementing `BarcodeCountListener` to collect scanned barcodes from `BarcodeCountSession`, the List/Exit/SingleScan button callbacks via `BarcodeCountViewUiListener`, the expected/receiving list with `BarcodeCountCaptureList` + `TargetBarcode`, feedback, brushes via `BarcodeCountViewListener`, status mode, clustering, the not-in-list action, the hardware trigger, or control visibility. If the project is native Android and MatrixScan Count / `BarcodeCount` is in play, use this skill.
+description: MatrixScan Count (BarcodeCount) in native Android projects (Kotlin/Java, `com.scandit.datacapture:barcode`) — counting and receiving barcodes in bulk with the BarcodeCountView UI in an Activity or Fragment, scanning against an expected/receiving list, clustering, status mode, explicitly managed camera. Use for integration, settings and symbology configuration, result handling, UI customization, or troubleshooting counting workflows.
 license: MIT
 metadata:
   author: scandit
-  version: "0.1.0"
+  version: "0.1.1"
 ---
 
 # MatrixScan Count Android Skill

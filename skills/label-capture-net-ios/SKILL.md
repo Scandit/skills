@@ -1,10 +1,10 @@
 ---
 name: label-capture-net-ios
-description: Use when Label Capture (Smart Label Capture, `LabelCapture*`) is involved in a .NET for iOS project (`net*-ios` target framework, `Scandit.DataCapture.Label` NuGet) — whether the user mentions Label Capture / Smart Label Capture directly, or the codebase already uses `LabelCapture` and something needs to be added, changed, fixed, or customized. This includes adding Label Capture to a new .NET iOS app, defining a label structure with barcode fields (`CustomBarcode`, `SerialNumberBarcode`, `PartNumberBarcode`, IMEI) and text fields (`ExpiryDateText`, `TotalPriceText`, `UnitPriceText`, `WeightText`, `PackingDateText`, `CustomText`) via their `.Builder()...Build(name)` factories, assembling them with `LabelDefinition.Create` + `LabelCaptureSettings.Create`, creating the mode with `LabelCapture.Create`, handling results through `ILabelCaptureListener.OnSessionUpdated` or the `SessionUpdated` event, reading `CapturedLabel` / `LabelField` (`Barcode`, `Text`, `Date`, iOS-only `ValueType`), hosting the preview with `DataCaptureView` (`Create(context, CGRect)`) + `LabelCaptureBasicOverlay` inside a `UIViewController`, managing the camera lifecycle across `ViewWillAppear`/`ViewWillDisappear`, enabling the guided Validation Flow (`LabelCaptureValidationFlowOverlay`), using prebuilt definitions (VIN, price label, 7-segment), customizing feedback/brushes, or upgrading the Scandit .NET SDK version. If the project targets `net*-ios` and is **not** a MAUI app (`<UseMaui>true</UseMaui>`) and Label Capture is in play, use this skill.
+description: Smart Label Capture (Scandit `LabelCapture`) in .NET for iOS projects (`net*-ios` target framework, `Scandit.DataCapture.Label` NuGet, C#) — extracting multiple fields (price, expiry date, serial or lot number, weight) from a label in one scan via barcode and text fields. Use for integration, label definitions (including prebuilt VIN, price label, 7-segment), captured-session handling, overlays, the Validation Flow, and Scandit .NET SDK version migration — for MAUI apps (`<UseMaui>true</UseMaui>`) use label-capture-net-maui instead.
 license: MIT
 metadata:
   author: scandit
-  version: "1.0.0"
+  version: "1.0.1"
 ---
 
 # Label Capture (Smart Label Capture) .NET for iOS Skill

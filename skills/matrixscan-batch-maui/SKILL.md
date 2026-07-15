@@ -1,10 +1,10 @@
 ---
 name: matrixscan-batch-maui
-description: Use when MatrixScan Batch (BarcodeBatch / BarcodeTracking) is involved in a .NET MAUI project (`<UseMaui>true</UseMaui>`, target frameworks include `net*-android` and/or `net*-ios`, `Scandit.DataCapture.Barcode.Maui` NuGet) — whether the user mentions MatrixScan, MatrixScan Batch, BarcodeBatch, or BarcodeTracking directly, or the codebase already uses `BarcodeBatch*` classes and something needs to be added, changed, fixed, or migrated. This includes adding MatrixScan Batch to a MAUI app, configuring `BarcodeBatchSettings` and symbologies, handling tracked barcodes via `IBarcodeBatchListener` or the `SessionUpdated` event, adding the `<scandit:DataCaptureView>` XAML control, creating a `BarcodeBatchBasicOverlay` after the view's handler is attached, anchoring custom MAUI `ContentView`s on top of tracked barcodes via `BarcodeBatchAdvancedOverlay` and the `ToPlatform` partial-class pattern, handling the `OnAppearing`/`OnDisappearing` lifecycle, requesting `Permissions.Camera`, upgrading or migrating between Scandit SDK versions (v6→v7, v7→v8, or any bump of the Scandit .NET MAUI SDK), troubleshooting MatrixScan Batch behavior (black preview, frozen/stuttering preview on iOS, advanced-overlay views not appearing), or replacing a third-party multi-barcode scanner (ZXing.Net.Maui multi-detection, BarcodeScanning.Native.Maui multi-detection) with MatrixScan Batch. If the project has `<UseMaui>true</UseMaui>` and MatrixScan Batch (`BarcodeBatch`) is in play — including any question about upgrading the Scandit .NET MAUI SDK — use this skill.
+description: MatrixScan Batch (MatrixScan, BarcodeBatch, legacy BarcodeTracking) in .NET MAUI projects (`Scandit.DataCapture.Barcode.Maui` NuGet, XAML DataCaptureView) — tracking and scanning multiple barcodes at once with basic/advanced overlays. For non-MAUI .NET projects use matrixscan-batch-net-android or matrixscan-batch-net-ios. Use for integration, settings, listeners/events, overlay customization, lifecycle, SDK version migration, or troubleshooting.
 license: MIT
 metadata:
   author: scandit
-  version: "1.0.0"
+  version: "1.0.1"
 ---
 
 # MatrixScan Batch .NET MAUI Skill

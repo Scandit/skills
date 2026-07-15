@@ -1,10 +1,10 @@
 ---
 name: barcode-capture-net-android
-description: Use when BarcodeCapture is involved in a .NET for Android project (`net*-android` target framework, `Scandit.DataCapture.Barcode` NuGet) — whether the user mentions BarcodeCapture directly, or the codebase already uses BarcodeCapture as its barcode scanning library and something needs to be added, changed, fixed, or migrated. This includes adding BarcodeCapture to a new .NET Android app, configuring `BarcodeCaptureSettings`, wiring up `IBarcodeCaptureListener` or the `BarcodeScanned` event, customizing the `BarcodeCaptureOverlay`, handling the `OnResume`/`OnPause` camera lifecycle, upgrading or migrating between Scandit SDK versions (v6→v7, v7→v8, or any bump of the Scandit .NET SDK), troubleshooting BarcodeCapture behavior, or replacing a third-party barcode scanning library (ZXing.Net.Mobile, ZXing.Net, Google ML Kit bindings) with BarcodeCapture. If the project targets `net*-android` and is **not** a MAUI app (`<UseMaui>true</UseMaui>`) and BarcodeCapture is in play — including any question about upgrading the Scandit .NET Android SDK — use this skill.
+description: Scandit BarcodeCapture in .NET for Android projects (`net*-android` target framework, `Scandit.DataCapture.Barcode` NuGet, non-MAUI — for MAUI apps use barcode-capture-maui) — the low-level, full-control barcode scanning mode without the pre-built SparkScan UI. Use for integration, scan settings, listener and event wiring, overlay customization, camera lifecycle, SDK version migration (v6→v7→v8), replacing ZXing.Net or ML Kit bindings, or troubleshooting.
 license: MIT
 metadata:
   author: scandit
-  version: "1.0.0"
+  version: "1.0.1"
 ---
 
 # BarcodeCapture .NET for Android Skill

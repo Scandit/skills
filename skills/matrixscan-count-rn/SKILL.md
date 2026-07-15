@@ -1,10 +1,10 @@
 ---
 name: matrixscan-count-rn
-description: Use when MatrixScan Count, Barcode Count, counting workflow, or scan-and-count are involved in a React Native project — whether the user mentions MatrixScan Count or BarcodeCount directly, or the codebase already uses BarcodeCount* classes and something needs to be added, changed, fixed, or extended. This includes adding MatrixScan Count to a new React Native app, configuring BarcodeCountSettings and symbologies, wiring BarcodeCountCaptureList for scanning against a list of expected barcodes, customizing BarcodeCountView (visibility toggles, brushes, hint text, accessibility, hardware triggers), wiring BarcodeCountViewListener and BarcodeCountViewUiListener, implementing BarcodeCountStatusProvider for per-barcode status overlays, handling BarcodeCountFeedback, or troubleshooting BarcodeCount* behavior. If the project is React Native and MatrixScan Count / BarcodeCount is in play, use this skill.
+description: MatrixScan Count (BarcodeCount) in React Native projects — scandit-react-native-datacapture-barcode package. Multi-barcode counting workflows (scan-and-count, counting against an expected capture list, status overlays) with BarcodeCountView. For Capacitor use matrixscan-count-capacitor. Use for integration, settings and symbology configuration, result handling, UI customization, or troubleshooting counting workflows.
 license: MIT
 metadata:
   author: scandit
-  version: "1.0.0"
+  version: "1.0.1"
 ---
 
 # MatrixScan Count React Native Skill

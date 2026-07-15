@@ -1,10 +1,10 @@
 ---
 name: matrixscan-batch-rn
-description: Use when MatrixScan, MatrixScan Batch, BarcodeBatch, or BarcodeTracking (legacy alias) are involved in a React Native project — whether the user mentions these names directly, or the codebase already uses BarcodeBatch* classes and something needs to be added, changed, fixed, extended, or migrated. This includes adding MatrixScan Batch to a new React Native app, configuring BarcodeBatchSettings and symbologies, wiring BarcodeBatchListener.didUpdateSession, reading tracked-barcode data (identifier, barcode.data, location), customizing BarcodeBatchBasicOverlay with per-barcode brushes via brushForTrackedBarcode, handling taps via didTapTrackedBarcode (basic overlay) or didTapViewForTrackedBarcode (advanced overlay), emitting feedback manually (BarcodeBatch has no automatic beep/vibration), adding AR annotations via BarcodeBatchAdvancedOverlay and a BarcodeBatchAdvancedOverlayView subclass, managing lifecycle (enable/disable, cleanup on unmount, camera permissions), or replacing a third-party multi-barcode scanner (react-native-vision-camera useCodeScanner, RNCamera, ML Kit) with MatrixScan Batch. If the project is React Native and MatrixScan / BarcodeBatch is in play, use this skill.
+description: MatrixScan Batch (MatrixScan, BarcodeBatch, legacy BarcodeTracking) in React Native projects — tracking and scanning multiple barcodes at once. Use for integration, settings and symbologies, tracked-barcode handling, per-barcode brushes, advanced-overlay AR annotations, tap handling, manual feedback, lifecycle, third-party scanner replacement, or troubleshooting.
 license: MIT
 metadata:
   author: scandit
-  version: "1.0.0"
+  version: "1.0.1"
 ---
 
 # MatrixScan Batch React Native Skill

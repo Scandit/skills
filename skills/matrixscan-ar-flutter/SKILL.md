@@ -1,10 +1,10 @@
 ---
 name: matrixscan-ar-flutter
-description: Use when MatrixScan AR (Barcode AR) is involved in a Flutter project — whether the user mentions MatrixScan AR, Barcode AR, or BarcodeAr directly, or the codebase already uses BarcodeAr as its multi-barcode scanning library and something needs to be added, changed, fixed, or configured. This includes adding BarcodeAr to a new Flutter app, modifying scan settings, handling tracked barcodes, customizing highlights or annotations, wiring up providers, or troubleshooting BarcodeAr behavior. If the project is Flutter and BarcodeAr (MatrixScan AR) is in play, use this skill.
+description: MatrixScan AR (Barcode AR, BarcodeAr) in Flutter projects (scandit_flutter_datacapture_barcode_ar) — scanning multiple barcodes at once with AR highlights and annotations over tracked barcodes. Use for integration, scan settings, highlight and annotation providers, migration from BarcodeBatch/BarcodeTracking, or troubleshooting.
 license: MIT
 metadata:
   author: scandit
-  version: "1.0.0"
+  version: "1.0.1"
 ---
 
 # MatrixScan AR Flutter Skill

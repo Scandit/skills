@@ -1,10 +1,10 @@
 ---
 name: sparkscan-net-ios
-description: Use when SparkScan is involved in a .NET for iOS project (`net*-ios` target framework, `Scandit.DataCapture.Barcode` NuGet) — whether the user mentions SparkScan directly, or the codebase already uses SparkScan as its barcode scanning UI and something needs to be added, changed, fixed, or migrated. This includes adding SparkScan to a new .NET iOS app, configuring `SparkScanSettings`/`SparkScanViewSettings`, wiring up `ISparkScanListener` or the `BarcodeScanned` event, customizing feedback through `ISparkScanFeedbackDelegate` (`SparkScanBarcodeSuccessFeedback`/`SparkScanBarcodeErrorFeedback`), handling the `PrepareScanning`/`StopScanning` lifecycle on `SparkScanView`, upgrading or migrating between Scandit SDK versions (v6→v7, v7→v8, or any bump of the Scandit .NET SDK), troubleshooting SparkScan behavior, or replacing a third-party barcode scanning library (ZXing.Net.Mobile, AVFoundation `AVCaptureMetadataOutput`) with SparkScan. If the project targets `net*-ios` and is **not** a MAUI app (`<UseMaui>true</UseMaui>`) and SparkScan is in play — including any question about upgrading the Scandit .NET iOS SDK — use this skill.
+description: SparkScan single-barcode scanning with the pre-built `SparkScanView` UI in .NET for iOS projects (`net*-ios` target framework, `Scandit.DataCapture.Barcode` NuGet, non-MAUI — for MAUI apps use sparkscan-maui). Use for integration, scan settings, result handling, feedback customization, scanning lifecycle, SDK version migration (v6→v7→v8), replacing third-party scanners (ZXing.Net.Mobile), or troubleshooting.
 license: MIT
 metadata:
   author: scandit
-  version: "1.0.0"
+  version: "1.0.1"
 ---
 
 # SparkScan .NET for iOS Skill
