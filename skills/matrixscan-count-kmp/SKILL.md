@@ -1,10 +1,10 @@
 ---
 name: matrixscan-count-kmp
-description: Use when MatrixScan Count (API class `BarcodeCount`) is involved in a Scandit Kotlin Multiplatform (KMP) project — whether the user mentions MatrixScan Count, Barcode Count, or `BarcodeCount` directly, or the codebase already imports `com.kmp.datacapture.barcode.count.*` / `com.kmp.datacapture.barcode.compose.BarcodeCountView` and something needs to be added, changed, fixed, or configured. This includes adding BarcodeCount to a new KMP app shared between Android and iOS, configuring `BarcodeCountSettings`, hosting the counting UI via the `BarcodeCountView` Compose composable or the base (non-Compose) `BarcodeCountView` class, wiring `BarcodeCountListener`/`onScan`, customizing the view (brushes, icons, hints, toolbar, hardware trigger), status mode (`BarcodeCountStatusProvider`), or troubleshooting BarcodeCount behavior on KMP. If the project uses the `com.scandit.datacapture.kmp:*` Maven artifacts (or the `Scandit/datacapture-kmp-spm` Swift package on iOS) and BarcodeCount is in play, use this skill.
+description: MatrixScan Count (BarcodeCount) in Kotlin Multiplatform (KMP) projects — com.scandit.datacapture.kmp:* Maven artifacts (Scandit/datacapture-kmp-spm on iOS), com.kmp.datacapture.barcode.count imports. Counting and receiving workflows shared across Android/iOS with the Compose composable or base BarcodeCountView. Use for integration, settings configuration, listener wiring, view customization, status mode, or troubleshooting counting workflows.
 license: MIT
 metadata:
   author: scandit
-  version: "1.0.0"
+  version: "1.0.1"
 ---
 
 # MatrixScan Count KMP Skill

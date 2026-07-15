@@ -1,10 +1,10 @@
 ---
 name: label-capture-kmp
-description: Use when Label Capture (Smart Label Capture) is involved in a Kotlin Multiplatform (KMP) project — a shared module consumed by Android and iOS apps, or a Compose Multiplatform app — whether the user mentions Label Capture directly, or the codebase already uses `com.kmp.datacapture.label.*` and something needs to be added, changed, fixed, or customized. This includes adding Label Capture to a new KMP shared module, defining label structures (barcode fields + text fields, or the Kotlin DSL `labelCaptureSettings { label(...) { ... } }`), using pre-built whole-label definitions like price capture, handling captured sessions from the shared ScreenModel, wiring the Android (`toAndroidView()`) and iOS (`toUIView()`) hosts, using the Compose Multiplatform `LabelCaptureView` composable, customizing overlays (basic/advanced/validation-flow/adaptive-recognition), or enabling the Validation Flow. If the project is a Kotlin Multiplatform project (androidMain + iosMain sharing a commonMain module) and Label Capture is in play, use this skill in place of the single-platform Android or iOS skills.
+description: Smart Label Capture (Scandit `LabelCapture`) in Kotlin Multiplatform (KMP) / Compose Multiplatform projects (`com.kmp.datacapture.label.*`, shared commonMain consumed by Android and iOS) — extracting multiple fields (price, expiry date, serial or lot number, weight) from a label in one scan, using barcode fields, regex text fields, or the Kotlin DSL. Use for integration, label-definition configuration, captured-session handling, shared-view hosting, overlay customization, and the Validation Flow — in place of the single-platform Android or iOS skills.
 license: MIT
 metadata:
   author: scandit
-  version: "1.0.0"
+  version: "1.0.1"
 ---
 
 # Label Capture KMP Skill

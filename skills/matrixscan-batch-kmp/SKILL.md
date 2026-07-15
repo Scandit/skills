@@ -1,10 +1,10 @@
 ---
 name: matrixscan-batch-kmp
-description: Use when MatrixScan Batch (BarcodeBatch) is involved in a Kotlin Multiplatform (KMP) project — whether the user mentions MatrixScan Batch, MatrixScan, BarcodeBatch, or Scandit KMP directly, or the codebase already uses the `com.scandit.datacapture.kmp` packages (`com.kmp.datacapture.*`) as its multi-barcode tracking library and something needs to be added, changed, fixed, or configured. This includes adding BarcodeBatch to a new KMP app (commonMain + Android/iOS hosts), configuring BarcodeBatchSettings and symbologies, handling tracked barcodes via BarcodeBatchListener, customizing highlights via BarcodeBatchBasicOverlay, adding AR bubble/info views via BarcodeBatchAdvancedOverlay, using the Compose Multiplatform DataCaptureView composable, or managing the lifecycle in a shared Kotlin module targeting Android and iOS. If the project is Kotlin Multiplatform and MatrixScan Batch (BarcodeBatch) is in play, use this skill.
+description: MatrixScan Batch (MatrixScan, BarcodeBatch, Scandit KMP) in Kotlin Multiplatform (KMP) projects (`com.scandit.datacapture.kmp` packages, `com.kmp.datacapture.*` imports) — tracking and scanning multiple barcodes at once in shared commonMain code with Android/iOS hosts and the Compose Multiplatform DataCaptureView. Use for integration, settings and symbologies, tracked-barcode handling, overlay customization, lifecycle, or troubleshooting.
 license: MIT
 metadata:
   author: scandit
-  version: "1.0.0"
+  version: "1.0.1"
 ---
 
 # MatrixScan Batch KMP Skill

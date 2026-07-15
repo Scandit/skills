@@ -1,10 +1,10 @@
 ---
 name: matrixscan-find-kmp
-description: Use when MatrixScan Find (BarcodeFind / search-and-find) is involved in a Kotlin Multiplatform (KMP) project — whether the user mentions MatrixScan Find, Barcode Find, or BarcodeFind directly, or the codebase already uses BarcodeFind as its item-search library and something needs to be added, changed, fixed, or configured. This includes adding BarcodeFind to a new KMP app (shared code + Android/iOS platform wiring), building the item list to search for, handling found items, customizing the BarcodeFindView UI, using the Compose Multiplatform BarcodeFindView, or wiring lifecycle across Android/iOS. If the project is Kotlin Multiplatform and MatrixScan Find (BarcodeFind) is in play, use this skill.
+description: MatrixScan Find (BarcodeFind) in Kotlin Multiplatform (KMP) projects — com.scandit.datacapture.kmp Maven artifacts, com.kmp.datacapture.barcode.find imports. Search-and-find workflows shared across Android/iOS — build an item list, find specific barcodes among many, BarcodeFindView UI (Compose or base view). Use for integration, item-list setup, result handling, UI customization, lifecycle wiring, or troubleshooting search-and-find workflows.
 license: MIT
 metadata:
   author: scandit
-  version: "1.0.0"
+  version: "1.0.1"
 ---
 
 # MatrixScan Find KMP Skill
