@@ -1,10 +1,10 @@
 ---
 name: matrixscan-pick-kmp
-description: Use when MatrixScan Pick is involved in a Kotlin Multiplatform (KMP) project — whether the user mentions MatrixScan Pick directly, or the codebase already uses the com.kmp.datacapture.barcode.pick APIs and the picking flow needs changes. This includes adding MatrixScan Pick to a KMP app for the first time (commonMain screen model + Android/iOS platform view), adjusting DataCaptureContext, the BarcodePick mode, BarcodePickSettings (symbologies, sound/haptics), BarcodePickView / BarcodePickViewSettings (Android's toAndroidView() / iOS's toUIView()), the product provider (BarcodePickAsyncMapperProductProvider + BarcodePickAsyncMapperProductProviderCallback), highlight configuration and styling (BarcodePickViewHighlightStyleDot/Rectangular/DotWithIcons/RectangularWithIcons/CustomView, per-state brushes, ScanditIcon, BarcodePickStatusIconStyle), the BarcodePickViewUiListener finish button, BarcodePickActionListener pick/unpick confirmation, BarcodePickListener / BarcodePickScanningListener session tracking, the compose barcode-compose BarcodePickView composable, or the low-level BarcodePick.selectItemWithData / confirmActionForItemWithData / cancelActionForItemWithData API. If the project is KMP (Kotlin Multiplatform, shared commonMain + Android/iOS actuals) and MatrixScan Pick is in play, use this skill.
+description: MatrixScan Pick (BarcodePick) in Kotlin Multiplatform (KMP) projects — com.scandit.datacapture.kmp Maven artifacts, com.kmp.datacapture.barcode.pick imports. Pick/put verification workflows shared across Android/iOS — BarcodePickView (Compose composable or platform view), product provider, highlight styles, pick/unpick confirmation. Use for integration, settings configuration, listener wiring, highlight styling, or troubleshooting pick workflows.
 license: MIT
 metadata:
   author: scandit
-  version: "1.0.0"
+  version: "1.0.1"
 ---
 
 # MatrixScan Pick KMP Skill

@@ -1,10 +1,10 @@
 ---
 name: matrixscan-ar-kmp
-description: Use when MatrixScan AR (Barcode AR / BarcodeAr) is involved in a Kotlin Multiplatform (KMP) project — whether the user mentions MatrixScan AR, Barcode AR, BarcodeAr, or Scandit KMP directly, or the codebase already uses the `com.scandit.datacapture.kmp` packages (`com.kmp.datacapture.*`) as its multi-barcode scanning library and something needs to be added, changed, fixed, or configured. This includes adding BarcodeAr to a new KMP app (commonMain + Android/iOS hosts), modifying scan settings, handling tracked barcodes, customizing highlights or annotations, wiring up providers, using the Compose Multiplatform `BarcodeArView` composable, troubleshooting BarcodeAr behavior, or replacing a third-party barcode scanning library with BarcodeAr in a shared Kotlin module targeting Android and iOS. If the project is Kotlin Multiplatform and MatrixScan AR (BarcodeAr) is in play, use this skill.
+description: MatrixScan AR (Barcode AR, BarcodeAr, Scandit KMP) in Kotlin Multiplatform (KMP) projects (`com.scandit.datacapture.kmp` packages, `com.kmp.datacapture.*` imports) — scanning multiple barcodes at once with AR highlights and annotations in shared commonMain code with Android/iOS hosts and the Compose Multiplatform BarcodeArView. Use for integration, scan settings, tracked-barcode handling, highlight and annotation providers, or troubleshooting.
 license: MIT
 metadata:
   author: scandit
-  version: "1.0.0"
+  version: "1.0.1"
 ---
 
 # MatrixScan AR KMP Skill

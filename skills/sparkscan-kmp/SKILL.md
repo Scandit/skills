@@ -1,10 +1,10 @@
 ---
 name: sparkscan-kmp
-description: Use when SparkScan is involved in a Kotlin Multiplatform (KMP) project — whether the user mentions SparkScan, Kotlin Multiplatform, KMP, or Compose Multiplatform directly, or the codebase already uses Scandit's KMP SDK (`com.kmp.datacapture.*`) as its barcode scanning library and something needs to be added, changed, fixed, or configured. This includes adding SparkScan to a new KMP app (shared ScreenModel + Android/iOS hosts), modifying scan settings, handling scan results, customizing feedback or the SparkScan UI, embedding `SparkScanView` via `toAndroidView()`/`toUIView()`, using the Compose Multiplatform `SparkScanView` composable, or troubleshooting SparkScan behavior in a shared Kotlin codebase. If the project is Kotlin Multiplatform (or Compose Multiplatform) and SparkScan is in play, use this skill.
+description: SparkScan single-barcode scanning with the pre-built scanning UI in Kotlin Multiplatform (KMP) and Compose Multiplatform projects using Scandit's KMP SDK (`com.kmp.datacapture.*` imports). Use for integration, scan settings, result handling, feedback and UI customization, embedding `SparkScanView` in shared code, or troubleshooting.
 license: MIT
 metadata:
   author: scandit
-  version: "1.0.0"
+  version: "1.0.1"
 ---
 
 # SparkScan KMP Skill

@@ -1,10 +1,10 @@
 ---
 name: barcode-selection-kmp
-description: Use when BarcodeSelection is involved in a Kotlin Multiplatform (KMP) project — whether the user mentions BarcodeSelection, Scandit KMP, or Kotlin Multiplatform tap-to-select/aim-to-select barcode scanning directly, or the codebase already uses Scandit's KMP SDK's BarcodeSelection mode and something needs to be added, changed, fixed, or customized. This includes adding BarcodeSelection to a shared-module KMP app (Android + iOS) for selecting individual barcodes in dense scenes (multiple codes visible at once), configuring tap-to-select or aim-to-select strategies, handling selection results and per-barcode counts in a shared ScreenModel, customizing the BarcodeSelectionBasicOverlay brushes, wiring the Compose Multiplatform DataCaptureView, or troubleshooting BarcodeSelection behavior on either platform target. If the project is Kotlin Multiplatform and BarcodeSelection is in play, use this skill.
+description: Barcode Selection (BarcodeSelection) in Kotlin Multiplatform (KMP) projects — com.scandit.datacapture.kmp Maven artifacts, com.kmp.datacapture.barcode.selection imports. Tap-to-select or aim-to-select one barcode among many visible at once in dense scenes, shared across Android/iOS with the Compose Multiplatform DataCaptureView. Use for integration, selection-strategy configuration, result handling, overlay brushes, or troubleshooting selection.
 license: MIT
 metadata:
   author: scandit
-  version: "1.0.0"
+  version: "1.0.1"
 ---
 
 # Barcode Selection KMP Skill
