@@ -1,10 +1,10 @@
 ---
 name: barcode-capture-kmp
-description: Use when BarcodeCapture is involved in a Kotlin Multiplatform (KMP) project — whether the user mentions BarcodeCapture, Scandit KMP, or Kotlin Multiplatform barcode scanning directly, or the codebase already uses Scandit's KMP SDK as its barcode scanning library and something needs to be added, changed, fixed, or customized. This includes adding BarcodeCapture to a shared-module KMP app (Android + iOS), configuring scan settings, handling scan results in a shared ScreenModel, customizing the BarcodeCaptureOverlay or viewfinder, wiring the Compose Multiplatform DataCaptureView, or troubleshooting BarcodeCapture behavior on either platform target. If the project is Kotlin Multiplatform and BarcodeCapture is in play, use this skill.
+description: Scandit Barcode Capture (`BarcodeCapture`) in Kotlin Multiplatform (KMP) and Compose Multiplatform projects using Scandit's KMP SDK (`com.kmp.datacapture.*` imports) — the low-level, full-control single-barcode scanning mode without the pre-built SparkScan UI. Use for integration, scan settings, shared-code result handling, overlay and viewfinder customization, or troubleshooting.
 license: MIT
 metadata:
   author: scandit
-  version: "1.0.0"
+  version: "1.0.1"
 ---
 
 # Barcode Capture KMP Skill
