@@ -22,15 +22,60 @@ def list_skill_dirs(skills_root: Path, prefix: str | None = None,
     )
 
 
+def _fold_block(block: list[str], literal: bool) -> str:
+    """Fold the continuation lines of a YAML block scalar into a single string.
+
+    `literal` (``|``) joins lines with newlines; folded (``>``) collapses single
+    line breaks between non-empty lines into spaces and blank lines into newlines.
+    """
+    non_empty = [b for b in block if b.strip()]
+    common = min((len(b) - len(b.lstrip()) for b in non_empty), default=0)
+    content = [b[common:] if b.strip() else "" for b in block]
+    if literal:
+        return "\n".join(content).strip()
+    out: list[str] = []
+    for ln in content:
+        if ln == "":
+            out.append("\n")
+        elif out and out[-1] != "\n":
+            out.append(" " + ln)
+        else:
+            out.append(ln)
+    return "".join(out).strip()
+
+
 def frontmatter(path: Path) -> dict:
-    """Parse SKILL.md YAML frontmatter into a flat dict (metadata children flattened)."""
+    """Parse SKILL.md YAML frontmatter into a flat dict (metadata children flattened).
+
+    Handles block scalars (``key: >`` / ``key: |`` with an optional ``-``/``+``
+    chomping indicator): their indented continuation lines are folded into the
+    value, so length/name checks see the real text rather than the ``>-`` indicator.
+    """
     m = re.match(r"^---\n(.*?)\n---", path.read_text(), re.S)
     fm: dict = {}
-    if m:
-        for line in m.group(1).splitlines():
-            if ":" in line:
-                k, _, v = line.strip().partition(":")
-                fm[k.strip()] = v.strip().strip('"')
+    if not m:
+        return fm
+    lines = m.group(1).splitlines()
+    i = 0
+    while i < len(lines):
+        line = lines[i]
+        i += 1
+        if ":" not in line:
+            continue
+        indent = len(line) - len(line.lstrip())
+        k, _, v = line.strip().partition(":")
+        v = v.strip()
+        if v[:1] in ("|", ">"):
+            literal = v[0] == "|"
+            block: list[str] = []
+            while i < len(lines):
+                nxt = lines[i]
+                if nxt.strip() and (len(nxt) - len(nxt.lstrip())) <= indent:
+                    break
+                block.append(nxt)
+                i += 1
+            v = _fold_block(block, literal)
+        fm[k.strip()] = v.strip('"')
     return fm
 
 
