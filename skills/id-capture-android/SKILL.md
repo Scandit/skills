@@ -1,10 +1,10 @@
 ---
 name: id-capture-android
-description: Use when ID Capture (Scandit identity-document scanning — passports, driver's licenses, ID cards, residence permits, health-insurance cards, visas, region-specific subtypes, reading MRZ / VIZ / PDF417 barcode on identity documents / mobile-document data) is involved in a native Android project (Kotlin or Java) — whether the user mentions ID Capture directly, says "scan a passport / driver's license / ID card / identity document in Kotlin on Android", or the codebase already uses `IdCapture` and something needs to be added, changed, fixed, or customized. This includes adding ID Capture to a new Android app, configuring `IdCaptureSettings` with `acceptedDocuments` (`IdCard(IdCaptureRegion.ANY)`, `DriverLicense(IdCaptureRegion.US)`, `Passport(IdCaptureRegion.ANY)`, …) and a `scanner` (`IdCaptureScanner(FullDocumentScanner())` / `SingleSideScanner` / `MobileDocumentScanner`), creating the mode with `IdCapture.forDataCaptureContext(context, settings)`, handling results through `IdCaptureListener.onIdCaptured` / `onIdRejected`, reading `CapturedId` (`fullName`, `dateOfBirth`, `dateOfExpiry`, `documentNumber`, `mrz`, `viz`, `barcode`, `mobileDocument`, `images`, `verificationResult`), hosting the preview with `DataCaptureView` + `IdCaptureOverlay`, managing the camera lifecycle across `onResume` / `onPause` / `onDestroy`, rejection rules (expired / voided / underage / forged-AAMVA / inconsistent-data), data-consistency / AAMVA verification, anonymization, or upgrading the Scandit Android SDK version. If the project is native Android (Kotlin or Java) and ID Capture is in play, use this skill.
+description: Scandit ID Capture (`IdCapture`) in native Android (Kotlin or Java) projects — scanning passports, driver's licenses, ID cards, residence permits, health-insurance cards, visas via MRZ, VIZ, PDF417 barcode, or mobile documents. Use for integration, accepted-document and scanner configuration, CapturedId result handling, rejection rules, AAMVA verification, anonymization, overlay UI, camera lifecycle, and Scandit Android SDK version migration.
 license: MIT
 metadata:
   author: scandit
-  version: "1.0.0"
+  version: "1.0.1"
 ---
 
 # ID Capture Android (Kotlin/Java) Skill

@@ -1,10 +1,10 @@
 ---
 name: barcode-capture-web
-description: Use when BarcodeCapture is involved in a web project — whether the user mentions BarcodeCapture directly, or the codebase already uses BarcodeCapture as its barcode scanning library and something needs to be added, changed, fixed, or migrated. This includes adding BarcodeCapture to a new web app, modifying scan settings, handling scan results, customizing the BarcodeCapture overlay or viewfinder, upgrading or migrating between SDK versions (v6→v7, v7→v8, or any bump of the Scandit Web SDK), or troubleshooting BarcodeCapture behavior. If the project is a web project and BarcodeCapture is in play — including any question about upgrading the Scandit Web SDK — use this skill.
+description: Scandit Barcode Capture (`BarcodeCapture`) in web/browser (TypeScript/JavaScript) projects — the low-level, full-control single-barcode scanning mode (BarcodeCapture + DataCaptureView + overlay), without the pre-built SparkScan UI; not the Cordova or Capacitor hybrid plugins. Use for integration, scan settings, result handling, overlay and viewfinder customization, Scandit Web SDK version migration (v6→v7→v8), or troubleshooting.
 license: MIT
 metadata:
   author: scandit
-  version: "1.0.0"
+  version: "1.0.1"
 ---
 
 # BarcodeCapture Web Skill

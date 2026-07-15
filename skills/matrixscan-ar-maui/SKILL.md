@@ -1,10 +1,10 @@
 ---
 name: matrixscan-ar-maui
-description: Use when MatrixScan AR (`BarcodeAr*` / Barcode AR) is involved in a .NET MAUI project (`<UseMaui>true</UseMaui>`, target frameworks include `net*-android` and/or `net*-ios`, `Scandit.DataCapture.Barcode.Maui` NuGet) — whether the user mentions MatrixScan AR, Barcode AR, or `BarcodeAr` directly, or the codebase already uses `BarcodeAr` as its multi-barcode tracking + AR overlay library and something needs to be added, changed, fixed, or migrated. This includes adding `BarcodeAr` to a MAUI app, registering the `UseScanditCore().UseScanditBarcode(c => c.AddBarcodeArView())` builder chain, declaring `<scandit:BarcodeArView>` in XAML, configuring `BarcodeArSettings`/`BarcodeArViewSettings`, wiring `IBarcodeArListener` or the `SessionUpdated` event on a view model, customizing highlights (`BarcodeArRectangleHighlight`, `BarcodeArCircleHighlight`) via `IBarcodeArHighlightProvider.HighlightForBarcodeAsync`, customizing annotations (`BarcodeArInfoAnnotation`, `BarcodeArStatusIconAnnotation`, `BarcodeArPopoverAnnotation`) via `IBarcodeArAnnotationProvider.AnnotationForBarcodeAsync`, customizing `BarcodeArFeedback`, forwarding `OnAppearing`/`OnDisappearing` into the MAUI `BarcodeArView` (`OnResume`/`OnPause` + `Start`/`Stop`), hooking `HighlightForBarcodeTapped`, hooking info-annotation / popover-annotation listeners, upgrading or migrating between Scandit SDK versions (v7→v8, or any bump of the Scandit .NET MAUI SDK), or troubleshooting `BarcodeAr` MAUI behavior (black preview, builder-chain mismatches, missing `BarcodeArView` handler registration). If the project has `<UseMaui>true</UseMaui>` and `BarcodeAr` is in play — including any question about upgrading the Scandit .NET MAUI SDK — use this skill.
+description: MatrixScan AR (Barcode AR, BarcodeAr) in .NET MAUI projects (`Scandit.DataCapture.Barcode.Maui` NuGet, XAML BarcodeArView) — scanning multiple barcodes at once with AR highlights and annotations. For non-MAUI .NET projects use matrixscan-ar-net-android or matrixscan-ar-net-ios. Use for integration, settings, listeners/events, highlight and annotation providers, lifecycle, SDK version migration, or troubleshooting.
 license: MIT
 metadata:
   author: scandit
-  version: "1.0.0"
+  version: "1.0.1"
 ---
 
 # MatrixScan AR .NET MAUI Skill

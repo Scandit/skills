@@ -1,10 +1,10 @@
 ---
 name: label-capture-net-maui
-description: Use when Label Capture (Smart Label Capture, `LabelCapture*`) is involved in a .NET MAUI project (`<UseMaui>true</UseMaui>`, target frameworks include `net*-android` and/or `net*-ios`, `Scandit.DataCapture.Label` NuGet) — whether the user mentions Label Capture / Smart Label Capture directly, or the codebase already uses `LabelCapture` and something needs to be added, changed, fixed, or customized. This includes adding Label Capture to a MAUI app, defining a label structure with barcode fields (`CustomBarcode`, `SerialNumberBarcode`, `PartNumberBarcode`, IMEI) and text fields (`ExpiryDateText`, `TotalPriceText`, `UnitPriceText`, `WeightText`, `PackingDateText`, `CustomText`) via their `.Builder()...Build(name)` factories, assembling them with `LabelDefinition.Create` + `LabelCaptureSettings.Create`, creating the mode with `LabelCapture.Create`, hosting the preview with the `<scandit:DataCaptureView>` XAML control plus a `LabelCaptureBasicOverlay` created in `HandlerChanged`, handling results through `ILabelCaptureListener.OnSessionUpdated` or the `SessionUpdated` event, reading `CapturedLabel` / `LabelField` (`Barcode`, `Text`, `Date`), wiring the `MauiProgram.cs` builder + `ScanditLabelCapture.Initialize()`, managing the camera lifecycle across `OnAppearing`/`OnDisappearing`, requesting `Permissions.Camera`, enabling the guided Validation Flow (`LabelCaptureValidationFlowOverlay`), using prebuilt definitions (VIN, price label, 7-segment), customizing feedback/brushes, or upgrading the Scandit .NET MAUI SDK version. If the project has `<UseMaui>true</UseMaui>` and Label Capture (`LabelCapture`) is in play, use this skill — for non-MAUI projects use `label-capture-net-android` (`net*-android`) or `label-capture-net-ios` (`net*-ios`) instead.
+description: Smart Label Capture (Scandit `LabelCapture`) in .NET MAUI projects (`<UseMaui>true</UseMaui>`, `Scandit.DataCapture.Label` NuGet) — extracting multiple fields (price, expiry date, serial or lot number, weight) from a label in one scan via barcode and text fields. Use for integration, label definitions (prebuilt VIN, price label, 7-segment), captured-session handling, MAUI view hosting and lifecycle, the Validation Flow, and SDK version migration — for non-MAUI .NET projects use `label-capture-net-android` or `label-capture-net-ios` instead.
 license: MIT
 metadata:
   author: scandit
-  version: "1.0.0"
+  version: "1.0.1"
 ---
 
 # Label Capture (Smart Label Capture) .NET MAUI Skill

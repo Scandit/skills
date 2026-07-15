@@ -1,10 +1,10 @@
 ---
 name: matrixscan-batch-capacitor
-description: Use when MatrixScan, MatrixScan Batch, BarcodeBatch, or BarcodeTracking (legacy alias) are involved in a Capacitor project — whether the user mentions these names directly, or the codebase already uses BarcodeBatch* classes and something needs to be added, changed, fixed, or extended. This includes adding MatrixScan Batch to a new Capacitor app, configuring BarcodeBatchSettings and symbologies, wiring BarcodeBatchListener.didUpdateSession, customizing BarcodeBatchBasicOverlay with per-barcode brushes via brushForTrackedBarcode, adding AR annotations via BarcodeBatchAdvancedOverlay with the serialized TrackedBarcodeView Promise pattern, or managing lifecycle (enable/disable, cleanup, camera permissions). If the project is Capacitor and MatrixScan / BarcodeBatch is in play, use this skill.
+description: Capacitor MatrixScan Batch (scandit-capacitor-datacapture-barcode) — MatrixScan, BarcodeBatch, legacy BarcodeTracking — tracking and scanning multiple barcodes at once with basic/advanced AR overlays in Capacitor iOS/Android apps (not the plain-web sibling). Use for integration, settings and symbologies, per-barcode brushes, TrackedBarcodeView annotations, lifecycle, SDK version migration, or troubleshooting.
 license: MIT
 metadata:
   author: scandit
-  version: "1.0.0"
+  version: "1.0.1"
 ---
 
 # MatrixScan Batch Capacitor Skill

@@ -1,10 +1,10 @@
 ---
 name: label-capture-rn
-description: Use when Label Capture (Smart Label Capture) is involved in a React Native project — whether the user mentions Label Capture directly, or the codebase already uses it and something needs to be added, changed, fixed, or customized. This includes adding Label Capture to a new React Native app, defining label structures (barcode fields + text fields with regex patterns), handling captured labels, enabling the Validation Flow, or upgrading between SDK versions. If the project is React Native and Label Capture is in play, use this skill.
+description: Smart Label Capture (Scandit `LabelCapture`) in React Native projects — extracting multiple fields (price, expiry date, serial or lot number, weight) from a label in one scan, using barcode fields plus text fields with regex patterns. Use for integration, label-definition configuration, captured-label handling, the Validation Flow, and SDK version migration.
 license: MIT
 metadata:
   author: scandit
-  version: "1.0.0"
+  version: "1.0.1"
 ---
 
 # Label Capture React Native Skill

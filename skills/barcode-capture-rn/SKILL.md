@@ -1,10 +1,10 @@
 ---
 name: barcode-capture-rn
-description: Use when BarcodeCapture is involved in a React Native project — whether the user mentions BarcodeCapture directly, or the codebase already uses BarcodeCapture as its single-scan barcode capture mode and something needs to be added, changed, fixed, or migrated. This includes adding BarcodeCapture to a new React Native app, configuring symbologies, wiring a DataCaptureView and BarcodeCaptureOverlay, handling scan results, customizing feedback or viewfinders, upgrading between SDK versions, or troubleshooting BarcodeCapture behavior. If the project is React Native and BarcodeCapture is in play, use this skill.
+description: Scandit Barcode Capture (`BarcodeCapture`) in React Native projects — the low-level, full-control single-barcode scanning mode (BarcodeCapture + DataCaptureView + BarcodeCaptureOverlay), without the pre-built SparkScan UI. Use for integration, symbology configuration, result handling, viewfinder and feedback customization, SDK version migration, or troubleshooting.
 license: MIT
 metadata:
   author: scandit
-  version: "1.0.0"
+  version: "1.0.1"
 ---
 
 # BarcodeCapture React Native Skill

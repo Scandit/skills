@@ -1,10 +1,10 @@
 ---
 name: matrixscan-batch-ios
-description: Use when MatrixScan Batch (BarcodeBatch / BarcodeTracking) is involved in an iOS project — whether the user mentions MatrixScan, MatrixScan Batch, BarcodeBatch, or BarcodeTracking directly, or the codebase already uses BarcodeBatch* classes and something needs to be added, changed, fixed, or extended. This includes adding MatrixScan Batch to a new iOS app, configuring BarcodeBatchSettings and symbologies, handling tracked barcodes via BarcodeBatchListener, customizing highlights via BarcodeBatchBasicOverlay, adding AR views via BarcodeBatchAdvancedOverlay, or managing the lifecycle. If the project is iOS and MatrixScan Batch (BarcodeBatch) is in play, use this skill.
+description: MatrixScan Batch (MatrixScan, BarcodeBatch, legacy BarcodeTracking) — tracking and scanning multiple barcodes at once in iOS (Swift, UIKit/SwiftUI) projects. Use for integration, settings and symbologies, tracked-barcode handling, basic/advanced overlay customization, lifecycle, or troubleshooting.
 license: MIT
 metadata:
   author: scandit
-  version: "1.0.0"
+  version: "1.0.1"
 ---
 
 # MatrixScan Batch iOS Skill

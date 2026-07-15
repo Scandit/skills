@@ -1,10 +1,10 @@
 ---
 name: sparkscan-ios
-description: Use when SparkScan is involved in an iOS project — whether the user mentions SparkScan directly, or the codebase already uses SparkScan as its barcode scanning library and something needs to be added, changed, fixed, or migrated. This includes adding SparkScan to a new iOS app, modifying scan settings, handling scan results, customizing the SparkScan UI, upgrading between SDK versions, troubleshooting SparkScan behavior, or replacing a third-party barcode scanning library with SparkScan. If the project is iOS and SparkScan is in play, use this skill.
+description: SparkScan single-barcode scanning with the pre-built scanning UI in native iOS (Swift) projects. Use for integration, scan settings, result handling, UI customization, SDK version migration, replacing a third-party barcode scanning library, or troubleshooting.
 license: MIT
 metadata:
   author: scandit
-  version: "1.1.2"
+  version: "1.1.3"
 ---
 
 # SparkScan iOS Skill

@@ -1,10 +1,10 @@
 ---
 name: matrixscan-ar-net-ios
-description: Use when MatrixScan AR (`BarcodeAr*` / Barcode AR) is involved in a .NET for iOS project (`net*-ios` target framework, `Scandit.DataCapture.Barcode` NuGet) — whether the user mentions MatrixScan AR, Barcode AR, or `BarcodeAr` directly, or the codebase already uses `BarcodeAr` as its multi-barcode tracking + AR overlay library and something needs to be added, changed, fixed, or migrated. This includes adding `BarcodeAr` to a new .NET iOS app, configuring `BarcodeArSettings`/`BarcodeArViewSettings`, wiring up `IBarcodeArListener` or the `SessionUpdated` event, customizing highlights (`BarcodeArRectangleHighlight`, `BarcodeArCircleHighlight`) via `IBarcodeArHighlightProvider.HighlightForBarcodeAsync`, customizing annotations (`BarcodeArInfoAnnotation`, `BarcodeArStatusIconAnnotation`, `BarcodeArPopoverAnnotation`) via `IBarcodeArAnnotationProvider.AnnotationForBarcodeAsync`, customizing `BarcodeArFeedback`, managing the `ViewWillAppear`/`ViewWillDisappear` lifecycle on `BarcodeArView`, hooking `HighlightForBarcodeTapped`, toggling macro / torch / zoom / camera-switch controls, upgrading or migrating between Scandit SDK versions (v6→v7, v7→v8, or any bump of the Scandit .NET SDK), troubleshooting `BarcodeAr` behavior, or replacing a third-party multi-barcode-tracking library with `BarcodeAr`. If the project targets `net*-ios` and is **not** a MAUI app (`<UseMaui>true</UseMaui>`) and `BarcodeAr` is in play — including any question about upgrading the Scandit .NET iOS SDK — use this skill.
+description: MatrixScan AR (Barcode AR, BarcodeAr) in .NET for iOS projects (`net*-ios` TFM, `Scandit.DataCapture.Barcode` NuGet, non-MAUI — MAUI apps use matrixscan-ar-maui) — scanning multiple barcodes at once with AR highlights and annotations (info annotations, popovers, status icons) in C#. Use for integration, settings, listeners/events, highlight and annotation providers, torch/zoom/macro controls, lifecycle, SDK version migration, or troubleshooting.
 license: MIT
 metadata:
   author: scandit
-  version: "1.0.0"
+  version: "1.0.1"
 ---
 
 # MatrixScan AR .NET for iOS Skill

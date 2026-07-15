@@ -1,10 +1,10 @@
 ---
 name: barcode-capture-android
-description: Use when BarcodeCapture is involved in an Android project — whether the user mentions BarcodeCapture directly, or the codebase already uses BarcodeCapture as its barcode scanning library and something needs to be added, changed, fixed, or migrated. This includes adding BarcodeCapture to a new Android app, modifying scan settings, handling scan results, customizing the BarcodeCapture overlay, upgrading or migrating between SDK versions (v6→v7, v7→v8, or any bump of the Scandit SDK), troubleshooting BarcodeCapture behavior, or replacing a third-party barcode scanning library (such as ZXing or ML Kit) with BarcodeCapture. If the project is Android and BarcodeCapture is in play — including any question about upgrading the Scandit Android SDK — use this skill.
+description: Scandit Barcode Capture (`BarcodeCapture`) in native Android (Kotlin/Java) projects — the low-level, full-control single-barcode scanning mode (BarcodeCapture + DataCaptureView + overlay), without the pre-built SparkScan UI. Use for integration, symbology and scan settings, result handling, overlay customization, SDK version migration (v6→v7→v8), replacing third-party scanners (ZXing, ML Kit), or troubleshooting.
 license: MIT
 metadata:
   author: scandit
-  version: "1.0.0"
+  version: "1.0.1"
 ---
 
 # BarcodeCapture Android Skill

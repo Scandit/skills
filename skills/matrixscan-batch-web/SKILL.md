@@ -1,10 +1,10 @@
 ---
 name: matrixscan-batch-web
-description: Use when MatrixScan, MatrixScan Batch, BarcodeBatch, or BarcodeTracking (legacy alias) are involved in a web project — whether the user mentions these names directly, or the codebase already uses BarcodeBatch* classes and something needs to be added, changed, fixed, or extended. This includes adding MatrixScan Batch to a new web app, configuring BarcodeBatchSettings and symbologies, wiring BarcodeBatchListener.didUpdateSession, customizing BarcodeBatchBasicOverlay with per-barcode brushes, adding AR overlays via BarcodeBatchAdvancedOverlay and TrackedBarcodeView.withHTMLElement, managing lifecycle (enable/disable, cleanup, camera), emitting manual Feedback (BarcodeBatch has no automatic beep), migrating BarcodeTracking to BarcodeBatch or upgrading between SDK versions (v6→v7, v7→v8), or replacing a third-party multi-barcode scanner (e.g. ZXing-js / @zxing/library continuous multi-scan) with MatrixScan Batch. If the project is a web project and MatrixScan / BarcodeBatch is in play, use this skill.
+description: MatrixScan Batch (MatrixScan, BarcodeBatch, legacy BarcodeTracking) in web/browser (TypeScript/JavaScript) projects (@scandit/web-datacapture-barcode) — tracking and scanning multiple barcodes at once. Use for integration, settings and symbologies, per-barcode brushes, HTML-element AR overlays, manual feedback, lifecycle, SDK version migration, or troubleshooting.
 license: MIT
 metadata:
   author: scandit
-  version: "1.0.0"
+  version: "1.0.1"
 ---
 
 # MatrixScan Batch Web Skill

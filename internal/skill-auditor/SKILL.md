@@ -4,7 +4,7 @@ description: Maintainer tool for this repo. Use when the user wants to audit the
 license: MIT
 metadata:
   author: scandit
-  version: "0.1.0"
+  version: "0.2.0"
 ---
 
 # Skill Auditor
@@ -122,7 +122,13 @@ barcode-capture-ios in PR #48).
 ### `audit structure [product-prefix]`
 
 Run `scripts/lint_structure.py [--prefix <prefix>]`. Frontmatter and routing findings are
-defects. Sibling-parity findings are *review candidates*: for each, check layer 1 before
+defects. Frontmatter includes the description budget: descriptions are always-on context
+for every installed user (83 skills × ~150 tokens adds up), so the linter caps them at
+600 chars and requires the product name. Beyond the mechanical check, review that each
+description keeps its platform package/import literal (e.g. `@scandit/web-datacapture-id`,
+`Scandit.DataCapture.IdCapture`) — it's the codebase-match trigger — and carries no API
+method signatures or task enumerations; those belong in the SKILL.md body, which loads
+only after the trigger fires. Sibling-parity findings are *review candidates*: for each, check layer 1 before
 judging — if the platform supports the feature (per `api_availability` exclusions and
 `features.json`), the missing file/eval is a real gap; if not, it's expected divergence
 and should be recorded as an `excluded_platforms` entry in the product taxonomy so it

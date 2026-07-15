@@ -1,10 +1,10 @@
 ---
 name: barcode-capture-ios
-description: Use when BarcodeCapture is involved in an iOS project — whether the user mentions BarcodeCapture directly, or the codebase already uses BarcodeCapture as its barcode scanning library and something needs to be added, changed, fixed, or migrated. This includes adding BarcodeCapture to a new iOS app, modifying scan settings, handling scan results, customizing the BarcodeCapture overlay, upgrading between SDK versions, troubleshooting BarcodeCapture behavior, or replacing a third-party barcode scanning library with BarcodeCapture. If the project is iOS and BarcodeCapture is in play, use this skill.
+description: Scandit Barcode Capture (`BarcodeCapture`) in native iOS (Swift) projects — the low-level, full-control single-barcode scanning mode (BarcodeCapture + DataCaptureView + overlay), without the pre-built SparkScan UI. Use for integration, scan settings, result handling, overlay customization, SDK version migration (v6→v7→v8), replacing a third-party barcode scanner, or troubleshooting.
 license: MIT
 metadata:
   author: scandit
-  version: "1.0.0"
+  version: "1.0.1"
 ---
 
 # BarcodeCapture iOS Skill

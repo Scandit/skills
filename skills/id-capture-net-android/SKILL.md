@@ -1,10 +1,10 @@
 ---
 name: id-capture-net-android
-description: Use when ID Capture (Scandit identity-document scanning — passports, driver's licenses, ID cards, residence permits, health-insurance cards, visas, region-specific subtypes, reading MRZ / VIZ / PDF417 barcode / mobile-document data) is involved in a .NET for Android project (`net*-android` target framework, `Scandit.DataCapture.IdCapture` NuGet) — whether the user mentions ID Capture directly, says "scan a passport / driver's license / ID card / identity document in C#", or the codebase already uses `IdCapture` and something needs to be added, changed, fixed, or customized. This includes adding ID Capture to a new .NET Android app, configuring `IdCaptureSettings` with `AcceptedDocuments` (`new Passport(IdCaptureRegion.Any)`, `new DriverLicense(...)`, `new IdCard(...)`, …) and a `Scanner` (`new IdCaptureScanner(physicalDocument, mobileDocument)` with `FullDocumentScanner` / `SingleSideScanner` / `MobileDocumentScanner`), creating the mode with `IdCapture.Create`, handling results through `IIdCaptureListener.OnIdCaptured` / `OnIdRejected` (or the `IdCaptured` / `IdRejected` events), reading `CapturedId` (`FullName`, `DateOfBirth`, `DateOfExpiry`, `DocumentNumber`, `Mrz`, `Viz`, `Barcode`, `MobileDocument`, `Images`, `VerificationResult`), hosting the preview with `DataCaptureView` + `IdCaptureOverlay`, managing the camera lifecycle, rejection rules (expired / voided / underage / forged-AAMVA / inconsistent-data), data-consistency / AAMVA verification, anonymization, or upgrading the Scandit .NET SDK version. If the project targets `net*-android` and is **not** a MAUI app (`<UseMaui>true</UseMaui>`) and ID Capture is in play, use this skill.
+description: Scandit ID Capture (`IdCapture`) in .NET for Android projects (`net*-android` target framework, `Scandit.DataCapture.IdCapture` NuGet, C#) — scanning passports, driver's licenses, ID cards, residence permits, visas via MRZ, VIZ, PDF417 barcode, or mobile documents. Use for integration, accepted-document and scanner configuration, CapturedId result handling, rejection rules, AAMVA verification, anonymization, overlay UI, and Scandit .NET SDK version migration — for MAUI apps (`<UseMaui>true</UseMaui>`) use id-capture-net-maui instead.
 license: MIT
 metadata:
   author: scandit
-  version: "1.0.0"
+  version: "1.0.1"
 ---
 
 # ID Capture .NET for Android Skill

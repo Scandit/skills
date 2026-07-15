@@ -1,10 +1,10 @@
 ---
 name: matrixscan-batch-flutter
-description: Use when MatrixScan, MatrixScan Batch, BarcodeBatch, or BarcodeTracking (legacy alias) are involved in a Flutter project — whether the user mentions these names directly, or the codebase already uses BarcodeBatch* classes and something needs to be added, changed, fixed, or extended. This includes adding MatrixScan Batch to a new Flutter app, configuring BarcodeBatchSettings and symbologies, wiring BarcodeBatchListener.didUpdateSession, customizing BarcodeBatchBasicOverlay with per-barcode brushes via brushForTrackedBarcode, adding AR annotations via BarcodeBatchAdvancedOverlay and a BarcodeBatchAdvancedOverlayWidget subclass, or managing lifecycle (enable/disable, cleanup on dispose, camera permissions). If the project is Flutter and MatrixScan / BarcodeBatch is in play, use this skill.
+description: MatrixScan Batch (MatrixScan, BarcodeBatch, legacy BarcodeTracking) in Flutter projects (scandit_flutter_datacapture_barcode_batch) — tracking and scanning multiple barcodes at once. Use for integration, settings and symbologies, tracked-barcode handling, per-barcode brushes, advanced-overlay AR widgets, lifecycle, or troubleshooting.
 license: MIT
 metadata:
   author: scandit
-  version: "1.0.0"
+  version: "1.0.1"
 ---
 
 # MatrixScan Batch Flutter Skill

@@ -1,10 +1,10 @@
 ---
 name: matrixscan-count-ios
-description: Use when MatrixScan Count (Barcode Count) is involved in a native iOS project (Swift / Objective-C, `ScanditBarcodeCapture`) — whether the user mentions MatrixScan Count, Barcode Count, counting or receiving barcodes in bulk, or `BarcodeCount` directly, or the codebase already uses `BarcodeCount` as its high-volume counting library and the counting flow needs changes. This includes adding MatrixScan Count to an app for the first time, configuring the DataCaptureContext, the `BarcodeCount` mode, `BarcodeCountSettings` (symbologies, `expectsOnlyUniqueBarcodes`, mapping, clustering), hosting the counting UI with `BarcodeCountView` (Icon vs Dot style) inside a UIKit view controller or bridged into SwiftUI, managing the camera frame source and lifecycle (the view does NOT own the camera — you create `Camera.default`, apply `BarcodeCount.recommendedCameraSettings`, call `context.setFrameSource`, and toggle camera state across `viewWillAppear`/`viewDidDisappear`), implementing `BarcodeCountListener` to collect scanned barcodes from `BarcodeCountSession`, the List/Exit/SingleScan button callbacks via `BarcodeCountViewUIDelegate`, the expected/receiving list with `BarcodeCountCaptureList` + `TargetBarcode`, the spatial map, feedback, brushes/icons via `BarcodeCountViewDelegate`, the status mode, group scanning, the not-in-list action, the hardware trigger, or control visibility. If the project is native iOS and MatrixScan Count / `BarcodeCount` is in play, use this skill.
+description: MatrixScan Count (BarcodeCount) in native iOS projects (Swift/Objective-C, ScanditBarcodeCapture) — counting and receiving barcodes in bulk with the BarcodeCountView UI in UIKit or SwiftUI, scanning against an expected/receiving list, spatial map, explicitly managed camera. Use for integration, settings and symbology configuration, result handling, UI customization, status mode, or troubleshooting counting workflows.
 license: MIT
 metadata:
   author: scandit
-  version: "0.1.0"
+  version: "0.1.1"
 ---
 
 # MatrixScan Count iOS Skill

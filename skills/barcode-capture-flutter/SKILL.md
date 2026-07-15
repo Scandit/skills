@@ -1,10 +1,10 @@
 ---
 name: barcode-capture-flutter
-description: Use when BarcodeCapture is involved in a Flutter project — whether the user mentions BarcodeCapture directly, or the codebase already uses BarcodeCapture as its barcode scanning library and something needs to be added, changed, fixed, or migrated. This includes adding BarcodeCapture to a new Flutter app, modifying scan settings, handling scan results, customizing the BarcodeCapture overlay, upgrading between SDK versions, or troubleshooting BarcodeCapture behavior. If the project is Flutter and BarcodeCapture is in play, use this skill.
+description: Scandit Barcode Capture (`BarcodeCapture`) in Flutter (Dart) projects — the low-level, full-control single-barcode scanning mode (BarcodeCapture + DataCaptureView + BarcodeCaptureOverlay), without the pre-built SparkScan UI. Use for integration, scan settings, result handling, overlay customization, SDK version migration, or troubleshooting.
 license: MIT
 metadata:
   author: scandit
-  version: "1.0.0"
+  version: "1.0.1"
 ---
 
 # BarcodeCapture Flutter Skill

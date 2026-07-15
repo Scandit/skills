@@ -1,10 +1,10 @@
 ---
 name: id-capture-capacitor
-description: Use when ID Capture (Scandit identity-document scanning — passports, driver's licenses, ID cards, residence permits, ICAO visas, MRZ / VIZ / barcode / mobile documents) is involved in a Capacitor project, whether the user mentions ID Capture directly, says "scan a passport / driver's license / ID card / identity document", or the codebase already uses IdCapture and something needs to be added, changed, fixed, or customized. Covers adding ID Capture from scratch, configuring accepted documents and scanners, reading captured fields, anonymization, the three add-on capability packages (voided-ID detection, European driving-license back decoding, AAMVA barcode verification), and migrating between SDK versions. If the project is Capacitor and ID Capture is in play, use this skill.
+description: Scandit ID Capture (`IdCapture`) in Capacitor projects — scanning passports, driver's licenses, ID cards, residence permits, visas via MRZ, VIZ, barcode, or mobile documents. Use for integration, accepted-document and scanner configuration, captured-field result handling, anonymization, add-on capabilities (voided-ID detection, European driving-license back decoding, AAMVA barcode verification), and SDK version migration.
 license: MIT
 metadata:
   author: scandit
-  version: "1.0.0"
+  version: "1.0.1"
 ---
 
 # ID Capture Capacitor Skill

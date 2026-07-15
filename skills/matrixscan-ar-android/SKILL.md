@@ -1,10 +1,10 @@
 ---
 name: matrixscan-ar-android
-description: Use when MatrixScan AR (Barcode AR / BarcodeAr) is involved in an Android project — whether the user mentions MatrixScan AR, Barcode AR, or BarcodeAr directly, or the codebase already uses BarcodeAr as its multi-barcode scanning library and something needs to be added, changed, fixed, or configured. This includes adding BarcodeAr to a new Android app, modifying scan settings, handling tracked barcodes, customizing highlights or annotations, wiring up providers, troubleshooting BarcodeAr behavior, or replacing a third-party barcode scanning library with BarcodeAr. If the project is Android and MatrixScan AR (BarcodeAr) is in play, use this skill.
+description: MatrixScan AR (Barcode AR, BarcodeAr) — scanning multiple barcodes at once with AR highlights and annotations over tracked barcodes in Android (Kotlin/Java) projects. Use for integration, scan settings, tracked-barcode handling, highlight and annotation providers, SDK version migration, or troubleshooting.
 license: MIT
 metadata:
   author: scandit
-  version: "1.0.0"
+  version: "1.0.1"
 ---
 
 # MatrixScan AR Android Skill

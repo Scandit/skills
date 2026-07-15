@@ -1,10 +1,10 @@
 ---
 name: barcode-capture-maui
-description: Use when BarcodeCapture is involved in a .NET MAUI project (`<UseMaui>true</UseMaui>`, target frameworks include `net*-android` and/or `net*-ios`, `Scandit.DataCapture.Barcode.Maui` NuGet) — whether the user mentions BarcodeCapture directly, or the codebase already uses BarcodeCapture as its barcode scanning library and something needs to be added, changed, fixed, or migrated. This includes adding BarcodeCapture to a MAUI app, configuring `BarcodeCaptureSettings`, wiring the `BarcodeScanned` event (or `IBarcodeCaptureListener`), adding the `<scandit:DataCaptureView>` XAML control, creating a `BarcodeCaptureOverlay` after the view's handler is attached, handling the `OnAppearing`/`OnDisappearing` lifecycle, requesting `Permissions.Camera`, upgrading or migrating between Scandit SDK versions (v6→v7, v7→v8, or any bump of the Scandit .NET MAUI SDK), troubleshooting BarcodeCapture behavior, or replacing a third-party MAUI barcode scanning library (ZXing.Net.Maui, ZXing.Net.MAUI.Controls, BarcodeScanning.Native.Maui) with BarcodeCapture. If the project has `<UseMaui>true</UseMaui>` and BarcodeCapture is in play — including any question about upgrading the Scandit .NET MAUI SDK — use this skill.
+description: Scandit BarcodeCapture in .NET MAUI projects (`<UseMaui>true</UseMaui>`, `Scandit.DataCapture.Barcode.Maui` NuGet) — the low-level, full-control barcode scanning mode with your own `<scandit:DataCaptureView>` XAML control and overlay in a MAUI page, without the pre-built SparkScan UI (for that use sparkscan-maui); for non-MAUI .NET use barcode-capture-net-android or barcode-capture-net-ios. Use for integration, scan settings, result handling, lifecycle wiring, SDK version migration (v6→v7→v8), replacing ZXing.Net.Maui, or troubleshooting.
 license: MIT
 metadata:
   author: scandit
-  version: "1.0.0"
+  version: "1.0.1"
 ---
 
 # BarcodeCapture .NET MAUI Skill

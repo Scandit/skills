@@ -1,10 +1,10 @@
 ---
 name: matrixscan-count-flutter
-description: Use when MatrixScan Count (BarcodeCount) is involved in a Flutter project — whether the user mentions MatrixScan Count, Barcode Count, or BarcodeCount directly, or the codebase already uses BarcodeCount as its multi-barcode counting library and something needs to be added, changed, fixed, or configured. This includes adding BarcodeCount to a new Flutter app, modifying scan settings, scanning against a target list, customizing the BarcodeCountView UI, wiring up status providers, or troubleshooting BarcodeCount behavior. If the project is Flutter and BarcodeCount (MatrixScan Count) is in play, use this skill.
+description: MatrixScan Count (BarcodeCount) in Flutter projects — scandit_flutter_datacapture_barcode_count package. Multi-barcode counting and receiving workflows (scan-and-count, counting against a target list, status providers) with the BarcodeCountView widget. Use for integration, scan settings, result handling, UI customization, SDK version migration, or troubleshooting counting workflows.
 license: MIT
 metadata:
   author: scandit
-  version: "1.0.0"
+  version: "1.0.1"
 ---
 
 # MatrixScan Count Flutter Skill

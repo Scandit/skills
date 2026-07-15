@@ -1,10 +1,10 @@
 ---
 name: sparkscan-capacitor
-description: Use when SparkScan is involved in a Capacitor project — whether the user mentions SparkScan directly, or the codebase already uses SparkScan as its barcode scanning library and something needs to be added, changed, fixed, or migrated. This includes adding SparkScan to a new Capacitor app, modifying scan settings, handling scan results, customizing the SparkScan UI, upgrading between SDK versions, or troubleshooting SparkScan behavior. If the project is Capacitor and SparkScan is in play, use this skill.
+description: Capacitor — SparkScan single-barcode scanning with the pre-built scanning UI in Capacitor (Ionic) hybrid mobile apps via the Scandit Capacitor plugins (`ScanditCaptureCorePlugin`), not the browser-only web SDK. Use for integration, scan settings, result handling, UI customization, SDK version migration, or troubleshooting.
 license: MIT
 metadata:
   author: scandit
-  version: "1.0.0"
+  version: "1.0.1"
 ---
 
 # SparkScan Capacitor Skill

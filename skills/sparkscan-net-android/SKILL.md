@@ -1,10 +1,10 @@
 ---
 name: sparkscan-net-android
-description: Use when SparkScan is involved in a .NET for Android project (`net*-android` target framework, `Scandit.DataCapture.Barcode` NuGet) — whether the user mentions SparkScan directly, or the codebase already uses SparkScan as its barcode scanning UI and something needs to be added, changed, fixed, or migrated. This includes adding SparkScan to a new .NET Android app, configuring `SparkScanSettings`/`SparkScanViewSettings`, wiring up `ISparkScanListener` or the `BarcodeScanned` event, customizing feedback through `ISparkScanFeedbackDelegate` (`SparkScanBarcodeSuccessFeedback`/`SparkScanBarcodeErrorFeedback`), handling the `OnResume`/`OnPause` lifecycle on `SparkScanView`, hooking up `SparkScanCoordinatorLayout`, upgrading or migrating between Scandit SDK versions (v6→v7, v7→v8, or any bump of the Scandit .NET SDK), troubleshooting SparkScan behavior, or replacing a third-party barcode scanning library (ZXing.Net.Mobile, ZXing.Net, Google ML Kit bindings) with SparkScan. If the project targets `net*-android` and is **not** a MAUI app (`<UseMaui>true</UseMaui>`) and SparkScan is in play — including any question about upgrading the Scandit .NET Android SDK — use this skill.
+description: SparkScan single-barcode scanning with the pre-built `SparkScanView` UI in .NET for Android projects (`net*-android` target framework, `Scandit.DataCapture.Barcode` NuGet, non-MAUI — for MAUI apps use sparkscan-maui). Use for integration, scan settings, result handling, feedback customization, lifecycle wiring, SDK version migration (v6→v7→v8), replacing third-party scanners (ZXing.Net), or troubleshooting.
 license: MIT
 metadata:
   author: scandit
-  version: "1.0.0"
+  version: "1.0.1"
 ---
 
 # SparkScan .NET for Android Skill

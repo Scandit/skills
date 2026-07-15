@@ -1,10 +1,10 @@
 ---
 name: matrixscan-ar-cordova
-description: Use when MatrixScan AR (Barcode AR) is involved in a Cordova project — whether the user mentions MatrixScan AR, Barcode AR, BarcodeAr, AR overlays, barcode highlights, or AR annotations directly, or the codebase already uses BarcodeAr as its scanning mode and something needs to be added, changed, fixed, or built. This includes adding MatrixScan AR to a new Cordova app, configuring symbologies, building highlight providers, building annotation providers (info annotations, popovers, status icons, responsive annotations), handling tap events on highlights, customizing the BarcodeArView, or troubleshooting BarcodeAr behavior. BarcodeAr is new in Cordova plugin 8.2 — there is no v6/v7 history for this mode. If the project is Cordova and MatrixScan AR / Barcode AR is in play, use this skill.
+description: Cordova MatrixScan AR (Barcode AR, BarcodeAr) via the scandit-cordova-datacapture-* plugins — scanning multiple barcodes at once with AR highlights and annotations (info annotations, popovers, status icons) on tracked barcodes. Use for integration, symbology configuration, highlight and annotation providers, BarcodeArView customization, migration from BarcodeBatch/BarcodeTracking, or troubleshooting.
 license: MIT
 metadata:
   author: scandit
-  version: "1.0.0"
+  version: "1.0.1"
 ---
 
 # MatrixScan AR Cordova Skill

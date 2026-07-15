@@ -1,10 +1,10 @@
 ---
 name: matrixscan-count-net-android
-description: Use when MatrixScan Count (`BarcodeCount*` / Barcode Count) is involved in a .NET for Android project (`net*-android` target framework, `Scandit.DataCapture.Barcode` NuGet) — whether the user mentions MatrixScan Count, Barcode Count, counting/receiving barcodes, or `BarcodeCount` directly, or the codebase already uses `BarcodeCount` as its high-volume barcode counting library and something needs to be added, changed, fixed, or migrated. This includes adding `BarcodeCount` to a new .NET Android app, configuring `BarcodeCountSettings`, wiring up `IBarcodeCountListener` or the `Scanned` event, hosting the counting UI with `BarcodeCountView` (`BarcodeCountViewStyle.Icon`/`Dot`), handling the camera frame source (`Camera` + `SetFrameSourceAsync`) and `barcodeCount.Enabled`, storing scanned barcodes from `BarcodeCountSession.RecognizedBarcodes`, implementing a capture/receiving list with `BarcodeCountCaptureList` + `TargetBarcode` + `IBarcodeCountCaptureListListener`, reading the spatial map (`BarcodeSpatialGrid`), customizing `BarcodeCountFeedback`, handling List/Exit/SingleScan button taps, customizing brushes via `IBarcodeCountViewListener`, the status mode (`IBarcodeCountStatusProvider`), the not-in-list action, upgrading or migrating between Scandit SDK versions (v6→v7, v7→v8, or any bump of the Scandit .NET SDK), troubleshooting `BarcodeCount` behavior, or replacing a manual multi-barcode-counting approach with `BarcodeCount`. If the project targets `net*-android` and is **not** a MAUI app (`<UseMaui>true</UseMaui>`) and `BarcodeCount` is in play — including any question about upgrading the Scandit .NET Android SDK — use this skill.
+description: MatrixScan Count (BarcodeCount) in .NET for Android projects (net*-android, Scandit.DataCapture.Barcode NuGet, non-MAUI) — counting/receiving barcodes in bulk with BarcodeCountView, capture/receiving lists, spatial map, explicitly managed camera. For MAUI apps use matrixscan-count-maui. Use for integration, settings configuration, result handling, UI customization, SDK version migration, or troubleshooting counting workflows.
 license: MIT
 metadata:
   author: scandit
-  version: "1.0.0"
+  version: "1.0.1"
 ---
 
 # MatrixScan Count .NET for Android Skill

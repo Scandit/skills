@@ -1,10 +1,10 @@
 ---
 name: label-capture-net-android
-description: Use when Label Capture (Smart Label Capture, `LabelCapture*`) is involved in a .NET for Android project (`net*-android` target framework, `Scandit.DataCapture.Label` NuGet) — whether the user mentions Label Capture / Smart Label Capture directly, or the codebase already uses `LabelCapture` and something needs to be added, changed, fixed, or customized. This includes adding Label Capture to a new .NET Android app, defining a label structure with barcode fields (`CustomBarcode`, `SerialNumberBarcode`, `PartNumberBarcode`, IMEI) and text fields (`ExpiryDateText`, `TotalPriceText`, `UnitPriceText`, `WeightText`, `PackingDateText`, `CustomText`) via their `.Builder()...Build(name)` factories, assembling them with `LabelDefinition.Create` + `LabelCaptureSettings.Create`, creating the mode with `LabelCapture.Create`, handling results through `ILabelCaptureListener.OnSessionUpdated` or the `SessionUpdated` event, reading `CapturedLabel` / `LabelField` (`Barcode`, `Text`, `Date`), hosting the preview with `DataCaptureView` + `LabelCaptureBasicOverlay`, managing the camera lifecycle, enabling the guided Validation Flow (`LabelCaptureValidationFlowOverlay`), using prebuilt definitions (VIN, price label, 7-segment), customizing feedback/brushes, or upgrading the Scandit .NET SDK version. If the project targets `net*-android` and is **not** a MAUI app (`<UseMaui>true</UseMaui>`) and Label Capture is in play, use this skill.
+description: Smart Label Capture (Scandit `LabelCapture`) in .NET for Android projects (`net*-android` target framework, `Scandit.DataCapture.Label` NuGet, C#) — extracting multiple fields (price, expiry date, serial or lot number, weight) from a label in one scan via barcode and text fields. Use for integration, label definitions (including prebuilt VIN, price label, 7-segment), captured-session handling, overlays, the Validation Flow, and Scandit .NET SDK version migration — for MAUI apps (`<UseMaui>true</UseMaui>`) use label-capture-net-maui instead.
 license: MIT
 metadata:
   author: scandit
-  version: "1.0.0"
+  version: "1.0.1"
 ---
 
 # Label Capture (Smart Label Capture) .NET for Android Skill

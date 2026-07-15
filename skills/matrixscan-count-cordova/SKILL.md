@@ -1,10 +1,10 @@
 ---
 name: matrixscan-count-cordova
-description: Use when MatrixScan Count (BarcodeCount) is involved in a Cordova project — whether the user mentions MatrixScan Count, BarcodeCount, count mode, scan-and-count, inventory count, receiving workflow, stock taking, scan against a list, capture list, status mode, or tap-to-uncount directly, or the codebase already uses BarcodeCount as its scanning mode and something needs to be added, changed, fixed, or built. This includes adding MatrixScan Count to a new Cordova app, configuring symbologies, mounting BarcodeCountView, customizing view properties (toolbar, hints, brushes, exit button, shutter button), building a capture list for expected-barcode workflows, using BarcodeCountStatusProvider for stock-status overlays, handling tap-to-uncount, enabling the hardware trigger, or troubleshooting BarcodeCount behavior. BarcodeCount is available on Cordova from plugin 6.24; the context-free constructor is ≥7.6; Status mode and Mapping flow are ≥8.3; Not-in-list action settings are ≥7.1. If the project is Cordova and MatrixScan Count / BarcodeCount is in play, use this skill.
+description: Cordova MatrixScan Count (BarcodeCount) — plugin scandit-cordova-datacapture-barcode. Counting and receiving workflows (scan-and-count, inventory count, scan against a capture list, status mode, tap-to-uncount) with BarcodeCountView in Cordova apps. For Capacitor use matrixscan-count-capacitor. Use for integration, symbology configuration, view customization, result handling, SDK version migration, or troubleshooting counting workflows.
 license: MIT
 metadata:
   author: scandit
-  version: "1.0.0"
+  version: "1.0.1"
 ---
 
 # MatrixScan Count Cordova Skill
