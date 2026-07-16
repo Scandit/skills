@@ -22,11 +22,31 @@ def list_skill_dirs(skills_root: Path, prefix: str | None = None,
     )
 
 
+# A block-scalar header is ``|``/``>`` plus an optional indentation digit and/or
+# ``-``/``+`` chomping indicator — nothing else. Matching the whole token (not just
+# the first char) keeps a plain value that merely starts with ``|``/``>`` from being
+# misread as a block scalar and silently emptied.
+_BLOCK_HEADER = re.compile(r"[|>][+-]?[1-9]?[+-]?(?:\s+#.*)?$")
+
+
+def _unquote(v: str) -> str:
+    """Strip one matching pair of surrounding quotes, leaving inner quotes intact.
+
+    Unlike ``str.strip('"')`` this does not eat a trailing quote from a value that
+    merely ends in a quoted phrase (e.g. ``... says "review this"``).
+    """
+    if len(v) >= 2 and v[0] == v[-1] and v[0] in ("'", '"'):
+        return v[1:-1]
+    return v
+
+
 def _fold_block(block: list[str], literal: bool) -> str:
     """Fold the continuation lines of a YAML block scalar into a single string.
 
     `literal` (``|``) joins lines with newlines; folded (``>``) collapses single
     line breaks between non-empty lines into spaces and blank lines into newlines.
+    Surrounding whitespace is trimmed, so trailing-newline chomping (``-``/``+``)
+    is normalized away — the length/name checks only care about the visible text.
     """
     non_empty = [b for b in block if b.strip()]
     common = min((len(b) - len(b.lstrip()) for b in non_empty), default=0)
@@ -50,6 +70,9 @@ def frontmatter(path: Path) -> dict:
     Handles block scalars (``key: >`` / ``key: |`` with an optional ``-``/``+``
     chomping indicator): their indented continuation lines are folded into the
     value, so length/name checks see the real text rather than the ``>-`` indicator.
+    Plain multi-line scalars (an unadorned value with indented continuation lines)
+    are folded the same way. A ``key:`` with no inline value is a mapping parent
+    (e.g. ``metadata:``) whose indented children are flattened as their own keys.
     """
     m = re.match(r"^---\n(.*?)\n---", path.read_text(), re.S)
     fm: dict = {}
@@ -65,7 +88,7 @@ def frontmatter(path: Path) -> dict:
         indent = len(line) - len(line.lstrip())
         k, _, v = line.strip().partition(":")
         v = v.strip()
-        if v[:1] in ("|", ">"):
+        if _BLOCK_HEADER.fullmatch(v):
             literal = v[0] == "|"
             block: list[str] = []
             while i < len(lines):
@@ -74,8 +97,23 @@ def frontmatter(path: Path) -> dict:
                     break
                 block.append(nxt)
                 i += 1
-            v = _fold_block(block, literal)
-        fm[k.strip()] = v.strip('"')
+            fm[k.strip()] = _fold_block(block, literal)
+        elif v == "":
+            # Mapping parent (e.g. ``metadata:``): its indented children are parsed
+            # as their own keys on later iterations — leave them for the loop.
+            fm[k.strip()] = ""
+        else:
+            # Plain scalar: fold any indented continuation lines into the value, so a
+            # multi-line description is measured whole and a continuation line
+            # containing a colon is not misread as a new key.
+            cont = [v]
+            while i < len(lines):
+                nxt = lines[i]
+                if not nxt.strip() or (len(nxt) - len(nxt.lstrip())) <= indent:
+                    break
+                cont.append(nxt.strip())
+                i += 1
+            fm[k.strip()] = _unquote(" ".join(cont))
     return fm
 
 
