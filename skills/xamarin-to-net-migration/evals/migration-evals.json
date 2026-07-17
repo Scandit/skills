@@ -1,0 +1,93 @@
+{
+  "skill_name": "xamarin-to-net-migration",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I want to move my Xamarin.Android barcode scanning app off Xamarin. Here is my project file (LegacyAndroid.csproj), its packages.config, and MainActivity.cs. Migrate it to .NET for Android.",
+      "expected_output": "The skill detects a legacy Xamarin.Android project, converts the .csproj to SDK-style with TargetFramework net8.0-android and SupportedOSPlatformVersion 24, swaps Scandit.DataCapture.*.Xamarin packages for the suffix-less .NET packages pinned to a version fetched from nuget.org, adds an [Application] MainApplication subclass calling ScanditCaptureCore.Initialize() and ScanditBarcodeCapture.Initialize() (required by SDK 8), and hands off to barcode-capture-net-android for the call sites. It does NOT rename BarcodeCapture.Create or the IBarcodeCaptureListener callbacks.",
+      "tags": ["migrate-android", "detection", "package-swap", "sdk8-init"],
+      "files": [
+        "fixtures/LegacyAndroid.csproj",
+        "fixtures/packages.config",
+        "fixtures/MainActivity.cs"
+      ],
+      "assertions": [
+        {"text": "The project is converted to SDK-style with <Project Sdk=\"Microsoft.NET.Sdk\">"},
+        {"text": "<TargetFramework>net8.0-android</TargetFramework> (or the confirmed net* version) is set"},
+        {"text": "SupportedOSPlatformVersion is set to at least 24"},
+        {"text": "Scandit.DataCapture.Core.Xamarin is replaced by Scandit.DataCapture.Core (the .Xamarin suffix is dropped) in code blocks"},
+        {"text": "Scandit.DataCapture.Barcode.Xamarin is replaced by Scandit.DataCapture.Barcode in code blocks"},
+        {"text": "The answer instructs fetching the latest stable version from nuget.org rather than hardcoding a guessed version"},
+        {"text": "ScanditCaptureCore.Initialize() is added (SDK 8 explicit initialization)"},
+        {"text": "The skill hands off to barcode-capture-net-android for the Scandit call sites"},
+        {"text": "BarcodeCapture.Create( is preserved (not renamed) in code blocks"}
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Migrate my Xamarin.iOS app to .NET for iOS. Attached: AppDelegate.ios.cs and Info.plist.",
+      "expected_output": "The skill converts the project to SDK-style with TargetFramework net8.0-ios and SupportedOSPlatformVersion 15.0, keeps NSCameraUsageDescription in Info.plist, swaps the Scandit Xamarin packages for the suffix-less .NET packages, adds ScanditCaptureCore.Initialize() in AppDelegate.FinishedLaunching before the root view controller is created, and hands off to barcode-capture-net-ios.",
+      "tags": ["migrate-ios", "package-swap", "sdk8-init"],
+      "files": [
+        "fixtures/AppDelegate.ios.cs",
+        "fixtures/Info.plist"
+      ],
+      "assertions": [
+        {"text": "<TargetFramework>net8.0-ios</TargetFramework> (or the confirmed net* version) is set"},
+        {"text": "SupportedOSPlatformVersion is set to at least 15.0"},
+        {"text": "NSCameraUsageDescription is preserved in Info.plist"},
+        {"text": "ScanditCaptureCore.Initialize() is added in FinishedLaunching before the root view controller is created"},
+        {"text": "The Scandit packages are swapped to the suffix-less .NET IDs (Scandit.DataCapture.Core, Scandit.DataCapture.Barcode) in code blocks"},
+        {"text": "The skill hands off to barcode-capture-net-ios for the Scandit call sites"}
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Convert my Xamarin.Forms app to .NET MAUI. Here are FormsApp.csproj, App.xaml.cs, and BadgeViewRenderer.cs.",
+      "expected_output": "The skill creates a single multi-target MAUI SDK-style project (net8.0-android;net8.0-ios, UseMaui true), moves startup into MauiProgram.CreateMauiApp with the .UseScanditCore(...).UseScanditBarcode() builder chain, updates Xamarin.Forms namespaces to Microsoft.Maui, adds BOTH the plain and *.Maui Scandit packages, flags the BadgeView custom renderer as a manual migration to a MAUI handler, and flags the DependencyService IAudioService usage as a manual migration to DI. It does NOT hand-call ScanditCaptureCore.Initialize() in MAUI.",
+      "tags": ["migrate-forms-maui", "manual-items", "package-swap"],
+      "files": [
+        "fixtures/FormsApp.csproj",
+        "fixtures/App.xaml.cs",
+        "fixtures/BadgeViewRenderer.cs"
+      ],
+      "assertions": [
+        {"text": "A multi-target MAUI project is produced with <UseMaui>true</UseMaui> and TargetFrameworks including net8.0-android and net8.0-ios"},
+        {"text": "Startup is moved into MauiProgram.CreateMauiApp with a .UseScanditCore( and .UseScanditBarcode( builder chain"},
+        {"text": "Xamarin.Forms namespaces/usings are updated to Microsoft.Maui in code blocks"},
+        {"text": "Both Scandit.DataCapture.Core and Scandit.DataCapture.Core.Maui packages are added"},
+        {"text": "Both Scandit.DataCapture.Barcode and Scandit.DataCapture.Barcode.Maui packages are added"},
+        {"text": "The BadgeView custom renderer is flagged as a manual migration to a MAUI handler"},
+        {"text": "The DependencyService usage is flagged as a manual migration to dependency injection"},
+        {"text": "The skill hands off to barcode-capture-maui for the Scandit call sites"}
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "My old Xamarin app uses this: LegacyPicker.packages.config. Can you migrate the Scandit part to .NET?",
+      "expected_output": "The skill recognizes Scandit.BarcodePicker.Xamarin as the legacy v5 Barcode Picker (not the Data Capture SDK), explains there is no direct package swap, and flags it as a manual reintegration onto Barcode Capture or SparkScan, handing off to barcode-capture-net-* / barcode-capture-maui or sparkscan-* rather than pretending a drop-in replacement exists.",
+      "tags": ["legacy-picker", "manual-items"],
+      "files": [
+        "fixtures/LegacyPicker.packages.config"
+      ],
+      "assertions": [
+        {"text": "Scandit.BarcodePicker.Xamarin is identified as the legacy v5 Barcode Picker, not the Data Capture SDK"},
+        {"text": "The answer states there is no direct package/API equivalent and that a reintegration is required"},
+        {"text": "The item is flagged as manual-only rather than presented as an automatic package swap"},
+        {"text": "The skill hands off to a Barcode Capture or SparkScan implementation skill for the reintegration"}
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "I already converted my Xamarin.Android csproj to net8.0-android and swapped the Scandit packages last week, but I never finished. Continue the migration without redoing what's done.",
+      "expected_output": "The skill re-runs detection first, recognizes the SDK-style net8.0-android project and the already-swapped .NET Scandit packages, skips those steps, and continues with the remaining work (e.g. SDK 8 initialization and call-site verification), reflecting the resumable/idempotent behavior.",
+      "tags": ["resumable", "detection"],
+      "files": [],
+      "assertions": [
+        {"text": "The skill re-runs detection before making changes"},
+        {"text": "The skill recognizes the already-completed steps (SDK-style csproj, swapped packages) and does not redo them"},
+        {"text": "The skill continues with the remaining steps rather than restarting the whole migration"}
+      ]
+    }
+  ]
+}

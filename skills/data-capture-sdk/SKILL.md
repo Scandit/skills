@@ -171,6 +171,8 @@ Always include both the docs.scandit.com link and the platform-specific sample-a
 
 **MatrixScan AR on iOS has two specialized sibling skills**: `matrixscan-ar-highlight-ios` (highlight styling and interaction) and `matrixscan-ar-annotation-ios` (annotation content, appearance, and interaction). Always hand off to `matrixscan-ar-ios` as the entry point — it routes highlight- and annotation-specific work to the siblings itself. Only name a sibling directly when the user's request is *exclusively* about highlights or annotations on an existing MatrixScan AR iOS integration.
 
+**Migrating off Xamarin?** If the user is on Xamarin (Xamarin.Android, Xamarin.iOS, or Xamarin.Forms) and needs to move to the supported .NET stack (.NET for Android, .NET for iOS, or .NET MAUI) — Microsoft ended Xamarin support in May 2024 — hand off to the `xamarin-to-net-migration` skill. It converts the project/platform layer and swaps the `Scandit.DataCapture.*.Xamarin` packages, then routes back to the matching `*-net-android` / `*-net-ios` / MAUI implementation skill for the Scandit call sites.
+
 For any product+platform combination not listed above, provide the docs.scandit.com link and the **specific sample app link** from the product catalog. Every product has a best-match sample for each platform — always link directly to it. The sample apps are working implementations that serve as the best starting point for integration.
 
 ## Live Data Sources

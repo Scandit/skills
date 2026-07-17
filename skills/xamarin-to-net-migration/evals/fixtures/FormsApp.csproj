@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <ProjectGuid>{B2C3D4E5-2222-3333-4444-555566667777}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <RootNamespace>MyScanApp</RootNamespace>
+    <AssemblyName>MyScanApp</AssemblyName>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Xamarin.Forms" Version="5.0.0.2622" />
+    <PackageReference Include="Scandit.DataCapture.Core.Xamarin" Version="6.28.3" />
+    <PackageReference Include="Scandit.DataCapture.Barcode.Xamarin" Version="6.28.3" />
+    <PackageReference Include="Acr.UserDialogs" Version="7.2.0.564" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="App.xaml.cs">
+      <DependentUpon>App.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="BadgeViewRenderer.cs" />
+  </ItemGroup>
+  <Import Project="$(MSBuildExtensionsPath)\Xamarin\Xamarin.Forms.targets" />
+</Project>
