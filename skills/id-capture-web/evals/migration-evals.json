@@ -1,0 +1,83 @@
+{
+  "skill_name": "id-capture-web",
+  "evals": [
+    {
+      "id": 0,
+      "prompt": "I need to migrate my ID Capture web app from SDK v7 to v8. Here's my main file: scanner-v7.ts, and my package.json: package-v7.json.",
+      "expected_output": "The skill detects v7 from package.json, updates the package versions, replaces configure()+DataCaptureContext.create() with DataCaptureContext.forLicenseKey() (keeping idCaptureLoader in moduleLoaders), replaces settings.scannerType with settings.scanner = new IdCaptureScanner({ physicalDocument: ... }), and replaces Camera.default with Camera.pickBestGuess().",
+      "files": [
+        "fixtures/scanner-v7.ts",
+        "fixtures/package-v7.json"
+      ],
+      "tags": [
+        "migration-v7-to-v8"
+      ],
+      "assertions": [
+        {
+          "text": "configure( import is removed from @scandit/web-datacapture-core"
+        },
+        {
+          "text": "DataCaptureContext.forLicenseKey( replaces the configure()+DataCaptureContext.create() pattern"
+        },
+        {
+          "text": "The license key is passed as the first argument to forLicenseKey"
+        },
+        {
+          "text": "libraryLocation and moduleLoaders are passed as options to forLicenseKey"
+        },
+        {
+          "text": "idCaptureLoader({ enableVIZDocuments: true }) is kept in moduleLoaders"
+        },
+        {
+          "text": "settings.scannerType is replaced by settings.scanner = new IdCaptureScanner( with an options object containing physicalDocument"
+        },
+        {
+          "text": "the IdCaptureScanner wrapper uses the options-object form ({ physicalDocument: new FullDocumentScanner() }), NOT the positional React Native form (semantic)"
+        },
+        {
+          "text": "Camera.default is replaced with Camera.pickBestGuess() in the migrated code (semantic)"
+        },
+        {
+          "text": "The @scandit/web-datacapture-core and @scandit/web-datacapture-id package versions are bumped to 8.x (semantic)"
+        },
+        {
+          "text": "The migration guide link (7→8) is mentioned"
+        }
+      ]
+    },
+    {
+      "id": 1,
+      "prompt": "I'm upgrading my ID scanning web app from Scandit Web SDK v6 to v7. My package.json uses: package-v6.json. What changes do I need to make?",
+      "expected_output": "The skill explains the v6→v7 migration: package rename from unscoped to scoped, libraryLocation path change from build/engine to sdc-lib, supportedDocuments/supportedSides replaced by acceptedDocuments plus a scanner, and the session-based listener callbacks replaced by didCaptureId/didRejectId receiving the CapturedId directly.",
+      "files": [
+        "fixtures/package-v6.json"
+      ],
+      "tags": [
+        "migration-v6-to-v7"
+      ],
+      "assertions": [
+        {
+          "text": "The package rename from scandit-web-datacapture-* to @scandit/web-datacapture-* is mentioned"
+        },
+        {
+          "text": "The libraryLocation path change from build/engine to sdc-lib is mentioned"
+        },
+        {
+          "text": "supportedDocuments / IdDocumentType / supportedSides being replaced by acceptedDocuments (document objects with regions) plus a scanner is explained"
+        },
+        {
+          "text": "The listener redesign is explained: didCaptureId and didRejectId receive the CapturedId directly, and the removed IdCaptureSession / session.newlyCapturedId must not be used in migrated code blocks"
+        },
+        {
+          "text": "Timeout handling moving into didRejectId with RejectionReason.Timeout is mentioned"
+        },
+        {
+          "text": "The migration guide link (6→7) is mentioned"
+        },
+        {
+          "text": "npm/yarn/pnpm install command with the new scoped package names is shown"
+        }
+      ]
+    }
+  ]
+}

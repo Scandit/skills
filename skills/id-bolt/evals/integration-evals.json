@@ -1,0 +1,280 @@
+{
+  "skill_name": "id-bolt",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "What's the fastest way to add passport scanning to my website? I don't want to build any camera UI myself.",
+      "expected_output": "The skill presents ID Bolt (the hosted pop-up product): npm install @scandit/web-id-bolt, IdBoltSession.create(\"https://app.id-scanning.com\", options) with a DocumentSelection, returnDataMode, and onCompletion/onCancellation callbacks, then await session.start() from a user gesture. No in-page camera/context/view code is written.",
+      "files": [],
+      "assertions": [
+        {
+          "text": "The @scandit/web-id-bolt npm package is mentioned"
+        },
+        {
+          "text": "IdBoltSession.create( is present"
+        },
+        {
+          "text": "The service URL https://app.id-scanning.com is present"
+        },
+        {
+          "text": "DocumentSelection.create( is present with an accepted list containing new Passport("
+        },
+        {
+          "text": "returnDataMode is set with a ReturnDataMode value"
+        },
+        {
+          "text": "onCompletion is present and result.capturedId is read inside it"
+        },
+        {
+          "text": "session.start() is awaited"
+        },
+        {
+          "text": "The session is started from a user gesture such as a button click handler (semantic)"
+        },
+        {
+          "text": "License key placeholder (e.g. YOUR LICENSE KEY or similar) is present"
+        },
+        {
+          "text": "No DataCaptureContext, DataCaptureView, Camera, or libraryLocation setup appears — the scanning UI is hosted by Scandit (semantic)"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Add ID scanning to my page with ID Bolt. I need to accept passports, national ID cards and driver's licenses, and read the holder's full name and document number. Here's my file: empty-page.ts.",
+      "expected_output": "The skill wires the existing scan button to IdBoltSession.create + start with a DocumentSelection accepting Passport/IdCard/DriverLicense, ReturnDataMode.Full, and both onCompletion and onCancellation callbacks.",
+      "files": [
+        "fixtures/empty-page.ts"
+      ],
+      "assertions": [
+        {
+          "text": "IdBoltSession.create( is present with the https://app.id-scanning.com service URL"
+        },
+        {
+          "text": "DocumentSelection.create( is present"
+        },
+        {
+          "text": "The accepted list contains new Passport(, new IdCard(, and new DriverLicense( with Region values"
+        },
+        {
+          "text": "returnDataMode: ReturnDataMode.Full is present"
+        },
+        {
+          "text": "onCompletion is present, guards result.capturedId against null, and reads fullName and documentNumber (semantic)"
+        },
+        {
+          "text": "onCancellation is present and handles CancellationReason (semantic)"
+        },
+        {
+          "text": "await session.start() (or equivalent awaited start() call) is triggered from the button's click handler (semantic)"
+        },
+        {
+          "text": "IdBoltSession.create is NOT awaited — only start() returns a promise to await (semantic)"
+        },
+        {
+          "text": "No addListener / didCaptureId / didRejectId callbacks are used — results arrive via onCompletion (semantic)"
+        },
+        {
+          "text": "The @scandit/web-id-bolt npm package is mentioned as the dependency to install"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "In my ID Bolt integration I want to accept any passport, but NOT passports from one specific country, and also accept US driver's licenses. How do I set up the document selection? My integration is in integrated-page.ts.",
+      "expected_output": "The skill uses DocumentSelection.create with both accepted and rejected lists: accepted contains new Passport(Region.Any) and a DriverLicense with the US region, rejected contains a Passport for the excluded region.",
+      "files": [
+        "fixtures/integrated-page.ts"
+      ],
+      "tags": [
+        "document-selection"
+      ],
+      "assertions": [
+        {
+          "text": "DocumentSelection.create( is called with both accepted and rejected lists"
+        },
+        {
+          "text": "The accepted list contains new Passport(Region.Any)"
+        },
+        {
+          "text": "The rejected list contains a new Passport( entry for the excluded region"
+        },
+        {
+          "text": "A DriverLicense with a US region value (e.g. Region.US or Region.USA) is in the accepted list (semantic)"
+        },
+        {
+          "text": "Existing integration code (IdBoltSession.create options, callbacks, start from click handler) is preserved"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "I don't want to accept IDs that are expired — or that expire within the next 3 months. Add that to my ID Bolt integration in integrated-page.ts.",
+      "expected_output": "The skill passes built-in validators in the validation option: Validators.notExpiredIn({ months: 3 }) (optionally alongside Validators.notExpired()), and explains that failed validations are surfaced to the user inside the hosted flow.",
+      "files": [
+        "fixtures/integrated-page.ts"
+      ],
+      "tags": [
+        "validators"
+      ],
+      "assertions": [
+        {
+          "text": "Validators.notExpiredIn( is present with a duration of 3 months, e.g. { months: 3 }"
+        },
+        {
+          "text": "The validators are passed in the validation array of the IdBoltSession.create options"
+        },
+        {
+          "text": "It is explained that failed validations are surfaced to the user inside the hosted flow, not through onCancellation (semantic)"
+        },
+        {
+          "text": "No rejectExpiredIds / rejectIdsExpiringIn settings are used — those are ID Capture settings, not ID Bolt options (semantic)"
+        },
+        {
+          "text": "Existing integration code (document selection, callbacks, start from click handler) is preserved"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "We only accept document holders who are at least 18 years old, based on the scanned date of birth. Add this rule to my ID Bolt integration in integrated-page.ts.",
+      "expected_output": "The skill adds a custom validator function to the validation array that computes the age from capturedId.dateOfBirth (or uses capturedId.age) and returns an ExternalValidatorResult ({ type: \"external\", name, valid, details: { message } } on failure).",
+      "files": [
+        "fixtures/integrated-page.ts"
+      ],
+      "tags": [
+        "validators",
+        "external-validator"
+      ],
+      "assertions": [
+        {
+          "text": "A custom validator function is added to the validation array"
+        },
+        {
+          "text": "The validator returns an object with type: \"external\", a name, and valid"
+        },
+        {
+          "text": "On failure the validator returns valid: false with details containing a message (semantic)"
+        },
+        {
+          "text": "The age check uses capturedId.age or computes it from capturedId.dateOfBirth (semantic)"
+        },
+        {
+          "text": "Existing integration code (document selection, callbacks, start from click handler) is preserved"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "I need the document and face images back from the scan so I can show them on my confirmation page. Update my ID Bolt integration in integrated-page.ts.",
+      "expected_output": "The skill switches returnDataMode to ReturnDataMode.FullWithImages and reads the images off result.capturedId.images (nested front/back objects with face/croppedDocument/frame string fields).",
+      "files": [
+        "fixtures/integrated-page.ts"
+      ],
+      "tags": [
+        "image-extraction"
+      ],
+      "assertions": [
+        {
+          "text": "returnDataMode: ReturnDataMode.FullWithImages is present"
+        },
+        {
+          "text": "Images are read from result.capturedId.images via the nested front/back objects, e.g. images.front.croppedDocument or images.front.face (semantic)"
+        },
+        {
+          "text": "The ID Capture image API is NOT used — no setShouldPassImageTypeToResult, no images.getCroppedDocument(IdSide...) (semantic)"
+        },
+        {
+          "text": "The images object is guarded against null before reading (semantic)"
+        },
+        {
+          "text": "Existing integration code (document selection, callbacks, start from click handler) is preserved"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "For privacy reasons we must not receive sensitive fields or images from scanned IDs — anonymize them before they reach our callback. Update my ID Bolt integration in integrated-page.ts.",
+      "expected_output": "The skill sets anonymizationMode to AnonymizationMode.FieldsAndImages in the session options and mentions that result.capturedId.anonymizedFields reports which fields were anonymized.",
+      "files": [
+        "fixtures/integrated-page.ts"
+      ],
+      "tags": [
+        "data-anonymization"
+      ],
+      "assertions": [
+        {
+          "text": "anonymizationMode is set in the IdBoltSession.create options"
+        },
+        {
+          "text": "AnonymizationMode.FieldsAndImages is used"
+        },
+        {
+          "text": "result.capturedId.anonymizedFields is mentioned as reporting what was anonymized (semantic)"
+        },
+        {
+          "text": "The ID Capture IdAnonymizationMode enum from @scandit/web-datacapture-id is NOT used — the ID Bolt enum is AnonymizationMode from @scandit/web-id-bolt (semantic)"
+        },
+        {
+          "text": "Existing integration code (document selection, callbacks, start from click handler) is preserved"
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "prompt": "Our agents scan many IDs in a row, and I want the next scan to open faster. Also, how do I clean up when the user is fully done, and how do I distinguish the user closing the pop-up from the service failing to start? My integration is in integrated-page.ts.",
+      "expected_output": "The skill sets keepAliveForNextSession: true in the session options, calls IdBoltSession.terminate() when fully done, and switches on CancellationReason.UserClosed vs CancellationReason.ServiceStartFailure in onCancellation.",
+      "files": [
+        "fixtures/integrated-page.ts"
+      ],
+      "tags": [
+        "session-lifecycle"
+      ],
+      "assertions": [
+        {
+          "text": "keepAliveForNextSession: true is present in the session options"
+        },
+        {
+          "text": "IdBoltSession.terminate() is called when the user is fully done scanning"
+        },
+        {
+          "text": "onCancellation distinguishes CancellationReason.UserClosed from CancellationReason.ServiceStartFailure (semantic)"
+        },
+        {
+          "text": "Existing integration code (document selection, onCompletion, start from click handler) is preserved"
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "prompt": "Our checkout is in German and heavily branded. I want the ID Bolt pop-up in German, without the welcome and result screens, and using our primary brand color. My integration is in integrated-page.ts.",
+      "expected_output": "The skill configures the hosted UI through the session options: locale: \"de\", workflow with showWelcomeScreenDesktop/showWelcomeScreenMobile/showResultScreen set to false, and a theme object for the brand color — explaining that the pop-up cannot be styled from the host page's CSS.",
+      "files": [
+        "fixtures/integrated-page.ts"
+      ],
+      "tags": [
+        "theming-localization"
+      ],
+      "assertions": [
+        {
+          "text": "locale: \"de\" is present in the session options"
+        },
+        {
+          "text": "The workflow option disables the welcome screens (showWelcomeScreenDesktop / showWelcomeScreenMobile set to false) (semantic)"
+        },
+        {
+          "text": "The workflow option disables the result screen (showResultScreen: false)"
+        },
+        {
+          "text": "A theme object is passed in the session options for the brand color (semantic)"
+        },
+        {
+          "text": "It is explained that the pop-up internals cannot be styled from the host page's own CSS — customization goes through the session options (semantic)"
+        },
+        {
+          "text": "Existing integration code (document selection, callbacks, start from click handler) is preserved"
+        }
+      ]
+    }
+  ]
+}

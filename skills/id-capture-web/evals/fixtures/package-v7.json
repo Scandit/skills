@@ -1,0 +1,8 @@
+{
+  "name": "my-id-scanning-app",
+  "version": "1.0.0",
+  "dependencies": {
+    "@scandit/web-datacapture-core": "7.6.2",
+    "@scandit/web-datacapture-id": "7.6.2"
+  }
+}
