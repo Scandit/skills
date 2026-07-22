@@ -1,0 +1,380 @@
+{
+  "skill_name": "id-capture-web",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Add ID scanning to my web app so I can scan passports, driver's licenses and national ID cards and read the holder's name and date of birth. Here's my main file: empty-app.ts.",
+      "expected_output": "The skill writes a complete ID Capture web integration: DataCaptureContext.forLicenseKey with idCaptureLoader({ enableVIZDocuments: true }) in moduleLoaders, IdCaptureSettings with acceptedDocuments and a FullDocumentScanner wrapped in IdCaptureScanner (options object), await IdCapture.forContext, an object-literal listener with didCaptureId/didRejectId, an awaited IdCaptureOverlay.withIdCaptureForView, camera setup via Camera.pickBestGuess + recommendedCameraSettings, and a setup checklist.",
+      "files": [
+        "fixtures/empty-app.ts"
+      ],
+      "tags": [
+        "basic-integration",
+        "lifecycle-handling"
+      ],
+      "assertions": [
+        {
+          "text": "Setup checklist mentions installing @scandit/web-datacapture-core and @scandit/web-datacapture-id at the same version"
+        },
+        {
+          "text": "DataCaptureContext.forLicenseKey( is present and awaited, with libraryLocation and moduleLoaders in the options"
+        },
+        {
+          "text": "idCaptureLoader({ enableVIZDocuments: true }) is present in moduleLoaders"
+        },
+        {
+          "text": "License key placeholder (e.g. ENTER YOUR SCANDIT LICENSE KEY or similar) is present"
+        },
+        {
+          "text": "new IdCaptureSettings() is present"
+        },
+        {
+          "text": "settings.acceptedDocuments is assigned document objects like new IdCard(Region...), new Passport(Region...), new DriverLicense(Region...) (semantic)"
+        },
+        {
+          "text": "settings.scanner = new IdCaptureScanner( is present with an options object containing physicalDocument"
+        },
+        {
+          "text": "new FullDocumentScanner() is present"
+        },
+        {
+          "text": "await IdCapture.forContext( is present"
+        },
+        {
+          "text": "the IdCapture mode is created via await IdCapture.forContext, NOT via a constructor, forDataCaptureContext, or Create (semantic)"
+        },
+        {
+          "text": "addListener is called with an object that has didCaptureId and didRejectId"
+        },
+        {
+          "text": "await idCapture.setEnabled(false) is called at the top of didCaptureId before processing the result"
+        },
+        {
+          "text": "the enabled state is changed via await idCapture.setEnabled(...), NOT by assigning to an isEnabled/enabled property (semantic)"
+        },
+        {
+          "text": "Camera.pickBestGuess() is called"
+        },
+        {
+          "text": "IdCapture.recommendedCameraSettings is applied to the camera"
+        },
+        {
+          "text": "A DataCaptureView is created and connected to a DOM element via connectToElement"
+        },
+        {
+          "text": "await IdCaptureOverlay.withIdCaptureForView( is present"
+        },
+        {
+          "text": "switchToDesiredState(FrameSourceState.On) is called to start the camera"
+        },
+        {
+          "text": "capturedId.fullName is read (semantic)"
+        },
+        {
+          "text": "capturedId.dateOfBirth is read (semantic)"
+        },
+        {
+          "text": "settings.scannerType and settings.supportedDocuments are NOT used in the final code (semantic)"
+        },
+        {
+          "text": "removeListener is called on the idCapture instance in cleanup (unmount or equivalent lifecycle teardown)"
+        },
+        {
+          "text": "switchToDesiredState(FrameSourceState.Off) is called in cleanup"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "I only need to read the PDF417 barcode on the back of US driver's licenses — nothing else. Set up ID Capture for that in my web app, starting from empty-app.ts.",
+      "expected_output": "The skill accepts only DriverLicense for Region.Us and uses a SingleSideScanner with only the barcode flag enabled, wrapped in IdCaptureScanner({ physicalDocument: ... }).",
+      "files": [
+        "fixtures/empty-app.ts"
+      ],
+      "tags": [
+        "barcode-scanning"
+      ],
+      "assertions": [
+        {
+          "text": "new DriverLicense(Region.Us) is present"
+        },
+        {
+          "text": "new SingleSideScanner( is present"
+        },
+        {
+          "text": "the SingleSideScanner enables only the barcode zone, i.e. SingleSideScanner(true, false, false) (semantic)"
+        },
+        {
+          "text": "the scanner is assigned as settings.scanner = new IdCaptureScanner({ physicalDocument: ... }) with an options object, not positionally (semantic)"
+        },
+        {
+          "text": "await IdCapture.forContext( is present"
+        },
+        {
+          "text": "didCaptureId is present"
+        },
+        {
+          "text": "data from the barcode is read, either via capturedId.barcode or via the harmonized top-level fields (documentNumber, fullName, dateOfBirth, etc.) (semantic)"
+        },
+        {
+          "text": "capturedId.barcodeResult is NOT used (the property is named barcode on Web) (semantic)"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Set up ID Capture in my web app to scan passports and extract the MRZ data (full name, document number, date of expiry). Use empty-app.ts.",
+      "expected_output": "The skill accepts Passport, uses a scanner that reads the MRZ (SingleSideScanner with machineReadableZone enabled, or FullDocumentScanner), and reads fields from the captured id / mrzResult.",
+      "files": [
+        "fixtures/empty-app.ts"
+      ],
+      "tags": [
+        "mrz-scanning"
+      ],
+      "assertions": [
+        {
+          "text": "new Passport( is present"
+        },
+        {
+          "text": "the scanner reads the MRZ, via a SingleSideScanner with the machineReadableZone flag enabled (e.g. SingleSideScanner(false, true, false)) or a FullDocumentScanner (semantic)"
+        },
+        {
+          "text": "capturedId.mrzResult or the harmonized top-level fields populated by the MRZ are read (semantic)"
+        },
+        {
+          "text": "capturedId.mrz is NOT used (the Flutter name) (semantic)"
+        },
+        {
+          "text": "capturedId.documentNumber is read (semantic)"
+        },
+        {
+          "text": "capturedId.dateOfExpiry is read (semantic)"
+        },
+        {
+          "text": "didCaptureId is present"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "I need the cropped document image and the face image back from each scanned ID, and I want to show them in <img> elements on my results page. My integration is in integrated-app.ts.",
+      "expected_output": "The skill enables image extraction via setShouldPassImageTypeToResult for IdImageType.Face and IdImageType.CroppedDocument, reads capturedId.images.face (a getter) and capturedId.images.getCroppedDocument(IdSide.Front), and uses the returned base64 data-URL strings directly as <img> src values.",
+      "files": [
+        "fixtures/integrated-app.ts"
+      ],
+      "tags": [
+        "image-extraction"
+      ],
+      "assertions": [
+        {
+          "text": "settings.setShouldPassImageTypeToResult( is called"
+        },
+        {
+          "text": "IdImageType.Face is present"
+        },
+        {
+          "text": "IdImageType.CroppedDocument is present"
+        },
+        {
+          "text": "the face image is read via the capturedId.images.face getter, not a face() method call (semantic)"
+        },
+        {
+          "text": "the cropped document image is read via capturedId.images.getCroppedDocument(IdSide.Front) (or IdSide.Back), not a non-existent croppedDocument getter (semantic)"
+        },
+        {
+          "text": "the returned value is treated as a base64 data-URL string assigned to an <img> src, not as a native bitmap or byte buffer (semantic)"
+        },
+        {
+          "text": "Existing integration code (DataCaptureContext, IdCapture, listener, view, mount/unmount) is preserved"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "How should I handle the case where a document is detected but can't be captured? I want to show the user a clear message explaining why the scan didn't succeed. My integration is in integrated-app.ts.",
+      "expected_output": "The skill implements didRejectId and maps RejectionReason values (Timeout, NotAcceptedDocumentType, DocumentExpired, ...) to user-facing messages, disabling the mode while the message is shown.",
+      "files": [
+        "fixtures/integrated-app.ts"
+      ],
+      "tags": [
+        "rejection-handling"
+      ],
+      "assertions": [
+        {
+          "text": "didRejectId is present"
+        },
+        {
+          "text": "RejectionReason is present"
+        },
+        {
+          "text": "rejection reasons are mapped to user-facing messages, e.g. via a switch on RejectionReason (semantic)"
+        },
+        {
+          "text": "RejectionReason.Timeout is present"
+        },
+        {
+          "text": "RejectionReason.NotAcceptedDocumentType is present"
+        },
+        {
+          "text": "await idCapture.setEnabled(false) is called while the rejection message is shown (semantic)"
+        },
+        {
+          "text": "Existing integration code (DataCaptureContext, IdCapture, view, mount/unmount) is preserved"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "We scan US driver's licenses and need to reject expired documents and flag likely-forged AAMVA barcodes. Add that to my web integration in integrated-app.ts.",
+      "expected_output": "The skill sets settings.rejectExpiredIds = true and handles RejectionReason.DocumentExpired, and performs forged-barcode verification through the standalone AamvaBarcodeVerifier class (await AamvaBarcodeVerifier.create(context), then await verifier.verify(capturedId) in didCaptureId). It does NOT use rejectForgedAamvaBarcodes, which does not exist on Web.",
+      "files": [
+        "fixtures/integrated-app.ts"
+      ],
+      "tags": [
+        "expiry-age-rejection",
+        "aamva-barcode-verification"
+      ],
+      "assertions": [
+        {
+          "text": "settings.rejectExpiredIds = true is present"
+        },
+        {
+          "text": "RejectionReason.DocumentExpired is handled in didRejectId (semantic)"
+        },
+        {
+          "text": "await AamvaBarcodeVerifier.create( is present"
+        },
+        {
+          "text": "verifier.verify(capturedId) is called and awaited inside the capture handling (semantic)"
+        },
+        {
+          "text": "the verification result's allChecksPassed (or error) is inspected to decide whether the ID is flagged (semantic)"
+        },
+        {
+          "text": "the non-existent rejectForgedAamvaBarcodes setting is NOT used — on Web AAMVA barcode verification goes through the standalone AamvaBarcodeVerifier class (semantic)"
+        },
+        {
+          "text": "Existing integration code (DataCaptureContext, IdCapture, listener, view, mount/unmount) is preserved"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "We want ID Capture to reject documents whose printed data doesn't match the barcode or MRZ — data-consistency verification. Enable it and show me how to read the consistency result. My integration is in integrated-app.ts.",
+      "expected_output": "The skill sets settings.rejectInconsistentData = true, handles RejectionReason.InconsistentData in didRejectId, and reads capturedId.verificationResult.dataConsistency (allChecksPassed / failedChecks / frontReviewImage).",
+      "files": [
+        "fixtures/integrated-app.ts"
+      ],
+      "tags": [
+        "data-consistency-verification"
+      ],
+      "assertions": [
+        {
+          "text": "settings.rejectInconsistentData = true is present"
+        },
+        {
+          "text": "RejectionReason.InconsistentData is present"
+        },
+        {
+          "text": "capturedId.verificationResult.dataConsistency is read (semantic)"
+        },
+        {
+          "text": "dataConsistency.allChecksPassed is read (semantic)"
+        },
+        {
+          "text": "didRejectId is present"
+        },
+        {
+          "text": "a standalone DataConsistencyVerifier class is NOT used — data-consistency verification is settings-driven on Web (semantic)"
+        },
+        {
+          "text": "Existing integration code (DataCaptureContext, IdCapture, listener, view, mount/unmount) is preserved"
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "prompt": "Add ID Capture but anonymize sensitive data — I don't want document images or sensitive fields in the result. My integration is in integrated-app.ts.",
+      "expected_output": "The skill sets settings.anonymizationMode to an IdAnonymizationMode value covering fields and images.",
+      "files": [
+        "fixtures/integrated-app.ts"
+      ],
+      "tags": [
+        "data-anonymization"
+      ],
+      "assertions": [
+        {
+          "text": "settings.anonymizationMode is assigned"
+        },
+        {
+          "text": "IdAnonymizationMode is present"
+        },
+        {
+          "text": "an anonymization mode covering fields and images is chosen, e.g. IdAnonymizationMode.FieldsAndImages (semantic)"
+        },
+        {
+          "text": "Existing integration code (DataCaptureContext, IdCapture, listener, view, mount/unmount) is preserved"
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "prompt": "I need to scan mobile driver's licenses (mDL, ISO 18013-5) presented on a phone screen in my web app, in addition to physical documents. My integration is in integrated-app.ts.",
+      "expected_output": "The skill configures settings.scanner = new IdCaptureScanner({ physicalDocument: ..., mobileDocument: new MobileDocumentScanner() }) using the Web options-object form (MobileDocumentScanner takes no constructor arguments on Web).",
+      "files": [
+        "fixtures/integrated-app.ts"
+      ],
+      "tags": [
+        "mobile-document-mdl"
+      ],
+      "assertions": [
+        {
+          "text": "new MobileDocumentScanner() is present"
+        },
+        {
+          "text": "new IdCaptureScanner( is present with an options object"
+        },
+        {
+          "text": "the MobileDocumentScanner is passed via the mobileDocument key of the IdCaptureScanner options object, NOT as a positional argument (semantic)"
+        },
+        {
+          "text": "MobileDocumentScanner is constructed without arguments — the React Native boolean-flags form MobileDocumentScanner(true, false) is NOT used (semantic)"
+        },
+        {
+          "text": "didCaptureId is present"
+        },
+        {
+          "text": "Existing integration code (DataCaptureContext, IdCapture, listener, view, mount/unmount) is preserved"
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "prompt": "I want to change the hint text shown over the scanning UI — the front-side prompt should say \"Scan the FRONT of your ID\" in my ID Capture web app. My integration is in integrated-app.ts.",
+      "expected_output": "The skill customizes the overlay hint through the Localization API — Localization.getInstance().update({ \"id.idCaptureOverlay.scanFrontSideHint\": \"Scan the FRONT of your ID\" }) — instead of the deprecated IdCaptureOverlay.setFrontSideTextHint.",
+      "files": [
+        "fixtures/integrated-app.ts"
+      ],
+      "tags": [
+        "capture-overlay"
+      ],
+      "assertions": [
+        {
+          "text": "Localization.getInstance().update( is present"
+        },
+        {
+          "text": "the id.idCaptureOverlay.scanFrontSideHint key (or the equivalent overlay hint key) is updated with the custom text (semantic)"
+        },
+        {
+          "text": "Localization is imported from @scandit/web-datacapture-core"
+        },
+        {
+          "text": "the deprecated setFrontSideTextHint method is NOT used in the final code (semantic)"
+        },
+        {
+          "text": "Existing integration code (DataCaptureContext, IdCapture, listener, view, mount/unmount) is preserved"
+        }
+      ]
+    }
+  ]
+}
