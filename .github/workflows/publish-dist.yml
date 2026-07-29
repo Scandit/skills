@@ -1,0 +1,62 @@
+# Rebuilds the published `dist` branch on every push to master.
+#
+# Why: plugin marketplaces (Claude Code, Cursor, Codex) install by cloning the
+# repo's default branch wholesale. Development content (evals/, internal/) must
+# not ship to end users, and git cannot exclude paths from a clone server-side —
+# so the default branch is a generated ALLOWLIST copy of the published surface,
+# and development happens on master. See SDC-33151.
+#
+# dist is force-pushed as a single fresh commit each time: it is an artifact,
+# not history. Never commit to dist by hand.
+
+name: publish-dist
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: publish-dist
+  cancel-in-progress: true
+
+jobs:
+  dist:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Assemble dist tree (allowlist)
+        run: |
+          set -euo pipefail
+          mkdir /tmp/dist
+          # The published surface, nothing else. evals/, internal/, .github/
+          # and .gitignore are deliberately absent.
+          cp -R skills assets README.md LICENSE skills.sh.json \
+                .agents .claude-plugin .codex-plugin .cursor-plugin /tmp/dist/
+
+      - name: Sanity gate — no dev content in dist
+        run: |
+          set -euo pipefail
+          test ! -e /tmp/dist/evals
+          test ! -e /tmp/dist/internal
+          if find /tmp/dist/skills -type d -name evals | grep -q .; then
+            echo "::error::skills/*/evals present in dist — master layout regressed (see SDC-33144)"
+            exit 1
+          fi
+
+      - name: Force-push dist
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          cd /tmp/dist
+          git init -q -b dist
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -q -m "dist: generated from ${GITHUB_SHA} (do not commit here — develop on master)"
+          git push --force "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" dist

@@ -141,6 +141,8 @@ We welcome feedback that improves the quality of these skills:
 - **Report issues.** File bugs, outdated SDK patterns, or incorrect guidance in the [issue tracker](https://github.com/scandit/skills/issues).
 - **Request new skills.** If a Scandit product, framework, or workflow you need isn't covered, open a feature request.
 
+**Branches:** development happens on [`master`](https://github.com/scandit/skills/tree/master) — target it with PRs. The default `dist` branch is a generated, install-only copy of the published surface (no evals or internal tooling), rebuilt by CI on every push to `master`; never commit to it.
+
 ## License
 
 See the [LICENSE](./LICENSE) file for licensing information.
