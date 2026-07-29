@@ -46,6 +46,7 @@ from pathlib import Path
 # Anything matched here is deleted from the staged tree before validation.
 EXCLUDE_DIRS = [
     "internal",          # skill-auditor tooling; sources.yaml names private Scandit repos
+    "evals",             # the eval harness after #85 moved it out of skills/; see EXCLUDE_SKILL_DIRS
     ".claude-plugin",    # other hosts' manifests: noise in a reviewed bundle
     ".cursor-plugin",
     ".github",
@@ -57,7 +58,9 @@ EXCLUDE_FILES = [
     ".gitignore",
 ]
 # Removed from every skill: the eval harness ships competitor migration fixtures
-# and is not one of OpenAI's documented skill conventions.
+# and is not one of OpenAI's documented skill conventions. #85 relocated these to a
+# top-level evals/ tree, which is why "evals" is also in EXCLUDE_DIRS. Both entries
+# stay so the builder produces the same bundle before and after that move lands.
 EXCLUDE_SKILL_DIRS = ["evals"]
 
 MANIFEST = ".codex-plugin/plugin.json"
