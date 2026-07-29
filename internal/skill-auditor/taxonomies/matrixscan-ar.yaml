@@ -14,7 +14,7 @@
 #   eval-survey  existing skills/matrixscan-ar-*/evals/*.json
 #
 # Platform-truth notes (layer 1 — from the .rst :available: directives):
-#   - 10 in-scope platforms: android, capacitor, cordova, flutter, ios, maui, net-android,
+#   - 10 in-scope platforms: android, capacitor, cordova, flutter, ios, net-maui, net-android,
 #     net-ios, rn, web. (titanium + linux do NOT support BarcodeAr — no skill.)
 #   - iOS is modelled as ONE logical platform via manifest.platform_aliases: matrixscan-ar-ios +
 #     matrixscan-ar-annotation-ios + matrixscan-ar-highlight-ios fold into "ios" (evals aggregated).
@@ -129,12 +129,12 @@ features:
   - id: custom-highlight
     required: false
     evidence: [docs, sample, sdk]
-    excluded_platforms: [web, capacitor, cordova, net-android, net-ios, maui]
+    excluded_platforms: [web, capacitor, cordova, net-android, net-ios, net-maui]
     match: ["barcodearcustomhighlight", "custom highlight", "subclass.*highlight|highlight.*subclass", "custom.*barcodearhighlight"]
   - id: custom-annotation
     required: false
     evidence: [docs, sample, sdk]
-    excluded_platforms: [web, capacitor, cordova, net-android, net-ios, maui]
+    excluded_platforms: [web, capacitor, cordova, net-android, net-ios, net-maui]
     match: ["barcodearcustomannotation", "custom annotation", "subclass.*annotation|annotation.*subclass", "custom.*barcodearannotation"]
   # barcode-filter: BarcodeArFilter ships in the PUBLISHED SDK only for ios/android (=8.1). It is
   # documented at 8.5 (flutter/rn/cordova/capacitor) and 8.6 (.NET) but those packages are NOT yet
@@ -143,12 +143,12 @@ features:
   - id: barcode-filter
     required: false
     evidence: [docs, sdk]
-    excluded_platforms: [web, flutter, rn, capacitor, cordova, net-android, net-ios, maui]
+    excluded_platforms: [web, flutter, rn, capacitor, cordova, net-android, net-ios, net-maui]
     match: ["barcodearfilter", "barcode filter", "setbarcodefilter", "barcodefilter", "filter.*(barcode|highlight)"]
   - id: swiftui-integration
     required: false
     evidence: [docs, eval-survey]
-    excluded_platforms: [android, capacitor, cordova, flutter, maui, net-android, net-ios, rn, web]
+    excluded_platforms: [android, capacitor, cordova, flutter, net-maui, net-android, net-ios, rn, web]
     match: ["swiftui", "uiviewrepresentable", "uiviewcontrollerrepresentable", "swift ?ui"]
   - id: migration
     required: false

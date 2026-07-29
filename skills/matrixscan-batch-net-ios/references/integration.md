@@ -6,7 +6,7 @@ Examples below use C# 12 and a `UIViewController`. The same APIs work in storybo
 
 > **Constructor pattern depends on instantiation path.** Storyboard / XIB inflation uses `public MyVC(IntPtr handle) : base(handle) { }`. Programmatic instantiation (no `Main.storyboard`, root view controller set from `SceneDelegate.WillConnect` or `AppDelegate`) needs a parameterless `public MyVC() : base() { }` and `new MyVC()`. **Never construct a VC with `new MyVC(IntPtr.Zero)`** — the native peer is not initialized, `ViewDidLoad` may never fire, and you'll see a black screen with no preview and no scans. If you support both paths, declare both constructors.
 
-> **MAUI?** Stop. If the project file has `<UseMaui>true</UseMaui>`, switch to the `matrixscan-batch-maui` skill. The MAUI integration uses XAML and a `UseScanditBarcode` builder, which is different.
+> **MAUI?** Stop. If the project file has `<UseMaui>true</UseMaui>`, switch to the `matrixscan-batch-net-maui` skill. The MAUI integration uses XAML and a `UseScanditBarcode` builder, which is different.
 
 ## Prerequisites
 

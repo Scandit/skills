@@ -4,7 +4,7 @@ BarcodeCapture is the low-level single-barcode scanning mode. On .NET for iOS yo
 
 Examples below use C# 12 and a `UIViewController`. The same APIs work in storyboards, XIBs, or programmatically-instantiated controllers — adapt ownership of `DataCaptureContext`, `BarcodeCapture`, and `Camera` to the project's existing structure.
 
-> **MAUI?** Stop. If the project file has `<UseMaui>true</UseMaui>`, switch to the `barcode-capture-maui` skill. The MAUI integration uses `<scandit:DataCaptureView>` in XAML and the `UseScanditCore` / `UseScanditBarcode` builder, which are different.
+> **MAUI?** Stop. If the project file has `<UseMaui>true</UseMaui>`, switch to the `barcode-capture-net-maui` skill. The MAUI integration uses `<scandit:DataCaptureView>` in XAML and the `UseScanditCore` / `UseScanditBarcode` builder, which are different.
 
 ## Prerequisites
 

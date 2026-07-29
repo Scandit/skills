@@ -4,7 +4,7 @@ SparkScan is a pre-built scanning UI for high-volume single-scanning workflows. 
 
 Examples below use C# 12 and an `AppCompatActivity`. The same APIs work identically in a Fragment — adapt ownership of `DataCaptureContext`, `SparkScan`, and `SparkScanView` to the project's existing structure.
 
-> **MAUI?** Stop. If the project file has `<UseMaui>true</UseMaui>`, switch to the `sparkscan-maui` skill. The MAUI integration uses `<scandit:SparkScanView>` in XAML and the `UseScanditCore` / `UseScanditBarcode(c => c.AddSparkScanView())` builder, which are different.
+> **MAUI?** Stop. If the project file has `<UseMaui>true</UseMaui>`, switch to the `sparkscan-net-maui` skill. The MAUI integration uses `<scandit:SparkScanView>` in XAML and the `UseScanditCore` / `UseScanditBarcode(c => c.AddSparkScanView())` builder, which are different.
 
 ## Prerequisites
 

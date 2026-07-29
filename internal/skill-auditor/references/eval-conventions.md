@@ -52,7 +52,7 @@ Per-platform — who runs the gate:
 | Flutter | scratch pub project + `flutter analyze` / `dart analyze` | yes |
 | Web / RN / Capacitor (TS) | temp dir, `npm install` the published `@scandit/*` / `scandit-*` pkg, `tsc --strict --noEmit` | yes |
 | Cordova (plain JS) | `node --check` for syntax + verify every `Scandit.*` name against the plugin's exports (it re-exports the shared frameworks pkg; the tsc check above usually covers signatures) | yes |
-| .NET (net-android/net-ios/maui, C#) | scratch project + `dotnet restore` the Scandit NuGet + `dotnet build` | yes |
+| .NET (net-android/net-ios/net-maui, C#) | scratch project + `dotnet restore` the Scandit NuGet + `dotnet build` | yes |
 | Android (Kotlin) | gradle project w/ `com.scandit.datacapture:*` + Android SDK → `./gradlew compileDebugKotlin` | NO — heavy toolchain |
 | iOS (Swift) | SPM/xcodebuild w/ the Scandit frameworks → `swift build` / `xcodebuild` | NO — heavy toolchain |
 
@@ -77,7 +77,7 @@ drafted; each resolves the real Scandit packages, compiles, and prints `GATE-PAS
     scripts/fix_gate_flutter.sh <dart-file> [version] [pub-pkg]
     scripts/fix_gate_ts.sh      <web|rn|capacitor> <ts-file> [version]
     scripts/fix_gate_swift.sh   <swift-file> [frameworks-csv]
-    scripts/fix_gate_dotnet.sh  <cs-file> [version] [extra-pkg ...]   # covers net-android/net-ios/maui
+    scripts/fix_gate_dotnet.sh  <cs-file> [version] [extra-pkg ...]   # covers net-android/net-ios/net-maui
 
 Notes: default version 8.4.0. `dotnet` builds a plain net8.0 project against the package's
 net8.0 managed slice — no android/ios workloads needed (keep platform-UI-only types like

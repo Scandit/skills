@@ -64,6 +64,15 @@ def main():
                 "trigger metadata only — teaching content belongs in the body)"
             )
         product = product_of(d.name)
+        # Naming rule: every .NET target framework uses a `net-<target>` suffix
+        # (net-android, net-ios, net-maui). A bare `-maui` slug is the historical
+        # inconsistency this convention replaced — reject it so it cannot regress.
+        if product and d.name.endswith("-maui") and not d.name.endswith("-net-maui"):
+            findings.append(
+                f"{d.name}: .NET MAUI skills must use the `-net-maui` suffix "
+                f"(every .NET target is `net-<target>`) — rename to "
+                f"{d.name[: -len('-maui')]}-net-maui"
+            )
         if product and desc:
             product_tokens = product.rstrip("-").replace("-", " ")
             normalized = re.sub(r"[^a-z0-9]+", " ", desc.lower())

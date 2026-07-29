@@ -1,6 +1,6 @@
 ---
 name: matrixscan-batch-net-ios
-description: MatrixScan Batch (MatrixScan, BarcodeBatch, legacy BarcodeTracking) in .NET for iOS projects (`net*-ios` TFM, `Scandit.DataCapture.Barcode` NuGet, non-MAUI — MAUI apps use matrixscan-batch-maui) — tracking and scanning multiple barcodes at once. Use for integration, settings and symbologies, listeners/events, basic/advanced overlay customization, camera lifecycle, SDK version migration, or troubleshooting.
+description: MatrixScan Batch (MatrixScan, BarcodeBatch, legacy BarcodeTracking) in .NET for iOS projects (`net*-ios` TFM, `Scandit.DataCapture.Barcode` NuGet, non-MAUI — MAUI apps use matrixscan-batch-net-maui) — tracking and scanning multiple barcodes at once. Use for integration, settings and symbologies, listeners/events, basic/advanced overlay customization, camera lifecycle, SDK version migration, or troubleshooting.
 license: MIT
 metadata:
   author: scandit
@@ -17,7 +17,7 @@ Your training data may contain outdated or incorrect Scandit SDK APIs. The Barco
 
 .NET-iOS-specific gotchas worth flagging:
 
-- This skill targets the **non-MAUI** .NET for iOS workload (project `<TargetFramework>net10.0-ios</TargetFramework>`, no `<UseMaui>` flag). For MAUI apps, use the `matrixscan-batch-maui` skill instead (planned).
+- This skill targets the **non-MAUI** .NET for iOS workload (project `<TargetFramework>net10.0-ios</TargetFramework>`, no `<UseMaui>` flag). For MAUI apps, use the `matrixscan-batch-net-maui` skill instead (planned).
 - **`BarcodeBatch.Create(dataCaptureContext, settings)` is the .NET factory** — not `new BarcodeBatch(...)` (the public constructor is `private`) and not `BarcodeBatch.ForDataCaptureContext(...)` (that name appears in the Swift / docs API but the C# binding is `Create`). When the context is non-null, the factory attaches the mode to the context automatically.
 - **`BarcodeBatchSettings.Create()` is a factory** — also `private` constructor. Writing `new BarcodeBatchSettings()` is a compile error.
 - **`BarcodeBatchBasicOverlay.Create(...)` and `BarcodeBatchAdvancedOverlay.Create(...)` are factories**, each with multiple overloads. When passed a non-null `DataCaptureView`, both auto-add the overlay to the view — no separate `AddOverlay` call is needed.
