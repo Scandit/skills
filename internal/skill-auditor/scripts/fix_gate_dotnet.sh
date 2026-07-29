@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Fix-verification gate — .NET (net-android / net-ios / maui share the managed API).
+# Fix-verification gate — .NET (net-android / net-ios / net-maui share the managed API).
 # Builds a .cs file against the resolved REAL Scandit NuGet packages via `dotnet build`
 # on a plain net8.0 project (the package multi-targets down to net8.0, so NO android/ios
 # workloads are needed — the net8.0 managed slice carries the full cross-platform API

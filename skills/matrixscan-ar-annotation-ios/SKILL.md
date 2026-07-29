@@ -1,6 +1,6 @@
 ---
 name: matrixscan-ar-annotation-ios
-description: MatrixScan AR annotations in native iOS Swift projects (UIKit/SwiftUI — Swift only, not C#/.NET) — info annotations, popovers, status icons, and responsive annotations attached to tracked barcodes. Use for adding annotations, customizing their appearance and content, controlling when they appear, or handling annotation taps — pipeline setup belongs to matrixscan-ar-ios; C#/.NET apps use matrixscan-ar-net-ios or matrixscan-ar-maui.
+description: MatrixScan AR annotations in native iOS Swift projects (UIKit/SwiftUI — Swift only, not C#/.NET) — info annotations, popovers, status icons, and responsive annotations attached to tracked barcodes. Use for adding annotations, customizing their appearance and content, controlling when they appear, or handling annotation taps — pipeline setup belongs to matrixscan-ar-ios; C#/.NET apps use matrixscan-ar-net-ios or matrixscan-ar-net-maui.
 license: MIT
 metadata:
   author: scandit

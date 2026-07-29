@@ -12,7 +12,7 @@
 #                it ships highlights.md + list-scanning.md the other 7 platforms lack)
 #
 # Platform-truth notes (layer 1):
-#   - 8 in-scope skills: capacitor, cordova, flutter, ios, maui, net-android, net-ios, rn.
+#   - 8 in-scope skills: capacitor, cordova, flutter, ios, net-maui, net-android, net-ios, rn.
 #     (Web + Titanium are n/a for BarcodeCount and have no skill.)
 #   - BarcodeCount is broadly uniform. Verified availability boundaries that DO matter:
 #       * list-scanning  (BarcodeCountCaptureList) — available on ALL 8. iOS uses

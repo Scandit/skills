@@ -1,6 +1,6 @@
 ---
 name: sparkscan-net-ios
-description: SparkScan single-barcode scanning with the pre-built `SparkScanView` UI in .NET for iOS projects (`net*-ios` target framework, `Scandit.DataCapture.Barcode` NuGet, non-MAUI — for MAUI apps use sparkscan-maui). Use for integration, scan settings, result handling, feedback customization, scanning lifecycle, SDK version migration (v6→v7→v8), replacing third-party scanners (ZXing.Net.Mobile), or troubleshooting.
+description: SparkScan single-barcode scanning with the pre-built `SparkScanView` UI in .NET for iOS projects (`net*-ios` target framework, `Scandit.DataCapture.Barcode` NuGet, non-MAUI — for MAUI apps use sparkscan-net-maui). Use for integration, scan settings, result handling, feedback customization, scanning lifecycle, SDK version migration (v6→v7→v8), replacing third-party scanners (ZXing.Net.Mobile), or troubleshooting.
 license: MIT
 metadata:
   author: scandit
@@ -17,7 +17,7 @@ Your training data may contain outdated or incorrect Scandit SDK APIs. The Spark
 
 .NET-iOS-specific gotchas worth flagging:
 
-- This skill targets the **non-MAUI** .NET for iOS workload (project `<TargetFramework>net10.0-ios</TargetFramework>`, no `<UseMaui>` flag). For MAUI apps, use the `sparkscan-maui` skill instead.
+- This skill targets the **non-MAUI** .NET for iOS workload (project `<TargetFramework>net10.0-ios</TargetFramework>`, no `<UseMaui>` flag). For MAUI apps, use the `sparkscan-net-maui` skill instead.
 - **`SparkScan` and `SparkScanSettings` use plain `new` constructors, not `Create(...)` factories.** This is unusual compared to the rest of the .NET API (`BarcodeCapture.Create(...)`, `BarcodeCaptureSettings.Create()`, `DataCaptureView.Create(...)`). The canonical pattern is `var settings = new SparkScanSettings(); var sparkScan = new SparkScan(settings);` — writing `SparkScan.Create(...)` or `SparkScanSettings.Create()` is a compile error. `DataCaptureContext.ForLicenseKey(key)` still uses the factory form (it lives in Core, not Spark).
 - **`SparkScanView.Create(parent, context, sparkScan, settings)` IS a factory** (unlike `SparkScan` itself). On iOS the parent argument is just `this.View` — there is no coordinator-layout container (that's Android-only). The created view is added to `parentView` automatically; do not call `this.View.AddSubview(sparkScanView)` yourself.
 - iOS lifecycle is `sparkScanView.PrepareScanning()` in `ViewWillAppear` and `sparkScanView.StopScanning()` in `ViewWillDisappear`. **Do not** use `OnPause` / `OnResume` here — those are the Android-only API. Calling them on iOS will not compile (the iOS binding does not surface them).

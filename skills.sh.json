@@ -21,7 +21,7 @@
         "barcode-capture-kmp",
         "barcode-capture-capacitor",
         "barcode-capture-cordova",
-        "barcode-capture-maui",
+        "barcode-capture-net-maui",
         "barcode-capture-net-ios",
         "barcode-capture-net-android"
       ]
@@ -38,7 +38,7 @@
         "sparkscan-kmp",
         "sparkscan-capacitor",
         "sparkscan-cordova",
-        "sparkscan-maui",
+        "sparkscan-net-maui",
         "sparkscan-net-ios",
         "sparkscan-net-android"
       ]
@@ -55,7 +55,7 @@
         "matrixscan-ar-kmp",
         "matrixscan-ar-capacitor",
         "matrixscan-ar-cordova",
-        "matrixscan-ar-maui",
+        "matrixscan-ar-net-maui",
         "matrixscan-ar-net-ios",
         "matrixscan-ar-net-android",
         "matrixscan-ar-highlight-ios",
@@ -74,7 +74,7 @@
         "matrixscan-batch-kmp",
         "matrixscan-batch-capacitor",
         "matrixscan-batch-cordova",
-        "matrixscan-batch-maui",
+        "matrixscan-batch-net-maui",
         "matrixscan-batch-net-ios",
         "matrixscan-batch-net-android"
       ]
@@ -90,7 +90,7 @@
         "matrixscan-count-kmp",
         "matrixscan-count-capacitor",
         "matrixscan-count-cordova",
-        "matrixscan-count-maui",
+        "matrixscan-count-net-maui",
         "matrixscan-count-net-ios",
         "matrixscan-count-net-android",
         "matrixscan-pick-ios",

@@ -15,13 +15,13 @@
 #   eval-survey  existing skills/barcode-capture-*/evals/*.json (integration + migration + third-party-migration)
 #
 # Platform-truth notes (layer 1 — from the .rst :available: directives):
-#   - 10 in-scope platforms: android, capacitor, cordova, flutter, ios, maui, net-android, net-ios, rn, web.
+#   - 10 in-scope platforms: android, capacitor, cordova, flutter, ios, net-maui, net-android, net-ios, rn, web.
 #   - BarcodeCapture is the single-scan mode and is broadly UNIFORM: the mode, settings, listener,
 #     session, feedback, overlay, RectangularViewfinder, AimerViewfinder, both location selections,
 #     codeDuplicateFilter, scanAreaMargins and locationSelection are available on ALL 10 — no exclusions.
 #   - The ONE availability boundary that matters here:
 #       * laserline-viewfinder (LaserlineViewfinder) — android/ios=7.3, js frameworks/web=7.4, but NOT in
-#         the .NET/MAUI binding. Exclude net-android, net-ios, maui.
+#         the .NET/MAUI binding. Exclude net-android, net-ios, net-maui.
 #   - Deliberately NOT modelled: SelectionMode (8.5) is documented but, like matrixscan-ar's BarcodeArFilter,
 #     risks not being in the published package — use the older ScanIntention (6.24) for the manual-scan edge.
 #   - API-shape divergence to keep in mind (NOT exclusions): FrameSourceState casing (on/On/ON),
@@ -81,7 +81,7 @@ features:
   - id: laserline-viewfinder
     required: false
     evidence: [docs, sdk]
-    excluded_platforms: [net-android, net-ios, maui]
+    excluded_platforms: [net-android, net-ios, net-maui]
     match: ["laserlineviewfinder", "laserline viewfinder"]
   - id: code-duplicate-filter
     required: false

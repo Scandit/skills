@@ -4,7 +4,7 @@ BarcodeBatch is the multi-barcode tracking mode. It simultaneously tracks every 
 
 Examples below use C# 12 and an `AppCompatActivity`. The same APIs work identically in a Fragment — adapt ownership of `DataCaptureContext`, `BarcodeBatch`, and the `Camera` to the project's existing structure.
 
-> **MAUI?** Stop. If the project file has `<UseMaui>true</UseMaui>`, switch to the `matrixscan-batch-maui` skill. The MAUI integration uses XAML and a `UseScanditBarcode` builder, which is different.
+> **MAUI?** Stop. If the project file has `<UseMaui>true</UseMaui>`, switch to the `matrixscan-batch-net-maui` skill. The MAUI integration uses XAML and a `UseScanditBarcode` builder, which is different.
 
 ## Prerequisites
 

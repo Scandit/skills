@@ -1,6 +1,6 @@
 ---
 name: matrixscan-count-net-ios
-description: MatrixScan Count (BarcodeCount) in .NET for iOS projects (net*-ios, Scandit.DataCapture.Barcode NuGet, non-MAUI) — counting/receiving barcodes in bulk with BarcodeCountView in a UIViewController, capture/receiving lists, spatial map, explicitly managed camera. For MAUI apps use matrixscan-count-maui. Use for integration, settings configuration, result handling, UI customization, SDK version migration, or troubleshooting counting workflows.
+description: MatrixScan Count (BarcodeCount) in .NET for iOS projects (net*-ios, Scandit.DataCapture.Barcode NuGet, non-MAUI) — counting/receiving barcodes in bulk with BarcodeCountView in a UIViewController, capture/receiving lists, spatial map, explicitly managed camera. For MAUI apps use matrixscan-count-net-maui. Use for integration, settings configuration, result handling, UI customization, SDK version migration, or troubleshooting counting workflows.
 license: MIT
 metadata:
   author: scandit

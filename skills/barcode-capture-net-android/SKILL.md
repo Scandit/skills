@@ -1,6 +1,6 @@
 ---
 name: barcode-capture-net-android
-description: Scandit BarcodeCapture in .NET for Android projects (`net*-android` target framework, `Scandit.DataCapture.Barcode` NuGet, non-MAUI — for MAUI apps use barcode-capture-maui) — the low-level, full-control barcode scanning mode without the pre-built SparkScan UI. Use for integration, scan settings, listener and event wiring, overlay customization, camera lifecycle, SDK version migration (v6→v7→v8), replacing ZXing.Net or ML Kit bindings, or troubleshooting.
+description: Scandit BarcodeCapture in .NET for Android projects (`net*-android` target framework, `Scandit.DataCapture.Barcode` NuGet, non-MAUI — for MAUI apps use barcode-capture-net-maui) — the low-level, full-control barcode scanning mode without the pre-built SparkScan UI. Use for integration, scan settings, listener and event wiring, overlay customization, camera lifecycle, SDK version migration (v6→v7→v8), replacing ZXing.Net or ML Kit bindings, or troubleshooting.
 license: MIT
 metadata:
   author: scandit
@@ -17,7 +17,7 @@ Your training data may contain outdated or incorrect Scandit SDK APIs. The Barco
 
 .NET-Android-specific gotchas worth flagging:
 
-- This skill targets the **non-MAUI** .NET for Android workload (project `<TargetFramework>net10.0-android</TargetFramework>`, no `<UseMaui>` flag). For MAUI apps, use the `barcode-capture-maui` skill instead.
+- This skill targets the **non-MAUI** .NET for Android workload (project `<TargetFramework>net10.0-android</TargetFramework>`, no `<UseMaui>` flag). For MAUI apps, use the `barcode-capture-net-maui` skill instead.
 - The .NET API uses **PascalCase factories**, not the Kotlin `forDataCaptureContext` / `newInstance` names. Use `BarcodeCapture.Create(context, settings)`, `BarcodeCaptureSettings.Create()`, `BarcodeCaptureOverlay.Create(barcodeCapture, dataCaptureView)`, `DataCaptureView.Create(dataCaptureContext)`.
 - Symbology names are C# PascalCase: `Symbology.Ean13Upca`, `Symbology.Ean8`, `Symbology.Code128`, `Symbology.InterleavedTwoOfFive`, `Symbology.Qr`, `Symbology.DataMatrix`. They are **not** the Kotlin underscore style (`EAN13_UPCA`, `INTERLEAVED_TWO_OF_FIVE`).
 - The capture mode's enabled property is `barcodeCapture.Enabled` (not `IsEnabled`). The `IDataCaptureMode` interface in the .NET binding exposes `Enabled`.

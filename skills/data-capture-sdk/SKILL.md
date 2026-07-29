@@ -110,13 +110,13 @@ Always include both the docs.scandit.com link and the platform-specific sample-a
 | SparkScan | Cordova | `sparkscan-cordova` | "Ask me to integrate SparkScan into your Cordova app" |
 | SparkScan | .NET for Android | `sparkscan-net-android` | "Ask me to integrate SparkScan into your .NET Android app" |
 | SparkScan | .NET for iOS | `sparkscan-net-ios` | "Ask me to integrate SparkScan into your .NET iOS app" |
-| SparkScan | .NET MAUI | `sparkscan-maui` | "Ask me to integrate SparkScan into your .NET MAUI app" |
+| SparkScan | .NET MAUI | `sparkscan-net-maui` | "Ask me to integrate SparkScan into your .NET MAUI app" |
 | Barcode Capture | iOS | `barcode-capture-ios` | "Ask me to integrate Barcode Capture into your iOS app" |
 | Barcode Capture | Android | `barcode-capture-android` | "Ask me to integrate Barcode Capture into your Android app" |
 | Barcode Capture | Web | `barcode-capture-web` | "Ask me to integrate Barcode Capture into your web app" |
 | Barcode Capture | .NET for Android | `barcode-capture-net-android` | "Ask me to integrate Barcode Capture into your .NET Android app" |
 | Barcode Capture | .NET for iOS | `barcode-capture-net-ios` | "Ask me to integrate Barcode Capture into your .NET iOS app" |
-| Barcode Capture | .NET MAUI | `barcode-capture-maui` | "Ask me to integrate Barcode Capture into your .NET MAUI app" |
+| Barcode Capture | .NET MAUI | `barcode-capture-net-maui` | "Ask me to integrate Barcode Capture into your .NET MAUI app" |
 | Barcode Capture | React Native | `barcode-capture-rn` | "Ask me to integrate Barcode Capture into your React Native app" |
 | Barcode Capture | Flutter | `barcode-capture-flutter` | "Ask me to integrate Barcode Capture into your Flutter app" |
 | Barcode Capture | Capacitor | `barcode-capture-capacitor` | "Ask me to integrate Barcode Capture into your Capacitor app" |
@@ -147,7 +147,7 @@ Always include both the docs.scandit.com link and the platform-specific sample-a
 | MatrixScan AR | Cordova | `matrixscan-ar-cordova` | "Ask me to integrate MatrixScan AR into your Cordova app" |
 | MatrixScan AR | .NET for Android | `matrixscan-ar-net-android` | "Ask me to integrate MatrixScan AR into your .NET Android app" |
 | MatrixScan AR | .NET for iOS | `matrixscan-ar-net-ios` | "Ask me to integrate MatrixScan AR into your .NET iOS app" |
-| MatrixScan AR | .NET MAUI | `matrixscan-ar-maui` | "Ask me to integrate MatrixScan AR into your .NET MAUI app" |
+| MatrixScan AR | .NET MAUI | `matrixscan-ar-net-maui` | "Ask me to integrate MatrixScan AR into your .NET MAUI app" |
 | MatrixScan Batch | iOS | `matrixscan-batch-ios` | "Ask me to integrate MatrixScan Batch into your iOS app" |
 | MatrixScan Batch | Web | `matrixscan-batch-web` | "Ask me to integrate MatrixScan Batch into your web app" |
 | MatrixScan Batch | Android | `matrixscan-batch-android` | "Ask me to integrate MatrixScan Batch into your Android app" |
@@ -157,7 +157,7 @@ Always include both the docs.scandit.com link and the platform-specific sample-a
 | MatrixScan Batch | Cordova | `matrixscan-batch-cordova` | "Ask me to integrate MatrixScan Batch into your Cordova app" |
 | MatrixScan Batch | .NET for Android | `matrixscan-batch-net-android` | "Ask me to integrate MatrixScan Batch into your .NET Android app" |
 | MatrixScan Batch | .NET for iOS | `matrixscan-batch-net-ios` | "Ask me to integrate MatrixScan Batch into your .NET iOS app" |
-| MatrixScan Batch | .NET MAUI | `matrixscan-batch-maui` | "Ask me to integrate MatrixScan Batch into your .NET MAUI app" |
+| MatrixScan Batch | .NET MAUI | `matrixscan-batch-net-maui` | "Ask me to integrate MatrixScan Batch into your .NET MAUI app" |
 | MatrixScan Count | iOS | `matrixscan-count-ios` | "Ask me to integrate MatrixScan Count into your iOS app" |
 | MatrixScan Count | Android | `matrixscan-count-android` | "Ask me to integrate MatrixScan Count into your Android app" |
 | MatrixScan Count | React Native | `matrixscan-count-rn` | "Ask me to integrate MatrixScan Count into your React Native app" |
@@ -166,7 +166,7 @@ Always include both the docs.scandit.com link and the platform-specific sample-a
 | MatrixScan Count | Cordova | `matrixscan-count-cordova` | "Ask me to integrate MatrixScan Count into your Cordova app" |
 | MatrixScan Count | .NET for Android | `matrixscan-count-net-android` | "Ask me to integrate MatrixScan Count into your .NET Android app" |
 | MatrixScan Count | .NET for iOS | `matrixscan-count-net-ios` | "Ask me to integrate MatrixScan Count into your .NET iOS app" |
-| MatrixScan Count | .NET MAUI | `matrixscan-count-maui` | "Ask me to integrate MatrixScan Count into your .NET MAUI app" |
+| MatrixScan Count | .NET MAUI | `matrixscan-count-net-maui` | "Ask me to integrate MatrixScan Count into your .NET MAUI app" |
 | MatrixScan Pick | iOS | `matrixscan-pick-ios` | "Ask me to integrate MatrixScan Pick into your iOS app" |
 
 **MatrixScan AR on iOS has two specialized sibling skills**: `matrixscan-ar-highlight-ios` (highlight styling and interaction) and `matrixscan-ar-annotation-ios` (annotation content, appearance, and interaction). Always hand off to `matrixscan-ar-ios` as the entry point — it routes highlight- and annotation-specific work to the siblings itself. Only name a sibling directly when the user's request is *exclusively* about highlights or annotations on an existing MatrixScan AR iOS integration.

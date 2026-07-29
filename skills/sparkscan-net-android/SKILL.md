@@ -1,6 +1,6 @@
 ---
 name: sparkscan-net-android
-description: SparkScan single-barcode scanning with the pre-built `SparkScanView` UI in .NET for Android projects (`net*-android` target framework, `Scandit.DataCapture.Barcode` NuGet, non-MAUI — for MAUI apps use sparkscan-maui). Use for integration, scan settings, result handling, feedback customization, lifecycle wiring, SDK version migration (v6→v7→v8), replacing third-party scanners (ZXing.Net), or troubleshooting.
+description: SparkScan single-barcode scanning with the pre-built `SparkScanView` UI in .NET for Android projects (`net*-android` target framework, `Scandit.DataCapture.Barcode` NuGet, non-MAUI — for MAUI apps use sparkscan-net-maui). Use for integration, scan settings, result handling, feedback customization, lifecycle wiring, SDK version migration (v6→v7→v8), replacing third-party scanners (ZXing.Net), or troubleshooting.
 license: MIT
 metadata:
   author: scandit
@@ -17,7 +17,7 @@ Your training data may contain outdated or incorrect Scandit SDK APIs. The Spark
 
 .NET-Android-specific gotchas worth flagging:
 
-- This skill targets the **non-MAUI** .NET for Android workload (project `<TargetFramework>net10.0-android</TargetFramework>`, no `<UseMaui>` flag). For MAUI apps, use the `sparkscan-maui` skill instead.
+- This skill targets the **non-MAUI** .NET for Android workload (project `<TargetFramework>net10.0-android</TargetFramework>`, no `<UseMaui>` flag). For MAUI apps, use the `sparkscan-net-maui` skill instead.
 - **`SparkScan` and `SparkScanSettings` use plain `new` constructors, not `Create(...)` factories.** This is unusual compared to the rest of the .NET API (`BarcodeCapture.Create(...)`, `BarcodeCaptureSettings.Create()`, `DataCaptureView.Create(...)`). The canonical pattern is `var settings = new SparkScanSettings(); var sparkScan = new SparkScan(settings);` — writing `SparkScan.Create(...)` or `SparkScanSettings.Create()` is a compile error. `DataCaptureContext.ForLicenseKey(key)` still uses the factory form (it lives in Core, not Spark).
 - **`SparkScanView.Create(parent, context, sparkScan, settings)` IS a factory** (unlike `SparkScan` itself). The parent argument must be a `SparkScanCoordinatorLayout` for everything to position correctly — passing an arbitrary `ViewGroup` is supported by the binding but the official sample uses `SparkScanCoordinatorLayout` and so should you.
 - **`SparkScanCoordinatorLayout` is declared in XML, not C#.** It lives in `Scandit.DataCapture.Barcode.Spark.UI.Platform.Android` and is referenced from the activity layout as `<com.scandit.datacapture.barcode.spark.ui.SparkScanCoordinatorLayout … />`. Get it with `FindViewById<SparkScanCoordinatorLayout>(Resource.Id.spark_scan_coordinator)`.

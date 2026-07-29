@@ -1,6 +1,6 @@
 ---
 name: barcode-capture-net-ios
-description: Scandit BarcodeCapture in .NET for iOS projects (`net*-ios` target framework, `Scandit.DataCapture.Barcode` NuGet, non-MAUI — for MAUI apps use barcode-capture-maui) — the low-level, full-control barcode scanning mode without the pre-built SparkScan UI. Use for integration, scan settings, listener and event wiring, overlay customization, camera lifecycle, SDK version migration (v6→v7→v8), replacing ZXing.Net.Mobile or AVFoundation scanners, or troubleshooting.
+description: Scandit BarcodeCapture in .NET for iOS projects (`net*-ios` target framework, `Scandit.DataCapture.Barcode` NuGet, non-MAUI — for MAUI apps use barcode-capture-net-maui) — the low-level, full-control barcode scanning mode without the pre-built SparkScan UI. Use for integration, scan settings, listener and event wiring, overlay customization, camera lifecycle, SDK version migration (v6→v7→v8), replacing ZXing.Net.Mobile or AVFoundation scanners, or troubleshooting.
 license: MIT
 metadata:
   author: scandit
@@ -17,7 +17,7 @@ Your training data may contain outdated or incorrect Scandit SDK APIs. The Barco
 
 .NET-iOS-specific gotchas worth flagging:
 
-- This skill targets the **non-MAUI** .NET for iOS workload (project `<TargetFramework>net10.0-ios</TargetFramework>`, no `<UseMaui>` flag). For MAUI apps, use the `barcode-capture-maui` skill instead.
+- This skill targets the **non-MAUI** .NET for iOS workload (project `<TargetFramework>net10.0-ios</TargetFramework>`, no `<UseMaui>` flag). For MAUI apps, use the `barcode-capture-net-maui` skill instead.
 - The .NET API uses **PascalCase factories**, not the Swift `BarcodeCapture(context:settings:)` initializer. Use `BarcodeCapture.Create(context, settings)`, `BarcodeCaptureSettings.Create()`, `BarcodeCaptureOverlay.Create(barcodeCapture, dataCaptureView)`, `DataCaptureView.Create(dataCaptureContext, frame)`.
 - Symbology names are C# PascalCase: `Symbology.Ean13Upca`, `Symbology.Ean8`, `Symbology.Code128`, `Symbology.InterleavedTwoOfFive`, `Symbology.Qr`, `Symbology.DataMatrix`. They are **not** Swift's `.ean13UPCA` style.
 - The capture mode's enabled property is `barcodeCapture.Enabled` (not `IsEnabled` and not Swift's `isEnabled`).
