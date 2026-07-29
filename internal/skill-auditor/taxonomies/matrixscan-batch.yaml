@@ -11,7 +11,7 @@
 #                (mode/settings/listener/session + basic-overlay + advanced-overlay(-view/-widget/-listener))
 #   samples      datacapture-*-samples — 03_Advanced_Batch_Scanning_Samples/01_Batch_Scanning_and_AR_Info_Lookup/
 #                MatrixScanSimpleSample (basic overlay) + MatrixScanBubblesSample (advanced overlay)
-#   eval-survey  existing skills/matrixscan-batch-*/evals/*.json (thin: 3-7 evals each)
+#   eval-survey  existing evals/matrixscan-batch-*/*.json (thin: 3-7 evals each)
 #
 # Platform-truth notes (layer 1 — from the .rst :available: directives):
 #   - 10 in-scope platforms: android, capacitor, cordova, flutter, ios, net-maui, net-android, net-ios, rn, web.

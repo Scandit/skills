@@ -93,6 +93,6 @@ once (an SPM sample build) or `$SCANDIT_XCFRAMEWORKS`. Toolchain overrides: `$FL
 - When porting an eval from a sibling platform, re-target prompt and API literals to
   the destination platform; do not copy assertions verbatim (API names and lifecycle
   hooks differ per platform).
-- An eval file's layout must match its product family's existing `evals/*.json` split
+- An eval file's layout must match its product family's existing `evals/<skill>/*.json` split
   (integration / migration / third-party-migration / etc.). Add `tags:
   ["<taxonomy-feature-id>", ...]` to new evals.

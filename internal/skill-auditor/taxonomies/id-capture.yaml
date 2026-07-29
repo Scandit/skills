@@ -11,7 +11,7 @@
 #   samples      datacapture-{ios,android,web,rn,flutter,capacitor,cordova,dotnet}-samples
 #                02_ID_Scanning_Samples/* (Simple/Extended/USDLVerification/Settings/...)
 #   sdk_source   data-capture-sdk @ b6ecc5bcdf3 — docs/api_availability/** + source/id-capture/api
-#   eval-survey  existing skills/id-capture-*/evals/*.json (vocabulary calibration)
+#   eval-survey  existing evals/id-capture-*/*.json (vocabulary calibration)
 #
 # Platform-truth notes (layer 1):
 #   - 8 in-scope skills: capacitor, cordova, flutter, ios, net-android, net-ios, net-maui, rn.

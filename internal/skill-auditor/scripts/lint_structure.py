@@ -19,7 +19,7 @@ from collections import defaultdict
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from common import REPO_ROOT, frontmatter, list_skill_dirs, load_manifest
+from common import REPO_ROOT, frontmatter, list_skill_dirs, load_manifest, eval_dir, eval_suite_files
 
 # Descriptions are injected into every user session for every installed skill —
 # they are trigger metadata, not documentation. 600 chars ≈ 150 tokens each.
@@ -97,6 +97,11 @@ def main():
                 if f.is_file() and f.suffix in {".md", ".json"}
                 and "fixtures" not in f.parts and f.name != "SKILL.md"
             }
+            # Eval suites live outside the published skill dir (evals/<skill>/), but
+            # still participate in sibling-parity as if they were skills/<skill>/evals/*
+            # — re-prefixed so finding text matches the pre-relocation convention.
+            ed = eval_dir(d.name)
+            files |= {f"evals/{f.relative_to(ed)}" for f in eval_suite_files(d.name)}
             layouts[d.name] = files
             union |= files
         for name, files in sorted(layouts.items()):

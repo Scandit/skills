@@ -12,7 +12,7 @@
 #                is availability ground truth)
 #   samples      datacapture-*-samples — 01_Single_Scanning_Samples/02_Barcode_Scanning_with_Low_Level_API/
 #                BarcodeCaptureSimpleSample / BarcodeCaptureSettingsSample / BarcodeCaptureRejectSample
-#   eval-survey  existing skills/barcode-capture-*/evals/*.json (integration + migration + third-party-migration)
+#   eval-survey  existing evals/barcode-capture-*/*.json (integration + migration + third-party-migration)
 #
 # Platform-truth notes (layer 1 — from the .rst :available: directives):
 #   - 10 in-scope platforms: android, capacitor, cordova, flutter, ios, net-maui, net-android, net-ios, rn, web.

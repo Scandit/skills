@@ -6,6 +6,32 @@ from typing import Any
 
 AUDITOR_ROOT = Path(__file__).resolve().parents[1]  # internal/skill-auditor
 REPO_ROOT = AUDITOR_ROOT.parents[1]
+EVALS_ROOT = REPO_ROOT / "evals"  # eval suites live outside the published skills/ bundle
+
+
+def eval_dir(skill_name: str) -> Path:
+    """Top-level eval suite directory for one skill (``evals/<skill>/``).
+
+    Eval suites are kept out of ``skills/<skill>/`` (the tree installers copy
+    wholesale) so they never ship to end users, but are resolved by skill name
+    so scripts can still find them without a ``skills/<skill>/evals`` layout.
+    """
+    return EVALS_ROOT / skill_name
+
+
+def eval_suite_files(skill_name: str) -> list[Path]:
+    """Eval suite JSONs for one skill (``evals/<skill>/``, fixtures excluded).
+
+    The single definition of which files count as a skill's eval suites —
+    coverage scoring and layout parity must agree on it.
+    """
+    ed = eval_dir(skill_name)
+    if not ed.is_dir():
+        return []
+    return sorted(
+        f for f in ed.rglob("*.json")
+        if f.is_file() and "fixtures" not in f.parts
+    )
 
 
 def load_manifest() -> dict:

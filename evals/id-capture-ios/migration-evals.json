@@ -6,7 +6,7 @@
       "prompt": "Migrate this v6 ID Capture implementation to the current SDK API.",
       "expected_output": "Updated IdCaptureViewController using acceptedDocuments with typed document objects, IdCaptureScanner(physicalDocument: FullDocumentScanner()), didCapture(_:capturedId:) and didReject(_:capturedId:reason:) callbacks, and DataCaptureContext.initialize(licenseKey:) + DataCaptureContext.shared.",
       "files": [
-        "evals/fixtures/V6IdCaptureViewController.swift"
+        "fixtures/V6IdCaptureViewController.swift"
       ],
       "assertions": [
         {
@@ -34,7 +34,7 @@
       "prompt": "Migrate this v7 ID Capture implementation to the current SDK API.",
       "expected_output": "Updated IdCaptureViewController replacing settings.scannerType = FullDocumentScanner() with settings.scanner = IdCaptureScanner(physicalDocument: FullDocumentScanner()), and replacing DataCaptureContext.shared (accessed without initialization) with DataCaptureContext.initialize(licenseKey:) + DataCaptureContext.shared.",
       "files": [
-        "evals/fixtures/V7IdCaptureViewController.swift"
+        "fixtures/V7IdCaptureViewController.swift"
       ],
       "assertions": [
         {
