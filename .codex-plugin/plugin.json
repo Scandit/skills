@@ -42,7 +42,7 @@
   "skills": "./skills/",
   "interface": {
     "displayName": "Scandit SDK",
-    "shortDescription": "Integrate the Scandit Data Capture SDK — barcode scanning, ID capture, and smart label capture.",
+    "shortDescription": "Scan barcodes, IDs and labels",
     "longDescription": "Install the Scandit SDK skills to teach Codex how to integrate Scandit's barcode scanning, ID capture, and smart label capture products correctly. Includes a product-selection advisor plus per-product, per-framework implementation and migration guides for iOS, Android, web, React Native, Flutter, Capacitor, Cordova, and .NET/MAUI.",
     "developerName": "Scandit",
     "category": "Developer Tools",
@@ -53,14 +53,10 @@
     "defaultPrompt": [
       "Help me choose the right Scandit product for my scanning use case.",
       "Add SparkScan barcode scanning to my app.",
-      "Which Scandit product should I use to count inventory by scanning many barcodes at once?",
-      "Scan driver's licenses and passports in my onboarding flow.",
-      "Extract the expiry date and price from a printed shelf label.",
       "Migrate my app from the Scandit SDK v6 API to v8."
     ],
     "brandColor": "#2EC1CE",
     "composerIcon": "./assets/logo.png",
-    "logo": "./assets/logo.png",
-    "screenshots": []
+    "logo": "./assets/logo.png"
   }
 }
