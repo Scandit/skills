@@ -1,6 +1,6 @@
 {
   "name": "scandit-sdk",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "AI agent skills for integrating the Scandit Data Capture SDK — product selection, documentation, and implementation guides for barcode scanning, ID capture, and smart label capture.",
   "author": {
     "name": "Scandit",
@@ -48,12 +48,19 @@
     "category": "Developer Tools",
     "capabilities": ["Read", "Write"],
     "websiteURL": "https://www.scandit.com/",
+    "privacyPolicyURL": "https://www.scandit.com/privacy/",
+    "termsOfServiceURL": "https://ssl.scandit.com/terms-archive",
     "defaultPrompt": [
       "Help me choose the right Scandit product for my scanning use case.",
-      "Add SparkScan barcode scanning to my app."
+      "Add SparkScan barcode scanning to my app.",
+      "Which Scandit product should I use to count inventory by scanning many barcodes at once?",
+      "Scan driver's licenses and passports in my onboarding flow.",
+      "Extract the expiry date and price from a printed shelf label.",
+      "Migrate my app from the Scandit SDK v6 API to v8."
     ],
-    "composerIcon": "./assets/logo.svg",
-    "logo": "./assets/logo.svg",
+    "brandColor": "#2EC1CE",
+    "composerIcon": "./assets/logo.png",
+    "logo": "./assets/logo.png",
     "screenshots": []
   }
 }
