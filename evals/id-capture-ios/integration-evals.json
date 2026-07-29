@@ -5,7 +5,7 @@
       "id": 1,
       "prompt": "Add ID Capture to this blank UIViewController to scan passports, driver's licenses, and ID cards from any region. I need data from both sides of the document. When a document is recognized, show the full name, date of birth, and document number in an alert. When a document is rejected, show an appropriate message.",
       "expected_output": "A complete UIViewController implementing IdCaptureListener with addListener called once at setup, camera lifecycle in viewWillAppear/viewDidDisappear, IdCaptureSettings with acceptedDocuments for Passport, DriverLicense and IdCard, a FullDocumentScanner (required for both-sides capture), and alert-based result display.",
-      "files": ["evals/fixtures/EmptyViewController.swift"],
+      "files": ["fixtures/EmptyViewController.swift"],
       "assertions": [
         {"text": "Imports ScanditIdCapture (and optionally ScanditCaptureCore)"},
         {"text": "Calls DataCaptureContext.initialize(licenseKey:) before using DataCaptureContext.shared"},
@@ -32,7 +32,7 @@
       "id": 2,
       "prompt": "Update the ID Capture integration to reject expired IDs and holders under 21 years old. Show a distinct message for each rejection reason: expired document, underage holder, timeout, and any other rejection.",
       "expected_output": "IdCaptureSettings updated with rejectExpiredIds = true and rejectHolderBelowAge = 21, and didReject callback updated with a switch on RejectionReason showing distinct messages for .documentExpired, .holderUnderage, .timeout, and a default case.",
-      "files": ["evals/fixtures/IntegratedViewController.swift"],
+      "files": ["fixtures/IntegratedViewController.swift"],
       "assertions": [
         {"text": "Sets settings.rejectExpiredIds = true"},
         {"text": "Sets settings.rejectHolderBelowAge = 21"},
@@ -48,7 +48,7 @@
       "id": 3,
       "prompt": "Configure ID Capture to accept ID cards and driver's licenses from the US, but explicitly reject passports.",
       "expected_output": "IdCaptureSettings with acceptedDocuments containing IdCard(region: .us) and DriverLicense(region: .us), and rejectedDocuments containing Passport(region: .any).",
-      "files": ["evals/fixtures/EmptyViewController.swift"],
+      "files": ["fixtures/EmptyViewController.swift"],
       "assertions": [
         {"text": "Sets acceptedDocuments to [IdCard(region: .us), DriverLicense(region: .us)] — does NOT put passports in acceptedDocuments"},
         {"text": "Sets rejectedDocuments to contain Passport — does NOT use acceptedDocuments to exclude passports"},
@@ -59,7 +59,7 @@
       "id": 4,
       "prompt": "I only need to read the barcode from US driver's licenses — I don't need the VIZ or MRZ.",
       "expected_output": "IdCaptureSettings with acceptedDocuments containing DriverLicense(region: .us) and scanner set to IdCaptureScanner(physicalDocument: SingleSideScanner(enablingBarcode: true, machineReadableZone: false, visualInspectionZone: false)).",
-      "files": ["evals/fixtures/EmptyViewController.swift"],
+      "files": ["fixtures/EmptyViewController.swift"],
       "assertions": [
         {"text": "Sets acceptedDocuments to [DriverLicense(region: .us)]"},
         {"text": "Uses SingleSideScanner with enablingBarcode: true and machineReadableZone: false and visualInspectionZone: false — does NOT use FullDocumentScanner"},
@@ -70,7 +70,7 @@
       "id": 5,
       "prompt": "I only need to read the MRZ from passports — I don't need the VIZ or barcode.",
       "expected_output": "IdCaptureSettings with acceptedDocuments containing Passport and scanner set to IdCaptureScanner(physicalDocument: SingleSideScanner(enablingBarcode: false, machineReadableZone: true, visualInspectionZone: false)).",
-      "files": ["evals/fixtures/EmptyViewController.swift"],
+      "files": ["fixtures/EmptyViewController.swift"],
       "assertions": [
         {"text": "Sets acceptedDocuments to include Passport"},
         {"text": "Uses SingleSideScanner with machineReadableZone: true and visualInspectionZone: false and enablingBarcode: false — does NOT use FullDocumentScanner"},
@@ -81,7 +81,7 @@
       "id": 6,
       "prompt": "Configure ID Capture to scan US driver's licenses only and verify them for forged AAMVA barcodes and data inconsistency between the front and back of the document. Also reject expired IDs. On rejection for inconsistent data, extract and display the front review image from the verification result. On a successful scan, also check for and display the review image if available.",
       "expected_output": "IdCaptureSettings targeting DriverLicense(region: .us) with rejectForgedAamvaBarcodes, rejectInconsistentData, and rejectExpiredIds flags, setIncludeImage for croppedDocument, and correct VerificationResult access in both callbacks.",
-      "files": ["evals/fixtures/IntegratedViewController.swift"],
+      "files": ["fixtures/IntegratedViewController.swift"],
       "assertions": [
         {"text": "Sets acceptedDocuments to [DriverLicense(region: .us)] only"},
         {"text": "Sets settings.rejectForgedAamvaBarcodes = true"},
@@ -98,7 +98,7 @@
       "id": 7,
       "prompt": "The app already uses BarcodeCapture for scanning barcodes. Now add an ID scanning screen using IdCapture. Make sure the two modes don't interfere — the ID scanning screen should handle mode co-existence correctly.",
       "expected_output": "Code that addresses BarcodeCapture/IdCapture co-existence — either by removing the existing mode before adding IdCapture (the typical approach for separate screens), or by explicitly acknowledging that simultaneous operation is intentional.",
-      "files": ["evals/fixtures/EmptyViewController.swift"],
+      "files": ["fixtures/EmptyViewController.swift"],
       "assertions": [
         {"text": "Addresses the BarcodeCapture/IdCapture co-existence concern — either calls context.removeCurrentMode() or context.removeAllModes() when switching modes, OR explicitly notes that simultaneous co-existence is intentional"},
         {"text": "Creates IdCapture(context: context, settings: settings)"},
@@ -112,7 +112,7 @@
       "id": 8,
       "prompt": "Configure this ID Capture integration so that sensitive fields are redacted AND obscured with black boxes on the returned document images, not just removed from the data.",
       "expected_output": "IdCaptureSettings with anonymizationMode set to .fieldsAndImages so that anonymized fields are both nulled in the CapturedId and covered on the returned images.",
-      "files": ["evals/fixtures/IntegratedViewController.swift"],
+      "files": ["fixtures/IntegratedViewController.swift"],
       "assertions": [
         {"text": "Sets settings.anonymizationMode = .fieldsAndImages"},
         {"text": "Uses the IdAnonymizationMode enum case .fieldsAndImages — does NOT use a string literal"},
@@ -124,7 +124,7 @@
       "id": 9,
       "prompt": "Update ID Capture to reject voided documents (for example a hole-punched or VOID-stamped US driver's license) and show a distinct message when that happens.",
       "expected_output": "IdCaptureSettings with rejectVoidedIds = true and a didReject switch that handles RejectionReason.documentVoided with a distinct voided-document message.",
-      "files": ["evals/fixtures/IntegratedViewController.swift"],
+      "files": ["fixtures/IntegratedViewController.swift"],
       "assertions": [
         {"text": "Sets settings.rejectVoidedIds = true"},
         {"text": "Handles the RejectionReason case .documentVoided in didReject"},
@@ -137,7 +137,7 @@
       "id": 10,
       "prompt": "I need the vehicle category data from the back of European driving licenses. Enable extraction of that data, and in didCapture iterate over the driving license categories and log each category's code.",
       "expected_output": "IdCaptureSettings with decodeBackOfEuropeanDrivingLicense = true, and didCapture reading capturedId.vizResult?.drivingLicenseDetails?.drivingLicenseCategories and accessing each category's .code.",
-      "files": ["evals/fixtures/IntegratedViewController.swift"],
+      "files": ["fixtures/IntegratedViewController.swift"],
       "assertions": [
         {"text": "Sets settings.decodeBackOfEuropeanDrivingLicense = true"},
         {"text": "Reads capturedId.vizResult?.drivingLicenseDetails?.drivingLicenseCategories"},
@@ -150,7 +150,7 @@
       "id": 11,
       "prompt": "I need to scan mobile driver's licenses (mDL, ISO 18013-5) and read the holder's name and date of birth. Set that up in IntegratedViewController.swift.",
       "expected_output": "IdCaptureSettings whose scanner is an IdCaptureScanner built with a MobileDocumentScanner (enablingIso180135: true), and didCapture reading capturedId.mobileDocumentResult (or the harmonized top-level fields). MobileDocumentScanner ships in the base ScanditIdCapture framework with no add-on pod.",
-      "files": ["evals/fixtures/IntegratedViewController.swift"],
+      "files": ["fixtures/IntegratedViewController.swift"],
       "assertions": [
         {"text": "Builds an IdCaptureScanner that includes a MobileDocumentScanner(enablingIso180135: true, ...) (semantic)"},
         {"text": "The MobileDocumentScanner is supplied to IdCaptureScanner via the mobileDocument: argument (semantic)"},

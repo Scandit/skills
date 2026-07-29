@@ -6,7 +6,7 @@
       "prompt": "Migrate this v6 ID Capture implementation to the current SDK API.",
       "expected_output": "Updated Activity using acceptedDocuments with typed document objects, scanner = IdCaptureScanner(FullDocumentScanner()), the v8 onIdCaptured(idCapture, capturedId) and onIdRejected(idCapture, capturedId, rejectionReason) callbacks, and no IdCaptureSession / FrameData / supportedDocuments / supportedSides.",
       "files": [
-        "evals/fixtures/V6IdCaptureActivity.kt"
+        "fixtures/V6IdCaptureActivity.kt"
       ],
       "assertions": [
         {
@@ -34,7 +34,7 @@
       "prompt": "Migrate this v7 ID Capture implementation to the current SDK API.",
       "expected_output": "Updated Activity replacing settings.scannerType = FullDocumentScanner() with settings.scanner = IdCaptureScanner(FullDocumentScanner()).",
       "files": [
-        "evals/fixtures/V7IdCaptureActivity.kt"
+        "fixtures/V7IdCaptureActivity.kt"
       ],
       "assertions": [
         {
