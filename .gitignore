@@ -9,3 +9,4 @@ __pycache__/
 internal/skill-auditor-PLAN.md
 internal/skill-auditor-STATUS.md
 .serena/
+dist/
