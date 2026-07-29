@@ -45,9 +45,32 @@ After providing the code, show this setup checklist:
 The code example below is a basic TypeScript v8 implementation.
 If the user is using React, use the React get-started guide and SparkScanReactSample instead (see References).
 
-> **Mount point requirement:** The SparkScan view needs a container with defined dimensions and positioning to render its camera preview and trigger button correctly. If the container has zero or unresolved dimensions, the SparkScan UI will not display.
-> - **Vanilla JS:** style the element passed to `SparkScanView.forElement` — e.g. `document.body.style.cssText = "position: fixed; top: 0; left: 0; width: 100%; height: 100%;"`.
-> - **React:** wrap `<spark-scan-view>` in a container `<div>` with those styles — e.g. `<div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%' }}>`. The `<spark-scan-view>` element itself does not need the styles.
+> **Mount point requirement:** The SparkScan view needs a container with a resolved, non-zero width and height. If the container has zero or unresolved dimensions, the SparkScan UI will not display. The container's `position` does not matter to SparkScan itself — `<spark-scan-view>` sets `position: relative` on itself internally (that's what its trigger button and mini preview actually position against), independent of whatever `position` its parent has. A plain, normal-flow (`position: static`, i.e. no `position` at all) block-level container with a real height works fine; you don't need `position: fixed`/`absolute`/`relative` on the container unless you specifically want it to float over the rest of the page (see below) rather than take up its own space in your layout. The container also does not have to cover the full viewport — SparkScan sizes itself from its own parent element, so scoping it to part of the page works too (see "Scoping to part of the page" below).
+>
+> **Pointer events:** when the container covers a large area of the page (e.g. the full viewport), most of that area is still empty space — SparkScan itself only ever renders a small trigger button (and, when opened, a mini preview). Left at the default `pointer-events: auto`, that empty space silently blocks clicks, keystrokes, and dropdowns on the rest of your page, even where nothing is visibly rendered. Set `pointer-events: none` on the container and `pointer-events: auto` back on `<spark-scan-view>` (or the element passed to `SparkScanView.forElement`), so only SparkScan's own controls stay clickable and everything else passes through to your app.
+> - **Vanilla JS:** create a dedicated overlay element for `SparkScanView.forElement` — don't mount into `document.body` itself, since setting `pointer-events: none` there would block your entire page, not just the empty overlay space. `position: fixed` here is a deliberate layout choice (float over the whole page without taking up flow space), not something SparkScan requires:
+>   ```js
+>   const sparkScanContainer = document.createElement("div");
+>   sparkScanContainer.style.cssText =
+>     "position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;";
+>   document.body.appendChild(sparkScanContainer);
+>   ```
+>   Pass `sparkScanContainer` (not `document.body`) to `SparkScanView.forElement`, then set `pointer-events: auto` on the returned view.
+> - **React:** wrap `<spark-scan-view>` in a container `<div>` with `position: fixed; inset: 0; pointer-events: none`, and set `pointer-events: auto` on `<spark-scan-view>` itself — e.g. `<div style={{ position: 'fixed', inset: 0, pointerEvents: 'none' }}><spark-scan-view style={{ pointerEvents: 'auto' }} ... /></div>`.
+>
+> **Scoping to part of the page:** the container doesn't have to be a full-viewport overlay, and it doesn't need `position: fixed`/`absolute` either — a normal-flow container with a resolved height works. SparkScan sizes itself from its own parent element's `clientWidth`/`clientHeight`, so mounting it inside a smaller region — e.g. a `<main>` between a `<header>` and `<footer>` in a plain flex layout — confines the trigger button and mini preview to that region. They have no way to render over the header/footer, since those elements live outside the container's box entirely:
+>   ```html
+>   <body style="display: flex; flex-direction: column; height: 100vh; margin: 0">
+>     <header style="flex: none">...</header>
+>     <main style="flex: 1; min-height: 0">
+>       <!-- mount SparkScanView here, e.g. via SparkScanView.forElement(mainElement, ...) -->
+>     </main>
+>     <footer style="flex: none">...</footer>
+>   </body>
+>   ```
+>   Set the element passed to `SparkScanView.forElement` to `display: block; width: 100%; height: 100%` so it fills `<main>`. (`position: relative` on `<main>` is only needed if you plan to absolutely-position something else of your own inside it — SparkScan doesn't require it.)
+>
+>   **236px caveat:** if the container's width *or* height ever drops below 236px (`triggerButtonExpandedSize`, 220px, + `miniPreviewPadding`, 16px), SparkScan automatically switches to its "unconstrained" sizing mode: the trigger button and mini preview switch to `position: fixed` and position themselves against the actual browser viewport instead of the container, so they can escape the container's bounds — e.g. render over your header/footer — even though the container itself stayed put. This is an automatic SDK fallback so an expanded 220px control never gets clipped by a too-small container, not something you configure. A typical header+main+footer layout stays well above 236px, but keep it in mind for narrow split-panes or embedded widgets.
 
 ```typescript
 import {
@@ -98,15 +121,22 @@ async function run() {
 
     const sparkScanViewSettings = new SparkScanViewSettings();
 
-    // SparkScan requires the mount element to have defined dimensions and positioning.
-    document.body.style.cssText = "position: fixed; top: 0; left: 0; width: 100%; height: 100%;";
+    // SparkScan requires a mount element with defined dimensions and positioning. Use a
+    // dedicated overlay (not document.body) so the app's existing content keeps working.
+    const sparkScanContainer = document.createElement("div");
+    sparkScanContainer.style.cssText =
+      "position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;";
+    document.body.appendChild(sparkScanContainer);
 
     const sparkScanView = SparkScanView.forElement(
-      document.body,
+      sparkScanContainer,
       DataCaptureContext.sharedInstance,
       sparkScan,
       sparkScanViewSettings
     );
+    // Most of the overlay is empty space; re-enable pointer events only on SparkScan's own
+    // controls (trigger button, mini preview) so clicks elsewhere still reach your app.
+    sparkScanView.style.pointerEvents = "auto";
 
     const feedbackDelegate: SparkScanFeedbackDelegate = {
       getFeedbackForBarcode(barcode: Barcode): SparkScanBarcodeFeedback | null {

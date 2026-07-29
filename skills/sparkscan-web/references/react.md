@@ -175,8 +175,12 @@ export function Scanner() {
     if (!ready || !sparkScan) return null;
 
     return (
-        <div style={{ position: "fixed", inset: 0 }}>
+        // pointerEvents: "none" so the mostly-empty overlay doesn't block clicks on the rest of
+        // the page; pointerEvents: "auto" on <spark-scan-view> restores them for its own
+        // trigger button and mini preview.
+        <div style={{ position: "fixed", inset: 0, pointerEvents: "none" }}>
             <spark-scan-view
+                style={{ pointerEvents: "auto" }}
                 ref={(el: SparkScanView | null) => {
                     viewRef.current = el;
                     if (!el) return;
@@ -202,17 +206,39 @@ Key points:
 On React 19 the JSX props are set as element properties directly, so you can skip the ref binding (still read the context from `sharedInstance`):
 
 ```tsx
-<spark-scan-view
-    dataCaptureContext={DataCaptureContext.sharedInstance}
-    sparkScan={sparkScan}
-    feedbackDelegate={feedbackDelegate}
-    ref={(el: SparkScanView | null) => { viewRef.current = el; }}
-/>
+<div style={{ position: "fixed", inset: 0, pointerEvents: "none" }}>
+    <spark-scan-view
+        style={{ pointerEvents: "auto" }}
+        dataCaptureContext={DataCaptureContext.sharedInstance}
+        sparkScan={sparkScan}
+        feedbackDelegate={feedbackDelegate}
+        ref={(el: SparkScanView | null) => { viewRef.current = el; }}
+    />
+</div>
 ```
 
-Everything else (the `ScanditProvider`, gating on `useScanditReady()`, no-dispose cleanup) is identical to the React 18 path. You still keep a ref if you need to call `stopScanning()` / `startScanning()` imperatively.
+Everything else (the `ScanditProvider`, gating on `useScanditReady()`, the pointer-events wrapper, no-dispose cleanup) is identical to the React 18 path. You still keep a ref if you need to call `stopScanning()` / `startScanning()` imperatively.
 
 To get type-checking and editor support for the custom-element props, declare them in JSX's intrinsic elements (see `evals/fixtures/spark-scan-view.d.ts` for a complete declaration to copy).
+
+### Scoping the mount to part of the page (not the full viewport)
+
+The wrapping `<div>` doesn't have to be a full-viewport overlay, and it doesn't need `position: fixed`/`absolute` either — `<spark-scan-view>` sets `position: relative` on itself internally regardless of what its parent does, so a plain normal-flow container with a resolved height works fine (verified: a `position: static` container with just a real height renders the trigger button and mini preview correctly confined to its own box, and other page content laid out around it behaves like any other block element — nothing needs to float). SparkScan sizes itself from its own parent element (`clientWidth`/`clientHeight`), so you can scope it to a smaller region — e.g. a `<main>` between a fixed header and footer — and the trigger button/mini preview will be confined to that region, since they have no way to render outside their DOM parent's box:
+
+```tsx
+<div style={{ display: "flex", flexDirection: "column", height: "100vh" }}>
+    <header style={{ flex: "none" }}>...</header>
+    <main style={{ flex: 1, minHeight: 0, pointerEvents: "none" }}>
+        <spark-scan-view
+            style={{ pointerEvents: "auto", display: "block", width: "100%", height: "100%" }}
+            ref={(el: SparkScanView | null) => { viewRef.current = el; }}
+        />
+    </main>
+    <footer style={{ flex: "none" }}>...</footer>
+</div>
+```
+
+**236px caveat:** if that container's width or height ever drops below 236px (`triggerButtonExpandedSize` 220px + `miniPreviewPadding` 16px), SparkScan automatically switches to its "unconstrained" sizing mode — the trigger button and mini preview switch to `position: fixed` and position themselves against the actual browser viewport instead of the container, so they can escape it (e.g. render over your header/footer) even though the container itself didn't move. This is an automatic SDK fallback, not something you configure. A typical header+main+footer layout stays well above 236px, but keep it in mind for narrow split-panes or embedded widgets.
 
 ## Unmounting and remounting the Scanner
 

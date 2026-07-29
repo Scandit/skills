@@ -72,10 +72,13 @@
           "text": "SparkScanView.forElement( is present"
         },
         {
-          "text": "document.body.style or equivalent sets position: fixed or position: absolute on the mount element before SparkScanView.forElement is called"
+          "text": "A dedicated mount element (NOT document.body itself) is created and styled with position: fixed or position: absolute before SparkScanView.forElement is called"
         },
         {
           "text": "The mount element has non-zero width and height set (e.g. 100% or explicit px values)"
+        },
+        {
+          "text": "The dedicated mount element sets pointer-events: none, and pointer-events: auto is set on the SparkScanView/spark-scan-view element so only its own controls stay clickable"
         },
         {
           "text": "The SparkScan listener is stored in a named variable so it can be removed"
@@ -141,6 +144,9 @@
         },
         {
           "text": "The container element wrapping <spark-scan-view> has non-zero width and height (e.g. 100% or explicit px values)"
+        },
+        {
+          "text": "The container wrapping <spark-scan-view> sets pointer-events: none, and <spark-scan-view> itself sets pointer-events: auto, so the empty overlay area does not block clicks on the rest of the page"
         }
       ]
     },

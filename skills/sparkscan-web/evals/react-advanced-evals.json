@@ -21,7 +21,8 @@
         { "text": "SparkScanSettings is created and enableSymbologies enables Symbology.EAN13UPCA and Symbology.Code128 (and no others)" },
         { "text": "SparkScan.forSettings( is present" },
         { "text": "addListener with a didScan callback is present and removeListener is called in cleanup" },
-        { "text": "SparkScanView.register() is called, guarded against re-registration on HMR (a customElements.get(\"spark-scan-view\") check or a try/catch is acceptable)" }
+        { "text": "SparkScanView.register() is called, guarded against re-registration on HMR (a customElements.get(\"spark-scan-view\") check or a try/catch is acceptable)" },
+        { "text": "The mount container wrapping <spark-scan-view> sets pointer-events: none, and <spark-scan-view> itself sets pointer-events: auto, so the empty overlay area does not block clicks on the rest of the page" }
       ]
     },
     {
@@ -41,7 +42,8 @@
         { "text": "DataCaptureContext.forLicenseKey( is present with moduleLoaders including barcodeCaptureLoader()" },
         { "text": "Symbology.QR is enabled (and no unrelated symbologies)" },
         { "text": "SparkScan.forSettings( is present and SparkScanView.register() is called" },
-        { "text": "addListener/removeListener lifecycle is handled" }
+        { "text": "addListener/removeListener lifecycle is handled" },
+        { "text": "The mount container wrapping <spark-scan-view> sets pointer-events: none, and <spark-scan-view> itself sets pointer-events: auto, so the empty overlay area does not block clicks on the rest of the page" }
       ]
     },
     {
