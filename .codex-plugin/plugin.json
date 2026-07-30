@@ -1,6 +1,6 @@
 {
   "name": "scandit-sdk",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "AI agent skills for integrating the Scandit Data Capture SDK — product selection, documentation, and implementation guides for barcode scanning, ID capture, and smart label capture.",
   "author": {
     "name": "Scandit",
@@ -9,7 +9,7 @@
   },
   "homepage": "https://docs.scandit.com",
   "repository": "https://github.com/scandit/skills",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "keywords": [
     "scandit",
     "barcode",
@@ -42,18 +42,21 @@
   "skills": "./skills/",
   "interface": {
     "displayName": "Scandit SDK",
-    "shortDescription": "Integrate the Scandit Data Capture SDK — barcode scanning, ID capture, and smart label capture.",
+    "shortDescription": "Scan barcodes, IDs and labels",
     "longDescription": "Install the Scandit SDK skills to teach Codex how to integrate Scandit's barcode scanning, ID capture, and smart label capture products correctly. Includes a product-selection advisor plus per-product, per-framework implementation and migration guides for iOS, Android, web, React Native, Flutter, Capacitor, Cordova, and .NET/MAUI.",
     "developerName": "Scandit",
     "category": "Developer Tools",
     "capabilities": ["Read", "Write"],
     "websiteURL": "https://www.scandit.com/",
+    "privacyPolicyURL": "https://www.scandit.com/privacy/",
+    "termsOfServiceURL": "https://ssl.scandit.com/terms-archive",
     "defaultPrompt": [
       "Help me choose the right Scandit product for my scanning use case.",
-      "Add SparkScan barcode scanning to my app."
+      "Add SparkScan barcode scanning to my app.",
+      "Migrate my app from the Scandit SDK v6 API to v8."
     ],
-    "composerIcon": "./assets/logo.svg",
-    "logo": "./assets/logo.svg",
-    "screenshots": []
+    "brandColor": "#2EC1CE",
+    "composerIcon": "./assets/logo.png",
+    "logo": "./assets/logo.png"
   }
 }
