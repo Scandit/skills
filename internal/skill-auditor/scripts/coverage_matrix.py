@@ -17,7 +17,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from common import REPO_ROOT, load_taxonomy, load_manifest
+from common import REPO_ROOT, load_taxonomy, load_manifest, eval_suite_files
 
 
 def eval_text(e: dict) -> str:
@@ -26,10 +26,8 @@ def eval_text(e: dict) -> str:
     return " ".join(parts).lower()
 
 
-def load_evals(skill_dir: Path):
-    for f in sorted(skill_dir.glob("evals/*.json")):
-        if "fixtures" in f.parts:
-            continue
+def load_evals(skill_name: str):
+    for f in eval_suite_files(skill_name):
         try:
             data = json.loads(f.read_text())
         except json.JSONDecodeError as exc:
@@ -81,7 +79,7 @@ def main():
             # When aggregated (>1 source dir), prefix the ref with the source skill so evidence
             # stays traceable to the right iOS sub-skill.
             tag = f"{d.name}/" if len(plat_dirs[plat]) > 1 else ""
-            for fname, e in load_evals(d):
+            for fname, e in load_evals(d.name):
                 totals[plat] += 1
                 text = eval_text(e)
                 tags = set(e.get("tags", []))

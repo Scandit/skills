@@ -11,7 +11,7 @@
 #                + ui/barcode-ar-*.rst  (the :available: directive is availability ground truth)
 #   samples      datacapture-*-samples — 03_Advanced_Batch_Scanning_Samples/01_Batch_Scanning_and_AR_Info_Lookup/
 #                MatrixScanARSimpleSample (flutter, cordova, capacitor ship one; ios/android/rn/web do not)
-#   eval-survey  existing skills/matrixscan-ar-*/evals/*.json
+#   eval-survey  existing evals/matrixscan-ar-*/*.json
 #
 # Platform-truth notes (layer 1 — from the .rst :available: directives):
 #   - 10 in-scope platforms: android, capacitor, cordova, flutter, ios, net-maui, net-android,

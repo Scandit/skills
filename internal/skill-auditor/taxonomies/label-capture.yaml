@@ -14,7 +14,7 @@
 #   samples      datacapture-{ios,android,web,rn,flutter,capacitor,cordova,dotnet}-samples
 #                03_Advanced_Batch_Scanning_Samples/05_Smart_Label_Capture/LabelCaptureSimpleSample
 #   sdk_source   data-capture-sdk @ d588b9f3afa — docs/api_availability/** exclusions
-#   eval-survey  existing skills/label-capture-*/evals/*.json (vocabulary calibration)
+#   eval-survey  existing evals/label-capture-*/*.json (vocabulary calibration)
 #
 # Platform-truth notes that drive the exclusions below (layer 1):
 #   - LabelCapture is available on ALL 10 platforms. The api_availability entries for

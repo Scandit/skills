@@ -145,7 +145,9 @@ stops surfacing. Product prefixes and parity exemptions live in `manifest.json`.
 4. For top gaps, draft evals. Often the fastest path is porting a sibling platform's eval
    for the same feature — re-target the prompt and APIs, don't copy assertions verbatim.
    Follow the conventions in `references/eval-conventions.md`. Match the per-product eval
-   file layout the siblings use; put new evals in the matching `evals/*.json` file.
+   file layout the siblings use; put new evals in the matching `evals/<skill>/*.json` file
+   at the repo root (evals live outside `skills/<skill>/` — they are not part of the
+   published bundle).
 5. **Fix-verification gate (HARD RULE).** Any fixture or reference code snippet you write
    must be compiled against the resolved real Scandit SDK before commit — string/semantic
    evals do not catch hallucinated APIs or wrong-language code (Java-style Kotlin shipped

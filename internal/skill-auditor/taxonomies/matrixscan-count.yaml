@@ -8,7 +8,7 @@
 #   public_docs  data-capture-documentation @ 60d979dd — docs/sdks/*/matrixscan-count/** + partials/count
 #   samples      datacapture-*-samples — 03_Advanced_Batch_Scanning_Samples/02_Counting_and_Receiving/*
 #   sdk_source   data-capture-sdk @ 2f919ef1a9b — api_availability/** + source/**/*.rst :available:
-#   eval-survey  existing skills/matrixscan-count-*/evals/*.json (the iOS skill is the richest —
+#   eval-survey  existing evals/matrixscan-count-*/*.json (the iOS skill is the richest —
 #                it ships highlights.md + list-scanning.md the other 7 platforms lack)
 #
 # Platform-truth notes (layer 1):
