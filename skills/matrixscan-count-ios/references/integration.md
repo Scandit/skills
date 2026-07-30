@@ -425,10 +425,12 @@ API reference for exact signatures before writing code.
     lifecycle calls are **not** needed; drop them. (This is the opposite of the standard flow, where you
     must manage the camera yourself.)
 
-  It works with **list scanning**, **status mode**, and **group scanning**, but is **not** compatible with
-  **clustering**, the **not-in-list action**, or **filtering**. If the user asks to enable scan preview
-  *together with* any of those, do **not** write code that turns on both — the combination isn't supported.
-  Say so up front and ask which one they want, rather than emitting combined code with a caveat after it.
+  It works with **list scanning**, **status mode**, **group scanning**, and the **not-in-list action**.
+  **Clustering** works too, but with limitations — manual clustering and cluster editing are unavailable,
+  and the expected cluster size behaves differently → see the scan-preview section of `clustering.md`
+  before wiring the two together. **Filtering** is **not** supported: if the user asks for scan preview
+  *and* filtering, do **not** write code that turns on both — say the combination isn't supported and ask
+  which one they want, rather than emitting combined code with a caveat after it.
   (The centered text guidance isn't shown in this mode.)
 - **Group scanning**: let the user split a long count into groups (e.g. one per pallet) — set
   `settings.groupScanningEnabled = true` to add the Next Group / Redo controls. Results still come back as

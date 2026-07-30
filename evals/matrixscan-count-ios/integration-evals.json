@@ -239,13 +239,28 @@
     {
       "id": 20,
       "prompt": "Enable scan preview in my MatrixScan Count app and also turn on clustering so the previewed barcodes get grouped into clusters. File: IntegratedBarcodeCountViewController.swift",
-      "expected_output": "The skill explains that scan preview and clustering are NOT compatible — they cannot be enabled together — so it does not produce code that combines them. It does not invent a workaround or a guessed API to make them coexist; at most it offers to set up one or the other. The existing integration is left intact.",
+      "expected_output": "The skill enables both: BarcodeCountSettings(scanPreviewEnabled: true) plus settings.clusteringMode = .auto, and removes the explicit camera code as scan preview requires. It flags the scan-preview limitations on clustering — clustering is automatic only (.manual / .autoWithManualCorrection are treated as .auto and cluster editing is unavailable) and expectedNumberOfBarcodesPerCluster behaves as 2 when unset, with only clusters of exactly that size being formed. It does not claim the combination is unsupported.",
       "files": ["fixtures/IntegratedBarcodeCountViewController.swift"],
       "assertions": [
-        {"text": "It states that scan preview and clustering are NOT compatible / cannot be combined"},
-        {"text": "It does NOT emit code enabling both at once (no BarcodeCountSettings(scanPreviewEnabled: true) together with settings.clusteringMode = ...)"},
-        {"text": "It does not invent a workaround or guessed API to make scan preview and clustering coexist"},
-        {"text": "It does not silently pick one and implement it as if the combination were fine — the incompatibility is called out (it may offer to do one or the other)"}
+        {"text": "Scan preview is enabled via BarcodeCountSettings(scanPreviewEnabled: true) — the initializer, not a post-init assignment"},
+        {"text": "Clustering is enabled with settings.clusteringMode = ClusteringMode.auto (NOT .manual or .autoWithManualCorrection, which are treated as .auto in scan preview)"},
+        {"text": "The explicit camera code is removed (no Camera.default / recommendedCameraSettings / context.setFrameSource / camera?.switch(...)), as required by scan preview"},
+        {"text": "It does NOT state that scan preview and clustering are incompatible or cannot be combined"},
+        {"text": "It mentions at least one real scan-preview clustering limitation: cluster editing / manual clustering unavailable, or expectedNumberOfBarcodesPerCluster behaving as 2 when unset with only exactly-sized clusters formed"},
+        {"text": "No cluster-editing code is emitted (no beginClusterEditing / formCluster / dissolveCluster, which return nil / do nothing in scan preview)"},
+        {"text": "If expectedNumberOfBarcodesPerCluster is set at all, the value is 2 or more — never 1, which would form no groups under scan preview and defeat the request"}
+      ]
+    },
+    {
+      "id": 21,
+      "prompt": "Enable scan preview in my MatrixScan Count app and let the user group the barcodes manually by swiping across them. File: IntegratedBarcodeCountViewController.swift",
+      "expected_output": "The skill states that manual clustering is not available when scan preview is enabled — .manual and .autoWithManualCorrection are treated as .auto, and cluster editing (gesture UI and beginClusterEditing) is unavailable — so it does not emit a manual clustering mode alongside scan preview. It offers the choice: scan preview with automatic clustering, or manual clustering without scan preview.",
+      "files": ["fixtures/IntegratedBarcodeCountViewController.swift"],
+      "assertions": [
+        {"text": "It states that manual clustering / cluster editing is not available when scan preview is enabled"},
+        {"text": "It does NOT set clusteringMode to .manual or .autoWithManualCorrection together with scanPreviewEnabled: true"},
+        {"text": "It does not emit gesture-UI or editing code as if it worked (no setTextForClusteringGestureHint, no beginClusterEditing / formCluster / dissolveCluster under scan preview)"},
+        {"text": "It offers the alternatives (scan preview with automatic clustering, or manual clustering without scan preview) instead of silently picking one"}
       ]
     }
   ]

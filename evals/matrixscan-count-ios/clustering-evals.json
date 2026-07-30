@@ -87,6 +87,31 @@
         {"text": "Brush is constructed with Brush(fill:stroke:strokeWidth:) and a solid fill color (only the fill color applies for clusters); it does NOT switch to the Dot style"},
         {"text": "Clustering is enabled so clusters exist; it does NOT use a non-existent iconForCluster; the rest of the integration is unchanged"}
       ]
+    },
+    {
+      "id": 8,
+      "prompt": "In my MatrixScan Count app, group the barcodes that sit on the same physical label together. File: IntegratedBarcodeCountViewController.swift",
+      "expected_output": "The skill enables automatic clustering (settings.clusteringMode = .auto) and selects label-based grouping with settings.automaticClusteringMethod = .label, both on the BarcodeCountSettings before the BarcodeCount mode is constructed. It does not use Label Capture or a label-detection API — the labels are only a grouping cue and are not returned as items. The rest of the integration is unchanged.",
+      "files": ["fixtures/IntegratedBarcodeCountViewController.swift"],
+      "assertions": [
+        {"text": "settings.automaticClusteringMethod is set to AutomaticClusteringMethod.label (the .label case)"},
+        {"text": "settings.clusteringMode is set to an automatic mode (.auto or .autoWithManualCorrection) — automaticClusteringMethod has no effect under .disabled or .manual"},
+        {"text": "Both are set on BarcodeCountSettings before BarcodeCount(context:settings:) is constructed"},
+        {"text": "It does NOT bring in Label Capture / LabelCapture APIs or invent a label-detection callback to do the grouping"},
+        {"text": "The rest of the integration is unchanged"}
+      ]
+    },
+    {
+      "id": 9,
+      "prompt": "I turned on clustering in my MatrixScan Count app with scan preview enabled, but the barcodes on my shelf never get grouped. Why?",
+      "expected_output": "The skill explains that with scan preview clusters are always formed using the label method regardless of automaticClusteringMethod, so barcodes only group where the SDK detects a physical label around them — loose codes with no label are never grouped. It also mentions that only clusters containing exactly expectedNumberOfBarcodesPerCluster barcodes are formed (behaving as 2 when the property is nil), so a pack size other than that value has to be set explicitly. It does not suggest manual clustering or cluster editing as a fix, since neither is available under scan preview.",
+      "conceptual": true,
+      "assertions": [
+        {"text": "It explains that scan preview always groups using the label method, regardless of automaticClusteringMethod, so barcodes not on a detected label are not grouped"},
+        {"text": "It mentions expectedNumberOfBarcodesPerCluster forming only exactly-sized clusters and behaving as 2 when nil"},
+        {"text": "It does NOT propose manual clustering, the gesture UI, or beginClusterEditing as a remedy (unavailable under scan preview)"},
+        {"text": "It does not invent a setting or API to make vicinity/outline grouping work under scan preview"}
+      ]
     }
   ]
 }

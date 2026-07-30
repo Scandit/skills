@@ -106,15 +106,14 @@ hidden regardless of `shouldShowStatusModeButton`. Since it's `false` by default
 
 ## Status icons with clustering
 
-If clustering (see `clustering.md`) is enabled together with status icons, the statuses are organized on
-the **cluster** highlight rather than per individual barcode:
+If clustering (see `clustering.md`) is enabled together with status icons, each clustered barcode keeps its
+own status icon:
 
-- A cluster shows the status icons of its members arranged in a **grid** inside the cluster highlight.
-- **Duplicate** statuses within a cluster are shown only once.
-- The default no-status marker that individual barcodes get is **not** shown on a cluster.
-- While barcodes are clustered, the SDK can't indicate which status icon belongs to which individual
-  barcode — the user has to **uncluster** them to tell the statuses apart. In dedicated status mode
-  (button), manual cluster gestures are disabled.
+- A cluster is drawn as a hull around its members, and every member shows its own status icon at its own
+  location inside it.
+- While the members' icons **overlap** on screen they collapse into the hull's single summary badge, and
+  separate again as the codes move apart.
+- In dedicated status mode (button), manual cluster gestures are disabled.
 
 ## After wiring up
 

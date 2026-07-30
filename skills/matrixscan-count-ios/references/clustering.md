@@ -10,9 +10,10 @@ here we only add clustering on top — do not re-create the context, mode, view,
 > into separate batches the user advances through (e.g. one per pallet), that is **group scanning** — see
 > `group-scanning.md`.
 
-> **Not compatible with scan preview.** Clustering cannot be combined with scan preview
-> (`BarcodeCountSettings(scanPreviewEnabled:)`). If the user asks for both, do **not** write code enabling
-> them together — say the combination isn't supported and ask which one they want.
+> **With scan preview, clustering has limitations.** It can be combined with scan preview
+> (`BarcodeCountSettings(scanPreviewEnabled:)`), but manual clustering and cluster editing are unavailable
+> there and the expected cluster size behaves differently — see
+> [With scan preview](#with-scan-preview) below before writing code for both.
 
 > If a clustering API doesn't resolve, verify the symbol against the
 > [BarcodeCount API reference](https://docs.scandit.com/data-capture-sdk/ios/barcode-capture/api.html)
@@ -40,9 +41,26 @@ let barcodeCount = BarcodeCount(context: context, settings: settings)
 | `.auto` | Clusters are formed automatically and **cannot** be manually changed. |
 | `.autoWithManualCorrection` | Clusters are formed automatically, but the user can also form or dissolve them via the UI. |
 
-When clustering is enabled, the barcodes that form a cluster share a single **rectangular highlight**.
-Clustered codes still appear individually in `session.recognizedBarcodes` (and the clusters in
+When clustering is enabled, a cluster is drawn as one **rectangular hull** around its members, and each
+member keeps its **own** highlight inside it — the hull carries no icon of its own. Clustered codes also
+still appear individually in `session.recognizedBarcodes` (and the clusters in
 `session.recognizedClusters`).
+
+In the automatic modes, choose how the SDK decides which barcodes belong together with
+`automaticClusteringMethod` (`AutomaticClusteringMethod?`):
+
+```swift
+settings.automaticClusteringMethod = .label
+```
+
+| Method | Groups barcodes by |
+|--------|--------------------|
+| `.vicinity` | Proximity — nearby barcodes are grouped. Used when the property is `nil`. |
+| `.label` | Detected physical label boundaries. The labels themselves are not returned as Label Capture items. |
+| `.outline` | Detected enclosing outlines. |
+
+It applies only to `.auto` and `.autoWithManualCorrection`; the value is kept but has no effect under
+`.disabled` and `.manual`. Leave it `nil` (the default) for vicinity-based grouping.
 
 Optionally tell the SDK how many barcodes you expect in each cluster — this drives each cluster's
 `expectationStatus` (below). It is `Int?` (Swift); leave it `nil` (the default) if you have no expectation:
@@ -50,6 +68,31 @@ Optionally tell the SDK how many barcodes you expect in each cluster — this dr
 ```swift
 settings.expectedNumberOfBarcodesPerCluster = 4
 ```
+
+## With scan preview
+
+Clustering is supported when scan preview is enabled (`BarcodeCountSettings(scanPreviewEnabled: true)` —
+see the scan-preview notes in `integration.md`), with these differences:
+
+- **No manual clustering.** `.manual` and `.autoWithManualCorrection` are treated as `.auto`, and
+  `clusteringMode` reads back as `.auto`. Clustering is automatic only. If the user asks for manual
+  grouping *and* scan preview, say manual clustering isn't available in scan preview and ask which one
+  they want — do **not** set `.manual` or `.autoWithManualCorrection`, which would silently behave as
+  `.auto`.
+- **No cluster editing.** The gesture UI is absent, and `beginClusterEditing()` returns `nil`, so clusters
+  cannot be formed or dissolved — programmatically or by the user.
+- **`expectedNumberOfBarcodesPerCluster` drives cluster formation.** It behaves as **2** when left `nil`,
+  and only clusters containing **exactly** that many barcodes are formed. Set it to the pack size the app
+  expects, and never below **2** — a value of `1` forms no groups at all. If the pack size isn't known,
+  leave it unset rather than guessing a value.
+- **Grouping always follows labels.** Clusters are formed with `.label` regardless of what
+  `automaticClusteringMethod` is set to, so barcodes group only where the SDK detects a physical label
+  around them — codes that aren't on a label are not grouped. Setting the property has no effect here; if
+  the user asks for vicinity- or outline-based grouping together with scan preview, say only label-based
+  grouping is available there.
+
+Reading `session.recognizedClusters`, the cluster brush (`brushForCluster`), and cluster taps (`didTap`)
+work as described below.
 
 ## Reading the recognized clusters
 
@@ -91,6 +134,8 @@ Each `Cluster` exposes:
 
 ## Manual clustering (the user gesture UI)
 
+This section does not apply when scan preview is enabled (see [With scan preview](#with-scan-preview)).
+
 In `.manual` and `.autoWithManualCorrection`, the user forms clusters with the built-in gesture UI: they
 swipe or circle (draw a shape around) the barcodes they want to group, and when the gesture completes,
 every barcode inside the drawn area is grouped into one cluster. Tapping the **×** on a cluster's
@@ -124,8 +169,10 @@ editor?.endEditing()
 - Always finish with `endEditing()` to commit the edits.
 - `beginClusterEditing()` returns `nil` unless the mode allows **manual** editing — you get an editor
   only in **`.manual`** and **`.autoWithManualCorrection`**; in `.disabled` and `.auto` it returns `nil`
-  (that's why the call is optional). `formCluster(_:)` also **fails if a barcode is already in a cluster**,
-  so forming your own groups is most predictable in **`.manual`** (nothing is auto-clustered).
+  (that's why the call is optional). It is therefore always `nil` when scan preview is enabled, where the
+  mode is `.auto` (see [With scan preview](#with-scan-preview)). `formCluster(_:)` also **fails if a
+  barcode is already in a cluster**, so forming your own groups is most predictable in **`.manual`**
+  (nothing is auto-clustered).
 
 ## Customizing the cluster highlight and taps
 
@@ -154,28 +201,25 @@ extension CountViewController: BarcodeCountViewDelegate {
 }
 ```
 
-- When barcodes are grouped, the members' individual highlights are **not** drawn — the whole cluster is
-  represented by a **single highlight at its center** (one icon, plus the background you set). You do
-  **not** customize each member; you customize the one cluster highlight.
-- **Background color** — set it with `barcodeCountView(_:brushForCluster:)`. For clusters, only the
-  brush's fill **color** is applied (the SDK supplies the cluster's transparency and border itself), so
-  just return a solid color — the fill's alpha, the stroke color, and the stroke width are ignored. It
-  works in the default Icon style (no need to switch to Dot). Return `nil` to keep the SDK default.
-  `Brush` is `Brush(fill:stroke:strokeWidth:)` — **not** `fillColor:`/`strokeColor:` (see `highlights.md`).
-- **The single center icon** follows a precedence (you don't pick it directly):
-  1. if any member is **not-in-list / rejected**, that state's icon is used;
-  2. otherwise, if the cluster's count **deviates** from `expectedNumberOfBarcodesPerCluster`, the SDK's
-     default deviation icon is shown (your custom icon is **not** used in this case);
-  3. otherwise the cluster shows a **representative member's** icon — i.e. whatever your
-     `iconForRecognizedBarcode` returns for that member.
-  There is **no** per-cluster icon callback, so to control the icon, return the **same** icon for every
-  barcode from `iconForRecognizedBarcode` (then whichever member represents the cluster looks the same).
+- A cluster is drawn as a **hull** around its members, and the members keep their **own** highlights
+  inside it. The hull itself carries no icon, so there is no per-cluster icon callback — to change how the
+  grouped codes look, customize the **member** highlights via `iconForRecognizedBarcode` (see
+  `highlights.md`); to change the hull, set its brush.
+- While the members' highlights **overlap** on screen they collapse into a single summary badge on the
+  hull, and separate again as the codes move apart.
+- **Hull color** — set it with `barcodeCountView(_:brushForCluster:)`. Only the brush's fill **color** is
+  applied (the SDK supplies the hull's transparency and border itself), so just return a solid color — the
+  fill's alpha, the stroke color, and the stroke width are ignored. It works in the default Icon style (no
+  need to switch to Dot). Return `nil` to keep the SDK default. `Brush` is
+  `Brush(fill:stroke:strokeWidth:)` — **not** `fillColor:`/`strokeColor:` (see `highlights.md`).
+- A cluster whose count **deviates** from `expectedNumberOfBarcodesPerCluster` is shown in the SDK's
+  deviation color through the hull fill, unless your `brushForCluster` returns a brush for it.
 - `barcodeCountView(_:didTap:)` (with a `Cluster` parameter) fires when the user taps a cluster
   highlight. Note the Swift name is `didTap:`, **not** `didTapCluster:` — the SDK shortens it because the
   parameter type is already `Cluster`.
 
-> If you also use **status mode** with clustering on, the per-barcode status icons are organized on the
-> cluster highlight (not per individual barcode) — see `status-mode.md`.
+> If you also use **status mode** with clustering on, each clustered barcode keeps its own status icon
+> inside the hull — see `status-mode.md`.
 
 ## After wiring up
 

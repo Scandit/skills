@@ -130,7 +130,11 @@ To enable the scan preview so barcodes appear highlighted before the shutter is 
 final settings = BarcodeCountSettings(scanPreviewEnabled: true);
 ```
 
-Only basic scanning and scanning against a list are supported when scan preview is enabled.
+Scan preview is built on the native AR capture module. Basic scanning, scanning against a list, status
+mode, group scanning and the not-in-list action are supported when it is enabled; **filtering** is not.
+Clustering is supported with limitations that are documented for the native iOS SDK — check
+[BarcodeCountSettings](https://docs.scandit.com/data-capture-sdk/flutter/barcode-capture/api.html)
+(`scanPreviewEnabled`, `clusteringMode`, `expectedNumberOfBarcodesPerCluster`) before combining the two.
 
 ## Step 4 — Construct BarcodeCount
 

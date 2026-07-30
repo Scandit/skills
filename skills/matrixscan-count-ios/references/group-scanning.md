@@ -6,7 +6,7 @@ in place (see `integration.md`); here we only enable it.
 
 > **Group scanning vs. clustering.** Group scanning splits one counting session into separate batches the
 > user advances through (Next Group / Redo). If instead you want to group barcodes that physically belong
-> together (e.g. a multi-pack) into one highlight within a single count, that is **clustering** — see
+> together (e.g. a multi-pack) into one cluster within a single count, that is **clustering** — see
 > `clustering.md`.
 
 ## Enable group scanning
