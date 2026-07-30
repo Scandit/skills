@@ -97,6 +97,9 @@
         },
         {
           "text": "switchToDesiredState(FrameSourceState.Off) is called in cleanup"
+        },
+        {
+          "text": "Cleanup hides or removes the capture element after view.detachFromElement(), so the empty full-viewport container does not keep blocking clicks on the page underneath"
         }
       ]
     },

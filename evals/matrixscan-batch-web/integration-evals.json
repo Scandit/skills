@@ -79,6 +79,9 @@
         },
         {
           "text": "Import from '@scandit/web-datacapture-barcode' is present"
+        },
+        {
+          "text": "Cleanup hides or removes the data capture view element after view.detachFromElement(), so the empty full-viewport container does not keep blocking clicks on the page underneath"
         }
       ]
     },

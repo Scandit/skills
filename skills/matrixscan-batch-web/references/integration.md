@@ -76,7 +76,7 @@ After providing the code, show this setup checklist:
 2. Set cross-origin headers (`COOP: same-origin` + `COEP: require-corp` or `credentialless`) on the server
 3. If self-hosting the SDK engine, configure `libraryLocation` to point to the correct path; or use the CDN path: `https://cdn.jsdelivr.net/npm/@scandit/web-datacapture-barcode@8/sdc-lib/`
 4. Replace `'-- ENTER YOUR SCANDIT LICENSE KEY HERE --'` with your key from <https://ssl.scandit.com>
-5. Add a `<div id="data-capture-view">` (or similar) to your HTML with defined dimensions and `position: fixed` or `absolute`
+5. Add a `<div id="data-capture-view">` (or similar) to your HTML with defined dimensions and `position: fixed` or `absolute`. Hide or remove that element in your cleanup: `view.detachFromElement()` empties it but does not reset its own positioning, and an empty full-viewport `position: fixed` element still blocks every click on the page underneath
 
 ---
 
@@ -175,7 +175,7 @@ await view.addOverlay(overlay);
 | `view.setContext(context)` | `Promise<void>` — attach a context to a detached view. |
 | `view.addOverlay(overlay)` | `Promise<void>` — attach an overlay (basic or advanced) explicitly. |
 | `view.removeOverlay(overlay)` | `Promise<void>` — detach an overlay. |
-| `view.detachFromElement()` | **Sync** — remove the view from its DOM element. Call during cleanup. |
+| `view.detachFromElement()` | **Sync** — remove the view from its DOM element. Call during cleanup. It empties the element and drops the SDK's own styles, but does not reset the element's own positioning, so hide or remove the element as well. |
 
 ## Step 2 — Configure BarcodeBatchSettings and create BarcodeBatch
 
@@ -538,7 +538,12 @@ Cleanup when the scanning surface is unmounted:
 barcodeBatch.removeListener(listener);
 await context.frameSource?.switchToDesiredState(FrameSourceState.Off);
 view.detachFromElement();
+// detachFromElement() empties the container but leaves its own positioning alone. An empty
+// full-viewport position: fixed element still swallows every click on the page underneath.
+document.getElementById("data-capture-view")!.style.display = "none";
 ```
+
+In React this last line is unnecessary: the element lives in the component's JSX, so it is removed when the component unmounts.
 
 ## React integration
 

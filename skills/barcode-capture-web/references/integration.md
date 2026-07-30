@@ -51,6 +51,7 @@ If the user is using React, see the React section below.
 > **Mount point requirement:** The `DataCaptureView` needs a container with defined dimensions and positioning to render its camera preview correctly. If the container has zero or unresolved dimensions, the camera preview will not display.
 > - Style the element before calling `view.connectToElement()` — e.g., `captureElement.style.cssText = "position: fixed; top: 0; left: 0; width: 100%; height: 100%;"`.
 > - The element can be any block-level element (`<div>`, `<main>`, etc.) as long as it has non-zero width and height.
+> - **Hide or remove the element when you tear the view down.** `view.detachFromElement()` empties the container and removes the SDK's own `style[scandit]` tags, but it does not touch the inline style you set on your own element. A full-viewport `position: fixed` element left in the DOM is invisible and empty, and still swallows every click, keystroke and dropdown interaction on the page underneath. In plain JS, set `display: none` (or remove the element) in your cleanup. In React the element is part of the component's own JSX, so it disappears when the component unmounts and needs no manual reset.
 
 ```typescript
 import {
@@ -122,6 +123,9 @@ async function run() {
     await BarcodeCaptureOverlay.withBarcodeCaptureForView(barcodeCapture, view);
 
     async function mount() {
+        // Pairs with the display: none in unmount(). Re-attaching also needs
+        // view.connectToElement(captureElement) again if unmount() has run.
+        captureElement.style.display = "";
         await DataCaptureContext.sharedInstance.frameSource!.switchToDesiredState(FrameSourceState.On);
     }
 
@@ -129,6 +133,10 @@ async function run() {
         barcodeCapture.removeListener(barcodeCaptureListener);
         await DataCaptureContext.sharedInstance.frameSource!.switchToDesiredState(FrameSourceState.Off);
         view.detachFromElement();
+        // detachFromElement() empties the container but leaves the inline style set above
+        // in place. Without hiding it, the empty full-viewport element keeps blocking every
+        // click on the page underneath.
+        captureElement.style.display = "none";
     }
 
     return mount().catch(async (error) => {
