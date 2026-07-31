@@ -35,15 +35,27 @@ A Forms solution is typically **three projects**: a shared `.Forms` project plus
 
 Search `.csproj` / `packages.config` / `Directory.Packages.props` for Scandit package references and record the **exact version**:
 
+Match on the **`Scandit.DataCapture.<Product>`** stem and treat a trailing `.Xamarin` *or* `.Xamarin.Forms` as the same thing — a Forms project uses the `.Xamarin.Forms` IDs, so a grep for `.Xamarin"` alone will miss it.
+
 | Package referenced | Meaning |
 |---|---|
 | `Scandit.DataCapture.Core.Xamarin` | Core — always present in a Data Capture SDK integration. |
+| `Scandit.DataCapture.Core.Xamarin.Forms` | Core, **Forms** flavour — confirms Xamarin.Forms and implies the `.Unified` namespaces are in use (see the `Unified` → `Maui` rename in `migrate-forms-maui.md`). |
 | `Scandit.DataCapture.Barcode.Xamarin` | Barcode Capture / MatrixScan / SparkScan API. |
+| `Scandit.DataCapture.Barcode.Xamarin.Forms` | Same, **Forms** flavour. |
 | `Scandit.DataCapture.Parser.Xamarin` | Parser API. |
 | `Scandit.DataCapture.Id.Xamarin` / `...Label.Xamarin` | ID Capture / Smart Label Capture (confirm the exact ID on nuget.org). |
 | `Scandit.BarcodePicker.Xamarin` | **Legacy v5 Barcode Picker** — no direct modern equivalent; a reintegration, flag manual. |
 
 Also grep the source for the Scandit entry points to know which product's implementation skill to hand off to: `DataCaptureContext`, `BarcodeCapture`, `SparkScan`, `BarcodeCount`, `BarcodeBatch`/`BarcodeTracking`, `BarcodeAr`, `LabelCapture`, `IdCapture`, `ScanditBarcodePicker` (legacy).
+
+**Record the Scandit surface as a baseline for the Phase 5 parity check.** Save the list of Scandit XAML elements and symbols now, so Phase 5 can prove none were lost:
+
+```bash
+git grep -IohE 'scandit[A-Za-z]*:[A-Za-z]+|UseScandit[A-Za-z]*|BarcodeCaptureOverlay|DataCaptureView|IBarcodeCaptureListener' -- . ':(exclude)**/obj/**' ':(exclude)**/bin/**' | sort -u
+```
+
+Note in particular every `<scanditCore:…>` / `<scanditBarcode:…>` element in the XAML and every `IBarcodeCaptureListener` implementation — these are the constructs most often lost during a Forms→MAUI rewrite.
 
 ## Step 5 — Flag manual-only items
 

@@ -2,6 +2,8 @@
 
 Target: a single SDK-style `.csproj` with `<TargetFramework>net8.0-ios</TargetFramework>`. Confirm the exact `net*` version against the Scandit .NET docs and the customer's installed workloads (`dotnet workload list`). Always work on a branch/backup.
 
+> **Resolve the TFM from the toolchain, don't copy it from here.** Run `dotnet --version` and `dotnet workload list` and target the newest `net*` the customer has manifests for; `net8.0-*` below is a placeholder for that resolved value. Use the same TFM in the `.csproj` and in every `dotnet build -f …` you run and report. On `net10.0-android`, also add the kotlinx-serialization override documented in `migrate-forms-maui.md` — without it the build is clean and the first scan crashes.
+
 > Use the [.NET Upgrade Assistant](https://learn.microsoft.com/en-us/dotnet/core/porting/upgrade-assistant-overview) for the mechanical `.csproj` conversion where available, then apply the Scandit- and iOS-specific fixes below.
 
 ## Step 1 — Convert the project file to SDK-style

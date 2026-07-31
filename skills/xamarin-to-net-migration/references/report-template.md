@@ -12,7 +12,9 @@ Every migration ends with a written report so the customer knows exactly what ch
 - **Path:** Xamarin.<Android|iOS|Forms> → <.NET for Android | .NET for iOS | .NET MAUI>
 - **Scandit product:** <e.g. Barcode Capture>  ·  **SDK version:** <from> → <to>
 - **Started from commit / backup:** <sha or backup location>
-- **Status:** <Complete | Partial — N manual items remain>
+- **Status:** <Complete | Partial — N manual items remain | Blocked — see below>
+- **Scandit integration parity:** <PASS — all pre-migration Scandit views/listeners/builder calls still present | FAIL — list what was lost>
+- **Verified by:** <build only | build + on-device scan | not verified>
 
 ## Changed automatically
 List each mechanical change applied, grouped by area:
@@ -44,4 +46,6 @@ Revert to `<starting sha>` (or restore `<backup location>`) if anything regresse
 
 - **Be honest about partial migrations.** If manual items remain, set status to *Partial* and keep the checklist actionable — the migration is resumable and the next run reads this report.
 - **Never claim a build/scan passed if it was not run.** State what was verified and what was not (e.g. "iOS build verified on simulator; on-device scan not tested — no device available").
+- **A green build with a gutted integration is `Blocked`, never `Complete`.** If any Scandit view, overlay, listener, or `.UseScandit*()` call was deleted, commented out, or replaced with a placeholder to get the project compiling, the integration-parity line is **FAIL** and the status is **Blocked**. Say plainly which construct would not compile and what the compile error was, so the customer (or the next run) can fix the namespace rather than inheriting a silently non-scanning app. Do not describe a placeholder page as a migrated page.
+- **Distinguish "compiles" from "scans".** Especially on `net10.0-android`, where the kotlinx-serialization gap produces a clean build and a first-scan crash. If no scan was performed, the *Verified by* line must say so.
 - **Link the implementation skill** used for the Scandit call sites so the customer can go deeper.

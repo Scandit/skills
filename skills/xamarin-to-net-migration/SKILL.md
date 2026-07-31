@@ -13,14 +13,15 @@ Guides a Scandit customer from a Xamarin project (Android, iOS, or Forms) onto t
 
 ## The one thing to internalize first
 
-**The Scandit call-site API barely changes; the project/platform layer is the whole migration.** The Scandit .NET binding for `net*-android` / `net*-ios` / MAUI uses the *same* PascalCase C# API as the Xamarin binding (`DataCaptureContext.ForLicenseKey(...)`, `BarcodeCapture.Create(context, settings)`, `IBarcodeCaptureListener`, symbology names, etc.). What actually moves is:
+**The Scandit *method* API barely changes; the project/platform layer and the Scandit *namespaces* are the migration.** The Scandit .NET binding uses the *same* PascalCase C# method surface as the Xamarin binding (`DataCaptureContext.ForLicenseKey(...)`, `BarcodeCapture.Create(context, settings)`, `IBarcodeCaptureListener`, symbology names, etc.). What actually moves is:
 
-1. **NuGet packages** — drop the `.Xamarin` suffix (`Scandit.DataCapture.Core.Xamarin` → `Scandit.DataCapture.Core`), and for MAUI add the `*.Maui` companion packages.
-2. **Project file** — legacy `.csproj` → SDK-style, correct Target Framework Moniker (`net8.0-android` / `net8.0-ios` / MAUI multi-target).
-3. **Platform bootstrap** — `MainActivity`/`Application` (Android), `AppDelegate` (iOS), or `App.xaml`+`MauiProgram` (Forms→MAUI); manifest/`Info.plist`; assets/resources.
-4. **SDK 8.0+ explicit init** — call `ScanditCaptureCore.Initialize()` (+ the per-product `Scandit*.Initialize()`) at startup, which Xamarin 6.x/7.x did not require.
+1. **NuGet packages** — drop the `.Xamarin` / `.Xamarin.Forms` suffix (`Scandit.DataCapture.Core.Xamarin` → `Scandit.DataCapture.Core`), and for MAUI add the `*.Maui` companion packages.
+2. **Scandit namespaces (Forms→MAUI only)** — the Forms binding's `.Unified` namespaces and `Scandit*Unified` assembly names **do** change. See "Scandit namespace rename" in `references/migrate-forms-maui.md`. This is the single highest-volume mechanical edit in a Forms migration; do not skip it on the strength of "the API barely changes".
+3. **Project file** — legacy `.csproj` → SDK-style, correct Target Framework Moniker (`net*-android` / `net*-ios` / MAUI multi-target).
+4. **Platform bootstrap** — `MainActivity`/`Application` (Android), `AppDelegate` (iOS), or `App.xaml`+`MauiProgram` (Forms→MAUI); manifest/`Info.plist`; assets/resources.
+5. **SDK 8.0+ explicit init** — call `ScanditCaptureCore.Initialize()` (+ the per-product `Scandit*.Initialize()`) at startup, which Xamarin 6.x/7.x did not require. MAUI instead initializes via the `.UseScandit*()` builder chain.
 
-So the bulk of the mechanical rewrite is .NET tooling, not Scandit code. Delegate the Scandit call-site verification to the matching implementation skill (see Handoff).
+So the bulk of the mechanical rewrite is .NET tooling and namespaces, not Scandit logic. Delegate the Scandit call-site verification to the matching implementation skill (see Handoff).
 
 ## Critical: Do Not Trust Internal Knowledge
 
@@ -31,9 +32,24 @@ Your training data may contain outdated or incorrect Scandit SDK APIs, wrong Xam
 Migration-specific gotchas worth flagging:
 
 - **Never work destructively on the customer's source.** Confirm a git branch (or a backup copy) exists before editing. Record the starting commit so the migration is revertible.
+- **NEVER delete, comment out, or stub a Scandit call site to make the build pass.** This is the single worst failure mode of this migration and it is easy to rationalize. Removing `<scandit:DataCaptureView>` from a page, commenting out the `.UseScandit*()` builder chain, replacing a scanning page with a placeholder `Label`/`Button`, or dropping an `IBarcodeCaptureListener` implementation produces an app that **compiles cleanly and no longer scans** — a silent, shipped regression far worse than a red build.
+  - **Invariant:** every Scandit view, overlay, listener, settings object, and builder call present before the migration must still be present after it — **though not necessarily in the same file or language.** Verify this explicitly in Phase 5 by diffing Scandit symbols against the starting commit (see the Phase 5 integration-parity check).
+  - **Relocation is allowed; deletion is not.** Some Forms XAML constructs legitimately move into code-behind because the MAUI binding has no XAML element for them — most notably `BarcodeCaptureOverlay`, which becomes a `HandlerChanged` + `AddOverlay` call (see `references/migrate-forms-maui.md`). Moving a construct from markup to C# satisfies the invariant. Removing it without recreating it does not.
+  - If a Scandit construct will not compile, the cause is almost always a **wrong namespace/assembly name in your code, or a type that is not a XAML element at all** — not a missing API. Read the implementation skill's documented namespace, and check whether the type is a control or a runtime object, before concluding the API does not exist.
+  - A build that only goes green because integration code was removed is a **FAILED migration**. Report it as blocked, with the compile error, and leave the original code in place — do not report success.
+- **Do not conclude a Scandit API "does not exist" from a compile error.** Before making that claim, verify against the implementation skill's references, and if still unsure inspect the shipped assembly directly, e.g.
+  `strings ~/.nuget/packages/scandit.datacapture.core.maui/<version>/lib/<tfm>/ScanditCaptureCoreMaui.dll | grep UseScandit`.
+  `UseScanditCore`, `AddDataCaptureView` (in `ScanditCaptureCoreMaui`) and `UseScanditBarcode` (in `ScanditBarcodeCaptureMaui`) are all real and shipped — if they appear to be missing, your `using`/`xmlns` is wrong. They are **extension methods**, so `CS1061: 'MauiAppBuilder' has no method 'UseScanditCore'` means a missing `using`, not a missing API. The three required directives are:
+  ```csharp
+  using Scandit.DataCapture.Core;          // UseScanditCore
+  using Scandit.DataCapture.Core.UI.Maui;  // AddDataCaptureView
+  using Scandit.DataCapture.Barcode;       // UseScanditBarcode
+  ```
+  Commenting out the `.UseScandit*()` chain to get a green build is the **canonical instance** of the forbidden gutting above: the app then builds, launches, and fails at the first Scandit call because the SDK was never initialized.
 - **The migration is resumable and idempotent.** Re-running on a partially migrated project must *continue*, not redo — always re-run detection first (see `references/detection.md`) and skip steps whose target state is already present.
-- **Xamarin package IDs carry a `.Xamarin` suffix; .NET ones do not.** `Scandit.DataCapture.Core.Xamarin` → `Scandit.DataCapture.Core`. The legacy v5 `Scandit.BarcodePicker.Xamarin` (Barcode Picker API) has **no** modern equivalent — it maps to a Barcode Capture / SparkScan reintegration, not a package swap. Flag it as manual.
-- **Do not guess the target TFM version.** `net8.0-*` is the current LTS baseline for Scandit's .NET SDK; confirm against the Scandit .NET docs and the customer's toolchain rather than assuming `net9.0`/`net10.0`.
+- **Xamarin package IDs carry a `.Xamarin` *or* `.Xamarin.Forms` suffix; .NET ones do not.** `Scandit.DataCapture.Core.Xamarin` → `Scandit.DataCapture.Core`, and `Scandit.DataCapture.Core.Xamarin.Forms` → `Scandit.DataCapture.Core` **+** `Scandit.DataCapture.Core.Maui`. Strip the whole suffix — naively "dropping `.Xamarin`" from `Core.Xamarin.Forms` yields `Scandit.DataCapture.Core.Forms`, which **does not exist** and fails restore with `NU1101`. The legacy v5 `Scandit.BarcodePicker.Xamarin` (Barcode Picker API) has **no** modern equivalent — it maps to a Barcode Capture / SparkScan reintegration, not a package swap. Flag it as manual.
+- **Do not guess the target TFM version — resolve it from the installed toolchain.** Run `dotnet workload list` and `dotnet --version` and target the newest TFM the customer actually has manifests for; a `net8.0-*` target on a machine with only the .NET 10 SDK fails to restore. `net8.0-*` is the conservative LTS floor, not a default to hardcode. Whatever you pick, use the *same* TFM in the build-verification commands you run and report.
+- **`net10.0-android` needs an explicit kotlinx-serialization-json override.** Scandit's Android AAR chain pulls a transitive `Org.Jetbrains.Kotlinx.KotlinxSerializationJson` that only targets `net8.0-android`/`net9.0-android`. On `net10.0-android` the project builds **clean** and then crashes at the first scan with `Java.Lang.NoClassDefFoundError: Lkotlinx/serialization/json/JsonKt;`. If you target `net10.0-android`, add the override from `references/migrate-forms-maui.md` ("Android kotlinx-serialization override") — and note that a green build does **not** rule this out.
 - **Third-party packages, custom renderers, and platform effects are not auto-migratable.** Flag them for manual follow-up (custom renderers → MAUI handlers, `DependencyService` → DI) instead of silently breaking the build.
 - **SDK 8.0+ requires explicit initialization** that Xamarin 6.x/7.x did not. Omitting `ScanditCaptureCore.Initialize()` compiles fine but crashes at the first Scandit call. The exact placement is per-platform — the implementation skill you hand off to has the template.
 
@@ -69,7 +85,20 @@ Migration progress:
 
 **Phase 4 — Map the Scandit integration.** Follow `references/scandit-packages.md` to swap the Xamarin package IDs for the .NET (and, for MAUI, `*.Maui`) equivalents, aligned to a single version fetched from nuget.org. Then **hand off to the matching implementation skill** (see below) to verify/rewrite the Scandit call sites and add the SDK-8 initialization — do not re-derive the Scandit API here.
 
-**Phase 5 — Verify and report.** Build the migrated project per target platform. Where a device/emulator is available, run a smoke check that the Scandit SDK initializes and scans. Then produce the migration report using `references/report-template.md`: what changed automatically, what needs manual follow-up, and how to validate.
+**Phase 5 — Verify and report.** In this order:
+
+1. **Integration-parity check (do this *before* the build).** Confirm no Scandit integration was lost. Diff the Scandit symbol surface against the starting commit, e.g.
+
+   ```bash
+   git grep -IohE 'scandit[A-Za-z]*:[A-Za-z]+|UseScandit[A-Za-z]*|BarcodeCaptureOverlay|DataCaptureView|IBarcodeCaptureListener' <start-sha> -- . ':(exclude)**/obj/**' ':(exclude)**/bin/**' | sort -u > /tmp/before.txt
+   git grep -IohE 'scandit[A-Za-z]*:[A-Za-z]+|UseScandit[A-Za-z]*|BarcodeCaptureOverlay|DataCaptureView|IBarcodeCaptureListener'              -- . ':(exclude)**/obj/**' ':(exclude)**/bin/**' | sort -u > /tmp/after.txt
+   diff /tmp/before.txt /tmp/after.txt
+   ```
+
+   Anything present before and absent after must be either (a) a documented rename you applied deliberately, or (b) a **defect you fix now**. Also grep the diff for commented-out `UseScandit`/`scandit:` lines — a commented builder call is a lost integration, not a migration.
+2. **Build** per target platform, using the TFM you resolved in Phase 1.
+3. **Smoke check** on a device/emulator where available: the SDK initializes, the camera preview renders (a black/blank preview usually means `DataCaptureContext` is not bound on the view), and a scan reports a result. On `net10.0-android` a clean build does not imply a working scan — see the kotlinx gotcha.
+4. **Report** using `references/report-template.md`: what changed automatically, what needs manual follow-up, and how to validate. If step 1 or 2 failed, the status is *Blocked* or *Partial* — never *Complete*.
 
 ## Handoff to the implementation skills
 
@@ -79,7 +108,9 @@ After the project/platform migration, the Scandit call sites are verified by the
 |---|---|---|
 | .NET for Android (`net*-android`, non-MAUI) | `<product>-net-android` | `barcode-capture-net-android`, `id-capture-net-android` |
 | .NET for iOS (`net*-ios`, non-MAUI) | `<product>-net-ios` | `barcode-capture-net-ios`, `id-capture-net-ios` |
-| .NET MAUI | product's MAUI skill | `barcode-capture-maui`, `sparkscan-maui`, `id-capture-net-maui`, `label-capture-net-maui`, `matrixscan-count-maui` |
+| .NET MAUI | `<product>-net-maui` | `barcode-capture-net-maui`, `sparkscan-net-maui`, `id-capture-net-maui`, `label-capture-net-maui`, `matrixscan-count-net-maui` |
+
+Every MAUI skill slug ends in **`-net-maui`** — there is no `barcode-capture-net-maui` / `sparkscan-net-maui` / `matrixscan-*-maui`. **Load the handoff skill before you write any MAUI Scandit code**, not after: it holds the exact XAML `xmlns`, assembly names, and builder-chain signature you need, and guessing them is the main cause of the "the API doesn't exist" false conclusion. If the skill you named fails to load, re-derive its slug from this table rather than proceeding without it.
 
 If you are unsure which Scandit **product** the customer uses (Barcode Capture, SparkScan, MatrixScan AR/Batch/Count, Smart Label Capture, ID Capture), hand off to the **`data-capture-sdk`** router skill — it identifies the product and names the correct implementation skill. Naming the specific skill is always better than telling the user "an implementation skill exists."
 

@@ -12,12 +12,16 @@ If WebFetch fails, fall back to the flat-container index, e.g. `https://api.nuge
 
 ## Package name mapping (Xamarin → .NET)
 
-The transform is: **drop the `.Xamarin` suffix**; for MAUI, **add** the `*.Maui` companion for each package.
+The transform is: **strip the `.Xamarin` *or* `.Xamarin.Forms` suffix entirely**; for MAUI, **add** the `*.Maui` companion for each package.
+
+> **`.Xamarin` vs `.Xamarin.Forms`.** Xamarin.Forms projects reference the **`.Xamarin.Forms`**-suffixed IDs (`Scandit.DataCapture.Core.Xamarin.Forms`), not the plain `.Xamarin` ones — those are for native Xamarin.Android/iOS heads. Strip the *whole* suffix: `Scandit.DataCapture.Core.Xamarin.Forms` → `Scandit.DataCapture.Core`. Do **not** merely drop `.Xamarin`, which would leave `Scandit.DataCapture.Core.Forms` — that package does not exist and restore fails with `NU1101`.
 
 | Xamarin package | .NET (net*-android / net*-ios) | .NET MAUI |
 |---|---|---|
 | `Scandit.DataCapture.Core.Xamarin` | `Scandit.DataCapture.Core` | `Scandit.DataCapture.Core` **+** `Scandit.DataCapture.Core.Maui` |
+| `Scandit.DataCapture.Core.Xamarin.Forms` *(Forms projects)* | `Scandit.DataCapture.Core` | `Scandit.DataCapture.Core` **+** `Scandit.DataCapture.Core.Maui` |
 | `Scandit.DataCapture.Barcode.Xamarin` | `Scandit.DataCapture.Barcode` | `Scandit.DataCapture.Barcode` **+** `Scandit.DataCapture.Barcode.Maui` |
+| `Scandit.DataCapture.Barcode.Xamarin.Forms` *(Forms projects)* | `Scandit.DataCapture.Barcode` | `Scandit.DataCapture.Barcode` **+** `Scandit.DataCapture.Barcode.Maui` |
 | `Scandit.DataCapture.Parser.Xamarin` | `Scandit.DataCapture.Parser` | `Scandit.DataCapture.Parser` (+ `.Maui` if a companion exists — verify on nuget.org) |
 | `Scandit.DataCapture.Id.Xamarin` *(verify exact id)* | `Scandit.DataCapture.Id` | `Scandit.DataCapture.Id` **+** `Scandit.DataCapture.Id.Maui` |
 | `Scandit.DataCapture.Label.Xamarin` *(verify exact id)* | `Scandit.DataCapture.Label` | `Scandit.DataCapture.Label` **+** `Scandit.DataCapture.Label.Maui` |
@@ -27,7 +31,7 @@ Always confirm the exact `.Id` / `.Label` / `.Parser` package IDs and the existe
 
 ### Legacy Barcode Picker (`Scandit.BarcodePicker.Xamarin`)
 
-This is the **v5** Barcode Picker API (`ScanditBarcodePicker`, `BarcodePicker`, `ScanSettings`), not the modern Data Capture SDK. There is no package swap — it is a **reintegration** onto Barcode Capture or SparkScan. Flag it as manual-only and hand off to `barcode-capture-net-*` / `barcode-capture-maui` / `sparkscan-*` for a fresh integration.
+This is the **v5** Barcode Picker API (`ScanditBarcodePicker`, `BarcodePicker`, `ScanSettings`), not the modern Data Capture SDK. There is no package swap — it is a **reintegration** onto Barcode Capture or SparkScan. Flag it as manual-only and hand off to `barcode-capture-net-*` / `barcode-capture-net-maui` / `sparkscan-*` for a fresh integration.
 
 ## Call-site API changes
 
@@ -44,11 +48,11 @@ Identify the product from the Scandit entry points found during detection, then 
 
 | Scandit entry point (detected) | Product | net*-android | net*-ios | MAUI |
 |---|---|---|---|---|
-| `BarcodeCapture` | Barcode Capture | `barcode-capture-net-android` | `barcode-capture-net-ios` | `barcode-capture-maui` |
-| `SparkScanView` / `SparkScan` | SparkScan | `sparkscan-net-android` | `sparkscan-net-ios` | `sparkscan-maui` |
-| `BarcodeCount` | MatrixScan Count | `matrixscan-count-net-android` | `matrixscan-count-net-ios` | `matrixscan-count-maui` |
-| `BarcodeBatch` / `BarcodeTracking` | MatrixScan Batch | `matrixscan-batch-net-android` | `matrixscan-batch-net-ios` | `matrixscan-batch-maui` |
-| `BarcodeAr` | MatrixScan AR | `matrixscan-ar-net-android` | `matrixscan-ar-net-ios` | `matrixscan-ar-maui` |
+| `BarcodeCapture` | Barcode Capture | `barcode-capture-net-android` | `barcode-capture-net-ios` | `barcode-capture-net-maui` |
+| `SparkScanView` / `SparkScan` | SparkScan | `sparkscan-net-android` | `sparkscan-net-ios` | `sparkscan-net-maui` |
+| `BarcodeCount` | MatrixScan Count | `matrixscan-count-net-android` | `matrixscan-count-net-ios` | `matrixscan-count-net-maui` |
+| `BarcodeBatch` / `BarcodeTracking` | MatrixScan Batch | `matrixscan-batch-net-android` | `matrixscan-batch-net-ios` | `matrixscan-batch-net-maui` |
+| `BarcodeAr` | MatrixScan AR | `matrixscan-ar-net-android` | `matrixscan-ar-net-ios` | `matrixscan-ar-net-maui` |
 | `LabelCapture` | Smart Label Capture | `label-capture-net-android` | `label-capture-net-ios` | `label-capture-net-maui` |
 | `IdCapture` | ID Capture | `id-capture-net-android` | `id-capture-net-ios` | `id-capture-net-maui` |
 
