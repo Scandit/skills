@@ -79,6 +79,9 @@
         },
         {
           "text": "Import from '@scandit/web-datacapture-barcode' is present"
+        },
+        {
+          "text": "Cleanup reverts the mount-point style after view.detachFromElement() (restoring, hiding, or removing the data capture view element), so the empty full-viewport container does not keep blocking clicks on the page underneath"
         }
       ]
     },
