@@ -31,8 +31,8 @@ React Native-specific gotchas worth flagging:
 
 Based on the user's request, load the appropriate reference file before responding:
 
-- **Integrating MatrixScan AR from scratch** (e.g. "add MatrixScan AR to my app", "set up Barcode AR", "how do I use BarcodeArView in React Native", "how do I show AR overlays on barcodes", "adding or changing highlights or annotations", "lifecycle, cleanup, or session handling") → read `references/integration.md` and follow the instructions there.
-- **Migrating from BarcodeBatch to BarcodeAr** (e.g. "migrate from BarcodeBatch", "convert BarcodeBatch to BarcodeAr", "move from MatrixScan to MatrixScan AR", "replace BarcodeTracking with BarcodeAr", "upgrade my old MatrixScan code to AR") → read `references/migration.md` and follow the instructions there.
+- **Integrating MatrixScan AR from scratch** (e.g. "add MatrixScan AR to my app", "set up Barcode AR", "how do I use BarcodeArView in React Native", "how do I show AR overlays on barcodes", "adding or changing highlights or annotations", "lifecycle, cleanup, or session handling") → read [references/integration.md](references/integration.md) and follow the instructions there.
+- **Migrating from BarcodeBatch to BarcodeAr** (e.g. "migrate from BarcodeBatch", "convert BarcodeBatch to BarcodeAr", "move from MatrixScan to MatrixScan AR", "replace BarcodeTracking with BarcodeAr", "upgrade my old MatrixScan code to AR") → read [references/migration.md](references/migration.md) and follow the instructions there.
 
 ## API Usage Policy
 

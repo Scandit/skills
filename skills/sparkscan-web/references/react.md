@@ -72,7 +72,7 @@ Wrap the app once:
 </ScanditProvider>
 ```
 
-A ready-to-copy version of this provider is in `references/fixtures/ScanditProvider.tsx` — drop it into the project and adjust the license key, `libraryLocation`, and module loaders.
+A ready-to-copy version of this provider is in [fixtures/ScanditProvider.tsx](fixtures/ScanditProvider.tsx), next to this file — drop it into the project and adjust the license key, `libraryLocation`, and module loaders.
 
 ### Disposing the context
 
@@ -219,7 +219,7 @@ On React 19 the JSX props are set as element properties directly, so you can ski
 
 Everything else (the `ScanditProvider`, gating on `useScanditReady()`, the pointer-events wrapper, no-dispose cleanup) is identical to the React 18 path. You still keep a ref if you need to call `stopScanning()` / `startScanning()` imperatively.
 
-To get type-checking and editor support for the custom-element props, declare them in JSX's intrinsic elements (see `references/fixtures/spark-scan-view.d.ts` for a complete declaration to copy).
+To get type-checking and editor support for the custom-element props, declare them in JSX's intrinsic elements (see [fixtures/spark-scan-view.d.ts](fixtures/spark-scan-view.d.ts), next to this file, for a complete declaration to copy).
 
 ### Scoping the mount to part of the page (not the full viewport)
 

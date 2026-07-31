@@ -23,7 +23,7 @@ Web-specific gotchas worth flagging:
 - `BarcodeArView` **is an HTML element** (extends `ScanditHTMLElement`) — it attaches itself to the provided container. Clean it up by calling `barcodeArView.remove()`, which removes it from the DOM.
 - **Providers use a callback pattern on web**, not a return value. The signatures are `highlightForBarcode(barcode, callback)` and `annotationForBarcode(barcode, callback)`. Deliver the result via `callback(highlight)` / `callback(annotation)` — do NOT return it. This is different from React Native where providers are async functions returning a Promise.
 - Must call `await barcodeArView.start()` **explicitly** — the view does not start automatically after `create()`.
-- `ScanditIconBuilder.build()` returns `Promise<ScanditIcon>` — icon construction is **async** on web. Use `new ScanditIconBuilder().withIcon(ScanditIconType.Checkmark).build()` — there is no static `forType()` method, and `ScanditIconType.Info` does not exist. The full enum (31 values) is in `references/integration.md`.
+- `ScanditIconBuilder.build()` returns `Promise<ScanditIcon>` — icon construction is **async** on web. Use `new ScanditIconBuilder().withIcon(ScanditIconType.Checkmark).build()` — there is no static `forType()` method, and `ScanditIconType.Info` does not exist. The full enum (31 values) is in [references/integration.md](references/integration.md).
 - `BarcodeArResponsiveAnnotation.threshold` is a **static property** — set it BEFORE calling `BarcodeArResponsiveAnnotation.create(barcode, closeUp, far)`.
 - **BarcodeArView manages the camera internally.** Do NOT manually set up `Camera`, `context.setFrameSource`, or `switchToDesiredState` — that pattern belongs to BarcodeBatch, not BarcodeAr.
 - **No `DataCaptureView` is needed.** `BarcodeArView.create()` replaces `DataCaptureView` entirely for MatrixScan AR.
@@ -36,8 +36,8 @@ Web-specific gotchas worth flagging:
 
 Based on the user's request, load the appropriate reference file before responding:
 
-- **Integrating MatrixScan AR from scratch** (e.g. "add MatrixScan AR to my web app", "set up BarcodeAr", "show AR highlights on barcodes", "show info annotations", "how to use BarcodeArView on web", "lifecycle or cleanup") → read `references/integration.md` and follow the instructions there.
-- **Migrating from BarcodeBatch / BarcodeTracking to BarcodeAr** (e.g. "migrate from BarcodeBatch to BarcodeAr", "convert MatrixScan Batch to MatrixScan AR", "replace BarcodeTracking with BarcodeAr") → read `references/migration.md` and follow the instructions there.
+- **Integrating MatrixScan AR from scratch** (e.g. "add MatrixScan AR to my web app", "set up BarcodeAr", "show AR highlights on barcodes", "show info annotations", "how to use BarcodeArView on web", "lifecycle or cleanup") → read [references/integration.md](references/integration.md) and follow the instructions there.
+- **Migrating from BarcodeBatch / BarcodeTracking to BarcodeAr** (e.g. "migrate from BarcodeBatch to BarcodeAr", "convert MatrixScan Batch to MatrixScan AR", "replace BarcodeTracking with BarcodeAr") → read [references/migration.md](references/migration.md) and follow the instructions there.
 
 ## API Usage Policy
 

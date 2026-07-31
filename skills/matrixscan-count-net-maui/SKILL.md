@@ -41,8 +41,8 @@ MAUI-specific gotchas worth flagging (and the places people get it wrong by patt
 
 Based on the user's request, load the appropriate reference file before responding:
 
-- **Integrating BarcodeCount from scratch, registering the builder chain, declaring the `<scandit:BarcodeCountView>`, configuring settings, wiring the camera lifecycle, handling scan results, storing scanned barcodes, capture/receiving lists, the spatial map, customizing feedback, List/Exit/SingleScan taps, brushes, status mode, the not-in-list action, or diagnosing a black preview** (e.g. "add MatrixScan Count to my MAUI app", "count barcodes in .NET MAUI", "store the scanned barcodes when the list button is tapped", "check scans against an expected list in MAUI", "make the beep silent", "use the Icon style", "my MAUI count preview is black") → read `references/integration.md` and follow the instructions there.
-- **Migrating or upgrading an existing MatrixScan Count MAUI integration** (e.g. "upgrade my MAUI BarcodeCount app from v7 to v8", "bump the Scandit .NET MAUI SDK to v8", "what changed between SDK versions for BarcodeCount in MAUI") → read `references/migration.md` and follow the instructions there.
+- **Integrating BarcodeCount from scratch, registering the builder chain, declaring the `<scandit:BarcodeCountView>`, configuring settings, wiring the camera lifecycle, handling scan results, storing scanned barcodes, capture/receiving lists, the spatial map, customizing feedback, List/Exit/SingleScan taps, brushes, status mode, the not-in-list action, or diagnosing a black preview** (e.g. "add MatrixScan Count to my MAUI app", "count barcodes in .NET MAUI", "store the scanned barcodes when the list button is tapped", "check scans against an expected list in MAUI", "make the beep silent", "use the Icon style", "my MAUI count preview is black") → read [references/integration.md](references/integration.md) and follow the instructions there.
+- **Migrating or upgrading an existing MatrixScan Count MAUI integration** (e.g. "upgrade my MAUI BarcodeCount app from v7 to v8", "bump the Scandit .NET MAUI SDK to v8", "what changed between SDK versions for BarcodeCount in MAUI") → read [references/migration.md](references/migration.md) and follow the instructions there.
 
 ## API Usage Policy
 
@@ -69,7 +69,7 @@ Direct users to the right resource based on their question:
 
 ## API surface this skill covers
 
-All classes documented with `:available: dotnet.android` and / or `:available: dotnet.ios` in the official RST docs (`docs/source/barcode-capture/api/barcode-count*.rst` and `api/ui/barcode-count-*.rst`) are addressed in `references/integration.md`, plus the MAUI-specific surface:
+All classes documented with `:available: dotnet.android` and / or `:available: dotnet.ios` in the official RST docs (`docs/source/barcode-capture/api/barcode-count*.rst` and `api/ui/barcode-count-*.rst`) are addressed in [references/integration.md](references/integration.md), plus the MAUI-specific surface:
 
 - **Cross-platform Count API** (same as the per-TFM skills):
   - `BarcodeCount` — static `Create(DataCaptureContext?, BarcodeCountSettings)` / `Create(BarcodeCountSettings)`, `Context` (get), `Feedback` (get/set), `Enabled` (get/set), static `RecommendedCameraSettings`, `ApplySettingsAsync(BarcodeCountSettings)` → `Task`, `AddListener` / `RemoveListener(IBarcodeCountListener)`, `Reset()`, `StartScanningPhase()`, `EndScanningPhase()`, `SetBarcodeCountCaptureList(BarcodeCountCaptureList)`, `SetAdditionalBarcodes(IList<Barcode>)`, `ClearAdditionalBarcodes()`, `event EventHandler<BarcodeCountEventArgs> Scanned`, `Dispose()`.

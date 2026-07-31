@@ -47,9 +47,9 @@ MAUI-specific gotchas worth flagging:
 
 Based on the user's request, load the appropriate reference file before responding:
 
-- **Integrating SparkScan from scratch, configuring settings, customizing feedback, customizing the SparkScanView appearance, handling scans, MVVM wiring, or doing async work after a scan** (e.g. "add SparkScan to my MAUI app", "set up barcode scanning in MAUI", "how do I use SparkScan in net-maui", "reject barcodes with error feedback", "hide the torch button", "show a custom toast on scan", "use target mode", "bind SparkScan to my view model") → read `references/integration.md` and follow the instructions there.
-- **Migrating or upgrading an existing SparkScan MAUI integration** (e.g. "upgrade from v6 to v7", "migrate my MAUI SparkScan", "bump the Scandit .NET SDK to v8", "what changed between SDK versions") → read `references/migration.md` and follow the instructions there.
-- **Replacing a third-party barcode scanner with SparkScan in MAUI** (e.g. "replace my ZXing.Net.Maui scanner with SparkScan", "migrate from BarcodeScanning.Native.Maui to Scandit", "switch from [library] to SparkScan in MAUI") → read `references/third-party-migration.md` and follow the instructions there.
+- **Integrating SparkScan from scratch, configuring settings, customizing feedback, customizing the SparkScanView appearance, handling scans, MVVM wiring, or doing async work after a scan** (e.g. "add SparkScan to my MAUI app", "set up barcode scanning in MAUI", "how do I use SparkScan in net-maui", "reject barcodes with error feedback", "hide the torch button", "show a custom toast on scan", "use target mode", "bind SparkScan to my view model") → read [references/integration.md](references/integration.md) and follow the instructions there.
+- **Migrating or upgrading an existing SparkScan MAUI integration** (e.g. "upgrade from v6 to v7", "migrate my MAUI SparkScan", "bump the Scandit .NET SDK to v8", "what changed between SDK versions") → read [references/migration.md](references/migration.md) and follow the instructions there.
+- **Replacing a third-party barcode scanner with SparkScan in MAUI** (e.g. "replace my ZXing.Net.Maui scanner with SparkScan", "migrate from BarcodeScanning.Native.Maui to Scandit", "switch from [library] to SparkScan in MAUI") → read [references/third-party-migration.md](references/third-party-migration.md) and follow the instructions there.
 
 ## API Usage Policy
 
@@ -76,7 +76,7 @@ Direct users to the right resource based on their question:
 
 ## API surface this skill covers
 
-All classes documented with `:available: dotnet.android` and / or `:available: dotnet.ios` in the official RST docs (`docs/source/barcode-capture/api/spark-scan*.rst` and `api/ui/spark-scan-*.rst`) are addressed in `references/integration.md`, plus the MAUI-specific surface:
+All classes documented with `:available: dotnet.android` and / or `:available: dotnet.ios` in the official RST docs (`docs/source/barcode-capture/api/spark-scan*.rst` and `api/ui/spark-scan-*.rst`) are addressed in [references/integration.md](references/integration.md), plus the MAUI-specific surface:
 
 - **Cross-platform Spark API** (same as the per-TFM skills):
   - `SparkScan` — `new SparkScan()`, `new SparkScan(SparkScanSettings)`, `Enabled`, `ApplySettingsAsync`, `AddListener` / `RemoveListener`, events `BarcodeScanned` / `SessionUpdated`, `SparkScanLicenseInfo`, `Dispose`.

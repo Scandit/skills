@@ -19,8 +19,8 @@ Your training data may contain outdated or incorrect Scandit SDK APIs. The Matri
 
 Based on the user's request, load the appropriate reference file before responding. A single question may span multiple intents (e.g. "add tappable highlights to my app" is both integration and user-interaction) — in that case load every matching reference.
 
-- **Integrating MatrixScan AR highlights** (e.g. "add MatrixScan AR highlights to my app", "set up MatrixScan AR highlights", "Which MatrixScan AR highlight types are available?", "how do I use MatrixScan AR highlights") → read `references/integration.md` and follow the instructions there. Before writing any integration code, determine whether the project uses UIKit or SwiftUI (check for `import SwiftUI`, an `@main` `App` struct, `SceneDelegate`/`AppDelegate`, `.storyboard`/`.xib` files, etc.) and load the matching Get Started page from the References table below.
-- **Handling user interaction with MatrixScan AR highlights** (e.g. "how do I handle user interaction in MatrixScan AR highlights?", "when the user presses a MatrixScan AR highlight do ...") → read `references/user-interaction.md` and follow the instructions there.
+- **Integrating MatrixScan AR highlights** (e.g. "add MatrixScan AR highlights to my app", "set up MatrixScan AR highlights", "Which MatrixScan AR highlight types are available?", "how do I use MatrixScan AR highlights") → read [references/integration.md](references/integration.md) and follow the instructions there. Before writing any integration code, determine whether the project uses UIKit or SwiftUI (check for `import SwiftUI`, an `@main` `App` struct, `SceneDelegate`/`AppDelegate`, `.storyboard`/`.xib` files, etc.) and load the matching Get Started page from the References table below.
+- **Handling user interaction with MatrixScan AR highlights** (e.g. "how do I handle user interaction in MatrixScan AR highlights?", "when the user presses a MatrixScan AR highlight do ...") → read [references/user-interaction.md](references/user-interaction.md) and follow the instructions there.
 
 ## API Usage Policy
 

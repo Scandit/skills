@@ -66,9 +66,9 @@ Apply these rules whenever the user is making a design decision, not just an API
 
 Based on the user's request, load the appropriate reference file before responding:
 
-- **Integrating ID Capture from scratch** ("add ID scanning to my Cordova app", "scan a passport / driver's license", "read the MRZ", "extract the holder's name and date of birth") → read `references/integration.md` and follow it.
-- **One of the three add-on capabilities** ("reject voided / cancelled IDs", "detect punched-hole / voided licenses", "decode the back of a European driving license", "read vehicle categories", "verify the AAMVA barcode / detect forged US licenses") → read `references/supplementary-modules.md`.
-- **Migrating or upgrading an existing ID Capture integration** ("upgrade ID Capture to the latest SDK", "migrate v7 to v8", "`AamvaBarcodeVerifier` is gone", "what changed in ID Capture between versions") → read `references/migration.md`.
+- **Integrating ID Capture from scratch** ("add ID scanning to my Cordova app", "scan a passport / driver's license", "read the MRZ", "extract the holder's name and date of birth") → read [references/integration.md](references/integration.md) and follow it.
+- **One of the three add-on capabilities** ("reject voided / cancelled IDs", "detect punched-hole / voided licenses", "decode the back of a European driving license", "read vehicle categories", "verify the AAMVA barcode / detect forged US licenses") → read [references/supplementary-modules.md](references/supplementary-modules.md).
+- **Migrating or upgrading an existing ID Capture integration** ("upgrade ID Capture to the latest SDK", "migrate v7 to v8", "`AamvaBarcodeVerifier` is gone", "what changed in ID Capture between versions") → read [references/migration.md](references/migration.md).
 
 ## API Usage Policy
 

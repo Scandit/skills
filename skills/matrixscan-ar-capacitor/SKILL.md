@@ -30,9 +30,9 @@ Capacitor-specific gotchas worth flagging:
 
 Based on the user's request, load the appropriate reference file before responding:
 
-- **Integrating MatrixScan AR from scratch** (e.g. "add MatrixScan AR to my app", "set up Barcode AR", "how do I use BarcodeArView in Capacitor", "how do I show annotations", "how do I highlight barcodes") → read `references/integration.md` and follow the instructions there.
+- **Integrating MatrixScan AR from scratch** (e.g. "add MatrixScan AR to my app", "set up Barcode AR", "how do I use BarcodeArView in Capacitor", "how do I show annotations", "how do I highlight barcodes") → read [references/integration.md](references/integration.md) and follow the instructions there.
 
-- **Migrating from BarcodeBatch / BarcodeTracking to BarcodeAr** (e.g. "migrate my BarcodeBatch code", "replace BarcodeTracking with BarcodeAr", "upgrade from MatrixScan to BarcodeAr", the target file imports `BarcodeBatch`, `BarcodeBatchBasicOverlay`, `BarcodeBatchAdvancedOverlay`, `TrackedBarcodeView`, or contains `context.setMode(` with a BarcodeBatch instance) → read `references/migration.md` and follow the 10-step migration process there.
+- **Migrating from BarcodeBatch / BarcodeTracking to BarcodeAr** (e.g. "migrate my BarcodeBatch code", "replace BarcodeTracking with BarcodeAr", "upgrade from MatrixScan to BarcodeAr", the target file imports `BarcodeBatch`, `BarcodeBatchBasicOverlay`, `BarcodeBatchAdvancedOverlay`, `TrackedBarcodeView`, or contains `context.setMode(` with a BarcodeBatch instance) → read [references/migration.md](references/migration.md) and follow the 10-step migration process there.
 
 ## API Usage Policy
 

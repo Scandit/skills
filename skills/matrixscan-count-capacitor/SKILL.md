@@ -37,9 +37,9 @@ Capacitor-specific gotchas worth flagging:
 
 Based on the user's request, load the appropriate reference file before responding:
 
-- **Integrating MatrixScan Count from scratch** (e.g. "add MatrixScan Count to my app", "set up BarcodeCount", "how do I use BarcodeCountView in Capacitor", "how do I count barcodes", "scan against a list", "packing slip verification", "receiving workflow") → read `references/integration.md` and follow the instructions there.
+- **Integrating MatrixScan Count from scratch** (e.g. "add MatrixScan Count to my app", "set up BarcodeCount", "how do I use BarcodeCountView in Capacitor", "how do I count barcodes", "scan against a list", "packing slip verification", "receiving workflow") → read [references/integration.md](references/integration.md) and follow the instructions there.
 
-- **Migrating from an older BarcodeCount API or adding newer features** (e.g. "upgrade BarcodeCount constructor", "migrate from forDataCaptureContext", "add status mode", "add mapping flow", "add not-in-list actions") → read `references/migration.md` and follow the migration steps there.
+- **Migrating from an older BarcodeCount API or adding newer features** (e.g. "upgrade BarcodeCount constructor", "migrate from forDataCaptureContext", "add status mode", "add mapping flow", "add not-in-list actions") → read [references/migration.md](references/migration.md) and follow the migration steps there.
 
 ## API Usage Policy
 
