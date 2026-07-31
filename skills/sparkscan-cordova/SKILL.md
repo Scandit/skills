@@ -24,8 +24,8 @@ Cordova-specific gotchas worth flagging:
 
 Based on the user's request, load the appropriate reference file before responding:
 
-- **Integrating SparkScan from scratch** (e.g. "add SparkScan to my app", "set up barcode scanning", "how do I use SparkScan in Cordova", "how do I handle feedback in SparkScan") → read `references/integration.md` and follow the instructions there.
-- **Migrating or upgrading an existing SparkScan integration** (e.g. "upgrade from v6 to v7", "migrate my SparkScan", "bump the Scandit plugins to v8", "what changed between SDK versions") → read `references/migration.md` and follow the instructions there.
+- **Integrating SparkScan from scratch** (e.g. "add SparkScan to my app", "set up barcode scanning", "how do I use SparkScan in Cordova", "how do I handle feedback in SparkScan") → read [references/integration.md](references/integration.md) and follow the instructions there.
+- **Migrating or upgrading an existing SparkScan integration** (e.g. "upgrade from v6 to v7", "migrate my SparkScan", "bump the Scandit plugins to v8", "what changed between SDK versions") → read [references/migration.md](references/migration.md) and follow the instructions there.
 
 ## API Usage Policy
 
@@ -39,7 +39,7 @@ URL structures vary across SDK versions and plugin paths and guessing will lead 
 
 ## Framework variant policy
 
-Cordova is a WebView-based framework. Examples in this skill use **plain JavaScript** (with optional JSDoc type hints as seen in the official ListBuildingSample). The same API works in TypeScript — add a `global.d.ts` declaration file (described in `references/integration.md`) and write TypeScript syntax. This skill does not assume a TypeScript project by default. If the target project is clearly TypeScript (`.ts` files, `tsconfig.json`), adapt the final output to TypeScript; otherwise stay in plain JS.
+Cordova is a WebView-based framework. Examples in this skill use **plain JavaScript** (with optional JSDoc type hints as seen in the official ListBuildingSample). The same API works in TypeScript — add a `global.d.ts` declaration file (described in [references/integration.md](references/integration.md)) and write TypeScript syntax. This skill does not assume a TypeScript project by default. If the target project is clearly TypeScript (`.ts` files, `tsconfig.json`), adapt the final output to TypeScript; otherwise stay in plain JS.
 
 ## References
 

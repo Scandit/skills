@@ -36,9 +36,9 @@ Web-specific gotchas worth flagging:
 
 Based on the user's request, load the appropriate reference file before responding:
 
-- **Integrating MatrixScan Batch from scratch** (e.g. "add MatrixScan to my web app", "set up BarcodeBatch", "track multiple barcodes simultaneously", "show AR overlays on barcodes", "per-barcode brush colors", "lifecycle or cleanup") → read `references/integration.md` and follow the instructions there.
-- **Migrating or upgrading an existing MatrixScan Batch integration** (e.g. "upgrade from v6 to v7", "migrate BarcodeTracking to BarcodeBatch", "bump the Scandit SDK to v8", "what changed between SDK versions") → read `references/migration.md` and follow the instructions there.
-- **Replacing a third-party multi-barcode scanner with MatrixScan Batch** (e.g. "replace my ZXing-js / @zxing/library continuous scanner with MatrixScan Batch", "migrate from BrowserMultiFormatReader multi-scan to BarcodeBatch", "switch from [web barcode library] continuous multi-result scanning to BarcodeBatch") → read `references/third-party-migration.md` and follow the instructions there.
+- **Integrating MatrixScan Batch from scratch** (e.g. "add MatrixScan to my web app", "set up BarcodeBatch", "track multiple barcodes simultaneously", "show AR overlays on barcodes", "per-barcode brush colors", "lifecycle or cleanup") → read [references/integration.md](references/integration.md) and follow the instructions there.
+- **Migrating or upgrading an existing MatrixScan Batch integration** (e.g. "upgrade from v6 to v7", "migrate BarcodeTracking to BarcodeBatch", "bump the Scandit SDK to v8", "what changed between SDK versions") → read [references/migration.md](references/migration.md) and follow the instructions there.
+- **Replacing a third-party multi-barcode scanner with MatrixScan Batch** (e.g. "replace my ZXing-js / @zxing/library continuous scanner with MatrixScan Batch", "migrate from BrowserMultiFormatReader multi-scan to BarcodeBatch", "switch from [web barcode library] continuous multi-result scanning to BarcodeBatch") → read [references/third-party-migration.md](references/third-party-migration.md) and follow the instructions there.
 
 ## API Usage Policy
 

@@ -26,8 +26,8 @@ React Native-specific gotchas worth flagging:
 
 Based on the user's request, load the appropriate reference file before responding:
 
-- **Integrating SparkScan from scratch** (e.g. "add SparkScan to my app", "set up barcode scanning", "how do I use SparkScan in React Native", "how do I handle feedback in SparkScan") → read `references/integration.md` and follow the instructions there.
-- **Migrating or upgrading an existing SparkScan integration** (e.g. "upgrade from v6 to v7", "migrate my SparkScan", "bump the Scandit packages to v8", "what changed between SDK versions") → read `references/migration.md` and follow the instructions there.
+- **Integrating SparkScan from scratch** (e.g. "add SparkScan to my app", "set up barcode scanning", "how do I use SparkScan in React Native", "how do I handle feedback in SparkScan") → read [references/integration.md](references/integration.md) and follow the instructions there.
+- **Migrating or upgrading an existing SparkScan integration** (e.g. "upgrade from v6 to v7", "migrate my SparkScan", "bump the Scandit packages to v8", "what changed between SDK versions") → read [references/migration.md](references/migration.md) and follow the instructions there.
 
 ## API Usage Policy
 

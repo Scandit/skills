@@ -33,9 +33,9 @@ Flutter-specific gotchas worth flagging:
 
 Based on the user's request, load the reference file before responding:
 
-- **Integrating BarcodeCount from scratch** (e.g. "add MatrixScan Count to my app", "set up barcode counting", "how do I use BarcodeCount in Flutter", "how do I count barcodes", "scanning against a list") → read `references/integration.md` and follow the instructions there.
+- **Integrating BarcodeCount from scratch** (e.g. "add MatrixScan Count to my app", "set up barcode counting", "how do I use BarcodeCount in Flutter", "how do I count barcodes", "scanning against a list") → read [references/integration.md](references/integration.md) and follow the instructions there.
 
-- **Migrating from an older BarcodeCount constructor or adding newer features** (e.g. "migrate from forDataCaptureContext", "update BarcodeCount constructor", "add status mode", "add mapping flow", "not-in-list actions") → read `references/migration.md` and follow the guide there.
+- **Migrating from an older BarcodeCount constructor or adding newer features** (e.g. "migrate from forDataCaptureContext", "update BarcodeCount constructor", "add status mode", "add mapping flow", "not-in-list actions") → read [references/migration.md](references/migration.md) and follow the guide there.
 
 ## API Usage Policy
 

@@ -29,9 +29,9 @@ Cordova-specific gotchas worth flagging:
 
 Based on the user's request, load the appropriate reference file before responding:
 
-- **Integrating MatrixScan AR from scratch** (e.g. "add MatrixScan AR to my app", "set up AR barcode overlays", "how do I use BarcodeAr in Cordova", "how do I show info annotations", "how do I customize highlights") → read `references/integration.md` and follow the instructions there.
+- **Integrating MatrixScan AR from scratch** (e.g. "add MatrixScan AR to my app", "set up AR barcode overlays", "how do I use BarcodeAr in Cordova", "how do I show info annotations", "how do I customize highlights") → read [references/integration.md](references/integration.md) and follow the instructions there.
 
-- **Migrating from BarcodeBatch / BarcodeTracking to BarcodeAr** (e.g. "migrate my MatrixScan code", "update from BarcodeBatch to BarcodeAr", "I'm using BarcodeBatchBasicOverlay / BarcodeBatchAdvancedOverlay", "convert my old MatrixScan integration", "we have BarcodeTracking and need to upgrade") → read `references/migration.md` and follow the 10-step migration guide there. Key Cordova-specific caveat: `BarcodeArCustomAnnotation` is **NOT available on Cordova** — freeform HTML overlays from `BarcodeBatchAdvancedOverlay` must be replaced with built-in annotation types (`BarcodeArInfoAnnotation`, `BarcodeArPopoverAnnotation`, `BarcodeArStatusIconAnnotation`, or `BarcodeArResponsiveAnnotation`).
+- **Migrating from BarcodeBatch / BarcodeTracking to BarcodeAr** (e.g. "migrate my MatrixScan code", "update from BarcodeBatch to BarcodeAr", "I'm using BarcodeBatchBasicOverlay / BarcodeBatchAdvancedOverlay", "convert my old MatrixScan integration", "we have BarcodeTracking and need to upgrade") → read [references/migration.md](references/migration.md) and follow the 10-step migration guide there. Key Cordova-specific caveat: `BarcodeArCustomAnnotation` is **NOT available on Cordova** — freeform HTML overlays from `BarcodeBatchAdvancedOverlay` must be replaced with built-in annotation types (`BarcodeArInfoAnnotation`, `BarcodeArPopoverAnnotation`, `BarcodeArStatusIconAnnotation`, or `BarcodeArResponsiveAnnotation`).
 
 ## API Usage Policy
 
@@ -45,7 +45,7 @@ URL structures vary across SDK versions and plugin paths and guessing will lead 
 
 ## Framework variant policy
 
-Cordova is a WebView-based framework. Examples in this skill use **plain JavaScript** (with optional JSDoc type hints as seen in the official MatrixScanARSimpleSample). The same API works in TypeScript — add a `global.d.ts` declaration file (described in `references/integration.md`) and write TypeScript syntax. This skill does not assume a TypeScript project by default. If the target project is clearly TypeScript (`.ts` files, `tsconfig.json`), adapt the final output to TypeScript; otherwise stay in plain JS.
+Cordova is a WebView-based framework. Examples in this skill use **plain JavaScript** (with optional JSDoc type hints as seen in the official MatrixScanARSimpleSample). The same API works in TypeScript — add a `global.d.ts` declaration file (described in [references/integration.md](references/integration.md)) and write TypeScript syntax. This skill does not assume a TypeScript project by default. If the target project is clearly TypeScript (`.ts` files, `tsconfig.json`), adapt the final output to TypeScript; otherwise stay in plain JS.
 
 ## References
 

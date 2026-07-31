@@ -24,21 +24,21 @@ The model frequently invents these names from training data. They are **not** cu
 - **"Text Capture"** — does not exist. Smart Label Capture is the only Scandit product with OCR. Even when the user lacks an SLC license, do not suggest "Text Capture" as a fallback. The only legitimate fallback when *every* field is encoded in a barcode is **MatrixScan Batch**, and you must explicitly state that the developer is responsible for correlating reads across frames (no schema, no single-frame multi-field guarantee).
 - **"BarcodeTracking"** standalone — superseded by MatrixScan Batch / BarcodeBatch in SDK v7+. Refer to it only when explaining renames.
 
-If you would otherwise mention these names, stop and re-read `references/product-catalog.md`.
+If you would otherwise mention these names, stop and re-read [references/product-catalog.md](references/product-catalog.md).
 
 ### Smart Label Capture — known limits to surface proactively
 
-When recommending Smart Label Capture, always check the limits in `references/product-catalog.md` before answering:
+When recommending Smart Label Capture, always check the limits in [references/product-catalog.md](references/product-catalog.md) before answering:
 
 - **Character set is Latin-only** for OCR. Non-Latin scripts (Japanese, Chinese, Korean, Cyrillic, Arabic, Hebrew, Thai, Devanagari, etc.) and accented Latin characters are **not** recognized by the OCR engine. Barcodes on the same label (JAN/EAN/QR/etc.) are still readable regardless of the printed script — call this out so the user understands what they can and cannot extract.
-- **Pre-built fields and labels** exist for the most common use cases (IMEI, serial number, expiry date, unit/total price, weight, VIN, 7-segment displays, receipts, price labels). When the user's description matches a pre-built definition, name it directly instead of describing a custom schema. The catalog in `references/product-catalog.md` lists them with use-case mapping.
+- **Pre-built fields and labels** exist for the most common use cases (IMEI, serial number, expiry date, unit/total price, weight, VIN, 7-segment displays, receipts, price labels). When the user's description matches a pre-built definition, name it directly instead of describing a custom schema. The catalog in [references/product-catalog.md](references/product-catalog.md) lists them with use-case mapping.
 
 ## Intent Routing
 
 When a user asks for help choosing a Scandit product, load both reference files before responding:
 
-- Read `references/product-catalog.md` for product knowledge.
-- Read `references/decision-guide.md` and follow its qualification flow.
+- Read [references/product-catalog.md](references/product-catalog.md) for product knowledge.
+- Read [references/decision-guide.md](references/decision-guide.md) and follow its qualification flow.
 
 ## Behavioral Rules
 
@@ -186,7 +186,7 @@ When you need exact platform availability, minimum SDK versions, or Smart Label 
 - **Supported ID documents (validation)**: Fetch `https://raw.githubusercontent.com/Scandit/data-capture-documentation/main/docs/partials/advanced/_id-documents-validate.mdx` — list of identity documents supported by document verification/validation (authenticity and data consistency checks). Fetch when a user asks about ID verification, fraud detection, or which documents can be validated.
 - **AI-powered scanning features**: Fetch `https://raw.githubusercontent.com/Scandit/data-capture-documentation/main/docs/partials/_ai-powered-barcode-scanning.mdx` — Scandit's unique AI engine for single barcode scanning: preventing unintentional scans, selecting a specific barcode in crowded environments, avoiding duplicate scans when not intended, and falling back to OCR when barcodes are too damaged to decode. These are key differentiators. Fetch this when a user asks what makes Scandit different, asks about scanning accuracy, or mentions problems with damaged barcodes, accidental scans, duplicates, or crowded barcode environments.
 
-Use `references/product-catalog.md` for trade-offs, recommendations, and decision logic. Use these live sources for exact version numbers, symbology support, system requirements, AI features, and platform compatibility when the user asks specific questions.
+Use [references/product-catalog.md](references/product-catalog.md) for trade-offs, recommendations, and decision logic. Use these live sources for exact version numbers, symbology support, system requirements, AI features, and platform compatibility when the user asks specific questions.
 
 ## References
 

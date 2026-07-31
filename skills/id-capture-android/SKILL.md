@@ -43,20 +43,20 @@ Your training data may contain outdated or incorrect Scandit ID Capture APIs. Th
 ## Product Guidance
 
 - **Accept only the documents you actually need.** Ask the user which document types and regions they expect. Documents not in `acceptedDocuments` will be rejected with `RejectionReason.NOT_ACCEPTED_DOCUMENT_TYPE`. A narrow list (e.g. just `DriverLicense(IdCaptureRegion.US)`) is faster and more accurate than `IdCaptureRegion.ANY` across every document type.
-- **Pick the scanner that matches the data you need.** Ask the user whether they need data from both sides, a specific zone only, or a mobile-presented ID — then choose `FullDocumentScanner`, `SingleSideScanner`, or `MobileDocumentScanner` accordingly. See `references/advanced.md` for details.
+- **Pick the scanner that matches the data you need.** Ask the user whether they need data from both sides, a specific zone only, or a mobile-presented ID — then choose `FullDocumentScanner`, `SingleSideScanner`, or `MobileDocumentScanner` accordingly. See [references/advanced.md](references/advanced.md) for details.
 - **Handle `onIdRejected`, not just `onIdCaptured`.** Rejections (`RejectionReason.TIMEOUT`, `.NOT_ACCEPTED_DOCUMENT_TYPE`, `.DOCUMENT_EXPIRED`, `.HOLDER_UNDERAGE`, `.FORGED_AAMVA_BARCODE`, `.INCONSISTENT_DATA`, …) are how the user learns why a scan didn't succeed.
 - **Callbacks run on a background thread.** Both `onIdCaptured` and `onIdRejected` are invoked off the main thread — dispatch all UI work with `runOnUiThread {}` (Activity) or post to the main `Handler`. Set `idCapture.isEnabled = false` at the top of the callback while you handle the result, and re-enable it when the user is ready to scan again.
-- **Mode co-existence with BarcodeCapture.** `IdCapture` and `BarcodeCapture` can run together on one `DataCaptureContext` (e.g. an airport screen reading a boarding-pass barcode and a passport). Create each mode with its `forDataCaptureContext` factory, give each its own listener, and toggle each with `isEnabled` — no need to remove one to add the other. See `references/advanced.md`.
-- **Be aware of the default anonymization list.** The SDK anonymizes certain fields by default to meet regional legal requirements (e.g. document number on German ID cards). If a field is unexpectedly `null`, check `capturedId.anonymizedFields`. See `references/advanced.md`.
+- **Mode co-existence with BarcodeCapture.** `IdCapture` and `BarcodeCapture` can run together on one `DataCaptureContext` (e.g. an airport screen reading a boarding-pass barcode and a passport). Create each mode with its `forDataCaptureContext` factory, give each its own listener, and toggle each with `isEnabled` — no need to remove one to add the other. See [references/advanced.md](references/advanced.md).
+- **Be aware of the default anonymization list.** The SDK anonymizes certain fields by default to meet regional legal requirements (e.g. document number on German ID cards). If a field is unexpectedly `null`, check `capturedId.anonymizedFields`. See [references/advanced.md](references/advanced.md).
 - **Hand off to the `data-capture-sdk` skill for non-ID-Capture questions.** If the user asks about Barcode Capture, SparkScan, MatrixScan, Label Capture, or choosing between products, defer to the `data-capture-sdk` skill.
 
 ## Intent Routing
 
 Based on the user's request, load the appropriate reference file before responding:
 
-- **Integrating ID Capture from scratch, or any question about document selection, scanner choice, rejection rules, image capture, or reading results (top-level fields or zone-specific `mrz`/`viz`/`barcode`)** → read `references/integration.md` and follow it.
-- **USDL verification (forged barcodes, data inconsistency, frontReviewImage), anonymization, voided detection, EU driving-license back decoding, BarcodeCapture co-existence, mobile documents (mDL), overlay customization, or custom feedback** → read `references/advanced.md` and follow it.
-- **Upgrading the Scandit Android SDK version on an existing ID Capture integration** (e.g. "migrate from 6.x to 7", "update Scandit to the latest version", "we're on 7.x and the build breaks after bumping dependencies", code that still uses `supportedDocuments` / `IdDocumentType` / `onIdCaptured(idCapture, session, frameData)`) → read `references/migration.md` and follow it.
+- **Integrating ID Capture from scratch, or any question about document selection, scanner choice, rejection rules, image capture, or reading results (top-level fields or zone-specific `mrz`/`viz`/`barcode`)** → read [references/integration.md](references/integration.md) and follow it.
+- **USDL verification (forged barcodes, data inconsistency, frontReviewImage), anonymization, voided detection, EU driving-license back decoding, BarcodeCapture co-existence, mobile documents (mDL), overlay customization, or custom feedback** → read [references/advanced.md](references/advanced.md) and follow it.
+- **Upgrading the Scandit Android SDK version on an existing ID Capture integration** (e.g. "migrate from 6.x to 7", "update Scandit to the latest version", "we're on 7.x and the build breaks after bumping dependencies", code that still uses `supportedDocuments` / `IdDocumentType` / `onIdCaptured(idCapture, session, frameData)`) → read [references/migration.md](references/migration.md) and follow it.
 
 ## API Usage Policy
 
@@ -74,7 +74,7 @@ URL structures can vary (e.g. an `api/ui/` subdirectory) and guessing will lead 
 |---|---|
 | Get Started (Android) | [Get Started (Android)](https://docs.scandit.com/sdks/android/id-capture/get-started/) |
 | Advanced topics | [Advanced Configurations (Android)](https://docs.scandit.com/sdks/android/id-capture/advanced/) |
-| SDK version migration | `references/migration.md` · [Migrate 6→7](https://docs.scandit.com/sdks/android/migrate-6-to-7/) · [Migrate 7→8](https://docs.scandit.com/sdks/android/migrate-7-to-8/) |
+| SDK version migration | [references/migration.md](references/migration.md) · [Migrate 6→7](https://docs.scandit.com/sdks/android/migrate-6-to-7/) · [Migrate 7→8](https://docs.scandit.com/sdks/android/migrate-7-to-8/) |
 | Full API reference | [ID Capture API (Android)](https://docs.scandit.com/data-capture-sdk/android/id-capture/api.html) |
 
 ## API surface this skill covers

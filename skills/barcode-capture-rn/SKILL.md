@@ -28,8 +28,8 @@ React Native-specific gotchas worth flagging:
 
 Based on the user's request, load the appropriate reference file before responding:
 
-- **Integrating BarcodeCapture from scratch** (e.g. "add BarcodeCapture to my app", "set up barcode scanning", "how do I use BarcodeCapture in React Native", "how do I add a viewfinder") → read `references/integration.md` and follow the instructions there.
-- **Migrating or upgrading an existing BarcodeCapture integration** (e.g. "upgrade from v6 to v7", "migrate my BarcodeCapture", "bump the Scandit packages to v8", "what changed between SDK versions") → read `references/migration.md` and follow the instructions there.
+- **Integrating BarcodeCapture from scratch** (e.g. "add BarcodeCapture to my app", "set up barcode scanning", "how do I use BarcodeCapture in React Native", "how do I add a viewfinder") → read [references/integration.md](references/integration.md) and follow the instructions there.
+- **Migrating or upgrading an existing BarcodeCapture integration** (e.g. "upgrade from v6 to v7", "migrate my BarcodeCapture", "bump the Scandit packages to v8", "what changed between SDK versions") → read [references/migration.md](references/migration.md) and follow the instructions there.
 
 ## API Usage Policy
 

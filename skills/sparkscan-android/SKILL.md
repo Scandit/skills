@@ -19,9 +19,9 @@ Your training data may contain outdated or incorrect Scandit SDK APIs. The Spark
 
 Based on the user's request, load the appropriate reference file before responding:
 
-- **Integrating SparkScan from scratch** (e.g. "add SparkScan to my app", "set up barcode scanning", "how do I use SparkScan", "how do I handle feedback in SparkScan") → read `references/integration.md` and follow the instructions there.
-- **Migrating or upgrading an existing SparkScan integration** (e.g. "upgrade from v6 to v7", "migrate my SparkScan", "what changed between SDK versions") → read `references/migration.md` and follow the instructions there.
-- **Replacing a third-party barcode scanner with SparkScan** (e.g. "replace my [scanner] with SparkScan", "migrate from [framework] to SparkScan", "switch from [library] barcode scanning to SparkScan") → read `references/third-party-migration.md` and follow the instructions there.
+- **Integrating SparkScan from scratch** (e.g. "add SparkScan to my app", "set up barcode scanning", "how do I use SparkScan", "how do I handle feedback in SparkScan") → read [references/integration.md](references/integration.md) and follow the instructions there.
+- **Migrating or upgrading an existing SparkScan integration** (e.g. "upgrade from v6 to v7", "migrate my SparkScan", "what changed between SDK versions") → read [references/migration.md](references/migration.md) and follow the instructions there.
+- **Replacing a third-party barcode scanner with SparkScan** (e.g. "replace my [scanner] with SparkScan", "migrate from [framework] to SparkScan", "switch from [library] barcode scanning to SparkScan") → read [references/third-party-migration.md](references/third-party-migration.md) and follow the instructions there.
 
 ## API Usage Policy
 

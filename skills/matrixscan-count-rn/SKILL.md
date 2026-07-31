@@ -39,8 +39,8 @@ React Native-specific gotchas worth flagging:
 
 Based on the user's request, load the appropriate reference file before responding:
 
-- **Integrating MatrixScan Count from scratch** (e.g. "add MatrixScan Count to my app", "set up BarcodeCount", "how do I use BarcodeCountView in React Native", "how do I scan and count multiple barcodes", "scan against a list", "customize the count view", "add status overlays", "lifecycle or cleanup") → read `references/integration.md` and follow the instructions there.
-- **Migrating from the old `forDataCaptureContext` factory to the new constructor, or adopting Status/MappingFlow/NotInList APIs** (e.g. "migrate from forDataCaptureContext", "upgrade BarcodeCount constructor", "add status mode", "adopt mapping flow", "enable not-in-list action") → read `references/migration.md` and follow the instructions there.
+- **Integrating MatrixScan Count from scratch** (e.g. "add MatrixScan Count to my app", "set up BarcodeCount", "how do I use BarcodeCountView in React Native", "how do I scan and count multiple barcodes", "scan against a list", "customize the count view", "add status overlays", "lifecycle or cleanup") → read [references/integration.md](references/integration.md) and follow the instructions there.
+- **Migrating from the old `forDataCaptureContext` factory to the new constructor, or adopting Status/MappingFlow/NotInList APIs** (e.g. "migrate from forDataCaptureContext", "upgrade BarcodeCount constructor", "add status mode", "adopt mapping flow", "enable not-in-list action") → read [references/migration.md](references/migration.md) and follow the instructions there.
 
 ## API Usage Policy
 

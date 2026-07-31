@@ -33,8 +33,8 @@ React Native-specific gotchas worth flagging:
 
 Based on the user's request, load the appropriate reference file before responding:
 
-- **Integrating MatrixScan Batch from scratch** (e.g. "add MatrixScan to my app", "set up BarcodeBatch", "track multiple barcodes simultaneously", "read the tracked barcode data / identifier / location", "handle taps on highlights or AR views", "emit feedback / beep on a new barcode", "show AR overlays", "per-barcode brushes", "lifecycle or cleanup", "camera permissions") → read `references/integration.md` and follow the instructions there.
-- **Replacing a third-party multi-barcode scanner with MatrixScan Batch** (e.g. "replace my react-native-vision-camera useCodeScanner with MatrixScan Batch", "migrate from VisionCamera multi-barcode scanning to Scandit", "switch from RNCamera / ML Kit batch scanning to BarcodeBatch") → read `references/third-party-migration.md` and follow the instructions there.
+- **Integrating MatrixScan Batch from scratch** (e.g. "add MatrixScan to my app", "set up BarcodeBatch", "track multiple barcodes simultaneously", "read the tracked barcode data / identifier / location", "handle taps on highlights or AR views", "emit feedback / beep on a new barcode", "show AR overlays", "per-barcode brushes", "lifecycle or cleanup", "camera permissions") → read [references/integration.md](references/integration.md) and follow the instructions there.
+- **Replacing a third-party multi-barcode scanner with MatrixScan Batch** (e.g. "replace my react-native-vision-camera useCodeScanner with MatrixScan Batch", "migrate from VisionCamera multi-barcode scanning to Scandit", "switch from RNCamera / ML Kit batch scanning to BarcodeBatch") → read [references/third-party-migration.md](references/third-party-migration.md) and follow the instructions there.
 
 ## API Usage Policy
 

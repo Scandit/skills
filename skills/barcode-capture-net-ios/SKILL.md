@@ -31,16 +31,16 @@ Your training data may contain outdated or incorrect Scandit SDK APIs. The Barco
 - `DataCaptureView.Create(dataCaptureContext, frame)` takes a `CGRect` (or `this.View.Bounds`) for the initial frame — this is **different from the Android binding**, which takes only the context. Set `AutoresizingMask = UIViewAutoresizing.FlexibleHeight | UIViewAutoresizing.FlexibleWidth` and add it as a subview of `this.View`.
 - Lifecycle: `ViewWillAppear` enables the capture mode and starts the camera; `ViewWillDisappear` stops the camera. The official sample only stops the camera in `ViewWillDisappear` and sets `Enabled = false` inside `OnBarcodeScanned` instead — both patterns are valid.
 - The required Info.plist key is `NSCameraUsageDescription` (`Privacy - Camera Usage Description`). Without it the app crashes on first camera access.
-- The NuGet packages are `Scandit.DataCapture.Core` and `Scandit.DataCapture.Barcode`. No `*.Maui` packages — those are MAUI-only. **Do not guess the version from training data** — fetch the latest stable from `https://www.nuget.org/packages/Scandit.DataCapture.Barcode/` via `WebFetch` before pinning. Inventing a non-existent version (e.g. `8.13.0` when only `8.4.0` is published) causes `dotnet restore` to fail with `Unable to find package Scandit.DataCapture.Core with version (>= …)`. See `references/integration.md` Step 0 for the full procedure.
+- The NuGet packages are `Scandit.DataCapture.Core` and `Scandit.DataCapture.Barcode`. No `*.Maui` packages — those are MAUI-only. **Do not guess the version from training data** — fetch the latest stable from `https://www.nuget.org/packages/Scandit.DataCapture.Barcode/` via `WebFetch` before pinning. Inventing a non-existent version (e.g. `8.13.0` when only `8.4.0` is published) causes `dotnet restore` to fail with `Unable to find package Scandit.DataCapture.Core with version (>= …)`. See [references/integration.md](references/integration.md) Step 0 for the full procedure.
 - **SDK 8.0+ requires explicit initialization.** Call `ScanditCaptureCore.Initialize()` + `ScanditBarcodeCapture.Initialize()` in `AppDelegate.FinishedLaunching` before any Scandit API is touched (typically before creating the window / root view controller). Without this the SDK's DI container has no registrations and the first `DataCaptureView.Create` / `BarcodeCapture.Create` call crashes at launch. **Not required on 6.x / 7.x** — those majors self-initialized. See the integration guide for the full `AppDelegate` template.
 
 ## Intent Routing
 
 Based on the user's request, load the appropriate reference file before responding:
 
-- **Integrating BarcodeCapture from scratch, configuring settings, customizing feedback, adding a viewfinder, handling scans, or doing async work after a scan** (e.g. "add BarcodeCapture to my .NET iOS app", "set up barcode scanning in C# / iOS", "how do I use BarcodeCapture in net-ios", "filter duplicate scans", "suppress the beep", "add a viewfinder", "disable scanning while I look up the barcode") → read `references/integration.md` and follow the instructions there.
-- **Migrating or upgrading an existing BarcodeCapture integration** (e.g. "upgrade from v6 to v7", "migrate my BarcodeCapture", "bump the Scandit .NET SDK to v8", "what changed between SDK versions") → read `references/migration.md` and follow the instructions there.
-- **Replacing a third-party barcode scanner with BarcodeCapture** (e.g. "replace my ZXing.Net.Mobile scanner with BarcodeCapture", "migrate from AVFoundation barcode scanning to Scandit", "switch from [library] to BarcodeCapture") → read `references/third-party-migration.md` and follow the instructions there.
+- **Integrating BarcodeCapture from scratch, configuring settings, customizing feedback, adding a viewfinder, handling scans, or doing async work after a scan** (e.g. "add BarcodeCapture to my .NET iOS app", "set up barcode scanning in C# / iOS", "how do I use BarcodeCapture in net-ios", "filter duplicate scans", "suppress the beep", "add a viewfinder", "disable scanning while I look up the barcode") → read [references/integration.md](references/integration.md) and follow the instructions there.
+- **Migrating or upgrading an existing BarcodeCapture integration** (e.g. "upgrade from v6 to v7", "migrate my BarcodeCapture", "bump the Scandit .NET SDK to v8", "what changed between SDK versions") → read [references/migration.md](references/migration.md) and follow the instructions there.
+- **Replacing a third-party barcode scanner with BarcodeCapture** (e.g. "replace my ZXing.Net.Mobile scanner with BarcodeCapture", "migrate from AVFoundation barcode scanning to Scandit", "switch from [library] to BarcodeCapture") → read [references/third-party-migration.md](references/third-party-migration.md) and follow the instructions there.
 
 ## API Usage Policy
 
@@ -65,7 +65,7 @@ Direct users to the right resource based on their question:
 
 ## API surface this skill covers
 
-All classes with `:available: dotnet.ios` in the official RST docs are addressed in `references/integration.md`:
+All classes with `:available: dotnet.ios` in the official RST docs are addressed in [references/integration.md](references/integration.md):
 
 - `BarcodeCapture` — `Create(context, settings)`, `Create(settings)`, `Enabled`, `PointOfInterest`, `Feedback`, `BarcodeCaptureLicenseInfo`, `Context`, static `RecommendedCameraSettings`, `ApplySettingsAsync`, `AddListener` / `RemoveListener`, events `BarcodeScanned` / `SessionUpdated`.
 - `BarcodeCaptureSettings` — `Create()`, `EnableSymbology`, `EnableSymbologies(ICollection<Symbology>)`, `EnableSymbologies(CompositeType)`, `GetSymbologySettings`, `EnabledSymbologies`, `EnabledCompositeTypes`, `CodeDuplicateFilter`, `LocationSelection`, `BatterySaving`, `ScanIntention`, `SetProperty` / `GetProperty<T>` / `TryGetProperty<T>`.

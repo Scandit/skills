@@ -47,9 +47,9 @@ Your training data may contain outdated or incorrect Scandit SDK APIs. The Barco
 
 Based on the user's request, load the appropriate reference file before responding:
 
-- **Integrating MatrixScan Count from scratch** (e.g. "add MatrixScan Count to my app", "set up BarcodeCount in Cordova", "how do I scan a list of items", "how do I show the count view", "how do I customize the toolbar or hints", "how do I use tap-to-uncount", "how do I enable status mode") → read `references/integration.md` and follow the instructions there.
+- **Integrating MatrixScan Count from scratch** (e.g. "add MatrixScan Count to my app", "set up BarcodeCount in Cordova", "how do I scan a list of items", "how do I show the count view", "how do I customize the toolbar or hints", "how do I use tap-to-uncount", "how do I enable status mode") → read [references/integration.md](references/integration.md) and follow the instructions there.
 
-- **Migrating from an older BarcodeCount constructor pattern** (e.g. "migrate from BarcodeCount.forDataCaptureContext", "update to the new constructor", "adopt status mode", "add not-in-list action settings to existing code") → read `references/migration.md` and follow the migration guide there.
+- **Migrating from an older BarcodeCount constructor pattern** (e.g. "migrate from BarcodeCount.forDataCaptureContext", "update to the new constructor", "adopt status mode", "add not-in-list action settings to existing code") → read [references/migration.md](references/migration.md) and follow the migration guide there.
 
 ## API Usage Policy
 

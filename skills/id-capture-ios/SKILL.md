@@ -40,19 +40,19 @@ Your training data may contain outdated or incorrect Scandit ID Capture APIs. Th
 ## Product Guidance
 
 - **Accept only the documents you actually need.** Ask the user which document types and regions they expect. Documents not in `acceptedDocuments` will be rejected with `RejectionReason.notAcceptedDocumentType`.
-- **Pick the scanner that matches the data you need.** Ask the user whether they need data from both sides, a specific zone only, or a mobile-presented ID — then choose `FullDocumentScanner`, `SingleSideScanner`, or `MobileDocumentScanner` accordingly. See `references/advanced.md` for details.
+- **Pick the scanner that matches the data you need.** Ask the user whether they need data from both sides, a specific zone only, or a mobile-presented ID — then choose `FullDocumentScanner`, `SingleSideScanner`, or `MobileDocumentScanner` accordingly. See [references/advanced.md](references/advanced.md) for details.
 - **Handle `didReject` not just `didCapture`.** Rejections (`RejectionReason.timeout`, `.notAcceptedDocumentType`, `.documentExpired`, `.holderUnderage`, `.forgedAamvaBarcode`, `.inconsistentData`, …) are how the user learns why a scan didn't succeed.
-- **Mode co-existence with BarcodeCapture.** `IdCapture` and `BarcodeCapture` can run together on one `DataCaptureContext` (e.g. an airport screen reading a boarding-pass barcode and a passport). Attach each mode to the context (its iOS constructor `IdCapture(context:settings:)` / `BarcodeCapture(context:settings:)`), give each its own listener, and toggle each with `isEnabled` — no need to remove one to add the other. See `references/advanced.md`.
-- **Be aware of the default anonymization list.** The SDK anonymizes certain fields by default to meet regional legal requirements (e.g. document number on German ID cards). If a field is unexpectedly `nil`, check `capturedId.anonymizedFields`. See `references/advanced.md`.
+- **Mode co-existence with BarcodeCapture.** `IdCapture` and `BarcodeCapture` can run together on one `DataCaptureContext` (e.g. an airport screen reading a boarding-pass barcode and a passport). Attach each mode to the context (its iOS constructor `IdCapture(context:settings:)` / `BarcodeCapture(context:settings:)`), give each its own listener, and toggle each with `isEnabled` — no need to remove one to add the other. See [references/advanced.md](references/advanced.md).
+- **Be aware of the default anonymization list.** The SDK anonymizes certain fields by default to meet regional legal requirements (e.g. document number on German ID cards). If a field is unexpectedly `nil`, check `capturedId.anonymizedFields`. See [references/advanced.md](references/advanced.md).
 - **Hand off to the `data-capture-sdk` skill for non-ID-Capture questions.** If the user asks about Barcode Capture, SparkScan, MatrixScan, Label Capture, or choosing between products, defer to the `data-capture-sdk` skill.
 
 ## Intent Routing
 
 Based on the user's request, load the appropriate reference file before responding:
 
-- **Integrating ID Capture from scratch, or any question about document selection, scanner choice, rejection rules, image capture, or reading results (top-level fields or zone-specific mrzResult/vizResult/barcode)** → read `references/integration.md` and follow it.
-- **USDL verification (forged barcodes, data inconsistency, frontReviewImage), anonymization, BarcodeCapture co-existence, overlay customization, or custom feedback** → read `references/advanced.md` and follow it.
-- **Upgrading the Scandit iOS SDK version on an existing ID Capture integration** (e.g. "migrate from 6.x to 7", "update Scandit to the latest version", "we're on 7.x and the build breaks after bumping packages", code that still uses `supportedDocuments` / `IdDocumentType` / `didCaptureIn session:`) → read `references/migration.md` and follow it.
+- **Integrating ID Capture from scratch, or any question about document selection, scanner choice, rejection rules, image capture, or reading results (top-level fields or zone-specific mrzResult/vizResult/barcode)** → read [references/integration.md](references/integration.md) and follow it.
+- **USDL verification (forged barcodes, data inconsistency, frontReviewImage), anonymization, BarcodeCapture co-existence, overlay customization, or custom feedback** → read [references/advanced.md](references/advanced.md) and follow it.
+- **Upgrading the Scandit iOS SDK version on an existing ID Capture integration** (e.g. "migrate from 6.x to 7", "update Scandit to the latest version", "we're on 7.x and the build breaks after bumping packages", code that still uses `supportedDocuments` / `IdDocumentType` / `didCaptureIn session:`) → read [references/migration.md](references/migration.md) and follow it.
 
 ## API Usage Policy
 
@@ -66,7 +66,7 @@ Only use APIs that are explicitly documented in the Scandit references below. Do
 |---|---|
 | Get Started (iOS) | [Get Started (iOS Swift)](https://docs.scandit.com/sdks/ios/id-capture/get-started/) |
 | Advanced topics | [Advanced Configurations (iOS)](https://docs.scandit.com/sdks/ios/id-capture/advanced/) |
-| SDK version migration | `references/migration.md` · [Migrate 6→7](https://docs.scandit.com/sdks/ios/migrate-6-to-7/) · [Migrate 7→8](https://docs.scandit.com/sdks/ios/migrate-7-to-8/) |
+| SDK version migration | [references/migration.md](references/migration.md) · [Migrate 6→7](https://docs.scandit.com/sdks/ios/migrate-6-to-7/) · [Migrate 7→8](https://docs.scandit.com/sdks/ios/migrate-7-to-8/) |
 | Full API reference | [ID Capture API (iOS)](https://docs.scandit.com/data-capture-sdk/ios/id-capture/api.html) |
 
 ## API surface this skill covers

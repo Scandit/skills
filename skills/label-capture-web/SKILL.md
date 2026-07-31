@@ -27,8 +27,8 @@ Based on the user's request, load the appropriate reference file before respondi
 
 - **Questions about other Scandit products or scanning modes** (e.g. SparkScan, Barcode Capture, MatrixScan, ID Capture, or general SDK setup questions not specific to Label Capture) → hand off to the `data-capture-sdk` skill. Do not attempt to answer questions about other capture modes from memory — the dedicated skill has the correct and up-to-date references.
 
-- **Integrating Label Capture from scratch** (e.g. "add Label Capture to my app", "scan a price tag with barcode and expiry date", "how do I use Smart Label Capture", "how do I enable the Validation Flow", "I want to build a label scanning app", "which overlay should I use", "what is ARE", "how do I improve OCR accuracy") → read `references/integration.md` and follow the instructions there. If the user has no existing project, the guide will direct you to offer the pre-built sample first.
-- **Migrating or upgrading an existing Label Capture integration** (e.g. "upgrade my Label Capture to the latest SDK", "migrate from v8.1 to v8.2", "what changed between SDK versions for Label Capture") → read `references/migration.md` and follow the instructions there.
+- **Integrating Label Capture from scratch** (e.g. "add Label Capture to my app", "scan a price tag with barcode and expiry date", "how do I use Smart Label Capture", "how do I enable the Validation Flow", "I want to build a label scanning app", "which overlay should I use", "what is ARE", "how do I improve OCR accuracy") → read [references/integration.md](references/integration.md) and follow the instructions there. If the user has no existing project, the guide will direct you to offer the pre-built sample first.
+- **Migrating or upgrading an existing Label Capture integration** (e.g. "upgrade my Label Capture to the latest SDK", "migrate from v8.1 to v8.2", "what changed between SDK versions for Label Capture") → read [references/migration.md](references/migration.md) and follow the instructions there.
 
 ## API Usage Policy
 
