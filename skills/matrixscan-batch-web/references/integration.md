@@ -76,7 +76,7 @@ After providing the code, show this setup checklist:
 2. Set cross-origin headers (`COOP: same-origin` + `COEP: require-corp` or `credentialless`) on the server
 3. If self-hosting the SDK engine, configure `libraryLocation` to point to the correct path; or use the CDN path: `https://cdn.jsdelivr.net/npm/@scandit/web-datacapture-barcode@8/sdc-lib/`
 4. Replace `'-- ENTER YOUR SCANDIT LICENSE KEY HERE --'` with your key from <https://ssl.scandit.com>
-5. Add a `<div id="data-capture-view">` (or similar) to your HTML with defined dimensions and `position: fixed` or `absolute`. Revert that styling in your cleanup: the element belongs to the app, so `view.detachFromElement()` empties it but cannot undo the positioning you applied, and an empty full-viewport `position: fixed` element still blocks every click on the page underneath
+5. Add a `<div id="data-capture-view">` (or similar) to your HTML with defined dimensions and `position: fixed` or `absolute`. Revert that styling in your cleanup: the element belongs to the app, so detaching the view does not undo the positioning you applied, and an empty full-viewport `position: fixed` element still blocks every click on the page underneath
 
 ---
 
@@ -175,7 +175,7 @@ await view.addOverlay(overlay);
 | `view.setContext(context)` | `Promise<void>` — attach a context to a detached view. |
 | `view.addOverlay(overlay)` | `Promise<void>` — attach an overlay (basic or advanced) explicitly. |
 | `view.removeOverlay(overlay)` | `Promise<void>` — detach an overlay. |
-| `view.detachFromElement()` | **Sync** — remove the view from its DOM element. Call during cleanup. It empties the element and drops the SDK's own styles, but cannot undo styling the app applied to that element, so revert the mount-point style yourself. |
+| `view.detachFromElement()` | **Sync** — remove the view from its DOM element. Call during cleanup. It does not undo styling the app applied to that element, so revert the mount-point style yourself. |
 
 ## Step 2 — Configure BarcodeBatchSettings and create BarcodeBatch
 
