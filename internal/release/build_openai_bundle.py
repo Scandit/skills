@@ -467,6 +467,62 @@ def check_manifest(root: Path) -> dict:
 # skill checks
 # --------------------------------------------------------------------------- #
 
+def reference_orphans(skill_dir: Path) -> list[str]:
+    """Files under references/ not reachable from SKILL.md by markdown link.
+
+    Mirrors the `orphan-files` grader in @microsoft/vally 0.6.0, the version
+    awesome-copilot's review gate pins. Reachability seeds from markdown links in
+    SKILL.md, follows links inside reachable .md files, and ignores anything inside
+    fenced code blocks. A backticked path is not a link and does not count, which is
+    the trap: `valid-refs` passes while `orphan-files` fails.
+    """
+    refs_dir = skill_dir / "references"
+    if not refs_dir.is_dir():
+        return []
+    all_files = {p.relative_to(skill_dir).as_posix() for p in refs_dir.rglob("*") if p.is_file()}
+    if not all_files:
+        return []
+
+    def links(text: str, base: Path) -> set[str]:
+        found: set[str] = set()
+        fence = False
+        for line in text.split("\n"):
+            if re.match(r"^\s*(```|~~~)", line):
+                fence = not fence
+                continue
+            if fence:
+                continue
+            for target in re.findall(r"\]\(([^()\s]+)\)", line):
+                target = target.split("#", 1)[0].removeprefix("./")
+                if not target or target.startswith(("http://", "https://")):
+                    continue
+                resolved = (base / target).resolve()
+                try:
+                    rel = resolved.relative_to(skill_dir.resolve()).as_posix()
+                except ValueError:
+                    continue
+                if rel.startswith("references/"):
+                    found.add(rel)
+        return found
+
+    manifest = skill_dir / "SKILL.md"
+    queue = sorted(links(manifest.read_text(encoding="utf-8", errors="replace"), skill_dir))
+    reachable = set(queue)
+    while queue:
+        current = queue.pop()
+        if not current.endswith(".md"):
+            continue
+        path = skill_dir / current
+        if not path.is_file():
+            continue
+        for rel in links(path.read_text(encoding="utf-8", errors="replace"), path.parent):
+            if rel not in reachable:
+                reachable.add(rel)
+                queue.append(rel)
+
+    return sorted(all_files - reachable)
+
+
 def check_skills(root: Path, plugin_name: str, plugin_license: str = "") -> int:
     skills = root / "skills"
     if not skills.is_dir():
@@ -477,6 +533,7 @@ def check_skills(root: Path, plugin_name: str, plugin_license: str = "") -> int:
     seen_names: dict[str, str] = {}
     metadata_skills: list[str] = []
     license_mismatches: list[tuple[str, str]] = []
+    orphan_skills: list[tuple[str, list[str]]] = []
     for entry in sorted(skills.iterdir()):
         if entry.is_symlink():
             warn("skill_symlink_ignored", f"skills/{entry.name} is a symlink and will not be imported")
@@ -535,6 +592,10 @@ def check_skills(root: Path, plugin_name: str, plugin_license: str = "") -> int:
         if skill_license and plugin_license and skill_license != plugin_license:
             license_mismatches.append((entry.name, skill_license))
 
+        orphans = reference_orphans(entry)
+        if orphans:
+            orphan_skills.append((entry.name, orphans))
+
         body = re.sub(r"^---\n.*?\n---", "", manifest.read_text(encoding="utf-8"), flags=re.S).strip()
         if not body:
             error("skill_body_empty", f"skills/{entry.name}/SKILL.md has no instructions after front matter")
@@ -550,6 +611,12 @@ def check_skills(root: Path, plugin_name: str, plugin_license: str = "") -> int:
     for name, value in license_mismatches:
         warn("skill_license_mismatch",
              f"skills/{name} declares license {value!r} but the plugin manifest declares {plugin_license!r}")
+    if orphan_skills:
+        total = sum(len(files) for _, files in orphan_skills)
+        warn("orphan_reference_files",
+             f"{total} file(s) under references/ across {len(orphan_skills)} skill(s) are not reachable from "
+             f"SKILL.md by markdown link, which fails awesome-copilot's vally orphan-files gate. "
+             f"First: {orphan_skills[0][0]} -> {', '.join(orphan_skills[0][1][:3])}")
     return count
 
 
