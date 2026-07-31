@@ -1,7 +1,7 @@
 ---
 name: matrixscan-batch-cordova
 description: Cordova MatrixScan Batch (scandit-cordova-datacapture-* plugins) — MatrixScan, BarcodeBatch, legacy BarcodeTracking — tracking and scanning multiple barcodes at once with basic/advanced AR overlays. Use for integration, settings and symbologies, per-barcode brushes, TrackedBarcodeView annotations, lifecycle, SDK version migration, or troubleshooting.
-license: MIT
+license: Apache-2.0
 metadata:
   author: scandit
   version: "1.0.1"

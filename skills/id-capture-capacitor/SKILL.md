@@ -1,7 +1,7 @@
 ---
 name: id-capture-capacitor
 description: Scandit ID Capture (`IdCapture`) in Capacitor projects — scanning passports, driver's licenses, ID cards, residence permits, visas via MRZ, VIZ, barcode, or mobile documents. Use for integration, accepted-document and scanner configuration, captured-field result handling, anonymization, add-on capabilities (voided-ID detection, European driving-license back decoding, AAMVA barcode verification), and SDK version migration.
-license: MIT
+license: Apache-2.0
 metadata:
   author: scandit
   version: "1.0.1"

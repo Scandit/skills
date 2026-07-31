@@ -1,7 +1,7 @@
 ---
 name: matrixscan-batch-android
 description: MatrixScan Batch (MatrixScan, BarcodeBatch, legacy BarcodeTracking) — tracking and scanning multiple barcodes at once in Android (Kotlin/Java) projects. Use for integration, settings and symbologies, tracked-barcode handling, basic/advanced overlay customization, lifecycle, or troubleshooting.
-license: MIT
+license: Apache-2.0
 metadata:
   author: scandit
   version: "1.0.1"

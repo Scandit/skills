@@ -1,7 +1,7 @@
 ---
 name: barcode-capture-rn
 description: Scandit Barcode Capture (`BarcodeCapture`) in React Native projects — the low-level, full-control single-barcode scanning mode (BarcodeCapture + DataCaptureView + BarcodeCaptureOverlay), without the pre-built SparkScan UI. Use for integration, symbology configuration, result handling, viewfinder and feedback customization, SDK version migration, or troubleshooting.
-license: MIT
+license: Apache-2.0
 metadata:
   author: scandit
   version: "1.0.1"

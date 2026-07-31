@@ -1,7 +1,7 @@
 ---
 name: matrixscan-count-ios
 description: MatrixScan Count (BarcodeCount) in native iOS projects (Swift/Objective-C, ScanditBarcodeCapture) — counting and receiving barcodes in bulk with the BarcodeCountView UI in UIKit or SwiftUI, scanning against an expected/receiving list, spatial map, explicitly managed camera. Use for integration, settings and symbology configuration, result handling, UI customization, status mode, or troubleshooting counting workflows.
-license: MIT
+license: Apache-2.0
 metadata:
   author: scandit
   version: "0.1.1"

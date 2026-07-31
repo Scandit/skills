@@ -467,7 +467,7 @@ def check_manifest(root: Path) -> dict:
 # skill checks
 # --------------------------------------------------------------------------- #
 
-def check_skills(root: Path, plugin_name: str) -> int:
+def check_skills(root: Path, plugin_name: str, plugin_license: str = "") -> int:
     skills = root / "skills"
     if not skills.is_dir():
         error("plugin_runtime_surface_missing", "bundle must contain skills/<skill>/SKILL.md")
@@ -475,6 +475,8 @@ def check_skills(root: Path, plugin_name: str) -> int:
 
     count = 0
     seen_names: dict[str, str] = {}
+    metadata_skills: list[str] = []
+    license_mismatches: list[tuple[str, str]] = []
     for entry in sorted(skills.iterdir()):
         if entry.is_symlink():
             warn("skill_symlink_ignored", f"skills/{entry.name} is a symlink and will not be imported")
@@ -522,12 +524,32 @@ def check_skills(root: Path, plugin_name: str) -> int:
             error("skill_description_too_long",
                   f"skills/{entry.name} description is {len(desc)} characters, limit 1024")
 
+        # The portal ignores `metadata` in SKILL.md and says so, once per skill. Surfacing it
+        # here keeps the upload free of 74 identical warnings nobody can act on at review time.
+        if "metadata" in fm:
+            metadata_skills.append(entry.name)
+
+        # Not an OpenAI rule. A skill that declares a licence contradicting the plugin manifest
+        # is a licence misstatement in a reviewed artifact, and it has now happened twice.
+        skill_license = fm.get("license")
+        if skill_license and plugin_license and skill_license != plugin_license:
+            license_mismatches.append((entry.name, skill_license))
+
         body = re.sub(r"^---\n.*?\n---", "", manifest.read_text(encoding="utf-8"), flags=re.S).strip()
         if not body:
             error("skill_body_empty", f"skills/{entry.name}/SKILL.md has no instructions after front matter")
 
     if count == 0:
         error("archive_plugin_files_missing", "bundle must contain at least one valid skills/<skill>/SKILL.md")
+
+    if metadata_skills:
+        warn("skill_metadata_ignored",
+             f"{len(metadata_skills)} skill(s) carry `metadata` in SKILL.md front matter. The portal ignores it "
+             "and warns once per skill; interface settings belong in agents/openai.yaml. Harmless, but every "
+             "one of these becomes a warning on upload.")
+    for name, value in license_mismatches:
+        warn("skill_license_mismatch",
+             f"skills/{name} declares license {value!r} but the plugin manifest declares {plugin_license!r}")
     return count
 
 
@@ -613,7 +635,7 @@ def main() -> int:
         removed = strip_tree(stage)
 
         manifest = check_manifest(stage)
-        skill_count = check_skills(stage, manifest.get("name", ""))
+        skill_count = check_skills(stage, manifest.get("name", ""), manifest.get("license", ""))
         entries, uncompressed = check_paths(stage)
 
         print(f"ref            {args.ref} ({sha[:12]})")

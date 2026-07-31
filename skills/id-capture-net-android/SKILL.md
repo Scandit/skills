@@ -1,7 +1,7 @@
 ---
 name: id-capture-net-android
 description: Scandit ID Capture (`IdCapture`) in .NET for Android projects (`net*-android` target framework, `Scandit.DataCapture.IdCapture` NuGet, C#) — scanning passports, driver's licenses, ID cards, residence permits, visas via MRZ, VIZ, PDF417 barcode, or mobile documents. Use for integration, accepted-document and scanner configuration, CapturedId result handling, rejection rules, AAMVA verification, anonymization, overlay UI, and Scandit .NET SDK version migration — for MAUI apps (`<UseMaui>true</UseMaui>`) use id-capture-net-maui instead.
-license: MIT
+license: Apache-2.0
 metadata:
   author: scandit
   version: "1.0.1"

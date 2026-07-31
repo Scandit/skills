@@ -1,7 +1,7 @@
 ---
 name: matrixscan-count-rn
 description: MatrixScan Count (BarcodeCount) in React Native projects — scandit-react-native-datacapture-barcode package. Multi-barcode counting workflows (scan-and-count, counting against an expected capture list, status overlays) with BarcodeCountView. For Capacitor use matrixscan-count-capacitor. Use for integration, settings and symbology configuration, result handling, UI customization, or troubleshooting counting workflows.
-license: MIT
+license: Apache-2.0
 metadata:
   author: scandit
   version: "1.0.1"

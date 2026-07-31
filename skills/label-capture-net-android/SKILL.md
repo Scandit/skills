@@ -1,7 +1,7 @@
 ---
 name: label-capture-net-android
 description: Smart Label Capture (Scandit `LabelCapture`) in .NET for Android projects (`net*-android` target framework, `Scandit.DataCapture.Label` NuGet, C#) — extracting multiple fields (price, expiry date, serial or lot number, weight) from a label in one scan via barcode and text fields. Use for integration, label definitions (including prebuilt VIN, price label, 7-segment), captured-session handling, overlays, the Validation Flow, and Scandit .NET SDK version migration — for MAUI apps (`<UseMaui>true</UseMaui>`) use label-capture-net-maui instead.
-license: MIT
+license: Apache-2.0
 metadata:
   author: scandit
   version: "1.0.1"

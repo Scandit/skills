@@ -1,7 +1,7 @@
 ---
 name: matrixscan-count-capacitor
 description: Capacitor MatrixScan Count (BarcodeCount) — plugin scandit-capacitor-datacapture-barcode. Multi-barcode counting and receiving workflows (scan-and-count, inventory count, capture list, status mode) with BarcodeCountView on a DOM element in Capacitor apps, iOS/Android native only. For React Native use matrixscan-count-rn. Use for integration, symbology configuration, result handling, view customization, or troubleshooting counting workflows.
-license: MIT
+license: Apache-2.0
 metadata:
   author: scandit
   version: "1.0.1"

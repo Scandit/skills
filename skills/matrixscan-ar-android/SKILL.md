@@ -1,7 +1,7 @@
 ---
 name: matrixscan-ar-android
 description: MatrixScan AR (Barcode AR, BarcodeAr) — scanning multiple barcodes at once with AR highlights and annotations over tracked barcodes in Android (Kotlin/Java) projects. Use for integration, scan settings, tracked-barcode handling, highlight and annotation providers, SDK version migration, or troubleshooting.
-license: MIT
+license: Apache-2.0
 metadata:
   author: scandit
   version: "1.0.1"

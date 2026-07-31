@@ -1,7 +1,7 @@
 ---
 name: id-capture-ios
 description: Scandit ID Capture (`IdCapture`) in native iOS Swift projects (UIKit or SwiftUI) — scanning passports, driver's licenses, ID cards, residence permits, health-insurance cards, visas via MRZ, VIZ, PDF417 barcode, or mobile documents on iOS. Use for integration, accepted-document and scanner configuration, CapturedId result handling, rejection rules, AAMVA verification, anonymization, overlay UI, camera lifecycle, and Scandit iOS SDK version migration in Swift, UIKit, or SwiftUI iOS apps.
-license: MIT
+license: Apache-2.0
 metadata:
   author: scandit
   version: "1.0.1"

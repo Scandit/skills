@@ -1,7 +1,7 @@
 ---
 name: matrixscan-batch-net-android
 description: MatrixScan Batch (MatrixScan, BarcodeBatch, legacy BarcodeTracking) in .NET for Android projects (`net*-android` TFM, `Scandit.DataCapture.Barcode` NuGet, non-MAUI — MAUI apps use matrixscan-batch-net-maui) — tracking and scanning multiple barcodes at once. Use for integration, settings and symbologies, listeners/events, basic/advanced overlay customization, camera lifecycle, SDK version migration, or troubleshooting.
-license: MIT
+license: Apache-2.0
 metadata:
   author: scandit
   version: "1.0.1"

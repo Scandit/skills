@@ -1,7 +1,7 @@
 ---
 name: id-bolt
 description: Scandit ID Bolt in web projects (`@scandit/web-id-bolt`) — the hosted, drop-in identity-document scanning pop-up (passports, driver's licenses, ID cards) with built-in handover to the user's phone, for adding ID scanning to a website with minimal code and no camera UI to build. Use for integration (IdBoltSession), document selection, validators, returned-data and anonymization options, theming and workflow customization, or troubleshooting. A different product from ID Capture — for in-page fully-customizable scanning embedded in your own UI use id-capture-web.
-license: MIT
+license: Apache-2.0
 metadata:
   author: scandit
   version: "1.0.1"

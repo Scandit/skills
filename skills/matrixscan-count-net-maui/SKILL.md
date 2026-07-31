@@ -1,7 +1,7 @@
 ---
 name: matrixscan-count-net-maui
 description: MatrixScan Count (BarcodeCount) in .NET MAUI projects (<UseMaui>true</UseMaui>, Scandit.DataCapture.Barcode.Maui NuGet) — counting/receiving workflows with the BarcodeCountView XAML control and capture/receiving lists. For non-MAUI .NET use matrixscan-count-net-android or matrixscan-count-net-ios. Use for integration, XAML and builder-chain setup, result handling, UI customization, SDK version migration, or troubleshooting counting workflows.
-license: MIT
+license: Apache-2.0
 metadata:
   author: scandit
   version: "1.0.1"

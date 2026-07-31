@@ -1,7 +1,7 @@
 ---
 name: barcode-capture-net-ios
 description: Scandit BarcodeCapture in .NET for iOS projects (`net*-ios` target framework, `Scandit.DataCapture.Barcode` NuGet, non-MAUI — for MAUI apps use barcode-capture-net-maui) — the low-level, full-control barcode scanning mode without the pre-built SparkScan UI. Use for integration, scan settings, listener and event wiring, overlay customization, camera lifecycle, SDK version migration (v6→v7→v8), replacing ZXing.Net.Mobile or AVFoundation scanners, or troubleshooting.
-license: MIT
+license: Apache-2.0
 metadata:
   author: scandit
   version: "1.0.1"

@@ -1,7 +1,7 @@
 ---
 name: matrixscan-count-cordova
 description: Cordova MatrixScan Count (BarcodeCount) — plugin scandit-cordova-datacapture-barcode. Counting and receiving workflows (scan-and-count, inventory count, scan against a capture list, status mode, tap-to-uncount) with BarcodeCountView in Cordova apps. For Capacitor use matrixscan-count-capacitor. Use for integration, symbology configuration, view customization, result handling, SDK version migration, or troubleshooting counting workflows.
-license: MIT
+license: Apache-2.0
 metadata:
   author: scandit
   version: "1.0.1"

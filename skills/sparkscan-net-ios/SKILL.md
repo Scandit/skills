@@ -1,7 +1,7 @@
 ---
 name: sparkscan-net-ios
 description: SparkScan single-barcode scanning with the pre-built `SparkScanView` UI in .NET for iOS projects (`net*-ios` target framework, `Scandit.DataCapture.Barcode` NuGet, non-MAUI — for MAUI apps use sparkscan-net-maui). Use for integration, scan settings, result handling, feedback customization, scanning lifecycle, SDK version migration (v6→v7→v8), replacing third-party scanners (ZXing.Net.Mobile), or troubleshooting.
-license: MIT
+license: Apache-2.0
 metadata:
   author: scandit
   version: "1.0.1"

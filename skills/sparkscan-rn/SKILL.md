@@ -1,7 +1,7 @@
 ---
 name: sparkscan-rn
 description: SparkScan single-barcode scanning with the pre-built scanning UI (`SparkScanView` component) in React Native projects. Use for integration, scan settings, result handling, UI customization, SDK version migration, or troubleshooting.
-license: MIT
+license: Apache-2.0
 metadata:
   author: scandit
   version: "1.0.1"

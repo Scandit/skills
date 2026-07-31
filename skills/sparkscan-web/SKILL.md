@@ -1,7 +1,7 @@
 ---
 name: sparkscan-web
 description: SparkScan single-barcode scanning with the pre-built scanning UI (floating trigger button, `<spark-scan-view>`) in web/browser projects (`@scandit/web-datacapture-barcode`), including React/Vite/Next.js apps. Use for integration, scan settings, result handling, trigger-button customization, React-specific issues (StrictMode, React 18 vs 19 binding), camera/HTTPS/COOP-COEP troubleshooting, or SDK version migration — not for SparkScan on native or hybrid platforms.
-license: MIT
+license: Apache-2.0
 metadata:
   author: scandit
   version: "1.2.1"
