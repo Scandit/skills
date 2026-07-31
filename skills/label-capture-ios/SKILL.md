@@ -1,7 +1,7 @@
 ---
 name: label-capture-ios
 description: Smart Label Capture (Scandit `LabelCapture`) in native iOS projects — extracting multiple fields (price, expiry date, serial or lot number, weight) from a label in one scan, using barcode fields plus text fields with regex patterns. Use for integration, label-definition configuration, captured-session handling, overlay UI, the Validation Flow, and SDK version migration.
-license: MIT
+license: Apache-2.0
 metadata:
   author: scandit
   version: "1.0.1"

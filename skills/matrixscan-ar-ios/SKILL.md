@@ -1,7 +1,7 @@
 ---
 name: matrixscan-ar-ios
 description: MatrixScan AR scanning pipeline in iOS projects (Swift, UIKit/SwiftUI) — BarcodeAr mode and settings, BarcodeArView, listener, feedback, camera and controls, plus migration from MatrixScan Batch (BarcodeBatch/BarcodeTracking). Use for integration, configuration, or troubleshooting — highlight and annotation work routes to the sibling skills matrixscan-ar-highlight-ios and matrixscan-ar-annotation-ios.
-license: MIT
+license: Apache-2.0
 metadata:
   author: scandit
   version: "1.0.1"

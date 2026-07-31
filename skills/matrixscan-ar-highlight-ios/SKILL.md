@@ -1,7 +1,7 @@
 ---
 name: matrixscan-ar-highlight-ios
 description: MatrixScan AR highlights in iOS projects (Swift, UIKit/SwiftUI) — the shapes drawn over tracked barcodes. Use for adding highlights, customizing or modifying existing ones, or handling highlight tap interaction — pipeline setup belongs to matrixscan-ar-ios.
-license: MIT
+license: Apache-2.0
 metadata:
   author: scandit
   version: "1.0.1"

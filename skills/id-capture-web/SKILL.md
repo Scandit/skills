@@ -1,7 +1,7 @@
 ---
 name: id-capture-web
 description: Scandit ID Capture in web/browser projects (`@scandit/web-datacapture-id`) — scanning passports, driver's licenses, ID cards, residence permits, visas via MRZ, VIZ, PDF417 barcode, or mobile documents. Use for integration, accepted-document and scanner configuration, CapturedId result handling, rejection rules, AAMVA verification, overlay UI, and SDK version migration in TypeScript/JavaScript web apps.
-license: MIT
+license: Apache-2.0
 metadata:
   author: scandit
   version: "1.0.1"

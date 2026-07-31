@@ -1,7 +1,7 @@
 ---
 name: id-capture-net-maui
 description: Scandit ID Capture (`IdCapture`) in .NET MAUI projects (`<UseMaui>true</UseMaui>`, `Scandit.DataCapture.IdCapture` NuGet) — scanning passports, driver's licenses, ID cards, residence permits, visas via MRZ, VIZ, PDF417 barcode, or mobile documents. Use for integration, accepted-document and scanner configuration, CapturedId result handling, rejection rules, AAMVA verification, MAUI view hosting and lifecycle, and SDK version migration — for non-MAUI .NET projects use `id-capture-net-android` (`net*-android`) or `id-capture-net-ios` (`net*-ios`) instead.
-license: MIT
+license: Apache-2.0
 metadata:
   author: scandit
   version: "1.0.1"

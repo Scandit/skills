@@ -1,7 +1,7 @@
 ---
 name: label-capture-android
 description: Smart Label Capture (Scandit `LabelCapture`) in native Android projects — extracting multiple fields (price, expiry date, serial or lot number, weight) from a label in one scan, using barcode fields plus text fields with regex patterns and pre-built definitions like price capture. Use for integration, label-definition configuration, captured-session handling, overlay customization (brushes, floating badges), the Validation Flow, and SDK version migration.
-license: MIT
+license: Apache-2.0
 metadata:
   author: scandit
   version: "1.2.1"

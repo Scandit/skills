@@ -1,7 +1,7 @@
 ---
 name: id-capture-android
 description: Scandit ID Capture (`IdCapture`) in native Android (Kotlin or Java) projects — scanning passports, driver's licenses, ID cards, residence permits, health-insurance cards, visas via MRZ, VIZ, PDF417 barcode, or mobile documents. Use for integration, accepted-document and scanner configuration, CapturedId result handling, rejection rules, AAMVA verification, anonymization, overlay UI, camera lifecycle, and Scandit Android SDK version migration.
-license: MIT
+license: Apache-2.0
 metadata:
   author: scandit
   version: "1.0.1"
