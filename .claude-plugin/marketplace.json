@@ -10,10 +10,7 @@
   "plugins": [
     {
       "name": "scandit-sdk",
-      "source": {
-        "source": "url",
-        "url": "https://github.com/scandit/skills.git"
-      },
+      "source": "./",
       "description": "AI agent skills for integrating the Scandit Data Capture SDK — product selection, documentation, and implementation guides for barcode scanning, ID capture, and smart label capture."
     }
   ]
