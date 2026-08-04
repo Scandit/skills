@@ -50,77 +50,30 @@ The skill will also be picked up automatically from prompts like _"help me choos
 
 ## Installation
 
-### Skills CLI (45+ agents)
-
-The [`skills`](https://github.com/vercel-labs/skills) CLI from Vercel installs skills into any supported agent (Claude Code, Codex, Cursor, Antigravity, GitHub Copilot, Cline, Continue, Windsurf, and 35+ others). Run it and follow the interactive prompts to pick agent and skills:
+Install the plugin. One command, and your agent gets all 74 skills:
 
 ```bash
-npx skills add scandit/skills
+npx plugins add scandit/skills
 ```
 
-The CLI does **not** auto-update installed skills. We ship updates as Scandit adds new products, frameworks, and SDK versions — re-run periodically to pull the latest:
+It detects which coding agents you have and installs into each of them. Re-run the same command to pull the latest skills.
+
+Or install from your agent's own marketplace:
+
+| Agent | Install | Updates |
+| --- | --- | --- |
+| Codex / ChatGPT App | [One click install](https://chatgpt.com/plugins/plugins_6a6c6b6440a08191987ecc241e8660f7), or search **Scandit SDK** in the [plugin directory](https://learn.chatgpt.com/docs/plugins?surface=app#plugin-directory-in-the-codex-app) | Automatic |
+| Claude Code | `/plugin marketplace add scandit/skills`<br>`/plugin install scandit-sdk@scandit-plugins` | `/plugin` → **Marketplaces** → `scandit-plugins` → **Enable auto-update** |
+| Cursor | [One click install](https://cursor.com/marketplace/scandit), or `/add-plugin scandit-sdk` in the editor | Automatic |
+| Codex CLI | `codex plugin marketplace add scandit/skills`<br>`codex plugin add scandit-sdk@scandit-plugins` | `codex plugin marketplace upgrade scandit-plugins` |
+| Copilot CLI | `copilot plugin marketplace add scandit/skills`<br>`copilot plugin install scandit-sdk@scandit-plugins` | `copilot plugin update scandit-sdk` |
+| Everyone else | `npx skills add scandit/skills` | `npx skills update scandit/skills` |
+
+**Just one skill?** Your agent only loads the skills your prompt needs, so the full bundle is usually the right choice. To install a single one:
 
 ```bash
-npx skills update scandit/skills
+npx skills add scandit/skills --skill sparkscan-ios
 ```
-
-(Or `npx skills update` to refresh every installed skill at once.)
-
-### Claude Code plugin
-
-Claude Code can also install the skills as a plugin from the marketplace. Run the commands one at a time:
-
-```bash
-/plugin marketplace add scandit/skills
-```
-
-```bash
-/plugin install scandit-sdk@scandit-plugins
-```
-
-Auto-update is off by default for third-party marketplaces, so we recommend turning it on: open `/plugin` → **Marketplaces** → select `scandit-plugins` → **Enable auto-update**. See the [Claude Code plugins docs](https://code.claude.com/docs/en/discover-plugins) for details.
-
-### Cursor plugin
-
-Install the official Scandit plugin in Cursor with one click from the [Cursor marketplace](https://cursor.com/marketplace/scandit). Cursor manages plugin updates automatically — installed plugins are kept current through the marketplace without manual action.
-
-### GitHub Copilot CLI plugin
-
-[GitHub Copilot CLI](https://docs.github.com/en/copilot/how-tos/copilot-cli) can also install the skills as a plugin from the marketplace:
-
-```bash
-copilot plugin marketplace add scandit/skills
-```
-
-```bash
-copilot plugin install scandit-sdk@scandit-plugins
-```
-
-Copilot CLI does not auto-update plugins — re-run periodically to pull the latest skills:
-
-```bash
-copilot plugin update scandit-sdk
-```
-
-### Codex plugin
-
-[Codex](https://developers.openai.com/codex/) can also install the skills as a plugin from the marketplace. Run the commands one at a time:
-
-```bash
-codex plugin marketplace add scandit/skills
-```
-
-```bash
-codex plugin add scandit-sdk@scandit-plugins
-```
-
-Codex does not auto-update plugins — re-run periodically to pull the latest skills:
-
-```bash
-codex plugin marketplace upgrade scandit-plugins
-```
-
-See the [Codex plugins docs](https://developers.openai.com/codex/plugins) for details.
 
 ## Using a skill
 
