@@ -25,10 +25,10 @@ Or install from your agent's own marketplace:
 | Copilot CLI | `copilot plugin marketplace add scandit/skills`<br>`copilot plugin install scandit-sdk@scandit-plugins` | `copilot plugin update scandit-sdk` |
 | Everyone else | `npx skills add scandit/skills` | `npx skills update scandit/skills` |
 
-**Just one skill?** Your agent only loads the skills your prompt needs, so the full bundle is usually the right choice. To install a single one:
+**Just one skill?** Your agent only loads the skills your prompt needs, so the full bundle is usually the right choice. To install a single one, name it: for SparkScan Web, use
 
 ```bash
-npx skills add scandit/skills --skill sparkscan-ios
+npx skills add scandit/skills --skill sparkscan-web
 ```
 
 ## How to use it
