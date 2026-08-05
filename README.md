@@ -1,36 +1,61 @@
 # Agent Skills for the Scandit SDK
 
-[![Install via skills.sh](https://img.shields.io/badge/skills.sh-install-green)](https://skills.sh/scandit/skills)
-[![Install in Cursor](https://img.shields.io/badge/Install%20in-Cursor-blue?style=flat-square&logo=cursor)](https://cursor.com/marketplace/scandit)
-
 AI agent skills for integrating the [Scandit Data Capture SDK](https://docs.scandit.com).
 
-Each skill teaches your coding assistant how to integrate a specific Scandit SDK correctly. Instead of pasting docs snippets into your AI editor, install a skill once and your agent follows Scandit's recommended patterns whenever you ask it to add a Scandit feature.
+Each skill is specific to a product and a framework (e.g. SparkScan iOS), and bundles the recommended integration code, up-to-date setup, permissions and license-key wiring, common customization recipes (modes, callbacks, UI tweaks), and migration guidance, SDK version upgrades and, for some products, replacing a third-party scanner, all grounded in Scandit's own documentation. Install once, then just ask your agent for the feature instead of pasting docs snippets into your AI editor.
 
-## What you get
+## Installation
 
-Each integration skill is specific to a product and a framework. Each skill bundles:
+Install the plugin. One command, and your agent gets all 74 skills:
 
-- The recommended integration code for that product + framework (e.g. SparkScan iOS)
-- Up-to-date setup, permissions, and license-key wiring
-- Common customization recipes (modes, callbacks, UI tweaks)
-- Links back to the relevant Scandit documentation
-
-## Not sure which product you need?
-
-If you're new to Scandit and don't yet know whether your use case fits SparkScan, Barcode Capture, MatrixScan, Smart Label Capture, or ID Capture, start with the `data-capture-sdk` skill. It's an advisor — it asks a few questions about your workflow, recommends the right product, and then points you at the matching implementation skill for your platform.
-
-Install it the same way as any other skill (see [Installation](#installation) below), then just chat with your agent like you would with anyone else — ask open-ended questions, describe your app, paste a screenshot of the screen you want to add scanning to, or drop in a photo of the label, package, or ID you need to capture. The skill will use that context to narrow down the right product. For example:
-
-```
-# Example 1
-/data-capture-sdk I need to scan barcodes in a warehouse app — which Scandit product should I use?
-
-# Example 2
-/data-capture-sdk here's a photo of the labels we want to capture — what fits best?
+```bash
+npx plugins add scandit/skills
 ```
 
-The skill will also be picked up automatically from prompts like _"help me choose a Scandit product"_ or _"which Scandit SDK fits my use case?"_, no explicit invocation needed. Once you've landed on a product and platform, the advisor hands you off to the right product-framework skill (e.g. `barcode-capture-flutter`) from the table below.
+It detects which coding agents you have and installs into each of them. Re-run the same command to pull the latest skills.
+
+Or install from your agent's own marketplace:
+
+| Agent | Install | Updates |
+| --- | --- | --- |
+| Codex / ChatGPT App | [One click install](https://chatgpt.com/plugins/plugins_6a6c6b6440a08191987ecc241e8660f7), or search **Scandit SDK** in the [plugin directory](https://learn.chatgpt.com/docs/plugins?surface=app#plugin-directory-in-the-codex-app) | Automatic |
+| Claude Code | `/plugin marketplace add scandit/skills`<br>`/plugin install scandit-sdk@scandit-plugins` | `/plugin` → **Marketplaces** → `scandit-plugins` → **Enable auto-update** |
+| Cursor | [One click install](https://cursor.com/marketplace/scandit), or `/add-plugin scandit-sdk` in the editor | Automatic |
+| Codex CLI | `codex plugin marketplace add scandit/skills`<br>`codex plugin add scandit-sdk@scandit-plugins` | `codex plugin marketplace upgrade scandit-plugins` |
+| Copilot CLI | `copilot plugin marketplace add scandit/skills`<br>`copilot plugin install scandit-sdk@scandit-plugins` | `copilot plugin update scandit-sdk` |
+| Everyone else | `npx skills add scandit/skills` | `npx skills update scandit/skills` |
+
+**Just one skill?** Your agent only loads the skills your prompt needs, so the full bundle is usually the right choice. To install a single one, name it: for SparkScan Web, use
+
+```bash
+npx skills add scandit/skills --skill sparkscan-web
+```
+
+## How to use it
+
+Describe what you want in plain language. Your agent loads the right skill on its own, or you can call one explicitly with `/skill-name` followed by your task.
+
+**Not sure which Scandit product you need?** Start with `data-capture-sdk`. It is an advisor, not an integration skill: it asks a few questions about your workflow, recommends the right product, then hands off to the matching implementation skill for your platform. Describe your app, paste a screenshot of the screen you want to add scanning to, or drop in a photo of the label, package or ID you need to capture.
+
+```
+/data-capture-sdk I need to scan barcodes in a warehouse picking app - which Scandit product should I use?
+/data-capture-sdk here is a photo of the labels we want to capture - what fits best?
+```
+
+**Already know the product?** Go straight to its skill.
+
+```
+/sparkscan-ios add a barcode scanner to the home screen of my app
+/label-capture-web capture the expiry date and lot number from these pharmacy labels
+```
+
+**Migrating?** Most implementation skills carry version migration guidance alongside first integration. The Barcode Capture, SparkScan and MatrixScan Batch skills add a guide for replacing a third-party scanner.
+
+```
+/barcode-capture-android migrate this app from the Scandit SDK v6 API to v8
+/matrixscan-batch-web we use BarcodeTracking, move us to BarcodeBatch
+/sparkscan-android replace our current third-party barcode scanner with SparkScan
+```
 
 ## Available skills
 
@@ -47,92 +72,6 @@ The skill will also be picked up automatically from prompts like _"help me choos
 | `label-capture-{framework}` | [Smart Label Capture](https://docs.scandit.com/sdks/ios/label-capture/intro/) integration & migration (regex renames v7.6→v8.0, Validation Flow redesign v8.1→v8.2, optional update callback v8.2→v8.4). Available for `android`, `ios`, `web`, `cordova`, `capacitor`, `flutter`, `rn` (React Native). |
 | `id-capture-{framework}` | [ID Capture](https://docs.scandit.com/sdks/ios/id-capture/intro/) (identity-document scanning — passports, driver's licenses, ID cards, MRZ/VIZ/barcode/mobile documents) integration & v7→v8 migration (`scannerType`→`scanner` wrapper, `AamvaBarcodeVerifier` removal), plus the three add-on capability modules (voided-ID detection, European driving-license decoding, AAMVA barcode verification). Available for `web`, `flutter`, `cordova`, `rn` (React Native), `capacitor`. |
 | `id-bolt` | [ID Bolt](https://docs.scandit.com/hosted/id-bolt/api-overview/) — Scandit's hosted, drop-in ID scanning for websites (a thin wrapper around ID Capture that runs in a Scandit-hosted pop-up, so you don't build a UI workflow). `IdBoltSession.create(...)` + `start()`, `DocumentSelection`, scanner/validators/anonymization, `onCompletion`/`onCancellation`, theming & localization. Uses `@scandit/web-id-bolt` (not the ID Capture SDK). Web only. |
-
-## Installation
-
-### Skills CLI (45+ agents)
-
-The [`skills`](https://github.com/vercel-labs/skills) CLI from Vercel installs skills into any supported agent (Claude Code, Codex, Cursor, Antigravity, GitHub Copilot, Cline, Continue, Windsurf, and 35+ others). Run it and follow the interactive prompts to pick agent and skills:
-
-```bash
-npx skills add scandit/skills
-```
-
-The CLI does **not** auto-update installed skills. We ship updates as Scandit adds new products, frameworks, and SDK versions — re-run periodically to pull the latest:
-
-```bash
-npx skills update scandit/skills
-```
-
-(Or `npx skills update` to refresh every installed skill at once.)
-
-### Claude Code plugin
-
-Claude Code can also install the skills as a plugin from the marketplace. Run the commands one at a time:
-
-```bash
-/plugin marketplace add scandit/skills
-```
-
-```bash
-/plugin install scandit-sdk@scandit-plugins
-```
-
-Auto-update is off by default for third-party marketplaces, so we recommend turning it on: open `/plugin` → **Marketplaces** → select `scandit-plugins` → **Enable auto-update**. See the [Claude Code plugins docs](https://code.claude.com/docs/en/discover-plugins) for details.
-
-### Cursor plugin
-
-Install the official Scandit plugin in Cursor with one click from the [Cursor marketplace](https://cursor.com/marketplace/scandit). Cursor manages plugin updates automatically — installed plugins are kept current through the marketplace without manual action.
-
-### GitHub Copilot CLI plugin
-
-[GitHub Copilot CLI](https://docs.github.com/en/copilot/how-tos/copilot-cli) can also install the skills as a plugin from the marketplace:
-
-```bash
-copilot plugin marketplace add scandit/skills
-```
-
-```bash
-copilot plugin install scandit-sdk@scandit-plugins
-```
-
-Copilot CLI does not auto-update plugins — re-run periodically to pull the latest skills:
-
-```bash
-copilot plugin update scandit-sdk
-```
-
-### Codex plugin
-
-[Codex](https://developers.openai.com/codex/) can also install the skills as a plugin from the marketplace. Run the commands one at a time:
-
-```bash
-codex plugin marketplace add scandit/skills
-```
-
-```bash
-codex plugin add scandit-sdk@scandit-plugins
-```
-
-Codex does not auto-update plugins — re-run periodically to pull the latest skills:
-
-```bash
-codex plugin marketplace upgrade scandit-plugins
-```
-
-See the [Codex plugins docs](https://developers.openai.com/codex/plugins) for details.
-
-## Using a skill
-
-Two ways the skill is invoked:
-
-- **Slash command.** Call the skill explicitly:
-
-  ```
-  /sparkscan-ios use the skill to help me integrate the barcode scanner in my application
-  ```
-
-- **Automatic pickup.** Most agents read the skill's description and load it automatically when your prompt matches relevant keywords. With `sparkscan-ios` installed, asking _"add a SparkScan view to the home screen"_ pulls in the skill without explicit invocation.
 
 ## Contributing
 
