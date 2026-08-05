@@ -2,16 +2,7 @@
 
 AI agent skills for integrating the [Scandit Data Capture SDK](https://docs.scandit.com).
 
-Each skill teaches your coding assistant how to integrate a specific Scandit SDK correctly. Instead of pasting docs snippets into your AI editor, install a skill once and your agent follows Scandit's recommended patterns whenever you ask it to add a Scandit feature.
-
-## What you get
-
-Each integration skill is specific to a product and a framework. Each skill bundles:
-
-- The recommended integration code for that product + framework (e.g. SparkScan iOS)
-- Up-to-date setup, permissions, and license-key wiring
-- Common customization recipes (modes, callbacks, UI tweaks)
-- Links back to the relevant Scandit documentation
+Each skill is specific to a product and a framework (e.g. SparkScan iOS), and bundles the recommended integration code, up-to-date setup, permissions and license-key wiring, common customization recipes (modes, callbacks, UI tweaks), and migration guidance, SDK version upgrades and, for some products, replacing a third-party scanner, all grounded in Scandit's own documentation. Install once, then just ask your agent for the feature instead of pasting docs snippets into your AI editor.
 
 ## Installation
 
