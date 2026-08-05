@@ -66,10 +66,8 @@ Describe what you want in plain language. Your agent loads the right skill on it
 ```
 /barcode-capture-android migrate this app from the Scandit SDK v6 API to v8
 /matrixscan-batch-web we use BarcodeTracking, move us to BarcodeBatch
-/sparkscan-android replace our existing ZXing scanner with SparkScan
+/sparkscan-android replace our current third-party barcode scanner with SparkScan
 ```
-
-**No slash command needed.** Most agents read each skill's description and load it when your prompt matches. With `sparkscan-ios` installed, _"add a SparkScan view to the home screen"_ pulls in the skill on its own, and _"which Scandit SDK fits my use case?"_ pulls in `data-capture-sdk`.
 
 ## Available skills
 
