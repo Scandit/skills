@@ -9,7 +9,7 @@ This skill only runs on a project that has **already** been migrated to the .NET
 | The project is… | Signals | Action |
 |---|---|---|
 | **Already .NET / MAUI** (proceed) | `<Project Sdk="Microsoft.NET.Sdk">`; `<TargetFramework>net*-android</TargetFramework>` / `net*-ios`; or `<UseMaui>true</UseMaui>` with `<TargetFrameworks>net*-android;net*-ios</TargetFrameworks>`; `<PackageReference>` deps (no `packages.config`). | Continue below. |
-| **Still Xamarin** (stop) | `<TargetFrameworkVersion>` like `v13.0`; `<TargetFrameworkIdentifier>MonoAndroid</TargetFrameworkIdentifier>`; imports `Xamarin.Android.CSharp.targets` / `Xamarin.iOS.CSharp.targets` / `Xamarin.Forms.targets`; a `<PackageReference Include="Xamarin.Forms">`; a `packages.config`; verbose legacy `.csproj` with explicit `<Compile Include>` items. | **Stop.** The general app migration is out of scope. Tell the user to run Microsoft's [.NET Upgrade Assistant](https://learn.microsoft.com/en-us/dotnet/core/porting/upgrade-assistant-overview) first, and offer to do the Scandit part once the app is on .NET/MAUI. Do **not** convert the project yourself. |
+| **Still Xamarin** (stop) | `<TargetFrameworkVersion>` like `v13.0`; `<TargetFrameworkIdentifier>MonoAndroid</TargetFrameworkIdentifier>`; imports `Xamarin.Android.CSharp.targets` / `Xamarin.iOS.CSharp.targets` / `Xamarin.Forms.targets`; a `<PackageReference Include="Xamarin.Forms">`; a `packages.config`; verbose legacy `.csproj` with explicit `<Compile Include>` items. | **Stop.** The general app migration is out of scope. Tell the user to run Microsoft's .NET app-modernization tooling first — the [GitHub Copilot app‑modernization / upgrade agent](https://learn.microsoft.com/en-us/dotnet/core/porting/github-copilot-upgrade/overview) (the recommended successor to the now‑deprecated [.NET Upgrade Assistant](https://learn.microsoft.com/en-us/dotnet/core/porting/upgrade-assistant-overview)) — and offer to do the Scandit part once the app is on .NET/MAUI. Do **not** convert the project yourself. |
 
 Do not proceed past this gate on a still-Xamarin project — that is a deliberate scope boundary, not a limitation to work around.
 
@@ -27,7 +27,7 @@ A project that came from **Xamarin.Forms** lands on **MAUI** — this is the pat
 
 ## Step 2 — Find the Scandit remnants left by the general migration
 
-The .NET Upgrade Assistant does not know about Scandit, so it typically leaves the old Scandit references in place (or produces build errors around them). Grep for what still needs fixing:
+Microsoft's app-modernization tooling does not know about Scandit, so it typically leaves the old Scandit references in place (or produces build errors around them). Grep for what still needs fixing:
 
 **a) Packages** — search `.csproj` / `Directory.Packages.props` (and any leftover `packages.config`) and record the **exact version**. Match on the `Scandit.DataCapture.<Product>` stem and treat a trailing `.Xamarin` *or* `.Xamarin.Forms` as the same thing — a Forms-origin project uses the `.Xamarin.Forms` IDs, so a grep for `.Xamarin"` alone will miss it.
 
@@ -58,7 +58,7 @@ Note in particular every `<scanditCore:…>` / `<scanditBarcode:…>` element in
 
 ## Out of scope — do not migrate these
 
-If detection also surfaces general-migration leftovers — custom renderers (`ExportRenderer`, `: ViewRenderer<…>`), `DependencyService`, platform effects, `MessagingCenter`, third-party packages without a .NET equivalent — they are **not** this skill's job. They belong to the .NET Upgrade Assistant and the customer's team. Do not migrate them and do not delete them to force a build; if one is actively blocking the Scandit build, note it to the user as an Upgrade-Assistant item and continue with the Scandit slice.
+If detection also surfaces general-migration leftovers — custom renderers (`ExportRenderer`, `: ViewRenderer<…>`), `DependencyService`, platform effects, `MessagingCenter`, third-party packages without a .NET equivalent — they are **not** this skill's job. They belong to Microsoft's app-modernization tooling and the customer's team. Do not migrate them and do not delete them to force a build; if one is actively blocking the Scandit build, note it to the user as a general-migration item and continue with the Scandit slice.
 
 The one exception this skill *does* own is a `Scandit.BarcodePicker.Xamarin` reference — that is a Scandit reintegration (Step 2a), routed to a Barcode Capture / SparkScan skill.
 

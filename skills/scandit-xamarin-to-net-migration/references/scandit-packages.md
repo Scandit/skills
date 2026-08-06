@@ -50,7 +50,7 @@ Identify the product from the Scandit entry points found during detection, then 
 |---|---|---|---|---|
 | `BarcodeCapture` | Barcode Capture | `barcode-capture-net-android` | `barcode-capture-net-ios` | `barcode-capture-net-maui` |
 | `SparkScanView` / `SparkScan` | SparkScan | `sparkscan-net-android` | `sparkscan-net-ios` | `sparkscan-net-maui` |
-| `BarcodeCount` | MatrixScan Count | `matrixscan-count-net-android` | `matrixscan-count-net-ios` | *(no `-net-maui` skill — use the `data-capture-sdk` router)* |
+| `BarcodeCount` | MatrixScan Count | `matrixscan-count-net-android` | `matrixscan-count-net-ios` | `matrixscan-count-net-maui` |
 | `BarcodeBatch` / `BarcodeTracking` | MatrixScan Batch | `matrixscan-batch-net-android` | `matrixscan-batch-net-ios` | `matrixscan-batch-net-maui` |
 | `BarcodeAr` | MatrixScan AR | `matrixscan-ar-net-android` | `matrixscan-ar-net-ios` | `matrixscan-ar-net-maui` |
 | `LabelCapture` | Smart Label Capture | `label-capture-net-android` | `label-capture-net-ios` | `label-capture-net-maui` |

@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <!-- POST-migration state: the .NET Upgrade Assistant already converted this to
-       SDK-style .NET for Android, but left the Scandit *.Xamarin packages in place
-       and SupportedOSPlatformVersion below Scandit's minimum (24). -->
+  <!-- POST-migration state: Microsoft's app-modernization tooling already converted
+       this to SDK-style .NET for Android, but left the Scandit *.Xamarin packages in
+       place and SupportedOSPlatformVersion below Scandit's minimum (24). -->
   <PropertyGroup>
     <TargetFramework>net8.0-android</TargetFramework>
     <SupportedOSPlatformVersion>21</SupportedOSPlatformVersion>

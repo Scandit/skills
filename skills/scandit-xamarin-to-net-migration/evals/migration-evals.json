@@ -80,7 +80,7 @@
     {
       "id": 5,
       "prompt": "I want to migrate my Xamarin.Android app's Scandit SDK to .NET. Here's LegacyAndroid.csproj and packages.config.",
-      "expected_output": "The skill runs the precondition check and detects the project is STILL a legacy Xamarin.Android project (MonoAndroid TargetFrameworkVersion, packages.config, Xamarin.Android.CSharp.targets) — not yet on .NET. It explains that converting the app to .NET is out of scope for this skill and is owned by Microsoft's .NET Upgrade Assistant, tells the user to run that first, and offers to migrate the Scandit SDK once the app is on .NET for Android. It does NOT hand-roll the SDK-style project conversion itself.",
+      "expected_output": "The skill runs the precondition check and detects the project is STILL a legacy Xamarin.Android project (MonoAndroid TargetFrameworkVersion, packages.config, Xamarin.Android.CSharp.targets) — not yet on .NET. It explains that converting the app to .NET is out of scope for this skill and is owned by Microsoft's .NET app-modernization tooling (the GitHub Copilot app-modernization / upgrade agent, which supersedes the now-deprecated .NET Upgrade Assistant), tells the user to run that first, and offers to migrate the Scandit SDK once the app is on .NET for Android. It does NOT hand-roll the SDK-style project conversion itself.",
       "tags": ["precondition", "scope", "out-of-scope"],
       "files": [
         "fixtures/LegacyAndroid.csproj",
@@ -88,8 +88,8 @@
       ],
       "assertions": [
         {"text": "The skill detects the project is still a legacy Xamarin project (not yet .NET/MAUI)"},
-        {"text": "The skill states that the general app/project migration is out of scope and owned by the .NET Upgrade Assistant"},
-        {"text": "The skill directs the user to run the .NET Upgrade Assistant first"},
+        {"text": "The skill states that the general app/project migration is out of scope and owned by Microsoft's .NET app-modernization tooling"},
+        {"text": "The skill directs the user to run Microsoft's app-modernization tooling (GitHub Copilot app-modernization agent, or the deprecated .NET Upgrade Assistant) first"},
         {"text": "The skill does NOT hand-roll the SDK-style .csproj conversion itself"},
         {"text": "The skill offers to migrate the Scandit SDK once the app is on .NET for Android"}
       ]

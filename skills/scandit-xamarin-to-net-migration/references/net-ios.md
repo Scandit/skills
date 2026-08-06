@@ -1,6 +1,6 @@
 # Scandit on .NET for iOS
 
-**Precondition:** the app is already a .NET-for-iOS project (`<Project Sdk="Microsoft.NET.Sdk">`, `<TargetFramework>net*-ios</TargetFramework>`). If it is still `Xamarin.iOS`/legacy, stop and route to the .NET Upgrade Assistant (see `detection.md` → Precondition). This reference covers **only** the Scandit integration on that already-migrated project.
+**Precondition:** the app is already a .NET-for-iOS project (`<Project Sdk="Microsoft.NET.Sdk">`, `<TargetFramework>net*-ios</TargetFramework>`). If it is still `Xamarin.iOS`/legacy, stop and route to Microsoft's app-modernization tooling (see `detection.md` → Precondition). This reference covers **only** the Scandit integration on that already-migrated project.
 
 > **Use the TFM the project already targets.** Run `dotnet --version` / `dotnet workload list` and build against the project's existing `net*-ios` TFM; do not retarget it here. Use the same TFM in every `dotnet build -f …` you run and report. Always work on a branch/backup.
 

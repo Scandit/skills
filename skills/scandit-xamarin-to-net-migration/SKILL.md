@@ -1,6 +1,6 @@
 ---
 name: scandit-xamarin-to-net-migration
-description: Migrate the Scandit Data Capture SDK integration after a Xamarin app is already on the .NET stack (.NET for Android, .NET for iOS, or .NET MAUI) — e.g. after running Microsoft's .NET Upgrade Assistant. Use when the project builds as .NET/MAUI but Scandit code still references `Scandit.DataCapture.*.Xamarin(.Forms)` packages, `.Unified` namespaces, or legacy `Scandit.BarcodePicker.Xamarin`. Swaps packages, fixes SDK-8 init, namespaces and views, verifies scanning, and hands off to the matching `*-net-android`/`-net-ios`/`-net-maui` skill. Migrates only the Scandit SDK, not the general app.
+description: Migrate the Scandit Data Capture SDK integration after a Xamarin app is already on the .NET stack (.NET for Android, .NET for iOS, or .NET MAUI) — e.g. after Microsoft's .NET app-modernization tooling. Use when the project builds as .NET/MAUI but Scandit code still references `Scandit.DataCapture.*.Xamarin(.Forms)` packages, `.Unified` namespaces, or legacy `Scandit.BarcodePicker.Xamarin`. Swaps packages, fixes SDK-8 init, namespaces and views, verifies scanning, and hands off to the matching `*-net-android`/`-net-ios`/`-net-maui` skill. Migrates only the Scandit SDK, not the general app.
 license: MIT
 metadata:
   author: scandit
@@ -15,7 +15,7 @@ Migrates the **Scandit Data Capture SDK integration** after a customer's Xamarin
 
 **This skill migrates the Scandit SDK and nothing else.** It is a *post-migration* tool: it assumes the application shell has already been ported to .NET/MAUI, and it fixes up the Scandit slice that the general migration left behind.
 
-| This skill **owns** | This skill does **NOT** touch (owned by the .NET Upgrade Assistant + the customer's team) |
+| This skill **owns** | This skill does **NOT** touch (owned by Microsoft's .NET app-modernization tooling + the customer's team) |
 |---|---|
 | Swapping `Scandit.DataCapture.*.Xamarin(.Forms)` packages for the .NET / `*.Maui` equivalents | Converting the project to SDK-style, collapsing Forms heads into a MAUI head project |
 | The Scandit `.Unified` → plain namespace rename and the `<scandit:…>` XAML `xmlns` | The general `Xamarin.Forms` → `Microsoft.Maui` namespace/API sweep, `MessagingCenter`/`DisplayAlert`/`MainPage` deprecations |
@@ -23,7 +23,9 @@ Migrates the **Scandit Data Capture SDK integration** after a customer's Xamarin
 | Relocating Scandit views/overlays where the .NET/MAUI binding requires it | Third-party NuGet packages with no .NET equivalent |
 | The Scandit runtime prerequisites (camera permission, Scandit's OS-version minimums) | Everything else in the app |
 
-If the project is **not yet on .NET/MAUI** (still `MonoAndroid`/`Xamarin.iOS`/`Xamarin.Forms`, `packages.config`, legacy `.csproj`), this skill does **not** convert it. Stop and tell the user to run Microsoft's **[.NET Upgrade Assistant](https://learn.microsoft.com/en-us/dotnet/core/porting/upgrade-assistant-overview)** first, then return here for the Scandit part. Do not hand-roll the project conversion — that is out of scope by design (see `references/detection.md`, Precondition).
+If the project is **not yet on .NET/MAUI** (still `MonoAndroid`/`Xamarin.iOS`/`Xamarin.Forms`, `packages.config`, legacy `.csproj`), this skill does **not** convert it. Stop and tell the user to run **Microsoft's .NET app-modernization tooling** first, then return here for the Scandit part. Do not hand-roll the project conversion — that is out of scope by design (see `references/detection.md`, Precondition).
+
+> **Which Microsoft tool?** Microsoft's recommended path is now the **[GitHub Copilot app‑modernization / upgrade agent](https://learn.microsoft.com/en-us/dotnet/core/porting/github-copilot-upgrade/overview)** built into Visual Studio 2026 and VS 2022 (17.14.16+). It **supersedes the now‑deprecated [.NET Upgrade Assistant](https://learn.microsoft.com/en-us/dotnet/core/porting/upgrade-assistant-overview)**, which still exists (and many existing projects were migrated with it) but is no longer the recommended tool. Either one produces the .NET/MAUI shell this skill runs *after*; point users at the Copilot agent first, and treat "the Upgrade Assistant" in a user's message as the same out‑of‑scope general migration. Whichever they used, this skill's job starts once the app builds as .NET/MAUI.
 
 ## The one thing to internalize first
 
@@ -34,7 +36,7 @@ If the project is **not yet on .NET/MAUI** (still `MonoAndroid`/`Xamarin.iOS`/`X
 3. **Scandit initialization** — SDK 8 requires explicit `ScanditCaptureCore.Initialize()` (+ per-product `Scandit*.Initialize()`) on Android/iOS, or the `.UseScandit*()` builder chain on MAUI. Xamarin 6.x/7.x self-initialized; .NET does not.
 4. **Scandit views** — some Forms XAML constructs (most notably `BarcodeCaptureOverlay`) are not MAUI XAML elements and move into code-behind (see `references/net-maui.md`).
 
-The **general app shell** underneath (SDK-style `.csproj`, head-project collapse, `Xamarin.Forms` → `Microsoft.Maui`, bootstrap shims, assets) is **not** this skill's work — it is the .NET Upgrade Assistant's, and this skill assumes it is already done. Delegate the mode-specific Scandit call-site verification to the matching implementation skill (see Handoff).
+The **general app shell** underneath (SDK-style `.csproj`, head-project collapse, `Xamarin.Forms` → `Microsoft.Maui`, bootstrap shims, assets) is **not** this skill's work — it is Microsoft's app-modernization tooling's, and this skill assumes it is already done. Delegate the mode-specific Scandit call-site verification to the matching implementation skill (see Handoff).
 
 ## Critical: Do Not Trust Internal Knowledge
 
@@ -70,7 +72,7 @@ Migration-specific gotchas worth flagging:
 Confirm the app has already been migrated to .NET/MAUI. Follow `references/detection.md` → **Precondition**. In short:
 
 - **On .NET/MAUI already** (`<Project Sdk="Microsoft.NET.Sdk">`, TFM `net*-android` / `net*-ios`, or `<UseMaui>true</UseMaui>`) → proceed with this skill.
-- **Still on Xamarin** (`MonoAndroid` / `Xamarin.iOS` TFM, `Xamarin.Forms` reference, `packages.config`, legacy `.csproj`) → **stop.** Tell the user the general app migration is out of scope for this skill and must be done first with the [.NET Upgrade Assistant](https://learn.microsoft.com/en-us/dotnet/core/porting/upgrade-assistant-overview); offer to do the Scandit part as soon as the app is on .NET/MAUI. Do not attempt the project conversion yourself.
+- **Still on Xamarin** (`MonoAndroid` / `Xamarin.iOS` TFM, `Xamarin.Forms` reference, `packages.config`, legacy `.csproj`) → **stop.** Tell the user the general app migration is out of scope for this skill and must be done first with Microsoft's .NET app-modernization tooling (the GitHub Copilot app‑modernization agent; see Scope for the link and the deprecated Upgrade Assistant it replaces); offer to do the Scandit part as soon as the app is on .NET/MAUI. Do not attempt the project conversion yourself.
 
 ## Intent Routing
 
@@ -89,14 +91,14 @@ Copy this checklist into the working session and track progress. It is the same 
 
 ```
 Scandit migration progress:
-- [ ] 1. Precondition — confirm the app is already on .NET/MAUI (else → .NET Upgrade Assistant, stop)
+- [ ] 1. Precondition — confirm the app is already on .NET/MAUI (else → Microsoft's app-modernization tooling, stop)
 - [ ] 2. Detect      — target platform, Scandit packages + version, Scandit surface baseline
 - [ ] 3. Packages    — swap .Xamarin(.Forms) → .NET (+ .Maui for MAUI), one version from nuget.org
 - [ ] 4. Wire        — SDK-8 Initialize() / .UseScandit*() chain, namespaces, views, camera prereqs
 - [ ] 5. Verify      — parity check, build per target, smoke-scan, write the report
 ```
 
-**Phase 1 — Precondition.** Run the precondition check above. If the app is still on Xamarin, stop and route to the .NET Upgrade Assistant.
+**Phase 1 — Precondition.** Run the precondition check above. If the app is still on Xamarin, stop and route to Microsoft's app-modernization tooling.
 
 **Phase 2 — Detect.** Follow `references/detection.md`. Output: the target platform (net-android / net-ios / MAUI), the Scandit packages + version referenced, the detected Scandit product, and a **baseline of the Scandit symbol surface** for the Phase 5 parity check. This phase is also the resume check — skip any Scandit step already done.
 
@@ -129,7 +131,7 @@ The mode-specific Scandit call sites are verified by the per-product .NET skill 
 | .NET for iOS (`net*-ios`, non-MAUI) | `<product>-net-ios` | `barcode-capture-net-ios`, `id-capture-net-ios` |
 | .NET MAUI | `<product>-net-maui` | `barcode-capture-net-maui`, `sparkscan-net-maui`, `id-capture-net-maui`, `label-capture-net-maui` |
 
-Products with a full `net-android` / `net-ios` / `net-maui` trio: Barcode Capture, SparkScan, Smart Label Capture, ID Capture, MatrixScan AR, MatrixScan Batch. **MatrixScan Count has `net-android` and `net-ios` only — there is no `matrixscan-count-net-maui`**; on MAUI, route MatrixScan Count via the `data-capture-sdk` router (it falls back to the sample app). **Load the handoff skill before you write any target-platform Scandit code**, not after: it holds the exact XAML `xmlns`, assembly names, and builder-chain signature you need, and guessing them is the main cause of the "the API doesn't exist" false conclusion. If the skill you named fails to load, re-derive its slug from this table rather than proceeding without it.
+All seven .NET products have the full `net-android` / `net-ios` / `net-maui` trio: Barcode Capture, SparkScan, Smart Label Capture, ID Capture, MatrixScan AR, MatrixScan Batch, and MatrixScan Count (21 skills total). **Load the handoff skill before you write any target-platform Scandit code**, not after: it holds the exact XAML `xmlns`, assembly names, and builder-chain signature you need, and guessing them is the main cause of the "the API doesn't exist" false conclusion. If the skill you named fails to load, re-derive its slug from `references/scandit-packages.md` rather than proceeding without it.
 
 If you are unsure which Scandit **product** the customer uses (Barcode Capture, SparkScan, MatrixScan AR/Batch/Count, Smart Label Capture, ID Capture), hand off to the **`data-capture-sdk`** router skill — it identifies the product and names the correct implementation skill. Naming the specific skill is always better than telling the user "an implementation skill exists."
 
@@ -149,7 +151,8 @@ Direct users to the right resource based on their question:
 
 | Topic | Resource |
 |---|---|
-| .NET Upgrade Assistant (general app migration — out of scope here) | [Upgrade Assistant overview](https://learn.microsoft.com/en-us/dotnet/core/porting/upgrade-assistant-overview) |
+| Microsoft's .NET app-modernization tooling (general app migration — out of scope here; **recommended**) | [GitHub Copilot app-modernization / upgrade agent](https://learn.microsoft.com/en-us/dotnet/core/porting/github-copilot-upgrade/overview) |
+| .NET Upgrade Assistant (its **deprecated** predecessor — still works; many apps were migrated with it) | [Upgrade Assistant overview](https://learn.microsoft.com/en-us/dotnet/core/porting/upgrade-assistant-overview) |
 | Microsoft's Xamarin → .NET upgrade guidance | [Upgrade from Xamarin to .NET](https://learn.microsoft.com/en-us/dotnet/maui/migration/) |
 | Scandit .NET SDK docs | [Scandit for .NET](https://docs.scandit.com/sdks/net/android/add-sdk/) |
 | Scandit MAUI SDK docs | [Scandit for .NET MAUI](https://docs.scandit.com/sdks/net/maui/add-sdk/) |

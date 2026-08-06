@@ -1,6 +1,6 @@
 # Scandit on .NET for Android
 
-**Precondition:** the app is already a .NET-for-Android project (`<Project Sdk="Microsoft.NET.Sdk">`, `<TargetFramework>net*-android</TargetFramework>`). If it is still `MonoAndroid`/legacy, stop and route to the .NET Upgrade Assistant (see `detection.md` → Precondition). This reference covers **only** the Scandit integration on that already-migrated project.
+**Precondition:** the app is already a .NET-for-Android project (`<Project Sdk="Microsoft.NET.Sdk">`, `<TargetFramework>net*-android</TargetFramework>`). If it is still `MonoAndroid`/legacy, stop and route to Microsoft's app-modernization tooling (see `detection.md` → Precondition). This reference covers **only** the Scandit integration on that already-migrated project.
 
 > **Use the TFM the project already targets.** Run `dotnet --version` / `dotnet workload list` and build against the project's existing `net*-android` TFM; do not retarget it here (that is a general-migration decision). Use the same TFM in every `dotnet build -f …` you run and report. On `net10.0-android`, also add the kotlinx-serialization override documented in `net-maui.md` — without it the build is clean and the first scan crashes. Always work on a branch/backup.
 
@@ -19,7 +19,7 @@ Remove the old `Scandit.DataCapture.*.Xamarin` references (and any stale `<Refer
 
 ## Step 2 — Verify the Scandit runtime prerequisites
 
-The .NET Upgrade Assistant does not know Scandit's requirements. Confirm (and fix if wrong):
+Microsoft's app-modernization tooling does not know Scandit's requirements. Confirm (and fix if wrong):
 
 - **`<SupportedOSPlatformVersion>` must be at least 24** — Scandit's Android AAR requires API 24+; a lower value fails with `uses-sdk:minSdkVersion … cannot be smaller than version 24 declared in library`. Raise it to 24 if the migrated project left it lower.
 - **Camera permission** — `AndroidManifest.xml` must keep `<uses-permission android:name="android.permission.CAMERA" />`. Without it the app crashes at first camera access. (Runtime permission prompting is handled in the implementation skill's call sites.)

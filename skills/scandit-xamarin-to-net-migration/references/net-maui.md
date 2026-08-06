@@ -1,6 +1,6 @@
 # Scandit on .NET MAUI
 
-**Precondition:** the app is already a .NET MAUI project (`<UseMaui>true</UseMaui>`, `<TargetFrameworks>net*-android;net*-ios</TargetFrameworks>`, a `MauiProgram.CreateMauiApp()`). A Xamarin.Forms solution reaching MAUI — collapsing the `.Forms` + `.Android`/`.iOS` heads into one project, the `Xamarin.Forms` → `Microsoft.Maui` namespace/API sweep, the `App`/`MauiProgram` scaffolding — is the **.NET Upgrade Assistant's** job, not this skill's. If that is not done, stop and route to it (see `detection.md` → Precondition). This reference covers **only** the Scandit slice on that already-MAUI project.
+**Precondition:** the app is already a .NET MAUI project (`<UseMaui>true</UseMaui>`, `<TargetFrameworks>net*-android;net*-ios</TargetFrameworks>`, a `MauiProgram.CreateMauiApp()`). A Xamarin.Forms solution reaching MAUI — collapsing the `.Forms` + `.Android`/`.iOS` heads into one project, the `Xamarin.Forms` → `Microsoft.Maui` namespace/API sweep, the `App`/`MauiProgram` scaffolding — is **Microsoft's app-modernization tooling's** job, not this skill's. If that is not done, stop and route to it (see `detection.md` → Precondition). This reference covers **only** the Scandit slice on that already-MAUI project.
 
 > **Before you write any Scandit MAUI code, load the product's `*-net-maui` implementation skill** (e.g. `barcode-capture-net-maui`). It holds the exact XAML `xmlns`, assembly names, and builder-chain signatures. Guessing these is the #1 cause of a bogus "the Scandit MAUI API doesn't exist" conclusion — followed by someone deleting the scanner to get a green build. Do not do that; see the no-gutting invariant in `SKILL.md`.
 
@@ -39,7 +39,7 @@ Both `ExcludeAssets="all"` lines are required — leaving the `Jvm` one active p
 
 ## Step 2 — Add the Scandit builder chain to `MauiProgram`
 
-The Upgrade Assistant produces the MAUI `App` and `MauiProgram.CreateMauiApp()`. Add the Scandit builder chain to it — MAUI initializes Scandit **through these extensions**, so you do **not** hand-call `ScanditCaptureCore.Initialize()` in a MAUI app (that is the non-MAUI path):
+Microsoft's app-modernization tooling produces the MAUI `App` and `MauiProgram.CreateMauiApp()`. Add the Scandit builder chain to it — MAUI initializes Scandit **through these extensions**, so you do **not** hand-call `ScanditCaptureCore.Initialize()` in a MAUI app (that is the non-MAUI path):
 
 **The three `using` directives below are mandatory** — `UseScandit*` are extension methods, so without them the calls do not resolve and you get `CS1061: 'MauiAppBuilder' has no method 'UseScanditCore'`. That error means **a missing `using`, not a missing API**; add the `using` and never resolve it by commenting out the chain (see the no-gutting invariant in `SKILL.md`).
 
@@ -136,4 +136,4 @@ strings ~/.nuget/packages/scandit.datacapture.barcode.maui/<version>/lib/<tfm>/S
 
 ## Hand off
 
-The Scandit MAUI call sites (`<scandit:DataCaptureView>`, `BarcodeCaptureOverlay` created after the handler attaches, the `.UseScandit*()` chain) are verified by the product's **MAUI** skill — e.g. `barcode-capture-net-maui`, `sparkscan-net-maui`, `id-capture-net-maui`, `label-capture-net-maui`. **MatrixScan Count has no `-net-maui` skill** — route it via the `data-capture-sdk` router (it falls back to the sample app). See `scandit-packages.md` for the product→skill mapping; use the router if the product is unclear.
+The Scandit MAUI call sites (`<scandit:DataCaptureView>`, `BarcodeCaptureOverlay` created after the handler attaches, the `.UseScandit*()` chain) are verified by the product's **MAUI** skill — e.g. `barcode-capture-net-maui`, `sparkscan-net-maui`, `id-capture-net-maui`, `label-capture-net-maui`, `matrixscan-count-net-maui`. See `scandit-packages.md` for the product→skill mapping; use the `data-capture-sdk` router if the product is unclear.

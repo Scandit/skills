@@ -1,6 +1,6 @@
 # Scandit migration report
 
-Every migration ends with a written report so the customer knows exactly what changed on the Scandit side, what still needs their hands, and how to validate. This report covers the **Scandit slice only** — the general app migration (owned by the .NET Upgrade Assistant) is explicitly out of scope. Produce it in Phase 5 and update it if the migration is resumed.
+Every migration ends with a written report so the customer knows exactly what changed on the Scandit side, what still needs their hands, and how to validate. This report covers the **Scandit slice only** — the general app migration (owned by Microsoft's app-modernization tooling) is explicitly out of scope. Produce it in Phase 5 and update it if the migration is resumed.
 
 ## Template
 
@@ -30,9 +30,9 @@ List each change, grouped by area:
 - [ ] <Mode-specific call sites not yet verified> → hand off to `<product>-net-<platform>`.
 
 ## Out of scope — general app migration (NOT covered here)
-Owned by the .NET Upgrade Assistant and the customer's team; listed only if it blocked the Scandit build:
+Owned by Microsoft's app-modernization tooling and the customer's team; listed only if it blocked the Scandit build:
 - <Custom renderers, `DependencyService`/DI, platform effects, `MessagingCenter`, third-party packages with no .NET equivalent, general `Xamarin.Forms` → `Microsoft.Maui` cleanup.>
-Run the .NET Upgrade Assistant for these — this skill did not touch them.
+Run Microsoft's app-modernization tooling for these — this skill did not touch them.
 
 ## How to validate
 1. `dotnet restore` then `dotnet build -f <tfm>` for the target platform — expect a clean build.

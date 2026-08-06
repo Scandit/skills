@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <!-- POST-migration state: the .NET Upgrade Assistant collapsed the Xamarin.Forms
-       solution into a single MAUI head project, but left the Forms-flavoured Scandit
-       *.Xamarin.Forms packages in place and never added the *.Maui companions. -->
+  <!-- POST-migration state: Microsoft's app-modernization tooling collapsed the
+       Xamarin.Forms solution into a single MAUI head project, but left the Forms-flavoured
+       Scandit *.Xamarin.Forms packages in place and never added the *.Maui companions. -->
   <PropertyGroup>
     <TargetFrameworks>net8.0-android;net8.0-ios</TargetFrameworks>
     <UseMaui>true</UseMaui>
