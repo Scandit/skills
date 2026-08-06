@@ -3,12 +3,13 @@ using UIKit;
 
 namespace MyScanApp.iOS
 {
-    // Xamarin.iOS (SDK v7.x) AppDelegate — pre-migration state.
-    // No ScanditCaptureCore.Initialize() because 7.x self-initialized.
+    // POST-migration state: .NET for iOS AppDelegate produced by the upgrade, but with
+    // NO Scandit SDK-8 initialization. On SDK 8 the SDK must be initialized in
+    // FinishedLaunching before the root view controller is created.
     [Register("AppDelegate")]
     public class AppDelegate : UIApplicationDelegate
     {
-        public override UIWindow Window { get; set; }
+        public override UIWindow? Window { get; set; }
 
         public override bool FinishedLaunching(UIApplication application, NSDictionary launchOptions)
         {

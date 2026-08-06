@@ -37,7 +37,7 @@ This is the **v5** Barcode Picker API (`ScanditBarcodePicker`, `BarcodePicker`, 
 
 For a project already on the **Data Capture SDK Xamarin** binding (6.x/7.x), the C# API is largely identical to the .NET binding — the same PascalCase factories, listener interfaces, and symbology names. The changes are:
 
-1. **SDK 8.0+ explicit initialization** (non-MAUI): add `ScanditCaptureCore.Initialize()` + the per-product `Scandit*.Initialize()` at startup (see `migrate-android.md` / `migrate-ios.md`). MAUI initializes via the `.UseScandit*()` builder chain instead.
+1. **SDK 8.0+ explicit initialization** (non-MAUI): add `ScanditCaptureCore.Initialize()` + the per-product `Scandit*.Initialize()` at startup (see `net-android.md` / `net-ios.md`). MAUI initializes via the `.UseScandit*()` builder chain instead.
 2. **Any 6→7 / 7→8 SDK-version deltas** for the specific product (camera-settings, scan-intention, composite-codes defaults, etc.). These are **not** Xamarin→.NET changes — they are Scandit major-version changes and are documented per product in the implementation skill's `migration.md`. Apply them there, not here.
 
 Do not attempt to rewrite Scandit call sites from memory. Hand off.
@@ -50,7 +50,7 @@ Identify the product from the Scandit entry points found during detection, then 
 |---|---|---|---|---|
 | `BarcodeCapture` | Barcode Capture | `barcode-capture-net-android` | `barcode-capture-net-ios` | `barcode-capture-net-maui` |
 | `SparkScanView` / `SparkScan` | SparkScan | `sparkscan-net-android` | `sparkscan-net-ios` | `sparkscan-net-maui` |
-| `BarcodeCount` | MatrixScan Count | `matrixscan-count-net-android` | `matrixscan-count-net-ios` | `matrixscan-count-net-maui` |
+| `BarcodeCount` | MatrixScan Count | `matrixscan-count-net-android` | `matrixscan-count-net-ios` | *(no `-net-maui` skill — use the `data-capture-sdk` router)* |
 | `BarcodeBatch` / `BarcodeTracking` | MatrixScan Batch | `matrixscan-batch-net-android` | `matrixscan-batch-net-ios` | `matrixscan-batch-net-maui` |
 | `BarcodeAr` | MatrixScan AR | `matrixscan-ar-net-android` | `matrixscan-ar-net-ios` | `matrixscan-ar-net-maui` |
 | `LabelCapture` | Smart Label Capture | `label-capture-net-android` | `label-capture-net-ios` | `label-capture-net-maui` |

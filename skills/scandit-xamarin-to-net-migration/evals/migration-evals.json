@@ -1,0 +1,98 @@
+{
+  "skill_name": "scandit-xamarin-to-net-migration",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I already moved my app to .NET for Android with the .NET Upgrade Assistant, but the Scandit part still uses the old packages and doesn't initialize. Here are AndroidApp.csproj and MainApplication.cs. Finish migrating the Scandit SDK.",
+      "expected_output": "The skill confirms the app is already .NET for Android (precondition PASS) and does NOT touch the general project structure. On the Scandit layer it swaps Scandit.DataCapture.*.Xamarin for the suffix-less .NET packages pinned to a version fetched from nuget.org, raises SupportedOSPlatformVersion to at least 24 (Scandit's Android minimum), adds ScanditCaptureCore.Initialize() and ScanditBarcodeCapture.Initialize() in MainApplication.OnCreate (required by SDK 8), and hands off to barcode-capture-net-android for the call sites. It does NOT rename BarcodeCapture.Create or the IBarcodeCaptureListener callbacks.",
+      "tags": ["net-android", "package-swap", "sdk8-init", "scope"],
+      "files": [
+        "fixtures/AndroidApp.csproj",
+        "fixtures/MainApplication.cs"
+      ],
+      "assertions": [
+        {"text": "The skill treats the project as already on .NET for Android and does not convert/restructure the general project"},
+        {"text": "Scandit.DataCapture.Core.Xamarin is replaced by Scandit.DataCapture.Core (the .Xamarin suffix is dropped) in code blocks"},
+        {"text": "Scandit.DataCapture.Barcode.Xamarin is replaced by Scandit.DataCapture.Barcode in code blocks"},
+        {"text": "The answer instructs fetching the latest stable version from nuget.org rather than hardcoding a guessed version"},
+        {"text": "SupportedOSPlatformVersion is raised to at least 24 (Scandit's Android minimum)"},
+        {"text": "ScanditCaptureCore.Initialize() is added in MainApplication.OnCreate (SDK 8 explicit initialization)"},
+        {"text": "The skill hands off to barcode-capture-net-android for the Scandit call sites"},
+        {"text": "BarcodeCapture.Create( is preserved (not renamed) in code blocks"}
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "My app is already on net8.0-ios after the upgrade, but Scandit isn't initialized and still references the Xamarin packages. Attached: iOSApp.csproj, AppDelegate.cs, Info.plist. Migrate the Scandit SDK.",
+      "expected_output": "The skill confirms the project is already .NET for iOS and swaps the Scandit Xamarin packages for the suffix-less .NET packages. It raises SupportedOSPlatformVersion to at least 15.0 (Scandit's iOS minimum), confirms NSCameraUsageDescription is kept in Info.plist, adds ScanditCaptureCore.Initialize() in AppDelegate.FinishedLaunching before the root view controller is created, and hands off to barcode-capture-net-ios. It does not restructure the general project.",
+      "tags": ["net-ios", "package-swap", "sdk8-init", "scope"],
+      "files": [
+        "fixtures/iOSApp.csproj",
+        "fixtures/AppDelegate.cs",
+        "fixtures/Info.plist"
+      ],
+      "assertions": [
+        {"text": "The skill treats the project as already on .NET for iOS and does not convert/restructure the general project"},
+        {"text": "The Scandit packages are swapped to the suffix-less .NET IDs (Scandit.DataCapture.Core, Scandit.DataCapture.Barcode) in code blocks"},
+        {"text": "SupportedOSPlatformVersion is raised to at least 15.0 (Scandit's iOS minimum)"},
+        {"text": "NSCameraUsageDescription is preserved in Info.plist"},
+        {"text": "ScanditCaptureCore.Initialize() is added in FinishedLaunching before the root view controller is created"},
+        {"text": "The skill hands off to barcode-capture-net-ios for the Scandit call sites"}
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "The Upgrade Assistant already turned my Xamarin.Forms app into a MAUI project, but the Scandit code won't build. Here are MauiApp.csproj, MauiProgram.cs, and ScanPage.xaml. Migrate the Scandit SDK to MAUI.",
+      "expected_output": "The skill confirms the app is already MAUI and scopes itself to the Scandit slice (it does not redo the general shell). It swaps the Scandit.DataCapture.*.Xamarin.Forms packages for BOTH the plain and *.Maui .NET packages, adds the .UseScanditCore(...).UseScanditBarcode() builder chain in MauiProgram (and does NOT hand-call ScanditCaptureCore.Initialize() in MAUI), applies the Scandit .Unified->plain namespace rename and updates the scandit xmlns to ...UI.Maui;assembly=ScanditCaptureCoreMaui, and relocates BarcodeCaptureOverlay from XAML into code-behind (HandlerChanged + AddOverlay) rather than deleting it. It hands off to barcode-capture-net-maui for the call sites.",
+      "tags": ["net-maui", "package-swap", "namespaces", "views", "scope"],
+      "files": [
+        "fixtures/MauiApp.csproj",
+        "fixtures/MauiProgram.cs",
+        "fixtures/ScanPage.xaml"
+      ],
+      "assertions": [
+        {"text": "The skill treats the project as already MAUI and does not redo the general Xamarin.Forms->Microsoft.Maui shell migration"},
+        {"text": "The whole .Xamarin.Forms suffix is stripped (Scandit.DataCapture.Core.Xamarin.Forms -> Scandit.DataCapture.Core, not Scandit.DataCapture.Core.Forms)"},
+        {"text": "Both Scandit.DataCapture.Core and Scandit.DataCapture.Core.Maui packages are added"},
+        {"text": "Both Scandit.DataCapture.Barcode and Scandit.DataCapture.Barcode.Maui packages are added"},
+        {"text": "The .UseScanditCore( and .UseScanditBarcode( builder chain is added in MauiProgram"},
+        {"text": "ScanditCaptureCore.Initialize() is NOT hand-called in the MAUI app"},
+        {"text": "The Scandit .Unified namespaces are renamed to plain and the scandit XAML xmlns is updated to ...UI.Maui;assembly=ScanditCaptureCoreMaui"},
+        {"text": "BarcodeCaptureOverlay is relocated to code-behind (HandlerChanged + AddOverlay) rather than deleted"},
+        {"text": "The skill hands off to barcode-capture-net-maui for the Scandit call sites"}
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "My app references this: LegacyPicker.packages.config. Can you migrate the Scandit part to .NET?",
+      "expected_output": "The skill recognizes Scandit.BarcodePicker.Xamarin as the legacy v5 Barcode Picker (not the Data Capture SDK), explains there is no direct package swap, and flags it as a reintegration onto Barcode Capture or SparkScan, handing off to barcode-capture-net-* or sparkscan-* rather than pretending a drop-in replacement exists.",
+      "tags": ["legacy-picker", "reintegration"],
+      "files": [
+        "fixtures/LegacyPicker.packages.config"
+      ],
+      "assertions": [
+        {"text": "Scandit.BarcodePicker.Xamarin is identified as the legacy v5 Barcode Picker, not the Data Capture SDK"},
+        {"text": "The answer states there is no direct package/API equivalent and that a reintegration is required"},
+        {"text": "The item is flagged as a reintegration rather than presented as an automatic package swap"},
+        {"text": "The skill hands off to a Barcode Capture or SparkScan implementation skill for the reintegration"}
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "I want to migrate my Xamarin.Android app's Scandit SDK to .NET. Here's LegacyAndroid.csproj and packages.config.",
+      "expected_output": "The skill runs the precondition check and detects the project is STILL a legacy Xamarin.Android project (MonoAndroid TargetFrameworkVersion, packages.config, Xamarin.Android.CSharp.targets) — not yet on .NET. It explains that converting the app to .NET is out of scope for this skill and is owned by Microsoft's .NET Upgrade Assistant, tells the user to run that first, and offers to migrate the Scandit SDK once the app is on .NET for Android. It does NOT hand-roll the SDK-style project conversion itself.",
+      "tags": ["precondition", "scope", "out-of-scope"],
+      "files": [
+        "fixtures/LegacyAndroid.csproj",
+        "fixtures/packages.config"
+      ],
+      "assertions": [
+        {"text": "The skill detects the project is still a legacy Xamarin project (not yet .NET/MAUI)"},
+        {"text": "The skill states that the general app/project migration is out of scope and owned by the .NET Upgrade Assistant"},
+        {"text": "The skill directs the user to run the .NET Upgrade Assistant first"},
+        {"text": "The skill does NOT hand-roll the SDK-style .csproj conversion itself"},
+        {"text": "The skill offers to migrate the Scandit SDK once the app is on .NET for Android"}
+      ]
+    }
+  ]
+}

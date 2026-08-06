@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- POST-migration state: converted to SDK-style .NET for iOS by the upgrade, but
+       the Scandit *.Xamarin packages are still referenced and SupportedOSPlatformVersion
+       is below Scandit's iOS minimum (15.0). -->
+  <PropertyGroup>
+    <TargetFramework>net8.0-ios</TargetFramework>
+    <SupportedOSPlatformVersion>12.0</SupportedOSPlatformVersion>
+    <OutputType>Exe</OutputType>
+    <ApplicationId>com.example.myscanapp</ApplicationId>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Scandit.DataCapture.Core.Xamarin" Version="6.28.3" />
+    <PackageReference Include="Scandit.DataCapture.Barcode.Xamarin" Version="6.28.3" />
+  </ItemGroup>
+</Project>
