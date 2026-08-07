@@ -95,7 +95,7 @@ The namespaces are counter-intuitive: `UseScanditCore` is in the bare `Scandit.D
 | `Scandit.DataCapture.ID.Capture.Unified` | `Scandit.DataCapture.ID.Capture` |
 | `Scandit.DataCapture.ID.Data.Unified` | `Scandit.DataCapture.ID.Data` |
 | `Scandit.DataCapture.ID.Verification.AamvaBarcode.Unified` | `Scandit.DataCapture.ID.Verification.AamvaBarcode` |
-| `Scandit.DataCapture.ID.UI.Unified` | `Scandit.DataCapture.ID.UI.`**`Overlay`** ← **not** a plain drop |
+| `Scandit.DataCapture.ID.UI.Unified` | `Scandit.DataCapture.ID.UI.Overlay` ← **renamed, not** a plain drop |
 
 A blanket `Scandit.DataCapture.(.*)\.Unified` → `Scandit.DataCapture.$1` regex over `.cs` files handles **most** of these — but it is not safe to apply blind, because at least one namespace is renamed rather than shortened:
 
@@ -118,7 +118,7 @@ Every Scandit product with a Forms binding was checked against its shipped assem
 | Core | `Scandit.DataCapture.Core.<X>.Unified` → `…Core.<X>` | plain drop |
 | Barcode | `…Barcode.<X>.Unified` → `…Barcode.<X>`, incl. `Barcode.UI.Overlay.Unified` → `Barcode.UI.Overlay` | plain drop |
 | Parser | `Scandit.DataCapture.Parser.Unified` → `Scandit.DataCapture.Parser` | plain drop |
-| **ID Capture** | `ID.Capture/.Data/.Verification.AamvaBarcode` drop cleanly, but `ID.UI.Unified` → `ID.UI.`**`Overlay`** | **one rename** |
+| **ID Capture** | `ID.Capture` / `ID.Data` / `ID.Verification.AamvaBarcode` drop cleanly, but `ID.UI.Unified` → `ID.UI.Overlay` | **one rename** |
 | Smart Label Capture | **no Forms binding exists — skip this step entirely** | n/a |
 
 **Smart Label Capture never shipped a Forms/`Unified` binding at all.** There is no `Scandit.DataCapture.Label.Xamarin.Forms` package, no `ScanditLabelCaptureUnified.dll`, and the string `Unified` does not appear anywhere in `ScanditLabelCapture.dll` 7.6.14 — its namespaces are already `Scandit.DataCapture.Label.Capture` / `.Data` / `.UI.Overlay`, byte-identical to the .NET binding. So for a Label project this whole step is a no-op: **do not go looking for `.Unified` usings to rename, because none can exist.** A Forms-origin app that used Label reached it through the platform head projects, which is also why Label is the one product with no `.Xamarin.Forms` package ID (see `scandit-packages.md`). Label's migration is a package swap plus initialization, nothing more.
