@@ -131,6 +131,27 @@
         "id-capture-net-ios",
         "id-capture-net-android"
       ]
+    },
+    {
+      "title": "Barcode Selection",
+      "description": "Let the user tap or aim to pick one barcode out of many.",
+      "skills": [
+        "barcode-selection-kmp"
+      ]
+    },
+    {
+      "title": "MatrixScan Find",
+      "description": "Search a scene for specific items and guide the user to them.",
+      "skills": [
+        "matrixscan-find-kmp"
+      ]
+    },
+    {
+      "title": "Parser",
+      "description": "Parse GS1 AI, HIBC, AAMVA, EPC, and Swiss QR barcode data into typed fields.",
+      "skills": [
+        "parser-kmp"
+      ]
     }
   ]
 }
