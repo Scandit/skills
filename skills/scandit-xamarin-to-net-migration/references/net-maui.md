@@ -8,7 +8,7 @@
 
 ## Step 1 — Swap the Scandit packages (MAUI needs the `*.Maui` companions)
 
-Unlike the non-MAUI paths, MAUI needs **both** the plain and `*.Maui` packages, all pinned to one version from nuget.org:
+Unlike the non-MAUI paths, MAUI needs **both** the plain and `.Maui` packages, all pinned to one version from nuget.org:
 
 ```xml
 <ItemGroup>
@@ -19,7 +19,19 @@ Unlike the non-MAUI paths, MAUI needs **both** the plain and `*.Maui` packages, 
 </ItemGroup>
 ```
 
-The `*.Maui` packages provide the builder extensions, handlers, and `<scandit:...>` XAML controls; the plain packages provide the bindings they delegate to. See `scandit-packages.md`.
+The `.Maui` packages provide the builder extensions, handlers, and `<scandit:...>` XAML controls; the plain packages provide the bindings they delegate to. See `scandit-packages.md`.
+
+> **The four references above are the Barcode-family set** (Barcode Capture, SparkScan, MatrixScan AR/Batch/Count). They are *not* a universal MAUI baseline — the package set and the initialization both vary by product:
+>
+> | Product | MAUI packages | Init |
+> |---|---|---|
+> | Barcode Capture / SparkScan / MatrixScan | `Core`, `Core.Maui`, `Barcode`, `Barcode.Maui` | the Step 2 chain below |
+> | ID Capture | `Core`, `Core.Maui`, `IdCapture` — **three, no Barcode at all** | `.UseScanditCore(…)` only, **plus** `ScanditIdCapture.Initialize()` in `Platforms/Android/MainApplication.OnCreate` *and* `Platforms/iOS/AppDelegate.FinishedLaunching` |
+> | Smart Label Capture | `Core`, `Core.Maui`, `Barcode`, `Label` — **no `Barcode.Maui`** | `ScanditLabelCapture.Initialize()` directly in `MauiProgram`, plus `.UseScanditCore(…)` |
+>
+> `Core.Maui` and `Barcode.Maui` are the only `.Maui` packages that exist — there is no `IdCapture.Maui`, `Label.Maui` or `Parser.Maui`, and inventing one fails restore with `NU1101`. Products without a companion reuse the generic `<scandit:DataCaptureView>` from `Core.Maui`.
+>
+> **`UseScanditCore` and `UseScanditBarcode` are the only builder extensions.** `UseScanditIdCapture()` and `UseScanditLabel()` do **not** exist. So on a non-Barcode product, Step 2's chain is not simply "the same plus one link" — read the product's `*-net-maui` skill and follow its init placement exactly, because ID Capture and Label Capture differ from each other as well as from Barcode.
 
 The source IDs in a Forms-origin project are `Scandit.DataCapture.Core.Xamarin.Forms` / `Scandit.DataCapture.Barcode.Xamarin.Forms` — strip the **whole** `.Xamarin.Forms` suffix, not just `.Xamarin` (otherwise you get `Scandit.DataCapture.Core.Forms`, which does not exist → `NU1101`). Remove the old references, then `dotnet restore`.
 
@@ -46,7 +58,7 @@ Microsoft's app-modernization tooling produces the MAUI `App` and `MauiProgram.C
 ```csharp
 using Scandit.DataCapture.Core;          // UseScanditCore
 using Scandit.DataCapture.Core.UI.Maui;  // AddDataCaptureView
-using Scandit.DataCapture.Barcode;       // UseScanditBarcode  (per product — see impl skill)
+using Scandit.DataCapture.Barcode;       // UseScanditBarcode  (Barcode-family products only)
 
 public static class MauiProgram
 {
@@ -79,8 +91,37 @@ The namespaces are counter-intuitive: `UseScanditCore` is in the bare `Scandit.D
 | `Scandit.DataCapture.Core.UI.Viewfinder.Unified` | `Scandit.DataCapture.Core.UI.Viewfinder` |
 | `Scandit.DataCapture.Barcode.Capture.Unified` | `Scandit.DataCapture.Barcode.Capture` |
 | `Scandit.DataCapture.Barcode.Data.Unified` | `Scandit.DataCapture.Barcode.Data` |
+| `Scandit.DataCapture.Barcode.UI.Overlay.Unified` | `Scandit.DataCapture.Barcode.UI.Overlay` |
+| `Scandit.DataCapture.ID.Capture.Unified` | `Scandit.DataCapture.ID.Capture` |
+| `Scandit.DataCapture.ID.Data.Unified` | `Scandit.DataCapture.ID.Data` |
+| `Scandit.DataCapture.ID.Verification.AamvaBarcode.Unified` | `Scandit.DataCapture.ID.Verification.AamvaBarcode` |
+| `Scandit.DataCapture.ID.UI.Unified` | `Scandit.DataCapture.ID.UI.`**`Overlay`** ← **not** a plain drop |
 
-A blanket `Scandit.DataCapture.(.*)\.Unified` → `Scandit.DataCapture.$1` regex over `.cs` files handles these.
+A blanket `Scandit.DataCapture.(.*)\.Unified` → `Scandit.DataCapture.$1` regex over `.cs` files handles **most** of these — but it is not safe to apply blind, because at least one namespace is renamed rather than shortened:
+
+> **`Scandit.DataCapture.ID.UI.Unified` → `Scandit.DataCapture.ID.UI.Overlay`.** The blanket regex produces `Scandit.DataCapture.ID.UI`, which **does not exist** in the .NET binding (verified: the assembly ships only `ID.UI.Overlay`). `IdCaptureOverlay` lives in `ID.UI.Overlay`. Note the asymmetry with Barcode, where the Forms namespace is already `Barcode.UI.Overlay.Unified` and the plain drop *is* correct — so you cannot infer one product's shape from the other.
+>
+> After running the regex, compile (or `strings` the shipped assembly) and fix any namespace that fails to resolve. A `using` that does not resolve here is a **rename you have not applied yet**, never a missing API — and never a reason to delete the code that used it. To enumerate what a package really ships:
+> ```bash
+> strings ~/.nuget/packages/scandit.datacapture.idcapture/<version>/lib/<tfm>/ScanditIdCapture.dll \
+>   | grep -oE 'Scandit\.DataCapture\.ID[A-Za-z.]*' | sort -u
+> ```
+
+Note also that the ID Capture **C# namespace is `Scandit.DataCapture.ID`** (upper-case `ID`) while its **package ID is `Scandit.DataCapture.IdCapture`** and its **initializer is `ScanditIdCapture.Initialize()`**. All three spellings differ; none is a typo.
+
+### Which products actually need this step
+
+Every Scandit product with a Forms binding was checked against its shipped assemblies, so you do not need to repeat the audit — only ID Capture hides a rename:
+
+| Product | Forms binding → .NET binding | Shape |
+|---|---|---|
+| Core | `Scandit.DataCapture.Core.<X>.Unified` → `…Core.<X>` | plain drop |
+| Barcode | `…Barcode.<X>.Unified` → `…Barcode.<X>`, incl. `Barcode.UI.Overlay.Unified` → `Barcode.UI.Overlay` | plain drop |
+| Parser | `Scandit.DataCapture.Parser.Unified` → `Scandit.DataCapture.Parser` | plain drop |
+| **ID Capture** | `ID.Capture/.Data/.Verification.AamvaBarcode` drop cleanly, but `ID.UI.Unified` → `ID.UI.`**`Overlay`** | **one rename** |
+| Smart Label Capture | **no Forms binding exists — skip this step entirely** | n/a |
+
+**Smart Label Capture never shipped a Forms/`Unified` binding at all.** There is no `Scandit.DataCapture.Label.Xamarin.Forms` package, no `ScanditLabelCaptureUnified.dll`, and the string `Unified` does not appear anywhere in `ScanditLabelCapture.dll` 7.6.14 — its namespaces are already `Scandit.DataCapture.Label.Capture` / `.Data` / `.UI.Overlay`, byte-identical to the .NET binding. So for a Label project this whole step is a no-op: **do not go looking for `.Unified` usings to rename, because none can exist.** A Forms-origin app that used Label reached it through the platform head projects, which is also why Label is the one product with no `.Xamarin.Forms` package ID (see `scandit-packages.md`). Label's migration is a package swap plus initialization, nothing more.
 
 **XAML `xmlns` — do not assume a symmetric `Unified` → `Maui` swap per product.** Only *some* Scandit UI types are MAUI XAML elements. The one that reliably is:
 

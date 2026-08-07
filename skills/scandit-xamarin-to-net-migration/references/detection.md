@@ -36,9 +36,19 @@ Microsoft's app-modernization tooling does not know about Scandit, so it typical
 | `Scandit.DataCapture.Core.Xamarin` | Core — always present in a Data Capture SDK integration. |
 | `Scandit.DataCapture.Core.Xamarin.Forms` | Core, **Forms-origin** — the project is on MAUI and the `.Unified` namespaces are in use (see the `Unified` → plain rename in `net-maui.md`). |
 | `Scandit.DataCapture.Barcode.Xamarin(.Forms)` | Barcode Capture / MatrixScan / SparkScan API. |
-| `Scandit.DataCapture.Parser.Xamarin` | Parser API. |
-| `Scandit.DataCapture.Id.Xamarin` / `...Label.Xamarin` | ID Capture / Smart Label Capture (confirm the exact ID on nuget.org). |
-| `Scandit.BarcodePicker.Xamarin` | **Legacy v5 Barcode Picker** — no direct modern equivalent; a reintegration, route to a Barcode Capture / SparkScan skill. |
+| `Scandit.DataCapture.Parser.Xamarin(.Forms)` | Parser API. |
+| `Scandit.DataCapture.IdCapture.Xamarin(.Forms)` | ID Capture. Note the stem is **`IdCapture`** — `Scandit.DataCapture.Id` does not exist. Two optional add-ons use the same stem: `...IdCapture.AamvaBarcodeVerification.Xamarin` and `...IdCapture.IdEuropeDrivingLicense.Xamarin`. |
+| `Scandit.DataCapture.Label.Xamarin` | Smart Label Capture. **No `.Xamarin.Forms` ID was ever published** for Label, so a Forms-origin Label project still shows the plain `.Xamarin` suffix — do not infer "native head" from that. |
+| `Scandit.DataCapture.TextCapture.Xamarin(.Forms)` | Text Capture — **frozen at 6.28.11, no 7.x/8.x exists.** A blocker, not a swap: see `scandit-packages.md` → "Text Capture has no modern equivalent". |
+| `Scandit.BarcodePicker.Xamarin` **or `.Unified`** | **Legacy v5 Barcode Picker** — no direct modern equivalent; a reintegration, route to a Barcode Capture / SparkScan skill. `.Unified` is the **Forms** flavour, so grepping only for `.Xamarin` misses Forms-origin picker apps. `Scandit.BarcodePicker` and `Scandit.Recognition` belong to the same frozen v5 family. |
+
+Grep so that both suffixes and both stems are covered, e.g.:
+
+```bash
+git grep -InE 'Scandit\.(DataCapture|BarcodePicker|Recognition)[A-Za-z.]*' -- '*.csproj' '*.props' 'packages.config' ':(exclude)**/obj/**'
+```
+
+Record the IDs **verbatim**. Do not normalise them from memory while reading — reconstructing `Scandit.DataCapture.Id` from a real `Scandit.DataCapture.IdCapture.Xamarin` reference is the single easiest way to produce an `NU1101` two steps later.
 
 **b) Namespaces** — grep `.cs` for `Scandit.DataCapture.*.Unified` (C# usings) and `.xaml` for `xmlns:...="clr-namespace:Scandit...Unified;assembly=Scandit*Unified"`. Their presence confirms a Forms-origin (MAUI) project that still needs the Scandit namespace rename.
 

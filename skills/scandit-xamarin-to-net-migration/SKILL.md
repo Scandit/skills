@@ -31,7 +31,7 @@ If the project is **not yet on .NET/MAUI** (still `MonoAndroid`/`Xamarin.iOS`/`X
 
 **The Scandit *method* API barely changes — the package IDs, the Scandit *namespaces*, and the initialization are the work.** The Scandit .NET binding uses the *same* PascalCase C# surface as the Xamarin binding (`DataCaptureContext.ForLicenseKey(...)`, `BarcodeCapture.Create(context, settings)`, `IBarcodeCaptureListener`, symbology names, etc.). What actually moves is exactly the four things this skill owns:
 
-1. **NuGet packages** — drop the `.Xamarin` / `.Xamarin.Forms` suffix (`Scandit.DataCapture.Core.Xamarin` → `Scandit.DataCapture.Core`), and for MAUI **add** the `*.Maui` companion packages.
+1. **NuGet packages** — drop the `.Xamarin` / `.Xamarin.Forms` suffix (`Scandit.DataCapture.Core.Xamarin` → `Scandit.DataCapture.Core`), and for MAUI **add** the `.Maui` companions — which exist for **Core and Barcode only**. Verify every ID you write against `references/scandit-packages.md`; the stems are not all guessable (ID Capture is `Scandit.DataCapture.IdCapture`, not `.Id`).
 2. **Scandit namespaces (MAUI only)** — the Forms binding's `.Unified` namespaces and `Scandit*Unified` assemblies do not exist in the MAUI binding. See "Scandit namespace rename" in `references/net-maui.md`. This is the single highest-volume mechanical edit on the MAUI path.
 3. **Scandit initialization** — SDK 8 requires explicit `ScanditCaptureCore.Initialize()` (+ per-product `Scandit*.Initialize()`) on Android/iOS, or the `.UseScandit*()` builder chain on MAUI. Xamarin 6.x/7.x self-initialized; .NET does not.
 4. **Scandit views** — some Forms XAML constructs (most notably `BarcodeCaptureOverlay`) are not MAUI XAML elements and move into code-behind (see `references/net-maui.md`).

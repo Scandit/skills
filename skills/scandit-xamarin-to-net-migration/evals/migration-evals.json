@@ -93,6 +93,36 @@
         {"text": "The skill does NOT hand-roll the SDK-style .csproj conversion itself"},
         {"text": "The skill offers to migrate the Scandit SDK once the app is on .NET for Android"}
       ]
+    },
+    {
+      "id": 6,
+      "prompt": "Our ID scanning app is already a MAUI project after the upgrade, but the Scandit ID Capture code won't build. Attached: IdMauiApp.csproj, MauiProgram.cs, IdScanPage.xaml, IdScanPage.xaml.cs, Platforms/Android/MainApplication.cs and Platforms/iOS/AppDelegate.cs. Migrate the Scandit SDK to MAUI.",
+      "expected_output": "The skill recognises this is ID Capture, not Barcode Capture, and applies the ID-Capture-specific MAUI shape rather than the Barcode one. Packages become exactly three: Scandit.DataCapture.Core, Scandit.DataCapture.Core.Maui and Scandit.DataCapture.IdCapture — it must NOT invent Scandit.DataCapture.Id, Scandit.DataCapture.IdCapture.Maui or Scandit.DataCapture.Id.Maui, and must NOT add the Barcode/Barcode.Maui packages. MauiProgram gets .UseScanditCore(configure => configure.AddDataCaptureView()) only — there is no UseScanditIdCapture() extension — while ScanditIdCapture.Initialize() is added to BOTH platform entry points. The .Unified namespaces are renamed, including the non-obvious Scandit.DataCapture.ID.UI.Unified -> Scandit.DataCapture.ID.UI.Overlay (a plain .Unified drop would yield the non-existent ID.UI). All ID Capture symbols are preserved and it hands off to id-capture-net-maui.",
+      "tags": ["net-maui", "id-capture", "package-ids", "namespaces", "no-maui-companion"],
+      "files": [
+        "fixtures/IdMauiApp.csproj",
+        "fixtures/IdMauiProgram.cs",
+        "fixtures/IdScanPage.xaml",
+        "fixtures/IdScanPage.xaml.cs",
+        "fixtures/IdPlatforms/Android/MainApplication.cs",
+        "fixtures/IdPlatforms/iOS/AppDelegate.cs"
+      ],
+      "assertions": [
+        {"text": "The .NET package Scandit.DataCapture.IdCapture is used (correct stem), and the non-existent Scandit.DataCapture.Id is never referenced"},
+        {"text": "No Scandit.DataCapture.IdCapture.Maui or Scandit.DataCapture.Id.Maui package is added (neither exists)"},
+        {"text": "Scandit.DataCapture.Core and Scandit.DataCapture.Core.Maui are both referenced"},
+        {"text": "The Barcode packages are NOT added — ID Capture needs exactly three packages, not the Barcode-family four"},
+        {"text": "MauiProgram chains .UseScanditCore with AddDataCaptureView"},
+        {"text": "No non-existent UseScanditIdCapture() builder extension is invented"},
+        {"text": "ScanditIdCapture.Initialize() is added in the Android platform entry point (MainApplication)"},
+        {"text": "ScanditIdCapture.Initialize() is added in the iOS platform entry point (AppDelegate)"},
+        {"text": "ScanditIdCapture.Initialize() is NOT called from MauiProgram (that is the Label Capture pattern)"},
+        {"text": "Scandit.DataCapture.ID.UI.Unified is renamed to Scandit.DataCapture.ID.UI.Overlay, not to the non-existent Scandit.DataCapture.ID.UI"},
+        {"text": "All other .Unified namespaces are dropped to their plain equivalents and no .Unified using remains"},
+        {"text": "The scandit XAML xmlns is updated to Scandit.DataCapture.Core.UI.Maui;assembly=ScanditCaptureCoreMaui"},
+        {"text": "The ID Capture integration is preserved — IdCapture.Create, IIdCaptureListener, IdCaptureOverlay and AddListener all still present (relocation allowed, deletion not)"},
+        {"text": "The skill hands off to id-capture-net-maui for the Scandit call sites"}
+      ]
     }
   ]
 }

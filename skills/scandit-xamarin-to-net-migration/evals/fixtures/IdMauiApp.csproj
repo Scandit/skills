@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- POST-migration state: Microsoft's app-modernization tooling collapsed the Xamarin.Forms
+       solution into a single MAUI head project, but left the Forms-flavoured Scandit
+       *.Xamarin.Forms packages in place. This is an ID Capture app, so the correct .NET set is
+       Core + Core.Maui + IdCapture — there is no IdCapture.Maui package and no Barcode package. -->
+  <PropertyGroup>
+    <TargetFrameworks>net8.0-android;net8.0-ios</TargetFrameworks>
+    <UseMaui>true</UseMaui>
+    <SingleProject>true</SingleProject>
+    <OutputType>Exe</OutputType>
+    <ApplicationId>com.example.myidapp</ApplicationId>
+    <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">24</SupportedOSPlatformVersion>
+    <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">15.0</SupportedOSPlatformVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Scandit.DataCapture.Core.Xamarin.Forms" Version="7.6.14" />
+    <PackageReference Include="Scandit.DataCapture.IdCapture.Xamarin.Forms" Version="7.6.14" />
+  </ItemGroup>
+</Project>
