@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- POST-migration state: the page markup is already MAUI (the ContentPage xmlns was
+     updated by the upgrade), but the Scandit xmlns still points at the Forms-only
+     "Unified" assembly, and BarcodeCaptureOverlay is still declared inline as a child
+     of DataCaptureView. In the MAUI binding that overlay is NOT a XAML element and must
+     move to code-behind; the scandit xmlns must move to ...UI.Maui;assembly=ScanditCaptureCoreMaui. -->
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:scanditCore="clr-namespace:Scandit.DataCapture.Core.UI.Unified;assembly=ScanditCaptureCoreUnified"
+             xmlns:scanditBarcode="clr-namespace:Scandit.DataCapture.Barcode.UI.Overlay.Unified;assembly=ScanditBarcodeCaptureUnified"
+             x:Class="MyScanApp.ScanPage">
+    <scanditCore:DataCaptureView DataCaptureContext="{Binding DataCaptureContext}">
+        <scanditBarcode:BarcodeCaptureOverlay BarcodeCapture="{Binding BarcodeCapture}"
+                                              Viewfinder="{Binding Viewfinder}" />
+    </scanditCore:DataCaptureView>
+</ContentPage>
