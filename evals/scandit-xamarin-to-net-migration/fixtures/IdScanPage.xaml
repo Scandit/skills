@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- POST-migration state: markup is already MAUI, but the Scandit xmlns still points at the
+     Forms-only "Unified" assembly. ID Capture has no *.Maui package, so the DataCaptureView
+     comes from Core.Maui (ScanditCaptureCoreMaui). IdCaptureOverlay is a runtime object, not a
+     XAML element, and must be created in code-behind. -->
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:scanditCore="clr-namespace:Scandit.DataCapture.Core.UI.Unified;assembly=ScanditCaptureCoreUnified"
+             x:Class="MyIdApp.IdScanPage">
+    <scanditCore:DataCaptureView x:Name="dataCaptureView"
+                                 DataCaptureContext="{Binding DataCaptureContext}" />
+</ContentPage>
