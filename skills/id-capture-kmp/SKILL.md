@@ -97,7 +97,9 @@ URL structures vary and guessing will lead to 404s.
 
 ## API surface this skill covers
 
-Targets the current KMP **8.6** release (all classes below are annotated `kmp=8.6` in the SDK docs).
+Covers the KMP ID Capture surface as of **8.6**, the release it shipped in (all classes below are
+annotated `kmp=8.6` in the SDK docs). Later versions add to this surface rather than replacing it —
+check the linked reference pages for anything not listed here.
 
 - **`IdCapture`** — `IdCapture.forContext(dataCaptureContext: DataCaptureContext?, settings: IdCaptureSettings): IdCapture`; `isEnabled: Boolean`; `dataCaptureContext: DataCaptureContext?` (read-only); `feedback: IdCaptureFeedback`; `externalTransactionId: String?`; `addListener(listener)` / `removeListener(listener)`; `applySettings(settings)`; `reset()`; static `createRecommendedCameraSettings(): CameraSettings`.
 - **`IdCaptureSettings`** — factory `IdCaptureSettings.idCaptureSettings()`; properties `scannerType: IdCaptureScanner`, `acceptedDocuments` / `rejectedDocuments: List<IdCaptureDocument>`, `rejectExpiredIds`, `rejectIdsExpiringIn: Duration?`, `rejectVoidedIds`, `rejectHolderBelowAge: Int?`, `rejectionTimeoutSeconds: Int`, `rejectNotRealIdCompliant`, `rejectForgedAamvaBarcodes`, `rejectInconsistentData`, `decodeBackOfEuropeanDrivingLicense`, `anonymizationMode: IdAnonymizationMode`, `anonymizeDefaultFields`; methods `setShouldPassImageTypeToResult(type, value)` / `getShouldPassImageTypeToResult(type)`, `addAnonymizedField(document, fieldType)` / `removeAnonymizedField(...)` / `clearAnonymizedFields()`.

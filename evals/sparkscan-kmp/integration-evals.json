@@ -19,7 +19,7 @@
           "text": "Setup checklist mentions com.scandit.datacapture.kmp:barcode as a Gradle dependency"
         },
         {
-          "text": "Version 8.6.0 is used for the Gradle dependencies (not a [version] placeholder)"
+          "text": "The Gradle dependency version is either a concrete version the response looked up from Maven Central, or an explicit <latest-version> placeholder the user is told to fill in — it is NOT invented or hardcoded to an outdated release"
         },
         {
           "text": "Setup checklist mentions adding the Scandit/datacapture-kmp-spm Swift Package to the iOS app"

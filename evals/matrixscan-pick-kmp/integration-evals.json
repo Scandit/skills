@@ -18,7 +18,7 @@
         {"text": "A BarcodePickViewSettings instance is created via BarcodePickViewSettings.barcodePickViewSettings()"},
         {"text": "The response explains that BarcodePickView construction differs per platform (Android needs a Context, iOS does not) and is done by the platform host, not in this commonMain file"},
         {"text": "The response mentions that BarcodePickActionListener registration (addActionListener) is required on the view for picks to actually finalize"},
-        {"text": "The response includes the setup checklist: the com.scandit.datacapture.kmp:core / :barcode Maven dependencies at version 8.6.0, the iOS Scandit/datacapture-kmp-spm umbrella package, camera permission per platform, and replacing the license key placeholder"},
+        {"text": "The response includes the setup checklist: the com.scandit.datacapture.kmp:core / :barcode Maven dependencies, the iOS Scandit/datacapture-kmp-spm umbrella package, camera permission per platform, and replacing the license key placeholder"},
         {"text": "No highlight-style customization (BarcodePickViewHighlightStyleCustomView, etc.) is added — the default highlight is fine for a basic integration"}
       ],
       "tags": ["integration", "product-provider"]

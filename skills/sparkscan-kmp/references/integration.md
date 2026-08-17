@@ -19,13 +19,15 @@ Two integration patterns are documented here:
 
 - Scandit KMP SDK — add via Gradle to the shared module's `commonMain` source set. Maven group is
   `com.scandit.datacapture.kmp`; the Kotlin import root is the unrelated `com.kmp.datacapture.*`
-  package — do not confuse the two.
+  package — do not confuse the two. Before writing the dependency, fetch the latest published
+  version from `https://central.sonatype.com/artifact/com.scandit.datacapture.kmp/core` and use
+  that for every `com.scandit.datacapture.kmp:*` artifact — they release in lockstep and must match.
   ```kotlin
   kotlin {
       sourceSets {
           commonMain.dependencies {
-              implementation("com.scandit.datacapture.kmp:core:8.6.0")
-              implementation("com.scandit.datacapture.kmp:barcode:8.6.0")
+              implementation("com.scandit.datacapture.kmp:core:<latest-version>")
+              implementation("com.scandit.datacapture.kmp:barcode:<latest-version>")
           }
       }
   }
@@ -40,6 +42,8 @@ Two integration patterns are documented here:
      product from it. Pick the variant that bundles the barcode module (needed for SparkScan); do
      not also add the native `ScanditBarcodeCapture`/`ScanditCaptureCore` XCFrameworks separately —
      they resolve transitively through the chosen product.
+
+     Pin this Swift package to the **exact same version** as the `com.scandit.datacapture.kmp:*` Maven dependencies (Xcode: *Dependency Rule → Exact Version*). A mismatch between the two causes link errors or runtime crashes, so bump both together.
 
 - A valid Scandit license key:
   - Sign in at https://ssl.scandit.com to generate one
@@ -77,8 +81,8 @@ After providing the code, show this setup checklist:
 
 **Setup checklist:**
 
-1. Add `implementation("com.scandit.datacapture.kmp:core:8.6.0")` and
-   `implementation("com.scandit.datacapture.kmp:barcode:8.6.0")` to the shared module's
+1. Add `implementation("com.scandit.datacapture.kmp:core:<latest-version>")` and
+   `implementation("com.scandit.datacapture.kmp:barcode:<latest-version>")` to the shared module's
    `commonMain.dependencies` in `build.gradle.kts`
 2. Add the SPM package `https://github.com/Scandit/datacapture-kmp-spm` to the iOS app, linking the
    barcode-bundling product
@@ -351,8 +355,8 @@ unmodified on both Android and iOS — no manual view construction, no manual `o
 
 ```kotlin
 commonMain.dependencies {
-    implementation("com.scandit.datacapture.kmp:core-compose:8.6.0")
-    implementation("com.scandit.datacapture.kmp:barcode-compose:8.6.0")
+    implementation("com.scandit.datacapture.kmp:core-compose:<latest-version>")
+    implementation("com.scandit.datacapture.kmp:barcode-compose:<latest-version>")
 }
 ```
 

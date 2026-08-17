@@ -21,7 +21,9 @@ If the user has no Label Capture code yet, the fastest path to a *correct* integ
 
 ### Gradle setup (`commonMain`)
 
-Add the Scandit KMP modules to the shared module's `commonMain` source set. Maven group is `com.scandit.datacapture.kmp`; use the same version for every artifact.
+Add the Scandit KMP modules to the shared module's `commonMain` source set. Maven group is `com.scandit.datacapture.kmp`; use the same version for every artifact. Before writing the dependency, fetch the latest published version from
+`https://central.sonatype.com/artifact/com.scandit.datacapture.kmp/core` and use that for every
+`com.scandit.datacapture.kmp:*` artifact — they are released in lockstep and must all match.
 
 ```kotlin
 // shared/build.gradle.kts
@@ -44,11 +46,13 @@ kotlin {
 }
 ```
 
-Replace `<version>` with the current SDK version (e.g. `8.6.0`). `com.scandit.datacapture.kmp:barcode` does **not** need to be declared explicitly — `label` re-exports it as an `api` dependency, so it resolves transitively. Declare it explicitly only if `commonMain` code also references `com.kmp.datacapture.barcode.*` symbols directly (e.g. `Symbology` for a custom barcode field, as in the examples below).
+Replace `<latest-version>` with the version fetched above. `com.scandit.datacapture.kmp:barcode` does **not** need to be declared explicitly — `label` re-exports it as an `api` dependency, so it resolves transitively. Declare it explicitly only if `commonMain` code also references `com.kmp.datacapture.barcode.*` symbols directly (e.g. `Symbology` for a custom barcode field, as in the examples below).
 
 #### iOS: Swift Package Manager
 
 iOS apps consume the KMP shared module's own umbrella XCFramework (built from the shared module) plus the native Scandit frameworks, both resolved through the published **`Scandit/datacapture-kmp-spm`** Swift package. Add the package in Xcode (*File → Add Package Dependencies*) and depend on the **`label`** variant's product — it bundles `core` + `barcode` + `label` (the label variant always pulls in `barcode`, since Label Capture reads barcodes as label fields) plus the native `label-text` recognition-model framework linked in transitively. There is no separate SPM product for `label-text` to add — it ships bundled with the `label` variant.
+
+Pin this Swift package to the **exact same version** as the `com.scandit.datacapture.kmp:*` Maven dependencies (Xcode: *Dependency Rule → Exact Version*). A mismatch between the two causes link errors or runtime crashes, so bump both together.
 
 #### When is `label-text` required? (read this — it is a common crash)
 

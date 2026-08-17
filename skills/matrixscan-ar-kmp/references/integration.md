@@ -20,22 +20,25 @@ Examples below are Kotlin, written for `commonMain` unless a file is explicitly 
   kotlin {
       sourceSets {
           commonMain.dependencies {
-              api("com.scandit.datacapture.kmp:core:8.6.0")
-              api("com.scandit.datacapture.kmp:barcode:8.6.0")
+              api("com.scandit.datacapture.kmp:core:<latest-version>")
+              api("com.scandit.datacapture.kmp:barcode:<latest-version>")
               // Only if you use the Compose Multiplatform BarcodeArView composable:
-              implementation("com.scandit.datacapture.kmp:barcode-compose:8.6.0")
+              implementation("com.scandit.datacapture.kmp:barcode-compose:<latest-version>")
           }
       }
   }
   ```
   Before writing the dependency, confirm the latest published version — fetch
   `https://central.sonatype.com/artifact/com.scandit.datacapture.kmp/barcode` and extract the
-  latest version number from the page rather than assuming `8.6.0` is still current.
+  latest version number from the page rather than assuming a version.
 - iOS side: add the umbrella XCFramework via Swift Package Manager — `File > Add Package
   Dependencies` with the package URL `Scandit/datacapture-kmp-spm`. This is **one** Kotlin
   framework per app (it re-exports the shared module's Kotlin/Native binary plus the native
   `ScanditCaptureCore`/`ScanditBarcodeCapture` xcframeworks it depends on) — do not add separate
   per-module SPM packages.
+
+  Pin this Swift package to the **exact same version** as the `com.scandit.datacapture.kmp:*` Maven dependencies (Xcode: *Dependency Rule → Exact Version*). A mismatch between the two causes link errors or runtime crashes, so bump both together.
+
 - A valid Scandit license key:
   - Sign in at https://ssl.scandit.com to generate one.
   - No account yet? Sign up at https://ssl.scandit.com/dashboard/sign-up?p=test.

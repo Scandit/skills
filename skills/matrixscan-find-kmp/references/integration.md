@@ -2,20 +2,25 @@
 
 MatrixScan Find (API class `BarcodeFind`) is a pre-built AR search UI: give it a list of barcodes to look for, point the camera at a scene, and `BarcodeFindView` highlights each item as it is located. It is commonly paired with SparkScan — scan a list of items with SparkScan first, then hand that list to BarcodeFind to physically locate them (see "SparkScan hand-off" below). If the user's question is only about the SparkScan/scanning half, route them to the `sparkscan-kmp` skill instead.
 
-This guide covers the Scandit Kotlin Multiplatform (KMP) SDK, version 8.6. Package root: `com.kmp.datacapture.*`.
+This guide covers the Scandit Kotlin Multiplatform (KMP) SDK, which shipped MatrixScan Find in 8.6.
+Package root: `com.kmp.datacapture.*`. Use the latest published SDK version, not 8.6 specifically.
 
 ## Prerequisites
 
-- **Gradle (shared/androidMain)** — add the KMP artifacts, group `com.scandit.datacapture.kmp`, version `8.6.0`:
+- **Gradle (shared/androidMain)** — add the KMP artifacts, group `com.scandit.datacapture.kmp`.
+  Fetch the latest published version from
+  `https://central.sonatype.com/artifact/com.scandit.datacapture.kmp/core`:
   ```kotlin
   dependencies {
-      implementation("com.scandit.datacapture.kmp:core:8.6.0")
-      implementation("com.scandit.datacapture.kmp:barcode:8.6.0")
+      implementation("com.scandit.datacapture.kmp:core:<latest-version>")
+      implementation("com.scandit.datacapture.kmp:barcode:<latest-version>")
       // Only if using the Compose Multiplatform wrapper (see below):
-      implementation("com.scandit.datacapture.kmp:barcode-compose:8.6.0")
+      implementation("com.scandit.datacapture.kmp:barcode-compose:<latest-version>")
   }
   ```
 - **iOS (SPM)** — add the `Scandit/datacapture-kmp-spm` Swift package to the iOS app target. It vends a single umbrella XCFramework (one Kotlin `shared` framework per app) that bundles the Kotlin `shared` module together with the native Scandit XCFrameworks it depends on. Do not add the native `ScanditBarcodeCapture`/`ScanditCaptureCore` CocoaPods/SPM packages separately — everything comes through the umbrella framework.
+
+  Pin this Swift package to the **exact same version** as the `com.scandit.datacapture.kmp:*` Maven dependencies (Xcode: *Dependency Rule → Exact Version*). A mismatch between the two causes link errors or runtime crashes, so bump both together.
 - **A valid Scandit license key**:
   - Sign in at https://ssl.scandit.com to generate one
   - No account yet? Sign up at https://ssl.scandit.com/dashboard/sign-up?p=test
@@ -309,7 +314,7 @@ barcodeFindView.uiListener = object : BarcodeFindViewUiListener {
 
 ## Compose Multiplatform
 
-The `barcode-compose` artifact (`com.scandit.datacapture.kmp:barcode-compose:8.6.0`) ships a `@Composable BarcodeFindView` wrapper that owns mode creation and start/stop lifecycle for you:
+The `barcode-compose` artifact (`com.scandit.datacapture.kmp:barcode-compose:<latest-version>`) ships a `@Composable BarcodeFindView` wrapper that owns mode creation and start/stop lifecycle for you:
 
 ```kotlin
 import androidx.compose.foundation.layout.fillMaxSize

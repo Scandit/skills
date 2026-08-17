@@ -18,12 +18,15 @@ in its own section near the end.
 
 ## Prerequisites
 
-- Maven group `com.scandit.datacapture.kmp`, version `8.6.0`:
+- Maven group `com.scandit.datacapture.kmp`. Fetch the latest published version from
+  `https://central.sonatype.com/artifact/com.scandit.datacapture.kmp/core`:
   - `com.scandit.datacapture.kmp:core`
   - `com.scandit.datacapture.kmp:barcode`
   - `com.scandit.datacapture.kmp:barcode-compose` (only if using the Compose composable)
 - iOS side: the umbrella SPM package `Scandit/datacapture-kmp-spm` supplies the single Kotlin
   framework the app links against — do not add per-module iOS frameworks separately.
+
+  Pin this Swift package to the **exact same version** as the `com.scandit.datacapture.kmp:*` Maven dependencies (Xcode: *Dependency Rule → Exact Version*). A mismatch between the two causes link errors or runtime crashes, so bump both together.
 - A valid Scandit license key (sign in at https://ssl.scandit.com to generate one; sign up at
   https://ssl.scandit.com/dashboard/sign-up?p=test if you don't have an account)
 - Camera usage permission declared per platform (`NSCameraUsageDescription` in iOS `Info.plist`,
@@ -44,7 +47,8 @@ After providing the code, show this setup checklist:
 
 **Setup checklist:**
 1. Add the `com.scandit.datacapture.kmp:core` and `com.scandit.datacapture.kmp:barcode`
-   dependencies (version `8.6.0`) to the shared module's `commonMain` source set.
+   dependencies (the version was already fetched and filled in above) to the shared module's
+   `commonMain` source set.
 2. On iOS, make sure the app links `Scandit/datacapture-kmp-spm` (the umbrella SPM package) and
    has `NSCameraUsageDescription` in `Info.plist`.
 3. On Android, make sure the app declares the `android.permission.CAMERA` permission.

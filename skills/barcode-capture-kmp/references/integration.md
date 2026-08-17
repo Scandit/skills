@@ -8,15 +8,17 @@ Package roots used throughout: `com.kmp.datacapture.core.*` (context, camera, vi
 
 ### Gradle (commonMain)
 
-Add the core and barcode KMP modules to your shared module's `commonMain` source set:
+Add the core and barcode KMP modules to your shared module's `commonMain` source set. Before writing the dependency, fetch the latest published version from
+`https://central.sonatype.com/artifact/com.scandit.datacapture.kmp/core` and use that for every
+`com.scandit.datacapture.kmp:*` artifact — they are released in lockstep and must all match.
 
 ```kotlin
 // shared/build.gradle.kts
 kotlin {
     sourceSets {
         commonMain.dependencies {
-            implementation("com.scandit.datacapture.kmp:core:8.6.0")
-            implementation("com.scandit.datacapture.kmp:barcode:8.6.0")
+            implementation("com.scandit.datacapture.kmp:core:<latest-version>")
+            implementation("com.scandit.datacapture.kmp:barcode:<latest-version>")
         }
     }
 }
@@ -25,12 +27,14 @@ kotlin {
 If you'll also use the Compose Multiplatform view (see below), additionally add:
 
 ```kotlin
-implementation("com.scandit.datacapture.kmp:core-compose:8.6.0")
+implementation("com.scandit.datacapture.kmp:core-compose:<latest-version>")
 ```
 
 ### iOS (Swift Package Manager)
 
 Add the SDK's SPM package from `Scandit/datacapture-kmp-spm` on GitHub to your iOS app target (Xcode: File > Add Package Dependencies). It ships as a single umbrella XCFramework — your app links exactly **one** Kotlin framework, so pick the variant that includes the barcode capture module (do not also add a separate "core-only" variant alongside it, or the app will contain two copies of the Kotlin runtime).
+
+Pin this Swift package to the **exact same version** as the `com.scandit.datacapture.kmp:*` Maven dependencies (Xcode: *Dependency Rule → Exact Version*). A mismatch between the two causes link errors or runtime crashes, so bump both together.
 
 ### Camera permission
 
@@ -275,7 +279,7 @@ The overlay's highlight brush is customized via `overlay.brush = Brush(...)` (de
 
 ## Compose Multiplatform
 
-Add `com.scandit.datacapture.kmp:core-compose:8.6.0` to `commonMain` (see Prerequisites). **`BarcodeCapture` has no dedicated `-compose` composable** — unlike SparkScan, BarcodeCount, BarcodeFind, BarcodeAr, and BarcodePick, there is no `BarcodeCaptureView` composable. Use the base `core-compose` `DataCaptureView` composable directly with the mode's overlay passed declaratively:
+Add `com.scandit.datacapture.kmp:core-compose:<latest-version>` to `commonMain` (see Prerequisites). **`BarcodeCapture` has no dedicated `-compose` composable** — unlike SparkScan, BarcodeCount, BarcodeFind, BarcodeAr, and BarcodePick, there is no `BarcodeCaptureView` composable. Use the base `core-compose` `DataCaptureView` composable directly with the mode's overlay passed declaratively:
 
 ```kotlin
 @Composable

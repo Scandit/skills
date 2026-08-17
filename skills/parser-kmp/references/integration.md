@@ -12,15 +12,16 @@ components do.
 
 ## Prerequisites
 
-- Scandit Data Capture SDK for KMP, version `8.6.0` — add the `core` and `parser` modules.
+- Scandit Data Capture SDK for KMP — add the `core` and `parser` modules. Fetch the latest
+  published version from `https://central.sonatype.com/artifact/com.scandit.datacapture.kmp/core`.
 
   Android (Gradle), `shared/build.gradle.kts`:
   ```kotlin
   kotlin {
       sourceSets {
           commonMain.dependencies {
-              implementation("com.scandit.datacapture.kmp:core:8.6.0")
-              implementation("com.scandit.datacapture.kmp:parser:8.6.0")
+              implementation("com.scandit.datacapture.kmp:core:<latest-version>")
+              implementation("com.scandit.datacapture.kmp:parser:<latest-version>")
           }
       }
   }
@@ -33,6 +34,8 @@ components do.
   dependency of the umbrella build even if you never construct `BarcodeCapture`); use `id-barcode-
   parser`'s product instead if you also need ID Capture. Do not add a second Scandit Kotlin
   framework product alongside it.
+
+  Pin this Swift package to the **exact same version** as the `com.scandit.datacapture.kmp:*` Maven dependencies (Xcode: *Dependency Rule → Exact Version*). A mismatch between the two causes link errors or runtime crashes, so bump both together.
 
 - A valid Scandit license key:
   - Sign in at https://ssl.scandit.com to generate one.

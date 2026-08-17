@@ -13,8 +13,11 @@ Examples below follow the shape of Scandit's official `IdCaptureSimpleSample` an
       implementation("com.scandit.datacapture.kmp:id:<version>")
   }
   ```
-  Before writing the dependency, confirm the latest published `<version>` (8.6.0 at the time of writing) rather than guessing.
+  Before writing the dependency, fetch the latest published version from
+  `https://central.sonatype.com/artifact/com.scandit.datacapture.kmp/core` and use it rather than guessing.
 - iOS distribution is a single umbrella SPM package, `Scandit/datacapture-kmp-spm` — pick **one** variant that bundles the `id` module (and any add-ons you need). An app can only link one Scandit KMP Kotlin framework — do not add a second variant alongside it.
+
+  Pin this Swift package to the **exact same version** as the `com.scandit.datacapture.kmp:*` Maven dependencies (Xcode: *Dependency Rule → Exact Version*). A mismatch between the two causes link errors or runtime crashes, so bump both together.
 - A valid Scandit license key — sign in at https://ssl.scandit.com to generate one, or sign up at https://ssl.scandit.com/dashboard/sign-up?p=test.
 - Camera permission — `android.permission.CAMERA` in the Android manifest (requested at runtime before scanning starts) and `NSCameraUsageDescription` in `Info.plist` on iOS.
 

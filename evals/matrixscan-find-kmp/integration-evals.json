@@ -19,7 +19,7 @@
         {"text": "BarcodeFindListener is implemented and added via addListener("},
         {"text": "The gradle dependency com.scandit.datacapture.kmp:core is mentioned"},
         {"text": "The gradle dependency com.scandit.datacapture.kmp:barcode is mentioned"},
-        {"text": "Version 8.6.0 is used for the dependencies"},
+        {"text": "The dependency version is either a concrete version looked up from Maven Central, or an explicit <latest-version> placeholder the user is told to fill in — not an invented or hardcoded outdated version"},
         {"text": "Camera permission (CAMERA or AndroidManifest) is mentioned"}
       ],
       "tags": ["integration"]

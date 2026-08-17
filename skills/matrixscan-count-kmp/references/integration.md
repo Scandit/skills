@@ -11,11 +11,14 @@ Both paths share the same `BarcodeCount` mode and `BarcodeCountSettings` — onl
 
 ## Prerequisites
 
-- Maven/Gradle dependencies (group `com.scandit.datacapture.kmp`, version `8.6.0`):
+- Maven/Gradle dependencies (group `com.scandit.datacapture.kmp`). Fetch the latest published
+  version from `https://central.sonatype.com/artifact/com.scandit.datacapture.kmp/core`:
   - `com.scandit.datacapture.kmp:core`
   - `com.scandit.datacapture.kmp:barcode`
   - `com.scandit.datacapture.kmp:barcode-compose` (only if using the Compose wrapper)
 - iOS: add the **`Scandit/datacapture-kmp-spm`** Swift package to the iOS app target. This vends a single Kotlin framework re-exporting the core/barcode module surfaces — do not add separate per-module CocoaPods/SPM dependencies as you would for a native iOS app.
+
+  Pin this Swift package to the **exact same version** as the `com.scandit.datacapture.kmp:*` Maven dependencies (Xcode: *Dependency Rule → Exact Version*). A mismatch between the two causes link errors or runtime crashes, so bump both together.
 - A valid Scandit license key:
   - Sign in at https://ssl.scandit.com to generate one.
   - No account yet? Sign up at https://ssl.scandit.com/dashboard/sign-up?p=test.
@@ -362,7 +365,7 @@ view.shouldShowStatusIconsOnScan = true   // status icons appear automatically o
 
 ## Step 8 — Capture Lists (Scanning Against a List) — NOT YET AVAILABLE ON KMP
 
-`BarcodeCountCaptureList`, `TargetBarcode`, `BarcodeCountCaptureListListener`, and `BarcodeCountCaptureListSession` all exist on KMP 8.6 and are fully constructible:
+`BarcodeCountCaptureList`, `TargetBarcode`, `BarcodeCountCaptureListListener`, and `BarcodeCountCaptureListSession` all exist as of KMP 8.6 and are fully constructible:
 
 ```kotlin
 import com.kmp.datacapture.barcode.count.BarcodeCountCaptureList
@@ -501,7 +504,7 @@ Registering the same `BarcodeCountViewUiListener` twice is a no-op (idempotent) 
 ## Common Pitfalls
 
 1. **Don't reach for Compose-wrapper parameters that don't exist.** Brushes, icons, hints, toolbar settings, the status provider, hardware trigger, `tapToUncountEnabled`, and the per-barcode `BarcodeCountViewListener` are only on the base `BarcodeCountView` — see Step 6.
-2. **Don't invent `setBarcodeCountCaptureList` / `setCaptureList` on `BarcodeCount`.** It does not exist on KMP 8.6 — see Step 8. `BarcodeCountCaptureList` and its listener/session types exist but cannot currently be attached to the mode.
+2. **Don't invent `setBarcodeCountCaptureList` / `setCaptureList` on `BarcodeCount`.** It did not exist as of KMP 8.6 — see Step 8; re-check the API reference on a later version. `BarcodeCountCaptureList` and its listener/session types exist but cannot currently be attached to the mode.
 3. **Don't construct `BarcodeCount(settings)`.** Use `BarcodeCount.forContext(context, settings)` — the context-free constructor from Flutter/JS bindings has no KMP equivalent.
 4. **Don't call the base `BarcodeCountView` constructor from `commonMain`.** Its signature differs per platform (Android needs a `Context`, iOS doesn't) — construct it in platform-specific code, exactly like the sample's iOS `ScannerView.swift` / the compose module's internal `rememberBarcodeCountScanView`.
 5. **Brushes only render in `BarcodeCountViewStyle.DOT`.** In the default `ICON` style, set the analogous `iconFor*` callback / `*Icon` property instead — a brush set on an `ICON`-style view silently does nothing.

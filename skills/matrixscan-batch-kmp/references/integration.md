@@ -15,16 +15,17 @@ platform-native views the advanced overlay needs.
 
 ## Prerequisites
 
-- Scandit KMP SDK — Maven group `com.scandit.datacapture.kmp`, version `8.6.0` (or later). Add to
+- Scandit KMP SDK — Maven group `com.scandit.datacapture.kmp`. Fetch the latest published
+  version from `https://central.sonatype.com/artifact/com.scandit.datacapture.kmp/core`. Add to
   the shared module's `build.gradle.kts`:
   ```kotlin
   kotlin {
       sourceSets {
           commonMain.dependencies {
-              implementation("com.scandit.datacapture.kmp:core:8.6.0")
-              implementation("com.scandit.datacapture.kmp:barcode:8.6.0")
+              implementation("com.scandit.datacapture.kmp:core:<latest-version>")
+              implementation("com.scandit.datacapture.kmp:barcode:<latest-version>")
               // Compose Multiplatform UI (optional, see the Compose section below):
-              implementation("com.scandit.datacapture.kmp:core-compose:8.6.0")
+              implementation("com.scandit.datacapture.kmp:core-compose:<latest-version>")
           }
       }
   }
@@ -33,6 +34,8 @@ platform-native views the advanced overlay needs.
   to the Xcode project (or the local `ScanditKmpPackage` the KMP Gradle plugin generates). This
   ships **one** umbrella Kotlin/Native XCFramework per app; do not attempt to link more than one
   Kotlin framework into the same iOS target.
+
+  Pin this Swift package to the **exact same version** as the `com.scandit.datacapture.kmp:*` Maven dependencies (Xcode: *Dependency Rule → Exact Version*). A mismatch between the two causes link errors or runtime crashes, so bump both together.
 - A valid Scandit license key:
   - Sign in at https://ssl.scandit.com to generate one.
   - No account yet? Sign up at https://ssl.scandit.com/dashboard/sign-up?p=test.
