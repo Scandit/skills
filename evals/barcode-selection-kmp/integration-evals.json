@@ -1,0 +1,140 @@
+{
+  "skill_name": "barcode-selection-kmp",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I want to add BarcodeSelection to my Kotlin Multiplatform app so users can tap to select individual barcodes in a dense scene. Here's my empty shared screen model: EmptyScreenModel.kt. I need to select EAN-13 and Code 128 barcodes, shared between Android and iOS.",
+      "expected_output": "The skill reads integration.md and writes a complete BarcodeSelection integration into EmptyScreenModel.kt: DataCaptureContext.initialize with a license key placeholder, BarcodeSelection.forContext with BarcodeSelectionSettings.barcodeSelectionSettings() enabling EAN13_UPCA and CODE128 and selectionType set to BarcodeSelectionTapSelection.tapSelection(), a Camera wired via setFrameSource, a BarcodeSelectionListener implementation, and a setupDataCaptureView function the platform hosts call. It also explains that Android and iOS each construct their own DataCaptureView (different constructor signatures) and embed it via toAndroidView()/toUIView().",
+      "files": [
+        "fixtures/EmptyScreenModel.kt"
+      ],
+      "assertions": [
+        {"text": "com.kmp.datacapture.barcode.selection.BarcodeSelection is imported (not com.scandit.datacapture.*)"},
+        {"text": "A license key placeholder string is present (e.g. -- ENTER YOUR SCANDIT LICENSE KEY HERE --)"},
+        {"text": "DataCaptureContext.initialize( is used to create the context"},
+        {"text": "BarcodeSelection.createRecommendedCameraSettings() is used to configure the camera"},
+        {"text": "Camera.getDefaultCamera( is used to obtain the camera"},
+        {"text": "dataCaptureContext.setFrameSource( is called with the camera"},
+        {"text": "BarcodeSelectionSettings.barcodeSelectionSettings() factory is used (not a bare BarcodeSelectionSettings() constructor)"},
+        {"text": "settings.selectionType is set to BarcodeSelectionTapSelection.tapSelection()"},
+        {"text": "Symbology.EAN13_UPCA is enabled"},
+        {"text": "Symbology.CODE128 is enabled"},
+        {"text": "BarcodeSelection.forContext(dataCaptureContext, settings) is used to create the mode (not forDataCaptureContext)"},
+        {"text": "addListener( is called or equivalent listener registration"},
+        {"text": "The screen model implements BarcodeSelectionListener with onSelectionUpdated and onSessionUpdated"},
+        {"text": "onSelectionUpdated reads from session.newlySelectedBarcodes (a list, not a single nullable barcode)"},
+        {"text": "A setupDataCaptureView (or equivalently named) function accepts a DataCaptureView and attaches a BarcodeSelectionBasicOverlay via withBarcodeSelectionForView or addOverlay"},
+        {"text": "The response explains that Android's DataCaptureView constructor needs a Context while iOS's does not, so the view must be constructed on each platform host rather than in the shared screen model"}
+      ],
+      "tags": ["basic-integration", "tap-selection", "license-init", "camera-setup", "capture-view-overlay", "symbology-config"]
+    },
+    {
+      "id": 2,
+      "prompt": "In my KMP BarcodeSelection screen model (IntegratedScreenModel.kt), I want users to aim at a barcode instead of tapping it, and I want it selected automatically as soon as the SDK understands the user is aiming at it — no extra tap required. Switch the selection strategy accordingly.",
+      "expected_output": "The skill sets settings.selectionType to BarcodeSelectionAimerSelection.aimerSelection() with selectionStrategy set to BarcodeSelectionAutoSelectionStrategy(), and reapplies the settings via barcodeSelection.applySettings(settings). Existing integration code is preserved.",
+      "files": [
+        "fixtures/IntegratedScreenModel.kt"
+      ],
+      "assertions": [
+        {"text": "BarcodeSelectionAimerSelection.aimerSelection() is used to construct the aimer selection type"},
+        {"text": "selectionStrategy is set to BarcodeSelectionAutoSelectionStrategy()"},
+        {"text": "settings.selectionType is assigned the constructed aimer selection instance"},
+        {"text": "barcodeSelection.applySettings(settings) is called to apply the change at runtime"},
+        {"text": "Existing integration code (DataCaptureContext, barcodeSelection, camera, listener) is preserved"}
+      ],
+      "tags": ["aimer-selection", "selection-strategy"]
+    },
+    {
+      "id": 3,
+      "prompt": "Users tell me tapping the same barcode twice in my KMP BarcodeSelection app (IntegratedScreenModel.kt) accidentally unselects it. I want repeated taps on an already-selected barcode to just increase a count instead of unselecting it, and I want to show that count in the UI when a barcode is (re-)selected.",
+      "expected_output": "The skill sets settings.tapBehavior (on the BarcodeSelectionTapSelection instance) to BarcodeSelectionTapBehavior.REPEAT_SELECTION, and in onSelectionUpdated reads session.getCount(barcode) for barcodes in session.newlySelectedBarcodes to surface the times-selected count in the UI. Existing integration is preserved.",
+      "files": [
+        "fixtures/IntegratedScreenModel.kt"
+      ],
+      "assertions": [
+        {"text": "tapBehavior is set to BarcodeSelectionTapBehavior.REPEAT_SELECTION on the BarcodeSelectionTapSelection instance"},
+        {"text": "onSelectionUpdated reads session.newlySelectedBarcodes to get newly selected barcodes"},
+        {"text": "session.getCount(barcode) is called to read how many times the barcode was selected"},
+        {"text": "Existing integration code (DataCaptureContext, barcodeSelection, camera, listener) is preserved"}
+      ],
+      "tags": ["handling-selections", "session-counts", "tap-behavior"]
+    },
+    {
+      "id": 4,
+      "prompt": "In my KMP BarcodeSelection app (IntegratedScreenModel.kt), I want a button that freezes the camera preview so the user can carefully tap several barcodes without them moving, and another button to resume live scanning.",
+      "expected_output": "The skill adds functions or event handling that call barcodeSelection.freezeCamera() to freeze and barcodeSelection.unfreezeCamera() to resume. Existing integration is preserved.",
+      "files": [
+        "fixtures/IntegratedScreenModel.kt"
+      ],
+      "assertions": [
+        {"text": "barcodeSelection.freezeCamera() is called to freeze the preview"},
+        {"text": "barcodeSelection.unfreezeCamera() is called to resume the preview"},
+        {"text": "Existing integration code (DataCaptureContext, barcodeSelection, camera, listener) is preserved"}
+      ],
+      "tags": ["freeze-camera", "unfreeze-camera"]
+    },
+    {
+      "id": 5,
+      "prompt": "In my KMP BarcodeSelection app (IntegratedScreenModel.kt), most scenes only ever have a single barcode in view. When that's the case, I want that barcode selected automatically without the user having to tap or aim at it.",
+      "expected_output": "The skill sets settings.singleBarcodeAutoDetection = true on the BarcodeSelectionSettings, before mode creation or via applySettings. Existing integration is preserved.",
+      "files": [
+        "fixtures/IntegratedScreenModel.kt"
+      ],
+      "assertions": [
+        {"text": "settings.singleBarcodeAutoDetection is set to true"},
+        {"text": "Existing integration code (DataCaptureContext, barcodeSelection, camera, listener) is preserved"}
+      ],
+      "tags": ["single-barcode-auto-detection"]
+    },
+    {
+      "id": 6,
+      "prompt": "I want silent selection in my KMP BarcodeSelection app — suppress the default beep when a barcode is selected, no vibration either. Update IntegratedScreenModel.kt.",
+      "expected_output": "The skill calls barcodeSelection.setFeedback(soundEnabled = false, vibrationEnabled = false), or assigns barcodeSelection.feedback to a fresh BarcodeSelectionFeedback()/a Feedback with sound and vibration both null. Existing integration is preserved.",
+      "files": [
+        "fixtures/IntegratedScreenModel.kt"
+      ],
+      "assertions": [
+        {"text": "barcodeSelection.setFeedback(soundEnabled = false, vibrationEnabled = false) is called, or barcodeSelection.feedback is reassigned to suppress both sound and vibration (not BarcodeSelectionFeedback.defaultFeedback())"},
+        {"text": "Existing integration code (DataCaptureContext, barcodeSelection, camera, listener) is preserved"}
+      ],
+      "tags": ["feedback-control"]
+    },
+    {
+      "id": 7,
+      "prompt": "My KMP BarcodeSelection screen model (IntegratedScreenModel.kt) doesn't clean up properly when the screen is left. Add a dispose function that removes the listener, removes the mode from the context, and turns off the camera.",
+      "expected_output": "The skill adds a dispose() function that sets barcodeSelection.isEnabled = false, calls barcodeSelection.removeListener(this), calls dataCaptureContext.removeMode(barcodeSelection), and calls camera?.switchToDesiredState(FrameSourceState.OFF), in that order. Existing integration is preserved.",
+      "files": [
+        "fixtures/IntegratedScreenModel.kt"
+      ],
+      "assertions": [
+        {"text": "barcodeSelection.removeListener( is called in the new dispose function"},
+        {"text": "dataCaptureContext.removeMode(barcodeSelection) is called (not removeCurrentMode or removeAllModes)"},
+        {"text": "camera?.switchToDesiredState(FrameSourceState.OFF) (or non-null equivalent) is called to turn off the camera"},
+        {"text": "barcodeSelection.isEnabled = false is set before removing the listener"},
+        {"text": "Existing integration code (DataCaptureContext, barcodeSelection, camera, listener) is preserved"}
+      ],
+      "tags": ["lifecycle"]
+    },
+    {
+      "id": 8,
+      "prompt": "I want to use Compose Multiplatform for my KMP BarcodeSelection screen instead of the imperative shared-ScreenModel pattern. Here's my empty Compose screen: EmptyComposeScreen.kt. Let users tap to select EAN-13 and QR barcodes.",
+      "expected_output": "The skill uses the core-compose DataCaptureView composable: rememberDataCaptureContext(licenseKey) to create the context, rememberCamera(context) to wire and drive the camera, BarcodeSelection.forContext with BarcodeSelectionSettings.barcodeSelectionSettings() enabling EAN13_UPCA and QR, a remembered BarcodeSelectionBasicOverlay.withBarcodeSelection(barcodeSelection), and passes overlays = listOf(overlay) into the DataCaptureView composable. It does not look for a BarcodeSelectionView composable (none exists) and flags that the overlay must be remember-ed to avoid recomposition churn.",
+      "files": [
+        "fixtures/EmptyComposeScreen.kt"
+      ],
+      "assertions": [
+        {"text": "rememberDataCaptureContext( is used to create the DataCaptureContext"},
+        {"text": "rememberCamera( is used to wire the camera"},
+        {"text": "BarcodeSelection.forContext( is used to create the mode"},
+        {"text": "BarcodeSelectionSettings.barcodeSelectionSettings() is used"},
+        {"text": "Symbology.EAN13_UPCA is enabled"},
+        {"text": "Symbology.QR is enabled"},
+        {"text": "BarcodeSelectionBasicOverlay.withBarcodeSelection( is used (not withBarcodeSelectionForView, since there is no imperative DataCaptureView to bind to)"},
+        {"text": "The overlay instance is wrapped in remember( to keep it stable across recompositions"},
+        {"text": "The DataCaptureView composable is called with overlays = listOf(overlay)"},
+        {"text": "No BarcodeSelectionView composable is used or suggested, since BarcodeSelection has no dedicated Compose companion"}
+      ],
+      "tags": ["basic-integration", "compose-multiplatform", "camera-setup", "capture-view-overlay", "symbology-config"]
+    }
+  ]
+}
