@@ -275,6 +275,41 @@
           "text": "Existing integration code (document selection, callbacks, start from click handler) is preserved"
         }
       ]
+    },
+    {
+      "id": 10,
+      "prompt": "Our design system uses uppercase pill-shaped buttons with our brand green (#0a7d4f). Restyle the ID Bolt pop-up's buttons to match, and round the pop-up corners a bit more too. My integration is in integrated-page.ts.",
+      "expected_output": "The skill uses theme.styleOverrides.button with a COMPLETE CSS ruleset — a .bolt-button selector plus all baseline properties (background, color, padding, border-radius) and a :hover/:focus state, not just the uppercase/color delta — because each override renders in its own shadow DOM with all default styles dropped. The corner rounding goes through theme.dimensions (e.g. radiusPopup), not styleOverrides.",
+      "files": [
+        "fixtures/integrated-page.ts"
+      ],
+      "tags": [
+        "theming-localization",
+        "style-overrides"
+      ],
+      "assertions": [
+        {
+          "text": "A theme object with styleOverrides.button is passed in the IdBoltSession.create options"
+        },
+        {
+          "text": "The button override is a complete CSS ruleset targeting .bolt-button — selector included, not bare declarations like `text-transform: uppercase;` alone (semantic)"
+        },
+        {
+          "text": "The button ruleset restates the baseline properties the element needs (background, color, padding, border-radius), not only the changed ones (semantic)"
+        },
+        {
+          "text": "The button override includes a :hover and/or :focus state (semantic)"
+        },
+        {
+          "text": "The corner rounding is done via theme.dimensions, not via styleOverrides (semantic)"
+        },
+        {
+          "text": "It is explained that styleOverrides drop the element's default styles (own shadow DOM), which is why the full rule must be supplied (semantic)"
+        },
+        {
+          "text": "Existing integration code (document selection, callbacks, start from click handler) is preserved"
+        }
+      ]
     }
   ]
 }
