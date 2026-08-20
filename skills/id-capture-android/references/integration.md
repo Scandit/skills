@@ -21,6 +21,7 @@ Examples below use Kotlin and an Activity. The same APIs work identically with J
   }
   ```
   The SDK is distributed via Maven Central. The PDF417/AAMVA barcode reader and MRZ/VIZ engines are bundled in the `id` module — there is no separate barcode package to add for ID Capture.
+- `minSdk` 24 or higher.
 - A valid Scandit license key:
   - Sign in at https://ssl.scandit.com to generate one.
   - No account yet? Sign up at https://ssl.scandit.com/dashboard/sign-up?p=test.

@@ -10,7 +10,7 @@ BarcodeCapture is the low-level single-barcode scanning mode. In Flutter you wir
   - `scandit_flutter_datacapture_barcode` (pulls in `scandit_flutter_datacapture_core` transitively)
   - `permission_handler` (for the runtime camera permission on Android)
 - Flutter `>=3.22.0`, Dart SDK `>=3.0.0 <4.0.0`.
-- Android `minSdk` 23 or higher (`android/app/build.gradle`).
+- Android `minSdk` 24 or higher (`android/app/build.gradle`).
 - After editing `pubspec.yaml`, run `flutter pub get` to fetch the packages.
 - A valid Scandit license key:
   - Sign in at https://ssl.scandit.com to generate one.
@@ -30,7 +30,7 @@ After providing the code, show this setup checklist:
 **Setup checklist:**
 1. Add `scandit_flutter_datacapture_barcode` and `permission_handler` to `pubspec.yaml`, then run `flutter pub get`.
 2. Add `NSCameraUsageDescription` to `ios/Runner/Info.plist` with a short usage explanation.
-3. Confirm `android/app/build.gradle` has `minSdk` 23 or higher.
+3. Confirm `android/app/build.gradle` has `minSdk` 24 or higher.
 4. Replace `-- ENTER YOUR SCANDIT LICENSE KEY HERE --` with the key from https://ssl.scandit.com.
 5. Ensure `main()` calls `WidgetsFlutterBinding.ensureInitialized()` and then `await ScanditFlutterDataCaptureBarcode.initialize()` before `runApp(...)`.
 6. Call `Permission.camera.request()` from `permission_handler` before the first scan (usually in `initState()` of the scanning page).

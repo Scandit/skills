@@ -22,6 +22,7 @@ Only proceed to the manual integration steps below if the user already has an ex
 
 ## Prerequisites
 
+- iOS deployment target 15.0 or higher.
 - Scandit Data Capture SDK for iOS — add via Swift Package Manager (URL: `https://github.com/Scandit/datacapture-spm`). The SPM products required depend on which field types the label uses:
 
   | Product | When to add | Why |
@@ -788,7 +789,7 @@ ARE is Scandit's cloud-based fallback for on-device text recognition. When the o
 
 **Important constraints — tell the user all of these before they try to enable it:**
 
-- **Overlay-agnostic.** ARE is a property of the `LabelDefinition` (`adaptiveRecognitionMode`), resolved at the recognition-engine layer before any overlay renders. It runs the same with the Basic, Advanced, or Validation Flow overlay — there is no overlay requirement. (This is distinct from Beta **Receipt Scanning**, which is a separate ARE-powered feature that *does* require its own `LabelCaptureAdaptiveRecognitionOverlay` — see that section below.)
+- **Requires the Validation Flow overlay.** ARE is enabled on the `LabelDefinition` (`adaptiveRecognitionMode`), but the cloud fallback only runs when scanning through `LabelCaptureValidationFlowOverlay` — with the Basic or Advanced overlay it has no effect. (This is distinct from Beta **Receipt Scanning**, which is a separate ARE-powered feature with its own `LabelCaptureAdaptiveRecognitionOverlay` — see that section below.)
 - **Enabled by Scandit on your subscription — you cannot self-enable it.** ARE is gated by a license-key feature flag (the SDK checks for the Adaptive Recognition Engine entitlement at runtime), but you do not set that flag yourself: Scandit provisions it server-side onto your subscription, and the entitlement then rides in the license key you are issued. A standard license key does not carry it. For evaluation, trial keys can be issued with ARE enabled; for production, the entitlement must be added to your subscription before going live. In every case direct the user to <support@scandit.com> — do **not** tell them to look for a flag to toggle in their own key, code, or dashboard.
 - **Requires iOS SDK 8.0+ for the inline modifier.** `.adaptiveRecognition(.auto)` on a `LabelDefinition` was added in iOS 8.0 (the always-on `.on` mode in 8.4). On an older SDK the modifier does not exist and the code will not compile — check `Package.resolved` before emitting it, the same way you gate the result-builder DSL and the v8.4 date APIs.
 - **Beta.** ARE is currently in Beta.

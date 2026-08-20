@@ -12,6 +12,7 @@ SparkScan is a pre-built scanning UI for high-volume single-scanning workflows. 
   }
   ```
   The SDK is distributed via Maven Central.
+- `minSdk` 24 or higher.
 - A valid Scandit license key:
   - Sign in at https://ssl.scandit.com to generate one
   - No account yet? Sign up at https://ssl.scandit.com/dashboard/sign-up?p=test

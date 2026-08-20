@@ -8,7 +8,7 @@ Label Capture (Smart Label Capture) extracts multiple fields from a single label
   - `scandit_flutter_datacapture_core`
   - `scandit_flutter_datacapture_barcode`
   - `scandit_flutter_datacapture_label`
-- Flutter `>=3.10`, Dart `>=3.0`. iOS deployment target `>=14.0`. Android `minSdkVersion >=23`.
+- Flutter `>=3.10`, Dart `>=3.0`. iOS deployment target `>=15.0`. Android `minSdkVersion >=24`.
 - A valid Scandit license key:
   - Sign in at <https://ssl.scandit.com> to generate one.
   - No account yet? Sign up at <https://ssl.scandit.com/dashboard/sign-up?p=test>.
@@ -90,8 +90,8 @@ If a pre-made label fits, **stop here** — skip Questions A/B/C and just instan
 After writing the code, show this setup checklist:
 
 1. Add the Scandit packages to `pubspec.yaml` and run `flutter pub get`.
-2. iOS: open `ios/Runner.xcworkspace`, set deployment target to 14.0+, add `NSCameraUsageDescription` to `Info.plist`. Then `cd ios && pod install`.
-3. Android: confirm `minSdkVersion 23` in `android/app/build.gradle`. The `CAMERA` permission is declared automatically; runtime request via `permission_handler` is your responsibility.
+2. iOS: open `ios/Runner.xcworkspace`, set deployment target to 15.0+, add `NSCameraUsageDescription` to `Info.plist`. Then `cd ios && pod install`.
+3. Android: confirm `minSdkVersion 24` (or higher) in `android/app/build.gradle`. The `CAMERA` permission is declared automatically; runtime request via `permission_handler` is your responsibility.
 4. Replace `'-- ENTER YOUR SCANDIT LICENSE KEY HERE --'` with your key from <https://ssl.scandit.com>.
 
 ## Step 1 — Initialize the plugins and the DataCaptureContext
