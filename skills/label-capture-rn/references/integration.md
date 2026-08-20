@@ -6,6 +6,7 @@ Label Capture (Smart Label Capture) extracts multiple fields from a single label
 
 ## Prerequisites
 
+- Android `minSdk` 24 or higher; iOS deployment target 15.0 or higher.
 - Scandit React Native packages installed:
   - `scandit-react-native-datacapture-core`
   - `scandit-react-native-datacapture-barcode`

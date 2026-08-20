@@ -214,7 +214,7 @@ This is one of the pre-built whole-label definitions on `LabelDefinition` (along
 
 > **BETA.** The Adaptive Recognition API is still in beta and may change in future SDK versions. It requires a license key with the ARE feature flag enabled. To enable it on a production subscription the customer must contact **support@scandit.com**. Always surface the beta status and the contact-support requirement to the user — do not present ARE as a generally-available feature.
 >
-> **Availability.** The `adaptiveRecognition(...)` builder method is **not present in public SDK releases up to and including 8.4.0** (verified against the published AAR). Before generating ARE code, check the project's SDK version — on 8.4.0 or older this snippet will not compile, and the honest answer is that the feature isn't available to them yet.
+> **Availability.** The `adaptiveRecognition(...)` builder method and the `AdaptiveRecognitionMode` enum are present in all public 8.x releases. Compiling is not the gate — the license key is: without the ARE feature flag the cloud step simply won't run at runtime.
 
 ARE is Scandit's cloud-based OCR fallback. When Smart Label Capture's on-device model fails to capture a field, the SDK can automatically trigger the larger cloud model to recognise complex or unforeseen data, reducing how often the user has to type a value manually.
 
@@ -245,13 +245,13 @@ val settings = labelCaptureSettings {
 }
 ```
 
-ARE works in combination with the Validation Flow — the cloud fallback fills fields the on-device model missed before the user reaches the manual-entry step. See `AdaptiveRecognitionMode` in the API reference for the available options.
+The cloud fallback only runs when scanning through the Validation Flow overlay (`LabelCaptureValidationFlowOverlay`) — with the basic or advanced overlay, `adaptiveRecognition(...)` has no effect. It fills fields the on-device model missed before the user reaches the manual-entry step. See `AdaptiveRecognitionMode` in the API reference for the available options.
 
 ## Receipt Scanning (BETA)
 
 > **BETA.** Receipt Scanning requires the Adaptive Recognition Engine, which is still in beta. To enable it on a subscription the customer must contact **support@scandit.com**. Surface the beta status and contact-support requirement to the user.
 >
-> **Availability.** The public Receipt Scanning classes (`LabelCaptureAdaptiveRecognitionOverlay`, `LabelCaptureAdaptiveRecognitionListener`, `ReceiptScanningResult`) are **not present in public SDK releases up to and including 8.4.0** (verified against the published AAR — only internal native counterparts exist there). Check the project's SDK version before generating this code; on 8.4.0 or older it will not compile.
+> **Availability.** The public Receipt Scanning classes (`LabelCaptureAdaptiveRecognitionOverlay`, `LabelCaptureAdaptiveRecognitionListener`, `ReceiptScanningResult`) are present in all public 8.x releases. Shipping-label scanning (`AdaptiveRecognitionResultType.SHIPPING_LABEL`, `ShippingLabelScanningResult`) was added in **8.6**. As with ARE above, the runtime gate is the license flag, not the compiler.
 
 Receipt Scanning uses ARE to extract structured data from receipts in the cloud — store information, payment details, and individual line items. It uses a **different integration pattern** from the standard label overlays:
 

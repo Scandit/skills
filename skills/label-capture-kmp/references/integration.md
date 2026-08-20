@@ -14,6 +14,7 @@ If the user has no Label Capture code yet, the fastest path to a *correct* integ
 
 ## Prerequisites
 
+- Android `minSdk` 24 or higher.
 - A valid Scandit license key:
   - Sign in at <https://ssl.scandit.com> to generate one.
   - No account yet? Sign up at <https://ssl.scandit.com/dashboard/sign-up?p=test>.
