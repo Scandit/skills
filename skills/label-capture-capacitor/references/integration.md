@@ -11,7 +11,7 @@ Label Capture (Smart Label Capture) extracts multiple fields from a single label
 - After installing, run `npx cap sync` and `cd ios/App && pod install` for iOS.
 - Capacitor `>=5`, `@capacitor/ios >=5`, `@capacitor/android >=5`.
 - Android `minSdkVersion` 24 or higher.
-- A valid Scandit license key from <https://ssl.scandit.com>.
+- A valid Scandit license key — see **Licence key** in this skill's `SKILL.md`.
 - Camera permissions:
   - iOS: `NSCameraUsageDescription` in `ios/App/App/Info.plist`.
   - Android: declared automatically by the plugin; request at runtime if `minSdkVersion >= 23`.

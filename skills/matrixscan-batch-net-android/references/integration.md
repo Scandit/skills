@@ -54,9 +54,7 @@ Do **not** guess, do **not** reuse a version from training data, and do **not** 
   ```
 
   If the project already has an `Application` subclass, add the two `Initialize()` calls to its existing `OnCreate()` rather than creating a second one (Android will refuse to load two `[Application]`-decorated classes). **This step is only required on Scandit SDK 8.0+ — earlier majors (6.x, 7.x) self-initialized, so for those versions skip this file entirely.**
-- A valid Scandit license key:
-  - Sign in at https://ssl.scandit.com to generate one.
-  - No account yet? Sign up at https://ssl.scandit.com/dashboard/sign-up?p=test.
+- A valid Scandit license key — see **Licence key** in this skill's `SKILL.md`.
 - `AndroidManifest.xml` setup — three concerns, all required:
 
   1. **Camera entries** (top-level, sibling to `<application>`):
@@ -111,7 +109,7 @@ After providing the code, show this setup checklist:
 4. If targeting SDK 8.0+, create a `MainApplication.cs` that calls `ScanditCaptureCore.Initialize()` and `ScanditBarcodeCapture.Initialize()` from `OnCreate()`.
 5. Set `android:theme="@style/Theme.AppCompat.DayNight.NoActionBar"` (or another `Theme.AppCompat` descendant) on the `<application>` element in `AndroidManifest.xml`.
 6. Add an `activity_main.axml` (or use an existing layout) containing a `FrameLayout` with `android:id="@+id/data_capture_view_container"`.
-7. Replace `-- ENTER YOUR SCANDIT LICENSE KEY HERE --` with your key from https://ssl.scandit.com.
+7. Replace `-- ENTER YOUR SCANDIT LICENSE KEY HERE --` with your key (see **Licence key** in `SKILL.md`).
 
 ## Namespaces
 

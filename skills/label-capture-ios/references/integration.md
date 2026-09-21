@@ -12,7 +12,7 @@ If the user has no existing app yet, offer the official iOS sample as the fastes
 
 Tell the user to clone the repo and open the sample's Xcode project. Once they have it open, help them:
 
-1. Replace `-- ENTER YOUR SCANDIT LICENSE KEY HERE --` (in `ScanViewController.swift`) with their key from <https://ssl.scandit.com>
+1. Replace `-- ENTER YOUR SCANDIT LICENSE KEY HERE --` (in `ScanViewController.swift`) with your key (see **Licence key** in `SKILL.md`).
 2. Adjust the label definition to match their use case (fields, symbologies, regex patterns)
 3. Build and run on a real device (the simulator has no camera)
 
@@ -39,9 +39,7 @@ Only proceed to the manual integration steps below if the user already has an ex
 
   After the user picks fields in Question A below, list exactly which products to add. Rules of thumb: a label whose only barcode is a **plain `CustomBarcode`** (no text field) gets the first three; a label with **any text field** adds `ScanditLabelCaptureText`; a label with **any data-typed/semantic barcode builder** (`SerialNumberBarcode` / `IMEIOneBarcode` / `IMEITwoBarcode` / `PartNumberBarcode`) **also** adds `ScanditLabelCaptureText` even if it has no text field; and a label with `UnitPriceText` / `TotalPriceText` adds both `ScanditLabelCaptureText` and `ScanditPriceLabel`.
 
-- A valid Scandit license key:
-  - Sign in at <https://ssl.scandit.com> to generate one.
-  - No account yet? Sign up at <https://ssl.scandit.com/dashboard/sign-up?p=test>.
+- A valid Scandit license key — see **Licence key** in this skill's `SKILL.md`.
 - `NSCameraUsageDescription` in `Info.plist`
 
 ## Interactive Label Definition
@@ -849,7 +847,7 @@ After the integration code and overlay choice are in place, show this checklist:
    - **If the label has a data-typed/semantic barcode field** (`SerialNumberBarcode`, `PartNumberBarcode`, `IMEIOneBarcode`, `IMEITwoBarcode`): also link `ScanditLabelCaptureText` **even if there is no text field** — these builders' models ship in that product (see the ⚠️ note in Prerequisites). A plain `CustomBarcode` does not need it.
    - **If the label has a price field** (`UnitPriceText` or `TotalPriceText`): also link `ScanditPriceLabel` (in addition to `ScanditLabelCaptureText`, not instead of it).
    - List only the products this specific label needs. `ScanditLabelCaptureText` is *not* needed for a plain-`CustomBarcode` barcode-only label, but it **is** required for a semantic-barcode (IMEI / serial / part-number) label or any text/price label. A missing text/price/semantics product is a common failure: the `DataCaptureView` reports a missing-resource error, or text/semantic fields produce no result.
-2. Replace `-- ENTER YOUR SCANDIT LICENSE KEY HERE --` with your license key from <https://ssl.scandit.com>.
+2. Replace `-- ENTER YOUR SCANDIT LICENSE KEY HERE --` with your key (see **Licence key** in `SKILL.md`).
 3. Add `NSCameraUsageDescription` to your `Info.plist` with a user-facing reason string.
 4. Add a `UIView` outlet named `containerView` to your view controller (or replace `containerView` with `view` to use the whole VC's view).
 5. Build and run on a real device — the simulator has no camera.

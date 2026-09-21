@@ -10,9 +10,7 @@ You declare **which documents to accept** and **which scanner to use**, attach a
   - `scandit-capacitor-datacapture-core`
   - `scandit-capacitor-datacapture-id`
   - (Add-on capabilities live in separate packages — see `references/supplementary-modules.md`.)
-- A valid Scandit license key, **enabled for ID Capture**:
-  - Sign in at <https://ssl.scandit.com> to generate one.
-  - No account yet? Sign up at <https://ssl.scandit.com/dashboard/sign-up?p=test>.
+- A valid Scandit license key, **enabled for ID Capture** — see **Licence key** in this skill's `SKILL.md`.
 - Camera permissions configured by the app:
   - Install `@capacitor/camera` and run `npx cap sync`.
   - iOS: add `NSCameraUsageDescription` to `ios/App/App/Info.plist`.

@@ -13,9 +13,7 @@ You declare **which documents to accept** and **which scanner to use**, attach a
   cordova plugin add scandit-cordova-datacapture-id
   # Add-on capability plugins live separately — see `references/supplementary-modules.md`.
   ```
-- A valid Scandit license key, **enabled for ID Capture**:
-  - Sign in at <https://ssl.scandit.com> to generate one.
-  - No account yet? Sign up at <https://ssl.scandit.com/dashboard/sign-up?p=test>.
+- A valid Scandit license key, **enabled for ID Capture** — see **Licence key** in this skill's `SKILL.md`.
 - Camera permission configured by the app:
   - The native manifest permission is declared by the plugin.
   - iOS: `cordova plugin add scandit-cordova-datacapture-core` already wires `NSCameraUsageDescription`; if you want a custom prompt string, edit your `config.xml` (`<edit-config>` for `NSCameraUsageDescription`).

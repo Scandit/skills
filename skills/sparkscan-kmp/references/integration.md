@@ -45,9 +45,7 @@ Two integration patterns are documented here:
 
      Pin this Swift package to the **exact same version** as the `com.scandit.datacapture.kmp:*` Maven dependencies (Xcode: *Dependency Rule → Exact Version*). A mismatch between the two causes link errors or runtime crashes, so bump both together.
 
-- A valid Scandit license key:
-  - Sign in at https://ssl.scandit.com to generate one
-  - No account yet? Sign up at https://ssl.scandit.com/dashboard/sign-up?p=test
+- A valid Scandit license key — see **Licence key** in this skill's `SKILL.md`.
 
 - Camera permission on **both** platforms:
   - Android — `AndroidManifest.xml`:
@@ -89,7 +87,7 @@ After providing the code, show this setup checklist:
 3. Add `<uses-permission android:name="android.permission.CAMERA" />` to `AndroidManifest.xml` and
    request it at runtime before scanning starts
 4. Add `NSCameraUsageDescription` to `Info.plist`
-5. Replace `-- ENTER YOUR SCANDIT LICENSE KEY HERE --` with your key from https://ssl.scandit.com
+5. Replace `-- ENTER YOUR SCANDIT LICENSE KEY HERE --` with your key (see **Licence key** in `SKILL.md`).
 
 ### Shared code (`commonMain`)
 

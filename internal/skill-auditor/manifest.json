@@ -17,6 +17,14 @@
     "matrixscan-ar-annotation-ios",
     "matrixscan-ar-highlight-ios"
   ],
+  "licence_key_exempt": [
+    "scandit-xamarin-to-net-migration",
+    "matrixscan-ar-annotation-ios",
+    "matrixscan-ar-highlight-ios"
+  ],
+  "licence_link_allow": [
+    "sparkscan-web/references/troubleshooting.md"
+  ],
   "platform_aliases": {
     "matrixscan-ar-annotation-ios": "matrixscan-ar-ios",
     "matrixscan-ar-highlight-ios": "matrixscan-ar-ios"

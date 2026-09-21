@@ -40,7 +40,7 @@ After providing the code, show this setup checklist:
 1. Install plugins: `cordova plugin add scandit-cordova-datacapture-core scandit-cordova-datacapture-barcode`
 2. Run `cordova prepare` to apply native changes.
 3. Add `<div id="data-capture-view">` to the scanning screen in your HTML and size it to fill the camera area.
-4. Replace `'-- ENTER YOUR SCANDIT LICENSE KEY HERE --'` with your key from https://ssl.scandit.com.
+4. Replace `'-- ENTER YOUR SCANDIT LICENSE KEY HERE --'` with your key (see **Licence key** in `SKILL.md`).
 5. Store references to `barcodeBatch`, `view`, and any overlays on `window` or at module scope to prevent garbage collection.
 6. Camera permissions are auto-configured by the plugins (no manual Info.plist or manifest edit needed).
 

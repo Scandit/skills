@@ -48,9 +48,7 @@ Label Capture has been available on `dotnet.android` since **8.1** and `dotnet.i
     <string>Used to scan labels.</string>
     ```
   - **Android**: `Permissions.Camera` (requested at runtime, Step 6) makes MAUI add `android.permission.CAMERA`; you can also add it explicitly to `Platforms/Android/AndroidManifest.xml`.
-- A valid Scandit license key:
-  - Sign in at <https://ssl.scandit.com> to generate one.
-  - No account yet? Sign up at <https://ssl.scandit.com/dashboard/sign-up?p=test>.
+- A valid Scandit license key — see **Licence key** in this skill's `SKILL.md`.
 
 ## Step 1 — Initialize the SDK in MauiProgram.cs
 
@@ -566,7 +564,7 @@ After writing the integration code, show this checklist:
 4. In `MauiProgram.cs`: call `ScanditLabelCapture.Initialize()` and chain `.UseScanditCore(c => c.AddDataCaptureView())`. **No `UseScanditBarcode()`, no manual init in `MainApplication`/`AppDelegate`.**
 5. Add the `<scandit:DataCaptureView>` element (with `DataCaptureContext="{Binding DataCaptureContext}"`) and the `xmlns:scandit` namespace to the page.
 6. iOS: add `NSCameraUsageDescription` to `Platforms/iOS/Info.plist`. Android: rely on `Permissions.Camera` or add `<uses-permission android:name="android.permission.CAMERA" />` to `Platforms/Android/AndroidManifest.xml`.
-7. Replace `-- ENTER YOUR SCANDIT LICENSE KEY HERE --` with your key from <https://ssl.scandit.com>.
+7. Replace `-- ENTER YOUR SCANDIT LICENSE KEY HERE --` with your key (see **Licence key** in `SKILL.md`).
 
 ## Troubleshooting
 

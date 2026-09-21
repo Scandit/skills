@@ -15,9 +15,7 @@ MatrixScan Batch (API name: `BarcodeBatch*`) is a multi-barcode tracking mode th
 - Minimum SDK version for BarcodeBatch on React Native: **6.5**. The modern constructors (`new BarcodeBatch(settings)`, `new BarcodeBatchBasicOverlay(mode, style)`, `new BarcodeBatchAdvancedOverlay(mode)`, `BarcodeBatch.createRecommendedCameraSettings()`) require **7.6+**.
 - React Native `>=0.70`. The New Architecture (Fabric / TurboModules) is supported.
 - **New Architecture caveat (iOS, RN ≥ 0.79)**: When using `BarcodeBatchAdvancedOverlay` with the new React Native architecture on iOS, your `AppDelegate` must implement the `ScanditReactNativeFactoryContainer` protocol (available in the `scandit-react-native-datacapture-core` module). If you followed the [React Native 0.79 upgrade guide](https://raw.githubusercontent.com/react-native-community/rn-diff-purge/release/0.79.2/RnDiffApp/ios/RnDiffApp/AppDelegate.swift) you should already have the required property.
-- A valid Scandit license key:
-  - Sign in at https://ssl.scandit.com to generate one.
-  - No account yet? Sign up at https://ssl.scandit.com/dashboard/sign-up?p=test.
+- A valid Scandit license key — see **Licence key** in this skill's `SKILL.md`.
 - Camera permissions configured by the app:
   - iOS: add `NSCameraUsageDescription` to `ios/<App>/Info.plist`.
   - Android: the manifest permission is declared by the plugin; request at runtime via `PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.CAMERA)` before rendering the scan screen.
@@ -34,7 +32,7 @@ After providing the code, show this setup checklist:
 1. Install packages: `npm install scandit-react-native-datacapture-core scandit-react-native-datacapture-barcode`
 2. Run `npx pod-install` (iOS). Android auto-links.
 3. Add `NSCameraUsageDescription` to `ios/<App>/Info.plist`.
-4. Replace `'-- ENTER YOUR SCANDIT LICENSE KEY HERE --'` with your key from https://ssl.scandit.com.
+4. Replace `'-- ENTER YOUR SCANDIT LICENSE KEY HERE --'` with your key (see **Licence key** in `SKILL.md`).
 5. If Metro was running, restart it with `--reset-cache` so the new package is picked up.
 
 ## Step 1 — Initialize DataCaptureContext (singleton module)

@@ -116,7 +116,7 @@ After rewriting the file, show the user:
 **Setup checklist:**
 1. Remove `mobile_scanner` from `pubspec.yaml`; add `scandit_flutter_datacapture_barcode` and `permission_handler`, then run `flutter pub get`.
 2. Add `NSCameraUsageDescription` to `ios/Runner/Info.plist` (iOS). On Android the plugin declares the manifest permission; request it at runtime with `permission_handler`.
-3. Replace `'-- ENTER YOUR SCANDIT LICENSE KEY HERE --'` with a key from https://ssl.scandit.com.
+3. Replace `'-- ENTER YOUR SCANDIT LICENSE KEY HERE --'` with your key (see **Licence key** in `SKILL.md`).
 4. Ensure `main()` calls `WidgetsFlutterBinding.ensureInitialized()` then `await ScanditFlutterDataCaptureBarcode.initialize()` before `runApp(...)`.
 
 **Summary**: list what was removed (the `mobile_scanner` controller, widget, and `onDetect`) and what was added (the BarcodeBatch mode, listener, DataCaptureView + overlay, camera ownership), plus the format→symbology mapping you applied. Do not list code that was already correct.

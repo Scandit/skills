@@ -42,6 +42,21 @@ URL structures vary across SDK versions and package paths (e.g. `api/ui/` subdir
 
 Flutter apps use many state-management patterns (StatefulWidget, BLoC, Provider, Riverpod). Examples in this skill use the **BLoC pattern** because it matches the official `ListBuildingSample`, keeps the scan pipeline cleanly separated from the widget tree, and composes well with the camera lifecycle. If the target project already uses a different pattern (Provider, Riverpod, GetX, plain StatefulWidget), keep the SparkScan wiring conceptually the same (one owner holds `DataCaptureContext`, `SparkScan`, and exposes scan events to the UI) and port the code snippets into the project's existing convention — do not rewrite the project's state management.
 
+## Licence key
+
+Scanning needs a Scandit licence key. For this skill the licence product is `native` and the licence platforms are `ios` and `android`.
+
+Work through these in order — never block the user on MCP:
+
+1. **The Scandit MCP server is connected** — call `ensure_scanner_setup` with product `native` and platforms `ios` and `android`, then run the command `get_license_env_command` returns, which writes the key into the project's `.env`. Show at most a masked preview in chat; never print a full key.
+2. **It is not connected** — offer to connect it once, then continue from step 1:
+   - Claude Code: `claude mcp add --transport http scandit https://ssl.scandit.com/mcp`
+   - Cursor: add `{"mcpServers": {"scandit": {"url": "https://ssl.scandit.com/mcp"}}}` to `~/.cursor/mcp.json`
+   - VS Code: add `{"servers": {"scandit": {"type": "http", "url": "https://ssl.scandit.com/mcp"}}}` to the MCP user configuration
+
+   Authentication is browser-based, so it is **not supported headless or in CI**. The server provisions **trial** keys only; it never creates, revokes, or modifies production licences.
+3. **The user declines, or has no MCP client** — they generate a key themselves at <https://ssl.scandit.com> (no account yet: <https://ssl.scandit.com/dashboard/sign-up?p=test>) and paste it in.
+
 ## References
 
 Direct users to the right resource based on their question:

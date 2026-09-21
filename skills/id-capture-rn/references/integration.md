@@ -11,9 +11,7 @@ You declare **which documents to accept** and **which scanner to use**, attach a
   - `scandit-react-native-datacapture-id`
   - (Add-on capabilities live in separate packages — see `references/supplementary-modules.md`.)
 - React Native `>=0.74` is recommended.
-- A valid Scandit license key, **enabled for ID Capture**:
-  - Sign in at <https://ssl.scandit.com> to generate one.
-  - No account yet? Sign up at <https://ssl.scandit.com/dashboard/sign-up?p=test>.
+- A valid Scandit license key, **enabled for ID Capture** — see **Licence key** in this skill's `SKILL.md`.
 - Camera permissions configured by the app:
   - iOS: add `NSCameraUsageDescription` to `ios/<App>/Info.plist`.
   - Android: the manifest permission is declared by the plugin; request it at runtime with `PermissionsAndroid` (the built-in React Native API) before pushing the scan screen.

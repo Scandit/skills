@@ -34,9 +34,7 @@ ID Capture's modern document/scanner API (`AcceptedDocuments`, `IdCaptureScanner
   ```xml
   <SupportedOSPlatformVersion>15.0</SupportedOSPlatformVersion>
   ```
-- A valid Scandit license key:
-  - Sign in at <https://ssl.scandit.com> to generate one.
-  - No account yet? Sign up at <https://ssl.scandit.com/dashboard/sign-up?p=test>.
+- A valid Scandit license key — see **Licence key** in this skill's `SKILL.md`.
 - **Camera usage description in `Info.plist`:**
   ```xml
   <key>NSCameraUsageDescription</key>
@@ -367,7 +365,7 @@ After writing the integration code, show this checklist:
 2. Ensure `<SupportedOSPlatformVersion>15.0</SupportedOSPlatformVersion>` is set in the `.csproj`.
 3. Add `NSCameraUsageDescription` to `Info.plist` with a short user-facing description (iOS prompts automatically — no runtime-permission code).
 4. Add `ScanditCaptureCore.Initialize()` **and `ScanditIdCapture.Initialize()`** to `AppDelegate.FinishedLaunching` (SDK 8.0+).
-5. Replace `-- ENTER YOUR SCANDIT LICENSE KEY HERE --` with your key from <https://ssl.scandit.com>.
+5. Replace `-- ENTER YOUR SCANDIT LICENSE KEY HERE --` with your key (see **Licence key** in `SKILL.md`).
 
 ## Complete minimal example
 

@@ -27,8 +27,7 @@ in its own section near the end.
   framework the app links against — do not add per-module iOS frameworks separately.
 
   Pin this Swift package to the **exact same version** as the `com.scandit.datacapture.kmp:*` Maven dependencies (Xcode: *Dependency Rule → Exact Version*). A mismatch between the two causes link errors or runtime crashes, so bump both together.
-- A valid Scandit license key (sign in at https://ssl.scandit.com to generate one; sign up at
-  https://ssl.scandit.com/dashboard/sign-up?p=test if you don't have an account)
+- A valid Scandit license key — see **Licence key** in this skill's `SKILL.md`.
 - Camera usage permission declared per platform (`NSCameraUsageDescription` in iOS `Info.plist`,
   the `android.permission.CAMERA` permission on Android)
 
@@ -52,7 +51,7 @@ After providing the code, show this setup checklist:
 2. On iOS, make sure the app links `Scandit/datacapture-kmp-spm` (the umbrella SPM package) and
    has `NSCameraUsageDescription` in `Info.plist`.
 3. On Android, make sure the app declares the `android.permission.CAMERA` permission.
-4. Replace `-- ENTER YOUR SCANDIT LICENSE KEY HERE --` with the real key from https://ssl.scandit.com
+4. Replace `-- ENTER YOUR SCANDIT LICENSE KEY HERE --` with your key (see **Licence key** in `SKILL.md`).
 
 The code below is adapted from the official MatrixScan Pick KMP Get Started guide and the
 `RestockingSample`.

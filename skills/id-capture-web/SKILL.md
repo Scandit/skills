@@ -66,7 +66,7 @@ Based on the user's request, pick the right path before responding:
 
 ## Minimal integration shape
 
-Prerequisites: install `@scandit/web-datacapture-core` and `@scandit/web-datacapture-id` (same version) with the project's package manager, and serve the SDK engine files so `libraryLocation` resolves them (the samples copy them to `library/engine/`; self-hosted projects typically use `sdc-lib`). License keys come from <https://ssl.scandit.com> (sign up at <https://ssl.scandit.com/dashboard/sign-up?p=test>).
+Prerequisites: install `@scandit/web-datacapture-core` and `@scandit/web-datacapture-id` (same version) with the project's package manager, and serve the SDK engine files so `libraryLocation` resolves them (the samples copy them to `library/engine/`; self-hosted projects typically use `sdc-lib`). License keys — see **Licence key** below.
 
 This is the canonical structure shared by every sample under `web/samples/02_ID_Scanning_Samples/`. Use it as the skeleton; adjust documents/scanner/listeners to the task.
 
@@ -136,6 +136,21 @@ await idCapture.setEnabled(true);
 ## API Usage Policy
 
 Only use APIs that exist in this package (`@scandit/web-datacapture-id`) and the referenced documentation. Do not invent or guess method signatures, parameters, or property names. When unsure whether an API exists or how to call it, fetch the documentation before responding. Do not tell the user to check the docs themselves. After answering, include the relevant link so they can explore further. **Never construct or guess documentation URLs** — fetch the index page and follow links from there.
+
+## Licence key
+
+Scanning needs a Scandit licence key. For this skill the licence product is `sdk` and the licence platform is `webassembly`.
+
+Work through these in order — never block the user on MCP:
+
+1. **The Scandit MCP server is connected** — call `ensure_scanner_setup` with product `sdk` and platforms `webassembly`, then run the command `get_license_env_command` returns, which writes the key into the project's `.env`. Show at most a masked preview in chat; never print a full key.
+2. **It is not connected** — offer to connect it once, then continue from step 1:
+   - Claude Code: `claude mcp add --transport http scandit https://ssl.scandit.com/mcp`
+   - Cursor: add `{"mcpServers": {"scandit": {"url": "https://ssl.scandit.com/mcp"}}}` to `~/.cursor/mcp.json`
+   - VS Code: add `{"servers": {"scandit": {"type": "http", "url": "https://ssl.scandit.com/mcp"}}}` to the MCP user configuration
+
+   Authentication is browser-based, so it is **not supported headless or in CI**. The server provisions **trial** keys only; it never creates, revokes, or modifies production licences.
+3. **The user declines, or has no MCP client** — they generate a key themselves at <https://ssl.scandit.com> (no account yet: <https://ssl.scandit.com/dashboard/sign-up?p=test>) and paste it in.
 
 ## References
 

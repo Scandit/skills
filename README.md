@@ -57,6 +57,12 @@ Describe what you want in plain language. Your agent loads the right skill on it
 /sparkscan-android replace our current third-party barcode scanner with SparkScan
 ```
 
+## Licence keys
+
+These skills write the integration; they don't provision the licence key by themselves. The [Scandit MCP server](https://ssl.scandit.com/mcp) does that part — connect it (`claude mcp add --transport http scandit https://ssl.scandit.com/mcp`) alongside the skills (`npx plugins add scandit/skills`) and each implementation skill's `## Licence key` section will use it to fetch a trial key straight into your project's `.env`.
+
+Keys provisioned this way are **trials only**, and the MCP server's auth is browser-based, so it does not work headless or in CI. Without it, the dashboard flow at <https://ssl.scandit.com> still works — every skill falls back to that.
+
 ## Available skills
 
 | Skill | Description |

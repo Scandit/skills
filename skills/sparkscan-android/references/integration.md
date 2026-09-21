@@ -13,9 +13,7 @@ SparkScan is a pre-built scanning UI for high-volume single-scanning workflows. 
   ```
   The SDK is distributed via Maven Central.
 - `minSdk` 24 or higher.
-- A valid Scandit license key:
-  - Sign in at https://ssl.scandit.com to generate one
-  - No account yet? Sign up at https://ssl.scandit.com/dashboard/sign-up?p=test
+- A valid Scandit license key — see **Licence key** in this skill's `SKILL.md`.
 - Camera permission in `AndroidManifest.xml`:
   ```xml
   <uses-feature
@@ -38,7 +36,7 @@ After providing the code, show this setup checklist:
 1. Add `implementation "com.scandit.datacapture:barcode:<latest-version>"` and `implementation "com.scandit.datacapture:core:<latest-version>"` to your `build.gradle` dependencies (the version was already fetched and filled in above)
 2. Add `<uses-permission android:name="android.permission.CAMERA" />` to `AndroidManifest.xml`
 3. Request the `CAMERA` permission at runtime before scanning starts
-4. Replace `-- ENTER YOUR SCANDIT LICENSE KEY HERE --` with your key from https://ssl.scandit.com
+4. Replace `-- ENTER YOUR SCANDIT LICENSE KEY HERE --` with your key (see **Licence key** in `SKILL.md`).
 
 ```kotlin
 import android.os.Bundle

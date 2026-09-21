@@ -9,9 +9,7 @@ Examples below use Swift and a UIKit `UIViewController`. SwiftUI is covered at t
 - Scandit Data Capture SDK for iOS — add via Swift Package Manager:
   - URL: `https://github.com/Scandit/datacapture-spm`
   - Add `ScanditBarcodeCapture` and `ScanditCaptureCore` package products to your target
-- A valid Scandit license key:
-  - Sign in at https://ssl.scandit.com to generate one
-  - No account yet? Sign up at https://ssl.scandit.com/dashboard/sign-up?p=test
+- A valid Scandit license key — see **Licence key** in this skill's `SKILL.md`.
 - `NSCameraUsageDescription` in `Info.plist`
 
 ## Integration flow
@@ -25,7 +23,7 @@ After providing the code, show this setup checklist:
 **Setup checklist:**
 1. Add `ScanditBarcodeCapture` and `ScanditCaptureCore` via Swift Package Manager: `https://github.com/Scandit/datacapture-spm`
 2. Make sure you have `NSCameraUsageDescription` added to your `Info.plist`
-3. Replace `-- ENTER YOUR SCANDIT LICENSE KEY HERE --` with your key from https://ssl.scandit.com
+3. Replace `-- ENTER YOUR SCANDIT LICENSE KEY HERE --` with your key (see **Licence key** in `SKILL.md`).
 
 ## Framework import
 

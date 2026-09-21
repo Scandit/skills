@@ -70,9 +70,7 @@ Label Capture has been available on `dotnet.ios` since **8.2**, so any current s
   ```
 
   If the project already has an `AppDelegate`, add the three `Initialize()` calls at the top of its existing `FinishedLaunching`. **This step is only required on Scandit SDK 8.0+ — earlier majors (6.x, 7.x) self-initialized, so for those versions skip it entirely** (though Label Capture itself needs 8.2+ on iOS).
-- A valid Scandit license key:
-  - Sign in at <https://ssl.scandit.com> to generate one.
-  - No account yet? Sign up at <https://ssl.scandit.com/dashboard/sign-up?p=test>.
+- A valid Scandit license key — see **Licence key** in this skill's `SKILL.md`.
 
 ### Project scaffolding (new projects only)
 
@@ -519,7 +517,7 @@ After writing the integration code, show this checklist:
 2. Ensure `<SupportedOSPlatformVersion>15.0</SupportedOSPlatformVersion>` is set in the `.csproj`.
 3. Add `<key>NSCameraUsageDescription</key>` with a usage string to `Info.plist` (iOS prompts for camera permission automatically; no runtime-permission helper).
 4. Add `ScanditCaptureCore.Initialize()`, `ScanditBarcodeCapture.Initialize()`, **and `ScanditLabelCapture.Initialize()`** to `AppDelegate.FinishedLaunching` (SDK 8.0+).
-5. Replace `-- ENTER YOUR SCANDIT LICENSE KEY HERE --` with your key from <https://ssl.scandit.com>.
+5. Replace `-- ENTER YOUR SCANDIT LICENSE KEY HERE --` with your key (see **Licence key** in `SKILL.md`).
 
 ## Complete minimal example
 

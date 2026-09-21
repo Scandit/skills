@@ -34,6 +34,54 @@ def eval_suite_files(skill_name: str) -> list[Path]:
     )
 
 
+LICENCE_REFERENCE = AUDITOR_ROOT / "references" / "licence-platforms.md"
+
+# A "Skill mapping" row: three cells, each holding backticked tokens.
+_MAPPING_ROW = re.compile(r"^\|([^|]+)\|([^|]+)\|([^|]+)\|\s*$")
+
+
+def licence_platforms(path: Path = LICENCE_REFERENCE) -> dict[str, tuple[str, list[str]]]:
+    """Skill → (licence product, licence platforms), from the ``## Skill mapping`` table.
+
+    The reference file is the single source for what each skill's ``## Licence key``
+    section may claim, so this parser — not a second copy in code or manifest data —
+    is what the linter checks against. Keys are either a directory suffix (leading
+    ``-``) or an exact directory name; resolution order is in ``resolve_licence``.
+    """
+    text = path.read_text()
+    section = text.split("## Skill mapping", 1)
+    if len(section) != 2:
+        raise ValueError("no `## Skill mapping` section")
+    mapping: dict[str, tuple[str, list[str]]] = {}
+    for line in section[1].splitlines():
+        m = _MAPPING_ROW.match(line)
+        if not m:
+            continue
+        key, product, platforms = (re.findall(r"`([^`]+)`", c) for c in m.groups())
+        if len(key) != 1 or len(product) != 1 or not platforms:
+            continue  # header and `---` separator rows carry no backticks
+        mapping[key[0]] = (product[0], platforms)
+    if not mapping:
+        raise ValueError("`## Skill mapping` table parsed to zero rows")
+    return mapping
+
+
+def resolve_licence(skill_name: str, mapping: dict[str, tuple[str, list[str]]]
+                    ) -> tuple[str, list[str]] | None:
+    """The licence product and platforms for one skill, or None if unmapped.
+
+    An exact directory name beats every suffix (``id-bolt`` is not a ``-bolt``
+    family), and among suffixes the longest wins — ``-net-ios`` must not be read
+    as ``-ios``, which maps to the same platform but a different framework row.
+    """
+    if skill_name in mapping:
+        return mapping[skill_name]
+    suffixes = [k for k in mapping if k.startswith("-") and skill_name.endswith(k)]
+    if not suffixes:
+        return None
+    return mapping[max(suffixes, key=len)]
+
+
 def load_manifest() -> dict:
     """Product/repo knowledge shared by all auditor scripts (kept as data, not code)."""
     return json.loads((AUDITOR_ROOT / "manifest.json").read_text())
