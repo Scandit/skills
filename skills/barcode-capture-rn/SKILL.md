@@ -4,7 +4,7 @@ description: Scandit Barcode Capture (`BarcodeCapture`) in React Native projects
 license: Apache-2.0
 metadata:
   author: scandit
-  version: "1.0.3"
+  version: "1.0.4"
 ---
 
 # BarcodeCapture React Native Skill
@@ -46,6 +46,21 @@ URL structures vary across SDK versions and package paths (e.g. `api/ui/` subdir
 React Native apps can be written with class components or function components. Examples in this skill use **function components with hooks** because they match the official React Native samples and the current React Native convention. Even if the target project still contains legacy class components elsewhere, write new BarcodeCapture code as function components — do not rewrite the rest of the app's component style, but keep the BarcodeCapture integration itself on the current idiom (`useRef`, `useEffect`, `useFocusEffect`, `useMemo`).
 
 Examples are in **TypeScript** (`.tsx`). If the target project is plain JavaScript (`.js` / `.jsx`), drop the type annotations and keep the same imports and structure.
+
+## Licence key
+
+Scanning needs a Scandit licence key. For this skill the licence product is `native` and the licence platforms are `ios` and `android`.
+
+Work through these in order — never block the user on MCP:
+
+1. **The Scandit MCP server is connected** — call `ensure_scanner_setup` with product `native` and platforms `ios` and `android`, then run the command `get_license_env_command` returns, which writes the key into the project's `.env`. Show at most a masked preview in chat; never print a full key.
+2. **It is not connected** — offer to connect it once, then continue from step 1:
+   - Claude Code: `claude mcp add --transport http scandit https://ssl.scandit.com/mcp`
+   - Cursor: add `{"mcpServers": {"scandit": {"url": "https://ssl.scandit.com/mcp"}}}` to `~/.cursor/mcp.json`
+   - VS Code: add `{"servers": {"scandit": {"type": "http", "url": "https://ssl.scandit.com/mcp"}}}` to the MCP user configuration
+
+   Authentication is browser-based, so it is **not supported headless or in CI**. The server provisions **trial** keys only; it never creates, revokes, or modifies production licences.
+3. **The user declines, or has no MCP client** — they generate a key themselves at <https://ssl.scandit.com> (no account yet: <https://ssl.scandit.com/dashboard/sign-up?p=test>) and paste it in.
 
 ## References
 

@@ -10,9 +10,7 @@ SparkScan is a pre-built scanning UI for high-volume single-scanning workflows. 
   - `scandit-capacitor-datacapture-core`
   - `scandit-capacitor-datacapture-barcode`
 - After installing, run `npx cap sync` to sync the native projects.
-- A valid Scandit license key:
-  - Sign in at https://ssl.scandit.com to generate one
-  - No account yet? Sign up at https://ssl.scandit.com/dashboard/sign-up?p=test
+- A valid Scandit license key — see **Licence key** in this skill's `SKILL.md`.
 - Camera permissions configured by the app:
   - iOS: `NSCameraUsageDescription` in `Info.plist`
   - Android: handled automatically by the plugin
@@ -29,7 +27,7 @@ After providing the code, show this setup checklist:
 1. Install packages: `npm install scandit-capacitor-datacapture-core scandit-capacitor-datacapture-barcode`
 2. Run `npx cap sync` to apply native changes.
 3. Add `NSCameraUsageDescription` to `ios/App/App/Info.plist`.
-4. Replace `-- ENTER YOUR SCANDIT LICENSE KEY HERE --` with your key from https://ssl.scandit.com.
+4. Replace `-- ENTER YOUR SCANDIT LICENSE KEY HERE --` with your key (see **Licence key** in `SKILL.md`).
 5. Store references to `sparkScan` and `sparkScanView` on `window` or at module scope to prevent garbage collection.
 
 ## Step 1 — Initialize Plugins and Create DataCaptureContext

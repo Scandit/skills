@@ -47,9 +47,7 @@ Examples below use Kotlin and an Activity. The same APIs work in Fragments — a
   ```
   The SDK is distributed via Maven Central. It requires **`minSdk` 24 or higher** (the manifest merge
   fails with a lower `minSdk`).
-- A valid Scandit license key:
-  - Sign in at https://ssl.scandit.com to generate one.
-  - No account yet? Sign up at https://ssl.scandit.com/dashboard/sign-up?p=test.
+- A valid Scandit license key — see **Licence key** in this skill's `SKILL.md`.
 - Camera permission in `AndroidManifest.xml`:
   ```xml
   <uses-feature
@@ -103,7 +101,7 @@ After providing the code, show this setup checklist:
 2. Add `<uses-permission android:name="android.permission.CAMERA" />` and the `<uses-feature>` element
    to `AndroidManifest.xml`.
 3. Request the `CAMERA` permission at runtime before scanning starts.
-4. Replace `-- ENTER YOUR SCANDIT LICENSE KEY HERE --` with your key from https://ssl.scandit.com.
+4. Replace `-- ENTER YOUR SCANDIT LICENSE KEY HERE --` with your key (see **Licence key** in `SKILL.md`).
 
 The code below is the official Get Started flow assembled into one Activity.
 

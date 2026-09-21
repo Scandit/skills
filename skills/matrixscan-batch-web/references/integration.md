@@ -15,7 +15,7 @@ If the user has no existing app yet, always offer the official sample as the fas
 
 Tell the user to clone the repo and open the relevant sample folder. Once they have it open, help them:
 
-1. Replace `-- ENTER YOUR SCANDIT LICENSE KEY HERE --` with their key from <https://ssl.scandit.com>
+1. Replace `-- ENTER YOUR SCANDIT LICENSE KEY HERE --` with your key (see **Licence key** in `SKILL.md`).
 2. Adjust the enabled symbologies to match their use case
 3. Run `npm install` and start the app
 
@@ -28,7 +28,7 @@ Only proceed to the manual integration steps below if the user already has an ex
 - Scandit Data Capture SDK for web via npm, pnpm, or yarn:
   - `@scandit/web-datacapture-core`: <https://www.npmjs.com/package/@scandit/web-datacapture-core>
   - `@scandit/web-datacapture-barcode`: <https://www.npmjs.com/package/@scandit/web-datacapture-barcode>
-- A valid Scandit license key — sign in at <https://ssl.scandit.com> (no account? sign up at <https://ssl.scandit.com/dashboard/sign-up?p=test>)
+- A valid Scandit license key — see **Licence key** in this skill's `SKILL.md`.
 - Cross-origin isolation headers configured on the server (required — see below)
 
 ### Cross-origin isolation (COOP / COEP)
@@ -75,7 +75,7 @@ After providing the code, show this setup checklist:
 1. Install packages: `npm install @scandit/web-datacapture-core @scandit/web-datacapture-barcode`
 2. Set cross-origin headers (`COOP: same-origin` + `COEP: require-corp` or `credentialless`) on the server
 3. If self-hosting the SDK engine, configure `libraryLocation` to point to the correct path; or use the CDN path: `https://cdn.jsdelivr.net/npm/@scandit/web-datacapture-barcode@8/sdc-lib/`
-4. Replace `'-- ENTER YOUR SCANDIT LICENSE KEY HERE --'` with your key from <https://ssl.scandit.com>
+4. Replace `'-- ENTER YOUR SCANDIT LICENSE KEY HERE --'` with your key (see **Licence key** in `SKILL.md`).
 5. Add a `<div id="data-capture-view">` (or similar) to your HTML with defined dimensions and `position: fixed` or `absolute`. Revert that styling in your cleanup: the element belongs to the app, so detaching the view does not undo the positioning you applied, and an empty full-viewport `position: fixed` element still blocks every click on the page underneath
 
 ---

@@ -57,9 +57,7 @@ ID Capture's modern document/scanner API (`AcceptedDocuments`, `IdCaptureScanner
     <string>15.0</string>
     ```
   - **Android**: `Permissions.Camera` (requested at runtime, Step 6) makes MAUI add `android.permission.CAMERA`; you can also add it explicitly to `Platforms/Android/AndroidManifest.xml`.
-- A valid Scandit license key:
-  - Sign in at <https://ssl.scandit.com> to generate one.
-  - No account yet? Sign up at <https://ssl.scandit.com/dashboard/sign-up?p=test>.
+- A valid Scandit license key — see **Licence key** in this skill's `SKILL.md`.
 
 ## Step 1 — Initialize the SDK (platform entry points + MauiProgram)
 
@@ -463,7 +461,7 @@ After writing the integration code, show this checklist:
 5. In `MauiProgram.cs`, chain `.UseScanditCore(c => c.AddDataCaptureView())`. **No `UseScanditIdCapture()`, no `ScanditIdCapture.Initialize()` here.**
 6. Add the `<scandit:DataCaptureView>` element (with `DataCaptureContext="{Binding DataCaptureContext}"`) and the `xmlns:scandit` namespace to the page; create `IdCaptureOverlay.Create(idCapture)` in `HandlerChanged` and attach with `AddOverlay`.
 7. iOS: add `NSCameraUsageDescription` to `Platforms/iOS/Info.plist`. Android: rely on `Permissions.Camera` or add `<uses-permission android:name="android.permission.CAMERA" />` to `Platforms/Android/AndroidManifest.xml`.
-8. Replace `-- ENTER YOUR SCANDIT LICENSE KEY HERE --` with your key from <https://ssl.scandit.com>.
+8. Replace `-- ENTER YOUR SCANDIT LICENSE KEY HERE --` with your key (see **Licence key** in `SKILL.md`).
 
 ## Troubleshooting
 

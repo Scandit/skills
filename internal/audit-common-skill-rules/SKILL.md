@@ -4,7 +4,7 @@ description: Use when the user wants to verify that the universal trust-and-veri
 license: MIT
 metadata:
   author: scandit
-  version: "3.1.0"
+  version: "3.2.0"
 ---
 
 # Audit Common Rules
@@ -46,3 +46,17 @@ Must exist and convey:
 - Never construct or guess documentation URLs — first check a fetched page for a direct hyperlink, otherwise fetch the API index and extract the real link.
 
 _Exempt: `data-capture-sdk`._
+
+### 3. `## Licence key`
+
+Must exist and convey, in this order of preference:
+
+- The licence product and licence platforms this skill's framework needs — the values in [../skill-auditor/references/licence-platforms.md](../skill-auditor/references/licence-platforms.md), which is the only place that mapping lives.
+- **MCP connected:** call `ensure_scanner_setup` for that product and those platforms, then write the key into `.env` with the command `get_license_env_command` returns. A full key is never printed in chat.
+- **Not connected:** offer to connect the server once (`https://ssl.scandit.com/mcp`), with the Claude Code, Cursor and VS Code install steps. Browser authentication — never claimed to work headless or in CI. Trial keys only; production licences are never created, revoked or modified.
+- **Declined, or no MCP client:** fall back to generating a key in the dashboard, and never block on MCP.
+- The dashboard provisioning flow appears here and nowhere else in the skill, so a reader gets one instruction rather than two.
+
+_Exempt: `data-capture-sdk` (advisory skill — it recommends a product rather than integrating one), `scandit-xamarin-to-net-migration`, `matrixscan-ar-highlight-ios`, `matrixscan-ar-annotation-ios`._
+
+The deterministic half of this rule — section present, product and platforms correct, no stray provisioning link — is enforced by `internal/skill-auditor/scripts/lint_structure.py`. Audit the wording; let the linter count.

@@ -4,7 +4,7 @@ description: Scandit ID Capture (`IdCapture`) in Flutter projects — scanning p
 license: Apache-2.0
 metadata:
   author: scandit
-  version: "1.0.2"
+  version: "1.0.3"
 ---
 
 # ID Capture Flutter Skill
@@ -76,6 +76,21 @@ URL structures vary across SDK versions and package paths and guessing will lead
 Examples in [references/integration.md](references/integration.md) use **StatefulWidget + WidgetsBindingObserver** because the official `IdCaptureSimpleSample` uses it. If the project uses BLoC (matching the `IdCaptureExtendedSample`), Riverpod, or a route observer / GoRouter, see [references/framework-recipes.md](references/framework-recipes.md) — the Scandit calls are unchanged; only the state-management harness and the route-aware lifecycle differ. Do not introduce a new state-management library just for ID Capture.
 
 Examples are in **Dart** (sound null-safety). Flutter `>=3.22.0` and Dart `>=3.4.0` are required by the ID plugin.
+
+## Licence key
+
+Scanning needs a Scandit licence key. For this skill the licence product is `native` and the licence platforms are `ios` and `android`.
+
+Work through these in order — never block the user on MCP:
+
+1. **The Scandit MCP server is connected** — call `ensure_scanner_setup` with product `native` and platforms `ios` and `android`, then run the command `get_license_env_command` returns, which writes the key into the project's `.env`. Show at most a masked preview in chat; never print a full key.
+2. **It is not connected** — offer to connect it once, then continue from step 1:
+   - Claude Code: `claude mcp add --transport http scandit https://ssl.scandit.com/mcp`
+   - Cursor: add `{"mcpServers": {"scandit": {"url": "https://ssl.scandit.com/mcp"}}}` to `~/.cursor/mcp.json`
+   - VS Code: add `{"servers": {"scandit": {"type": "http", "url": "https://ssl.scandit.com/mcp"}}}` to the MCP user configuration
+
+   Authentication is browser-based, so it is **not supported headless or in CI**. The server provisions **trial** keys only; it never creates, revokes, or modifies production licences.
+3. **The user declines, or has no MCP client** — they generate a key themselves at <https://ssl.scandit.com> (no account yet: <https://ssl.scandit.com/dashboard/sign-up?p=test>) and paste it in.
 
 ## References
 
