@@ -21,8 +21,8 @@ same ref always yields the same bytes and the same SHA-256, which is what makes
 "the tree we tested is the tree we submitted" checkable rather than assumed.
 
 Stripped from the bundle: `internal/`, the Claude, Cursor and Copilot manifests,
-`.agents/`, `skills.sh.json`, `README.md`, `.gitignore`, and every
-`skills/*/evals/` directory. `internal/` is the one exclusion that is a real
+`.agents/`, `skills.sh.json`, `README.md`, `.gitignore`, `.mcp.json`, the Codex
+manifest's `mcpServers` key, and every `skills/*/evals/` directory. `internal/` is the one exclusion that is a real
 risk rather than hygiene: `skill-auditor/sources.yaml` names private Scandit
 repos, and uploaded skills are scanned for sensitive information.
 
@@ -80,4 +80,5 @@ still be rejected. The script checks the strict tier.
 
 Skills-only bundles must not carry `interface.screenshots`, `mcpServers`,
 `apps`, `.mcp.json`, or `.app.json`. Screenshots require an MCP-backed
-submission with custom UI.
+submission with custom UI. The repo-marketplace channels do ship the Scandit MCP
+server (`.mcp.json`); the builder strips it, so directory users get skills only.
