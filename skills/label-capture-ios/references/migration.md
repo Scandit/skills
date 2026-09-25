@@ -1,5 +1,12 @@
 # Label Capture iOS Migration Guide
 
+## Migration principles
+
+- **Authority.** When this guide and the API reference disagree, trust the API reference — and a runtime check in the user's project — over this guide. Say which source you followed and why in the summary.
+- **Behaviour changes.** Never present a visual or behaviour change (new default, different overlay look, changed feedback, changed scan timing) as a 1:1 rename. List each one in the summary as a judgment call the user must confirm.
+- **Compatibility layer.** When the scanning code sits behind a shared scanner library or wrapper that other code calls, keep that library's public API frozen (same types, method names, callbacks) and change only the Scandit calls underneath.
+- **Dual-version code.** Code that names a symbol removed in the target version does not compile against it, so this platform cannot probe for it at run time. Select the code path at build time instead — conditional compilation, a build flavor, or a version constant read from the dependency manifest — and never on the presence of the new API. A deprecated symbol that still compiles proves nothing about the installed version.
+
 When a user asks to upgrade or migrate a Label Capture integration, identify which version boundary they're crossing. Prefer reading `Package.resolved` (or the project's SPM pinning) for the resolved `datacapture-spm` version. Otherwise ask directly: "Which version are you on, and which version are you upgrading to?"
 
 The sections below are cumulative — if the user is going from v7 to v8.x, apply §1 first. Walk through each applicable section in order.

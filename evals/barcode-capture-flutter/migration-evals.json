@@ -85,6 +85,57 @@
         {"text": "BarcodeCapture.createRecommendedCameraSettings() is applied"},
         {"text": "A summary.md is present listing the changes"}
       ]
+    },
+    {
+      "id": 6,
+      "prompt": "Migrate ScannerPage_v7.dart to Scandit SDK v8. Note: the migration guide and the API reference say different things about how BarcodeCaptureOverlay is created in v8 — follow whichever is right.",
+      "expected_output": "The skill notices the conflict, follows the API reference (and a runtime/compile check in the project) rather than the migration guide, and says in the summary which source it followed and why.",
+      "files": [
+        "fixtures/ScannerPage_v7.dart"
+      ],
+      "assertions": [
+        {"text": "When the migration guide and the API reference disagree, the API reference is treated as authoritative"},
+        {"text": "The summary names which source was followed for the conflicting API and why"},
+        {"text": "A runtime or compile check in the user's project is proposed or performed to confirm the chosen API"}
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "Upgrade ScannerPage_v6.dart to Scandit v7. Just rename whatever changed.",
+      "expected_output": "The skill applies the renames but does not present the new Smart scan-intention default (or any overlay/feedback change) as a 1:1 rename; it lists each behaviour change in the summary as a judgment call for the user.",
+      "files": [
+        "fixtures/ScannerPage_v6.dart"
+      ],
+      "assertions": [
+        {"text": "The scan-intention default change (Smart in v7) is not described as a pure rename"},
+        {"text": "The summary has a section listing behaviour/visual changes as judgment calls the user must confirm"}
+      ]
+    },
+    {
+      "id": 8,
+      "prompt": "ScannerPage_v7.dart lives in our internal package acme_scanner; four apps embed its ScannerPage widget. Migrate it to Scandit v8.",
+      "expected_output": "The skill migrates only the Scandit calls inside the package and keeps ScannerPage's public API (widget name, constructor parameters) unchanged.",
+      "files": [
+        "fixtures/ScannerPage_v7.dart"
+      ],
+      "assertions": [
+        {"text": "The public ScannerPage widget name and constructor parameters are unchanged"},
+        {"text": "Only Scandit API calls inside the package are changed"},
+        {"text": "The summary states the package's public API was kept frozen on purpose"}
+      ]
+    },
+    {
+      "id": 9,
+      "prompt": "Our Flutter app must build against both Scandit v7 and v8 during the rollout. Update ScannerPage_v7.dart so each build uses the right BarcodeCapture setup.",
+      "expected_output": "The skill explains that Dart cannot check at run time whether a removed symbol such as BarcodeCapture.forContext exists, and that code naming it does not compile against v8. It selects the v7 or v8 path at build time (a version constant from pubspec, a build flavor or separate entry files), never by probing for the new API at run time.",
+      "files": [
+        "fixtures/ScannerPage_v7.dart"
+      ],
+      "assertions": [
+        {"text": "The answer does not call BarcodeCapture.forContext in code that is also compiled against v8"},
+        {"text": "The v7/v8 path is selected at build time (pubspec version constant, build flavor, or separate entry files), not by a run-time probe"},
+        {"text": "Selection does not rely on the presence of the new v8 API (e.g. the BarcodeCapture(settings) constructor)"}
+      ]
     }
   ]
 }

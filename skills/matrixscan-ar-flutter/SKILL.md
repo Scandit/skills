@@ -4,7 +4,7 @@ description: MatrixScan AR (Barcode AR, BarcodeAr) in Flutter projects (scandit_
 license: Apache-2.0
 metadata:
   author: scandit
-  version: "1.0.1"
+  version: "1.0.2"
 ---
 
 # MatrixScan AR Flutter Skill

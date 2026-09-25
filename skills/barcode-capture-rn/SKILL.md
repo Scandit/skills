@@ -4,7 +4,7 @@ description: Scandit Barcode Capture (`BarcodeCapture`) in React Native projects
 license: Apache-2.0
 metadata:
   author: scandit
-  version: "1.0.1"
+  version: "1.0.2"
 ---
 
 # BarcodeCapture React Native Skill

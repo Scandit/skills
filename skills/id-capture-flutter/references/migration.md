@@ -1,5 +1,12 @@
 # ID Capture Flutter Migration Guide
 
+## Migration principles
+
+- **Authority.** When this guide and the API reference disagree, trust the API reference — and a runtime check in the user's project — over this guide. Say which source you followed and why in the summary.
+- **Behaviour changes.** Never present a visual or behaviour change (new default, different overlay look, changed feedback, changed scan timing) as a 1:1 rename. List each one in the summary as a judgment call the user must confirm.
+- **Compatibility layer.** When the scanning code sits behind a shared scanner library or wrapper that other code calls, keep that library's public API frozen (same types, method names, callbacks) and change only the Scandit calls underneath.
+- **Dual-version code.** Code that names a symbol removed in the target version does not compile against it, so this platform cannot probe for it at run time. Select the code path at build time instead — conditional compilation, a build flavor, or a version constant read from the dependency manifest — and never on the presence of the new API. A deprecated symbol that still compiles proves nothing about the installed version.
+
 This guide covers upgrading an existing ID Capture integration across major SDK versions. The biggest breaking changes for Flutter landed at **v7 → v8**: the scanner property was renamed and reshaped, and the standalone `AamvaBarcodeVerifier` was removed. (The earlier `supportedDocuments` bitmask → `acceptedDocuments` change happened at v6 → v7 and is summarized at the end.)
 
 Do not guess at the old or new signatures — follow the concrete before/after below, and verify anything else against the [ID Capture API reference](https://docs.scandit.com/data-capture-sdk/flutter/id-capture/api.html).

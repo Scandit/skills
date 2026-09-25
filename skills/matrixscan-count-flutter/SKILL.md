@@ -4,7 +4,7 @@ description: MatrixScan Count (BarcodeCount) in Flutter projects — scandit_flu
 license: Apache-2.0
 metadata:
   author: scandit
-  version: "1.0.1"
+  version: "1.0.2"
 ---
 
 # MatrixScan Count Flutter Skill

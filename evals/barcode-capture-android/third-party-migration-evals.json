@@ -32,6 +32,19 @@
         {"text": "A concrete version number is used for the dependencies (not a [version] placeholder)"},
         {"text": "Setup checklist mentions the camera permission (CAMERA or AndroidManifest)"}
       ]
+    },
+    {
+      "id": 2,
+      "prompt": "ZxingActivity.kt is the scanner screen of our shared library com.acme.scan; other modules start ScannerActivity and consume its ScannedBarcode results. Replace ZXing with Scandit BarcodeCapture.",
+      "expected_output": "The skill replaces the ZXing calls with BarcodeCapture while keeping the library's public API — ScannerActivity and ScannedBarcode — unchanged, and says so in the summary.",
+      "files": [
+        "fixtures/ZxingActivity.kt"
+      ],
+      "assertions": [
+        {"text": "The ScannerActivity class name and the ScannedBarcode data class are unchanged"},
+        {"text": "Only the ZXing scanner calls are replaced with Scandit BarcodeCapture calls"},
+        {"text": "The summary states the library's public API was kept frozen"}
+      ]
     }
   ]
 }

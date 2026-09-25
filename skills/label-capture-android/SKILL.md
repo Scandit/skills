@@ -4,7 +4,7 @@ description: Smart Label Capture (Scandit `LabelCapture`) in native Android proj
 license: Apache-2.0
 metadata:
   author: scandit
-  version: "1.2.1"
+  version: "1.2.2"
 ---
 
 # Label Capture Android Skill

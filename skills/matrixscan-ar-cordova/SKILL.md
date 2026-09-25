@@ -4,7 +4,7 @@ description: Cordova MatrixScan AR (Barcode AR, BarcodeAr) via the scandit-cordo
 license: Apache-2.0
 metadata:
   author: scandit
-  version: "1.0.1"
+  version: "1.0.2"
 ---
 
 # MatrixScan AR Cordova Skill
