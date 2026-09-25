@@ -20,5 +20,86 @@
   "platform_aliases": {
     "matrixscan-ar-annotation-ios": "matrixscan-ar-ios",
     "matrixscan-ar-highlight-ios": "matrixscan-ar-ios"
+  },
+  "parity_scope": {
+    "barcode-capture-": {
+      "references/migration.md": {"except": ["kmp"]},
+      "evals/migration-evals.json": {"except": ["kmp"]},
+      "references/third-party-migration.md": {"except": ["kmp"]},
+      "evals/third-party-migration-evals.json": {"except": ["kmp"]}
+    },
+    "id-capture-": {
+      "evals/advanced-evals.json": ["net-android", "net-ios", "net-maui"],
+      "references/advanced.md": ["android", "ios", "net-android", "net-ios", "net-maui"],
+      "references/framework-recipes.md": ["capacitor", "flutter", "rn"],
+      "references/supplementary-modules.md": ["capacitor", "cordova", "flutter", "rn"],
+      "references/migration.md": {"except": ["kmp"]},
+      "evals/migration-evals.json": {"except": ["kmp"]}
+    },
+    "label-capture-": {
+      "references/migration.md": {"except": ["kmp", "net-android", "net-ios", "net-maui"]},
+      "evals/migration-evals.json": {"except": ["kmp", "net-android", "net-ios", "net-maui"]},
+      "evals/validation-evals.json": ["net-android", "net-ios", "net-maui"],
+      "references/adaptive-recognition.md": ["capacitor", "cordova", "flutter", "rn"],
+      "references/customization.md": ["capacitor", "cordova", "flutter", "rn"],
+      "references/advanced-overlays.md": ["net-ios"],
+      "references/advanced.md": ["android"]
+    },
+    "matrixscan-ar-": {
+      "evals/customization-evals.json": ["android"],
+      "evals/user-interaction-evals.json": ["android"],
+      "references/advanced.md": ["net-maui"],
+      "references/migration.md": {"except": ["kmp"]},
+      "evals/migration-evals.json": {"except": ["kmp"]}
+    },
+    "matrixscan-batch-": {
+      "references/migration.md": {"except": ["kmp"]},
+      "evals/migration-evals.json": {"except": ["kmp"]},
+      "references/third-party-migration.md": {"except": ["kmp"]},
+      "evals/third-party-migration-evals.json": {"except": ["kmp"]}
+    },
+    "matrixscan-count-": {
+      "references/clustering.md": ["android", "ios"],
+      "evals/clustering-evals.json": ["android", "ios"],
+      "references/group-scanning.md": ["android", "ios"],
+      "evals/group-scanning-evals.json": ["android", "ios"],
+      "references/highlights.md": ["android", "ios"],
+      "evals/highlights-evals.json": ["android", "ios"],
+      "references/list-scanning.md": ["android", "ios"],
+      "evals/list-scanning-evals.json": ["android", "ios"],
+      "references/status-mode.md": ["android", "ios"],
+      "evals/status-mode-evals.json": ["android", "ios"],
+      "references/migration.md": {"except": ["kmp"]},
+      "evals/migration-evals.json": {"except": ["kmp"]}
+    },
+    "sparkscan-": {
+      "references/migration.md": {"except": ["kmp"]},
+      "evals/migration-evals.json": {"except": ["kmp"]},
+      "references/react.md": ["web"],
+      "references/troubleshooting.md": ["web"],
+      "evals/react-advanced-evals.json": ["web"],
+      "references/third-party-migration.md": ["android", "ios", "net-android", "net-ios", "net-maui"],
+      "evals/third-party-migration-evals.json": ["android", "ios", "net-android", "net-ios", "net-maui"]
+    }
+  },
+  "parity_known_gaps": {
+    "barcode-capture-capacitor": ["references/third-party-migration.md"],
+    "barcode-capture-cordova": ["references/third-party-migration.md"],
+    "barcode-capture-flutter": ["references/third-party-migration.md"],
+    "barcode-capture-rn": ["references/third-party-migration.md"],
+    "barcode-capture-web": ["references/third-party-migration.md"],
+    "id-capture-web": ["references/integration.md"],
+    "id-capture-net-android": ["evals/migration-evals.json"],
+    "id-capture-net-ios": ["evals/migration-evals.json"],
+    "id-capture-net-maui": ["references/migration.md", "evals/migration-evals.json"],
+    "label-capture-kmp": ["references/validation-flow.md"],
+    "label-capture-web": ["references/validation-flow.md"],
+    "matrixscan-ar-android": ["references/migration.md"],
+    "matrixscan-ar-web": ["evals/migration-evals.json"],
+    "matrixscan-batch-capacitor": ["references/third-party-migration.md"],
+    "matrixscan-batch-rn": ["references/migration.md", "evals/migration-evals.json"],
+    "matrixscan-count-android": ["references/migration.md", "evals/migration-evals.json"],
+    "matrixscan-count-ios": ["references/migration.md", "evals/migration-evals.json"],
+    "matrixscan-pick-kmp": ["evals/highlights-evals.json"]
   }
 }
