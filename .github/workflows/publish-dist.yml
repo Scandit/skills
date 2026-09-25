@@ -1,0 +1,102 @@
+# Builds the install-only `dist` branch from main (SDC-33151). Plugin installers
+# clone the default branch wholesale, so dist carries only the published surface.
+
+name: publish-dist
+
+on:
+  push:
+    # A push to dist can only come from a human (GITHUB_TOKEN pushes start no
+    # workflows), so it triggers a rebuild that overwrites the stray change.
+    branches: [main, dist]
+  pull_request:
+    branches: [dist]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: publish-dist
+  cancel-in-progress: true
+
+jobs:
+  reject-pr:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          echo "::error::dist is generated from main on every push. Retarget this PR to main."
+          exit 1
+
+  publish:
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      # This workflow ships in dist too: a push to dist runs the workflow file of
+      # the pushed commit, and workflow_dispatch needs it on the default branch.
+      PUBLISH: skills assets README.md LICENSE skills.sh.json .agents .claude-plugin .cursor-plugin .codex-plugin .github/plugin .github/workflows/publish-dist.yml
+      EXCLUDE: evals internal .gitignore
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Every path on main is published or excluded
+        run: |
+          set -euo pipefail
+          known=" $PUBLISH $EXCLUDE "
+          fail=0
+          classify() {
+            local path
+            for entry in $(git ls-tree --name-only "HEAD:$1"); do
+              path="${1:+$1/}$entry"
+              if [[ "$known" == *" $path "* ]]; then continue
+              elif [[ "$known" == *" $path/"* ]]; then classify "$path"
+              else echo "::error::$path is neither in PUBLISH nor EXCLUDE"; fail=1
+              fi
+            done
+          }
+          classify ""
+          for p in $PUBLISH; do
+            git cat-file -e "HEAD:$p" || { echo "::error::published path $p is missing"; fail=1; }
+          done
+          exit $fail
+
+      - name: Build dist tree
+        run: |
+          set -euo pipefail
+          export GIT_INDEX_FILE="$RUNNER_TEMP/dist.index"
+          git read-tree --empty
+          # shellcheck disable=SC2086
+          git ls-tree -r HEAD -- $PUBLISH | git update-index --index-info
+          tree=$(git write-tree)
+          if git ls-tree -r -d --name-only "$tree" skills | grep -E '^skills/[^/]+/evals$'; then
+            echo "::error::skills/*/evals is back in the published tree (see SDC-33144)"
+            exit 1
+          fi
+          echo "TREE=$tree" >> "$GITHUB_ENV"
+
+      - name: Append to dist when the published tree changed
+        env:
+          GIT_AUTHOR_NAME: github-actions[bot]
+          GIT_AUTHOR_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
+          GIT_COMMITTER_NAME: github-actions[bot]
+          GIT_COMMITTER_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
+        run: |
+          set -euo pipefail
+          main=$(git rev-parse HEAD)
+          msg="dist: built from main ${main} (generated, develop on main)"
+          if git fetch --quiet --depth=1 origin dist; then
+            parent=$(git rev-parse FETCH_HEAD)
+            if [ "$(git rev-parse "$parent^{tree}")" = "$TREE" ]; then
+              echo "Published tree unchanged; dist stays at $parent."
+              exit 0
+            fi
+            commit=$(git commit-tree "$TREE" -p "$parent" -m "$msg")
+          else
+            commit=$(git commit-tree "$TREE" -m "$msg")
+          fi
+          git push origin "$commit:refs/heads/dist"
+          echo "dist -> $commit"
