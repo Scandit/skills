@@ -1,0 +1,18 @@
+{
+  "name": "scandit-plugins",
+  "owner": {
+    "name": "Scandit",
+    "email": "support@scandit.com"
+  },
+  "metadata": {
+    "description": "Official Scandit marketplace: AI agent skills for integrating the Scandit Data Capture SDK.",
+    "version": "1.0.0"
+  },
+  "plugins": [
+    {
+      "name": "scandit-sdk",
+      "source": ".",
+      "description": "AI agent skills for integrating the Scandit Data Capture SDK — product selection, documentation, and implementation guides for barcode scanning, ID capture, and smart label capture."
+    }
+  ]
+}

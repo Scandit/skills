@@ -1,0 +1,40 @@
+{
+  "name": "scandit-sdk",
+  "description": "AI agent skills for integrating the Scandit Data Capture SDK — product selection, documentation, and implementation guides for barcode scanning, ID capture, and smart label capture.",
+  "author": {
+    "name": "Scandit",
+    "url": "https://www.scandit.com/"
+  },
+  "homepage": "https://docs.scandit.com",
+  "repository": "https://github.com/scandit/skills",
+  "license": "Apache-2.0",
+  "keywords": [
+    "scandit",
+    "barcode",
+    "scanning",
+    "barcode-scanning",
+    "barcode-capture",
+    "sparkscan",
+    "matrixscan",
+    "matrixscan-ar",
+    "matrixscan-count",
+    "matrixscan-batch",
+    "label-capture",
+    "smart-label-capture",
+    "data-capture",
+    "ios",
+    "web",
+    "react-native",
+    "flutter",
+    "capacitor",
+    "cordova",
+    "dotnet",
+    "net",
+    "net-android",
+    "net-ios",
+    "maui",
+    "xamarin",
+    "sdk",
+    "smart-data-capture"
+  ]
+}

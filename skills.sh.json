@@ -1,0 +1,157 @@
+{
+  "$schema": "https://skills.sh/schemas/skills.sh.schema.json",
+  "notGrouped": "bottom",
+  "groupings": [
+    {
+      "title": "Start here",
+      "description": "Not sure which skill you need? Install this one and your agent picks the right product and framework for you.",
+      "skills": [
+        "data-capture-sdk"
+      ]
+    },
+    {
+      "title": "Barcode Capture",
+      "description": "Single barcode scanning, the general-purpose entry point to the SDK.",
+      "skills": [
+        "barcode-capture-web",
+        "barcode-capture-ios",
+        "barcode-capture-android",
+        "barcode-capture-rn",
+        "barcode-capture-flutter",
+        "barcode-capture-kmp",
+        "barcode-capture-capacitor",
+        "barcode-capture-cordova",
+        "barcode-capture-net-maui",
+        "barcode-capture-net-ios",
+        "barcode-capture-net-android"
+      ]
+    },
+    {
+      "title": "SparkScan",
+      "description": "Pre-built, camera-on-demand scanning UI for high-volume workflows.",
+      "skills": [
+        "sparkscan-web",
+        "sparkscan-ios",
+        "sparkscan-android",
+        "sparkscan-rn",
+        "sparkscan-flutter",
+        "sparkscan-kmp",
+        "sparkscan-capacitor",
+        "sparkscan-cordova",
+        "sparkscan-net-maui",
+        "sparkscan-net-ios",
+        "sparkscan-net-android"
+      ]
+    },
+    {
+      "title": "MatrixScan AR",
+      "description": "Overlay information on top of live barcodes in the camera view.",
+      "skills": [
+        "matrixscan-ar-web",
+        "matrixscan-ar-ios",
+        "matrixscan-ar-android",
+        "matrixscan-ar-rn",
+        "matrixscan-ar-flutter",
+        "matrixscan-ar-kmp",
+        "matrixscan-ar-capacitor",
+        "matrixscan-ar-cordova",
+        "matrixscan-ar-net-maui",
+        "matrixscan-ar-net-ios",
+        "matrixscan-ar-net-android",
+        "matrixscan-ar-highlight-ios",
+        "matrixscan-ar-annotation-ios"
+      ]
+    },
+    {
+      "title": "MatrixScan Batch",
+      "description": "Scan and track many barcodes in a single camera session.",
+      "skills": [
+        "matrixscan-batch-web",
+        "matrixscan-batch-ios",
+        "matrixscan-batch-android",
+        "matrixscan-batch-rn",
+        "matrixscan-batch-flutter",
+        "matrixscan-batch-kmp",
+        "matrixscan-batch-capacitor",
+        "matrixscan-batch-cordova",
+        "matrixscan-batch-net-maui",
+        "matrixscan-batch-net-ios",
+        "matrixscan-batch-net-android"
+      ]
+    },
+    {
+      "title": "MatrixScan Count and Pick",
+      "description": "Count items in bulk and guide pickers to the right barcode.",
+      "skills": [
+        "matrixscan-count-ios",
+        "matrixscan-count-android",
+        "matrixscan-count-rn",
+        "matrixscan-count-flutter",
+        "matrixscan-count-kmp",
+        "matrixscan-count-capacitor",
+        "matrixscan-count-cordova",
+        "matrixscan-count-net-maui",
+        "matrixscan-count-net-ios",
+        "matrixscan-count-net-android",
+        "matrixscan-pick-ios",
+        "matrixscan-pick-kmp"
+      ]
+    },
+    {
+      "title": "Smart Label Capture",
+      "description": "Read barcodes and printed text from a label in one scan.",
+      "skills": [
+        "label-capture-web",
+        "label-capture-ios",
+        "label-capture-android",
+        "label-capture-rn",
+        "label-capture-flutter",
+        "label-capture-kmp",
+        "label-capture-capacitor",
+        "label-capture-cordova",
+        "label-capture-net-maui",
+        "label-capture-net-ios",
+        "label-capture-net-android"
+      ]
+    },
+    {
+      "title": "ID Scanning",
+      "description": "Scan and verify IDs, passports, and driver licenses.",
+      "skills": [
+        "id-bolt",
+        "id-capture-web",
+        "id-capture-ios",
+        "id-capture-android",
+        "id-capture-rn",
+        "id-capture-flutter",
+        "id-capture-kmp",
+        "id-capture-capacitor",
+        "id-capture-cordova",
+        "id-capture-net-maui",
+        "id-capture-net-ios",
+        "id-capture-net-android"
+      ]
+    },
+    {
+      "title": "Barcode Selection",
+      "description": "Let the user tap or aim to pick one barcode out of many.",
+      "skills": [
+        "barcode-selection-kmp"
+      ]
+    },
+    {
+      "title": "MatrixScan Find",
+      "description": "Search a scene for specific items and guide the user to them.",
+      "skills": [
+        "matrixscan-find-kmp"
+      ]
+    },
+    {
+      "title": "Parser",
+      "description": "Parse GS1 AI, HIBC, AAMVA, EPC, and Swiss QR barcode data into typed fields.",
+      "skills": [
+        "parser-kmp"
+      ]
+    }
+  ]
+}
