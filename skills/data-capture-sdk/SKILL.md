@@ -4,7 +4,7 @@ description: Use when a user mentions Scandit, data capture SDK, barcode scannin
 license: Apache-2.0
 metadata:
   author: scandit
-  version: "1.3.0"
+  version: "1.4.0"
 ---
 
 # Scandit Data Capture SDK
@@ -136,6 +136,9 @@ Always include both the docs.scandit.com link and the platform-specific sample-a
 | Smart Label Capture | .NET for iOS | `label-capture-net-ios` | "Ask me to integrate Label Capture into your .NET iOS app" |
 | Smart Label Capture | .NET MAUI | `label-capture-net-maui` | "Ask me to integrate Label Capture into your .NET MAUI app" |
 | Smart Label Capture | Kotlin Multiplatform | `label-capture-kmp` | "Ask me to integrate Label Capture into your Kotlin Multiplatform app" |
+| ID Capture | iOS | `id-capture-ios` | "Ask me to integrate ID Capture into your iOS app" |
+| ID Capture | Web | `id-capture-web` | "Ask me to integrate ID Capture into your web app" |
+| ID Capture | Android | `id-capture-android` | "Ask me to integrate ID Capture into your Android app" |
 | ID Capture | React Native | `id-capture-rn` | "Ask me to integrate ID Capture into your React Native app" |
 | ID Capture | Flutter | `id-capture-flutter` | "Ask me to integrate ID Capture into your Flutter app" |
 | ID Capture | Capacitor | `id-capture-capacitor` | "Ask me to integrate ID Capture into your Capacitor app" |
@@ -144,6 +147,7 @@ Always include both the docs.scandit.com link and the platform-specific sample-a
 | ID Capture | .NET for iOS | `id-capture-net-ios` | "Ask me to integrate ID Capture into your .NET iOS app" |
 | ID Capture | .NET MAUI | `id-capture-net-maui` | "Ask me to integrate ID Capture into your .NET MAUI app" |
 | ID Capture | Kotlin Multiplatform | `id-capture-kmp` | "Ask me to integrate ID Capture into your Kotlin Multiplatform app" |
+| ID Bolt | Web | `id-bolt` | "Ask me to add ID Bolt to your website" |
 | MatrixScan AR | iOS | `matrixscan-ar-ios` | "Ask me to integrate MatrixScan AR into your iOS app" |
 | MatrixScan AR | Web | `matrixscan-ar-web` | "Ask me to integrate MatrixScan AR into your web app" |
 | MatrixScan AR | Android | `matrixscan-ar-android` | "Ask me to integrate MatrixScan AR into your Android app" |
