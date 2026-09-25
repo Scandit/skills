@@ -4,7 +4,7 @@ description: SparkScan single-barcode scanning with the pre-built scanning UI (f
 license: Apache-2.0
 metadata:
   author: scandit
-  version: "1.2.1"
+  version: "1.2.2"
 ---
 
 # SparkScan Web Skill

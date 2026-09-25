@@ -7,6 +7,8 @@ Checks (per skill, and across siblings sharing a product prefix):
   frontmatter   name matches directory, description present, license, author, version,
                 description within the always-on token budget and naming the product
   layout        every sibling has the same reference files and eval suite files
+  principles    every references/migration.md and third-party-migration.md carries
+                its "Migration principles" labels
   routing       every skills/<dir> is referenced in the router skill's SKILL.md and vice versa
 
 Product prefixes and parity exemptions live in ../manifest.json, not in code.
@@ -24,6 +26,14 @@ from common import REPO_ROOT, frontmatter, list_skill_dirs, load_manifest, eval_
 # Descriptions are injected into every user session for every installed skill —
 # they are trigger metadata, not documentation. 600 chars ≈ 150 tokens each.
 DESCRIPTION_BUDGET = 600
+
+# Bold labels every "## Migration principles" block must carry, per guide type.
+# Third-party guides have no dual-version case: the old code is not Scandit.
+_SHARED_PRINCIPLES = ("Authority", "Behaviour changes", "Compatibility layer")
+MIGRATION_PRINCIPLES = {
+    "migration.md": _SHARED_PRINCIPLES + ("Dual-version code",),
+    "third-party-migration.md": _SHARED_PRINCIPLES,
+}
 
 
 def main():
@@ -108,6 +118,20 @@ def main():
             for f in sorted(union - files):
                 findings.append(f"{name}: sibling-parity — missing `{f}` "
                                 f"(present in other {product}* skills)")
+
+    # --- migration principles block in every migration guide
+    for d in skill_dirs:
+        for guide, labels in MIGRATION_PRINCIPLES.items():
+            path = d / "references" / guide
+            if not path.exists():
+                continue
+            section = re.search(r"^## Migration principles\n(.*?)(?=^## |\Z)",
+                                path.read_text(), re.M | re.S)
+            block = section[1] if section else ""
+            for label in labels:
+                if f"**{label}.**" not in block:
+                    findings.append(f"{d.name}: migration-principles — "
+                                    f"`references/{guide}` missing \"{label}\"")
 
     # --- routing table sync (always over the full catalog)
     root = skills_dir / router / "SKILL.md"

@@ -4,7 +4,7 @@ description: Smart Label Capture (Scandit `LabelCapture`) in React Native projec
 license: Apache-2.0
 metadata:
   author: scandit
-  version: "1.0.1"
+  version: "1.0.2"
 ---
 
 # Label Capture React Native Skill

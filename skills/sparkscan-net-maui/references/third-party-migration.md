@@ -1,5 +1,11 @@
 # Migrating from a Third-Party Barcode Scanner to SparkScan on .NET MAUI
 
+## Migration principles
+
+- **Authority.** When this guide and the API reference disagree, trust the API reference — and a runtime check in the user's project — over this guide. Say which source you followed and why in the summary.
+- **Behaviour changes.** Never present a visual or behaviour change (new default, different overlay look, changed feedback, changed scan timing) as a 1:1 rename. List each one in the summary as a judgment call the user must confirm.
+- **Compatibility layer.** When the scanning code sits behind a shared scanner library or wrapper that other code calls, keep that library's public API frozen (same types, method names, callbacks) and replace only the third-party scanner calls underneath with Scandit ones.
+
 This guide describes how to replace common third-party barcode-scanning libraries in a **.NET MAUI** app with Scandit SparkScan. Once the swap is complete, follow [references/integration.md](./integration.md) for the full SparkScan setup. This document only describes what to remove and how to map your existing logic onto SparkScan.
 
 ## Why SparkScan (vs. BarcodeCapture)

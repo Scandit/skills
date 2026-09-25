@@ -4,7 +4,7 @@ description: Capacitor MatrixScan Batch (scandit-capacitor-datacapture-barcode) 
 license: Apache-2.0
 metadata:
   author: scandit
-  version: "1.0.1"
+  version: "1.0.2"
 ---
 
 # MatrixScan Batch Capacitor Skill

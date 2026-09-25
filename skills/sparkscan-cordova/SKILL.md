@@ -4,7 +4,7 @@ description: Cordova — SparkScan single-barcode scanning with the pre-built sc
 license: Apache-2.0
 metadata:
   author: scandit
-  version: "1.0.1"
+  version: "1.0.2"
 ---
 
 # SparkScan Cordova Skill

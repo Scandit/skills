@@ -1,5 +1,12 @@
 # MatrixScan Batch → MatrixScan AR Migration Guide
 
+## Migration principles
+
+- **Authority.** When this guide and the API reference disagree, trust the API reference — and a runtime check in the user's project — over this guide. Say which source you followed and why in the summary.
+- **Behaviour changes.** Never present a visual or behaviour change (new default, different overlay look, changed feedback, changed scan timing) as a 1:1 rename. List each one in the summary as a judgment call the user must confirm.
+- **Compatibility layer.** When the scanning code sits behind a shared scanner library or wrapper that other code calls, keep that library's public API frozen (same types, method names, callbacks) and change only the Scandit calls underneath.
+- **Dual-version code.** When code must run on both the old and the target version, branch on a symbol this guide lists as removed in the target version — never on a version string, and never on the presence of the new API. A deprecated symbol that is still present proves nothing about the installed version. Example: `BarcodeCapture.forContext` is removed on Flutter and React Native 7→8, but still exists on Web and deprecated-but-present on Capacitor and Cordova.
+
 MatrixScan Batch and MatrixScan AR are two different products that share the idea of "track multiple barcodes simultaneously". Batch gives you a raw `DataCaptureView` + overlay and session callbacks with `addedTrackedBarcodes` / `updatedTrackedBarcodes` / `removedTrackedBarcodes` — the app draws its own shapes. MatrixScan AR gives you a pre-built `BarcodeArView` with first-class highlight and annotation providers on top of the AR view.
 
 **A Batch → AR migration is a rewrite of the view and listener layer**, not a rename. Tell the user this up front so they know what to expect.

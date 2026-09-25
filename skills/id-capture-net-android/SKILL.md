@@ -4,7 +4,7 @@ description: Scandit ID Capture (`IdCapture`) in .NET for Android projects (`net
 license: Apache-2.0
 metadata:
   author: scandit
-  version: "1.0.1"
+  version: "1.0.2"
 ---
 
 # ID Capture .NET for Android Skill

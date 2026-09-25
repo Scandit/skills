@@ -4,7 +4,7 @@ description: Scandit BarcodeCapture in .NET MAUI projects (`<UseMaui>true</UseMa
 license: Apache-2.0
 metadata:
   author: scandit
-  version: "1.0.1"
+  version: "1.0.2"
 ---
 
 # BarcodeCapture .NET MAUI Skill

@@ -1,5 +1,12 @@
 # ID Capture .NET for iOS Migration Guide
 
+## Migration principles
+
+- **Authority.** When this guide and the API reference disagree, trust the API reference — and a runtime check in the user's project — over this guide. Say which source you followed and why in the summary.
+- **Behaviour changes.** Never present a visual or behaviour change (new default, different overlay look, changed feedback, changed scan timing) as a 1:1 rename. List each one in the summary as a judgment call the user must confirm.
+- **Compatibility layer.** When the scanning code sits behind a shared scanner library or wrapper that other code calls, keep that library's public API frozen (same types, method names, callbacks) and change only the Scandit calls underneath.
+- **Dual-version code.** When code must run on both the old and the target version, branch on a symbol this guide lists as removed in the target version — never on a version string, and never on the presence of the new API. A deprecated symbol that is still present proves nothing about the installed version. Example: `BarcodeCapture.forContext` is removed on Flutter and React Native 7→8, but still exists on Web and deprecated-but-present on Capacitor and Cordova.
+
 This guide covers upgrading an existing **ID Capture** integration on the non-MAUI `.NET for iOS` workload across major Scandit SDK versions. ID Capture first shipped on `dotnet.ios` in **6.16**, so a project may legitimately be on a 6.x, 7.x, or 8.x line.
 
 Two changes dominate the upgrade path:
