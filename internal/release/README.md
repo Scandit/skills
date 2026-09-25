@@ -29,7 +29,7 @@ repos, and uploaded skills are scanned for sensitive information.
 ### Cutting a directory update
 
 The OpenAI directory does **not** track this repo. An approved listing is a
-frozen, reviewed snapshot, so nothing shipped to `master` reaches directory
+frozen, reviewed snapshot, so nothing shipped to `main` reaches directory
 users until a new version is reviewed and published. Each update is:
 
 1. Bump `version` in `.codex-plugin/plugin.json`. A new release must not reuse

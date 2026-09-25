@@ -1,4 +1,4 @@
-# Builds the install-only `dist` branch from master (SDC-33151). Plugin installers
+# Builds the install-only `dist` branch from main (SDC-33151). Plugin installers
 # clone the default branch wholesale, so dist carries only the published surface.
 
 name: publish-dist
@@ -7,7 +7,7 @@ on:
   push:
     # A push to dist can only come from a human (GITHUB_TOKEN pushes start no
     # workflows), so it triggers a rebuild that overwrites the stray change.
-    branches: [master, dist]
+    branches: [main, dist]
   pull_request:
     branches: [dist]
   workflow_dispatch:
@@ -25,7 +25,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - run: |
-          echo "::error::dist is generated from master on every push. Retarget this PR to master."
+          echo "::error::dist is generated from main on every push. Retarget this PR to main."
           exit 1
 
   publish:
@@ -41,9 +41,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: master
+          ref: main
 
-      - name: Every master path is published or excluded
+      - name: Every path on main is published or excluded
         run: |
           set -euo pipefail
           known=" $PUBLISH $EXCLUDE "
@@ -86,8 +86,8 @@ jobs:
           GIT_COMMITTER_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
         run: |
           set -euo pipefail
-          master=$(git rev-parse HEAD)
-          msg="dist: built from master ${master} (generated, develop on master)"
+          main=$(git rev-parse HEAD)
+          msg="dist: built from main ${main} (generated, develop on main)"
           if git fetch --quiet --depth=1 origin dist; then
             parent=$(git rev-parse FETCH_HEAD)
             if [ "$(git rev-parse "$parent^{tree}")" = "$TREE" ]; then
