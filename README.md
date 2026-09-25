@@ -23,13 +23,9 @@ Or install from your agent's own marketplace:
 | Cursor | [One click install](https://cursor.com/marketplace/scandit), or `/add-plugin scandit-sdk` in the editor | Automatic |
 | Codex CLI | `codex plugin marketplace add scandit/skills`<br>`codex plugin add scandit-sdk@scandit-plugins` | `codex plugin marketplace upgrade scandit-plugins` |
 | Copilot CLI | `copilot plugin marketplace add scandit/skills`<br>`copilot plugin install scandit-sdk@scandit-plugins` | `copilot plugin update scandit-sdk` |
-| Everyone else | `npx skills add scandit/skills` | `npx skills update scandit/skills` |
+| Everyone else | `npx plugins add scandit/skills` | Re-run `npx plugins add scandit/skills` |
 
-**Just one skill?** Your agent only loads the skills your prompt needs, so the full bundle is usually the right choice. To install a single one, name it: for SparkScan Web, use
-
-```bash
-npx skills add scandit/skills --skill sparkscan-web
-```
+**Just one skill?** Your agent only loads the skills your prompt needs, so the full bundle is the right choice — install once with `npx plugins add scandit/skills`.
 
 ## How to use it
 
