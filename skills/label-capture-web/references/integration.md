@@ -12,7 +12,7 @@ If the user has no existing app yet, offer the official sample as the fastest pa
 
 Tell the user to clone the repo and open the sample folder. Once they have it open, help them:
 
-1. Replace `-- ENTER YOUR SCANDIT LICENSE KEY HERE --` with their key from <https://ssl.scandit.com>
+1. Replace `-- ENTER YOUR SCANDIT LICENSE KEY HERE --` with your key (see **Licence key** in `SKILL.md`).
 2. Adjust the label definition to match their use case (fields, symbologies, regex patterns)
 3. Run `npm install` (or their package manager of choice) and start the app
 
@@ -26,9 +26,7 @@ Only proceed to the manual integration steps below if the user already has an ex
   - `@scandit/web-datacapture-core`
   - `@scandit/web-datacapture-barcode`
   - `@scandit/web-datacapture-label`
-- A valid Scandit license key:
-  - Sign in at <https://ssl.scandit.com> to generate one.
-  - No account yet? Sign up at <https://ssl.scandit.com/dashboard/sign-up?p=test>.
+- A valid Scandit license key — see **Licence key** in this skill's `SKILL.md`.
 
 ## Interactive Label Definition
 
@@ -200,7 +198,7 @@ After writing the integration code, show this checklist:
    - `@scandit/web-datacapture-core`
    - `@scandit/web-datacapture-barcode`
    - `@scandit/web-datacapture-label`
-2. Replace `-- ENTER YOUR SCANDIT LICENSE KEY HERE --` with your license key from <https://ssl.scandit.com>.
+2. Replace `-- ENTER YOUR SCANDIT LICENSE KEY HERE --` with your key (see **Licence key** in `SKILL.md`).
 3. Make sure `libraryLocation` points to a self-hosted copy of the SDK library (the path in `new URL(...)`). You can copy the `sdc-lib` directory from `node_modules/@scandit/web-datacapture-label/sdc-lib/`, or use the CDN instead: `libraryLocation: "https://cdn.jsdelivr.net/npm/@scandit/web-datacapture-label@8/sdc-lib/"`.
 4. Ensure a DOM element with id `data-capture-view` exists on the page before `run()` executes. The element must have a defined size and be visible — `DataCaptureView` renders the camera feed into it, so if the element has zero dimensions or `display: none` the viewfinder will not appear. A common setup is `width: 100%; height: 100vh;` or any other CSS that gives the element a non-zero area.
 

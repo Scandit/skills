@@ -74,7 +74,7 @@ Your training data is unlikely to contain ID Bolt's API at all, and is very like
 
 ## Minimal integration shape
 
-Prerequisites: `npm install @scandit/web-id-bolt`. A license key entitled for ID Bolt comes from the Scandit dashboard (free test account at <https://ssl.scandit.com/dashboard/sign-up?p=id-bolt>). The service URL is `https://app.id-scanning.com` (a Scandit-hosted alias). There are **no** engine/WASM files to host.
+Prerequisites: `npm install @scandit/web-id-bolt`. A license key entitled for ID Bolt — see **Licence key** below. The service URL is `https://app.id-scanning.com` (a Scandit-hosted alias). There are **no** engine/WASM files to host.
 
 ```ts
 import {
@@ -145,6 +145,21 @@ Notes:
 ## API Usage Policy
 
 Only use APIs that exist in `@scandit/web-id-bolt` and the referenced documentation. Do not invent or guess method signatures, parameters, or property names — and especially do not borrow them from the ID Capture SDK, which is a different package. When unsure whether an API exists or how to call it, fetch the documentation before responding. Do not tell the user to check the docs themselves. After answering, include the relevant link so they can explore further. **Never construct or guess documentation URLs** — fetch the API overview and follow links from there.
+
+## Licence key
+
+Scanning needs a Scandit licence key. For this skill the licence product is `id-bolt` and the licence platform is `webassembly`.
+
+Work through these in order — never block the user on MCP:
+
+1. **The Scandit MCP server is connected** — call `ensure_scanner_setup` with product `id-bolt` and platforms `webassembly`, then run the command `get_license_env_command` returns, which writes the key into the project's `.env`. Show at most a masked preview in chat; never print a full key.
+2. **It is not connected** — offer to connect it once, then continue from step 1:
+   - Claude Code: `claude mcp add --transport http scandit https://ssl.scandit.com/mcp`
+   - Cursor: add `{"mcpServers": {"scandit": {"url": "https://ssl.scandit.com/mcp"}}}` to `~/.cursor/mcp.json`
+   - VS Code: add `{"servers": {"scandit": {"type": "http", "url": "https://ssl.scandit.com/mcp"}}}` to the MCP user configuration
+
+   Authentication is browser-based, so it is **not supported headless or in CI**. The server provisions **trial** keys only; it never creates, revokes, or modifies production licences.
+3. **The user declines, or has no MCP client** — they generate a key themselves at <https://ssl.scandit.com> (no account yet: <https://ssl.scandit.com/dashboard/sign-up?p=id-bolt>) and paste it in.
 
 ## References
 

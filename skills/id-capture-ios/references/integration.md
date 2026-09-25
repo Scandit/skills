@@ -5,7 +5,7 @@ ID Capture reads identity documents — passports, driver's licenses, ID cards, 
 ## Prerequisites
 
 - SPM: `https://github.com/Scandit/datacapture-spm` — add `ScanditIdCapture` and `ScanditCaptureCore`
-- A valid Scandit license key from <https://ssl.scandit.com>
+- A valid Scandit license key — see **Licence key** in this skill's `SKILL.md`.
 - `NSCameraUsageDescription` in `Info.plist` — iOS prompts automatically, no runtime-permission code needed
 
 ## Before writing code — ask the user

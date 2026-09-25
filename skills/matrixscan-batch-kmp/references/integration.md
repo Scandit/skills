@@ -36,9 +36,7 @@ platform-native views the advanced overlay needs.
   Kotlin framework into the same iOS target.
 
   Pin this Swift package to the **exact same version** as the `com.scandit.datacapture.kmp:*` Maven dependencies (Xcode: *Dependency Rule → Exact Version*). A mismatch between the two causes link errors or runtime crashes, so bump both together.
-- A valid Scandit license key:
-  - Sign in at https://ssl.scandit.com to generate one.
-  - No account yet? Sign up at https://ssl.scandit.com/dashboard/sign-up?p=test.
+- A valid Scandit license key — see **Licence key** in this skill's `SKILL.md`.
 - Camera permission:
   - Android `AndroidManifest.xml`:
     ```xml
@@ -69,8 +67,7 @@ After providing the code, show this setup checklist:
 2. Add the `Scandit/datacapture-kmp-spm` Swift package to the iOS app target.
 3. Add `CAMERA` permission (Android manifest) and `NSCameraUsageDescription` (iOS Info.plist), and
    request runtime/user permission before scanning starts.
-4. Replace `-- ENTER YOUR SCANDIT LICENSE KEY HERE --` with the license key from
-   https://ssl.scandit.com.
+4. Replace `-- ENTER YOUR SCANDIT LICENSE KEY HERE --` with your key (see **Licence key** in `SKILL.md`).
 
 ## Package paths
 

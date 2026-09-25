@@ -16,9 +16,7 @@ The sample's `build.gradle` shows the canonical dependency set, and `data/LabelC
 
 - Android Studio with Kotlin support.
 - `minSdk` 24 or higher.
-- A valid Scandit license key:
-  - Sign in at <https://ssl.scandit.com> to generate one.
-  - No account yet? Sign up at <https://ssl.scandit.com/dashboard/sign-up?p=test>.
+- A valid Scandit license key — see **Licence key** in this skill's `SKILL.md`.
 
 ### Gradle setup
 
@@ -274,7 +272,7 @@ Notes when generating this code:
 After writing the integration code, show this checklist:
 
 1. Add the Gradle dependencies to `app/build.gradle.kts` (see Prerequisites). Use the same version for all. Include `label-text-models` unless the label uses only `addCustomBarcode()`. If the label uses `createPriceCaptureDefinition`, also add `com.scandit.datacapture:price-label` — without it the app builds but never scans.
-2. Replace `-- ENTER YOUR SCANDIT LICENSE KEY HERE --` with your key from <https://ssl.scandit.com>.
+2. Replace `-- ENTER YOUR SCANDIT LICENSE KEY HERE --` with your key (see **Licence key** in `SKILL.md`).
 3. Add the `CAMERA` permission to `AndroidManifest.xml` and request it at runtime before starting the camera.
 4. Add a `FrameLayout` (or other container) with the id `data_capture_container` to your layout XML.
 

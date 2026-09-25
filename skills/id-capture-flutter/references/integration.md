@@ -11,9 +11,7 @@ You declare **which documents to accept** and **which scanner to use**, attach a
   - `scandit_flutter_datacapture_id`
   - (Add-on capabilities live in separate packages — see `references/supplementary-modules.md`.)
 - Flutter `>=3.22.0`, Dart `>=3.4.0`.
-- A valid Scandit license key, **enabled for ID Capture**:
-  - Sign in at <https://ssl.scandit.com> to generate one.
-  - No account yet? Sign up at <https://ssl.scandit.com/dashboard/sign-up?p=test>.
+- A valid Scandit license key, **enabled for ID Capture** — see **Licence key** in this skill's `SKILL.md`.
 - Camera permissions configured by the app:
   - iOS: add `NSCameraUsageDescription` to `ios/Runner/Info.plist`.
   - Android: the manifest permission is declared by the plugin; request it at runtime with `permission_handler` (or equivalent) before pushing the scan screen.

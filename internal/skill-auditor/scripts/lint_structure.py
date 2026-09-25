@@ -7,6 +7,9 @@ Checks (per skill, and across siblings sharing a product prefix):
   frontmatter   name matches directory, description present, license, author, version,
                 description within the always-on token budget and naming the product
   layout        every sibling has the same reference files and eval suite files
+  licence       every non-exempt skill carries a `## Licence key` section naming the product
+                and licence platforms from references/licence-platforms.md, and carries the
+                dashboard provisioning link nowhere else
   routing       every skills/<dir> is referenced in the router skill's SKILL.md and vice versa
 
 Product prefixes and parity exemptions live in ../manifest.json, not in code.
@@ -19,11 +22,14 @@ from collections import defaultdict
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from common import REPO_ROOT, frontmatter, list_skill_dirs, load_manifest, eval_dir, eval_suite_files
+from common import (REPO_ROOT, frontmatter, list_skill_dirs, load_manifest, eval_dir,
+                    eval_suite_files, licence_platforms, resolve_licence)
 
 # Descriptions are injected into every user session for every installed skill —
 # they are trigger metadata, not documentation. 600 chars ≈ 150 tokens each.
 DESCRIPTION_BUDGET = 600
+
+LICENCE_REFERENCE_REL = "internal/skill-auditor/references/licence-platforms.md"
 
 
 def main():
@@ -81,6 +87,55 @@ def main():
                     f"{d.name}: description does not mention product name "
                     f"{product_tokens!r} — the product name is the primary trigger token"
                 )
+
+    # --- licence-key section (product + platforms named, dashboard flow not duplicated)
+    #
+    # Every skill must tell the agent how to get a key, and must say it once. The
+    # product and platform values are checked against the reference file rather
+    # than a copy here, so the MCP server's own mapping stays the only source.
+    # A broken reference table is a finding, not a traceback: this script's output is
+    # parsed downstream, so it has to fail in the shape callers already handle.
+    try:
+        licence_map = licence_platforms()
+    except (OSError, ValueError) as e:
+        licence_map = {}
+        findings.append(f"{LICENCE_REFERENCE_REL}: {e}")
+    licence_exempt: set[str] = set(manifest["licence_key_exempt"])
+    licence_link_allow: set[str] = set(manifest["licence_link_allow"])
+    for d in skill_dirs:
+        if d.name in licence_exempt:
+            continue
+        sk = d / "SKILL.md"
+        if not sk.exists():
+            continue  # already reported above
+        body = sk.read_text()
+        section = re.search(r"^## Licence key\n(.*?)(?=^## |\Z)", body, re.S | re.M)
+        if not section:
+            findings.append(f"{d.name}: SKILL.md missing `## Licence key` section")
+        else:
+            expected = resolve_licence(d.name, licence_map)
+            if expected is None:
+                findings.append(f"{d.name}: no row in {LICENCE_REFERENCE_REL} — "
+                                "add one before the licence-key section can be checked")
+            else:
+                product, platforms = expected
+                for token in [product, *platforms]:
+                    if f"`{token}`" not in section.group(1):
+                        findings.append(
+                            f"{d.name}: licence-key section does not name `{token}` "
+                            f"(per {LICENCE_REFERENCE_REL})")
+        # The dashboard fallback lives in the licence-key section and nowhere else,
+        # so a skill never carries two competing provisioning instructions.
+        for f in sorted(d.rglob("*.md")):
+            rel = str(f.relative_to(skills_dir))
+            if rel in licence_link_allow:
+                continue
+            text = f.read_text()
+            if f == sk and section:
+                text = text.replace(section.group(0), "")
+            if "ssl.scandit.com" in text:
+                findings.append(f"{rel}: licence provisioning link outside the "
+                                "`## Licence key` section — point readers at that section instead")
 
     # --- sibling layout parity per product
     by_product: dict[str, list[Path]] = defaultdict(list)

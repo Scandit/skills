@@ -37,9 +37,7 @@ components do.
 
   Pin this Swift package to the **exact same version** as the `com.scandit.datacapture.kmp:*` Maven dependencies (Xcode: *Dependency Rule → Exact Version*). A mismatch between the two causes link errors or runtime crashes, so bump both together.
 
-- A valid Scandit license key:
-  - Sign in at https://ssl.scandit.com to generate one.
-  - No account yet? Sign up at https://ssl.scandit.com/dashboard/sign-up?p=test.
+- A valid Scandit license key — see **Licence key** in this skill's `SKILL.md`.
   - The license key must have the **parser** feature enabled.
 
 - No camera permission is required for pure parsing. If you are also scanning barcodes with
