@@ -126,15 +126,15 @@
     },
     {
       "id": 9,
-      "prompt": "Our Flutter app must keep working with both Scandit v7 and v8 during the rollout. Update ScannerPage_v7.dart so it detects which version is installed.",
-      "expected_output": "The skill detects the old version by a symbol removed in v8 (BarcodeCapture.forContext on Flutter), not by a version string and not by the presence of the new BarcodeCapture(settings) constructor, and explains that a deprecated-but-present symbol would prove nothing.",
+      "prompt": "Our Flutter app must build against both Scandit v7 and v8 during the rollout. Update ScannerPage_v7.dart so each build uses the right BarcodeCapture setup.",
+      "expected_output": "The skill explains that Dart cannot check at run time whether a removed symbol such as BarcodeCapture.forContext exists, and that code naming it does not compile against v8. It selects the v7 or v8 path at build time (a version constant from pubspec, a build flavor or separate entry files), never by probing for the new API at run time.",
       "files": [
         "fixtures/ScannerPage_v7.dart"
       ],
       "assertions": [
-        {"text": "Version detection does not compare a version string"},
-        {"text": "Version detection does not rely on the presence of the new v8 API (e.g. the BarcodeCapture(settings) constructor)"},
-        {"text": "Detection is based on a symbol removed in v8, such as BarcodeCapture.forContext"}
+        {"text": "The answer does not call BarcodeCapture.forContext in code that is also compiled against v8"},
+        {"text": "The v7/v8 path is selected at build time (pubspec version constant, build flavor, or separate entry files), not by a run-time probe"},
+        {"text": "Selection does not rely on the presence of the new v8 API (e.g. the BarcodeCapture(settings) constructor)"}
       ]
     }
   ]
