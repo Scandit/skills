@@ -84,6 +84,8 @@ We welcome feedback that improves the quality of these skills:
 - **Report issues.** File bugs, outdated SDK patterns, or incorrect guidance in the [issue tracker](https://github.com/scandit/skills/issues).
 - **Request new skills.** If a Scandit product, framework, or workflow you need isn't covered, open a feature request.
 
+**Branches:** development happens on [`master`](https://github.com/scandit/skills/tree/master), so target it with pull requests. The default `dist` branch is an install-only copy (no evals or internal tooling) that CI regenerates on every push to `master`; changes pushed to it are overwritten. Because `master` is not the default branch, `Fixes #N` in a PR does not close the issue on merge: close it by hand.
+
 ## License
 
 See the [LICENSE](./LICENSE) file for licensing information.
