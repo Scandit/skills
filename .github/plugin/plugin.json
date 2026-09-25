@@ -11,6 +11,7 @@
   "repository": "https://github.com/scandit/skills",
   "license": "Apache-2.0",
   "skills": "./skills/",
+  "mcpServers": "./.mcp.json",
   "keywords": [
     "scandit",
     "barcode",
