@@ -87,6 +87,27 @@
         {"text": "view.addOverlay( is called after the new BarcodeCaptureOverlay constructor"},
         {"text": "The output file is functionally equivalent to the input otherwise — no unnecessary changes"}
       ]
+    },
+    {
+      "id": 6,
+      "prompt": "I'm on Scandit SDK v6 and need to migrate my BarcodeCapture Cordova integration straight to v8. Here's my scanner file, which uses the Legacy overlay and viewfinder styles: ScannerApp_v6_legacy_styles.js",
+      "expected_output": "The skill applies both migrations in order: 6→7 (drop the removed BarcodeCaptureOverlayStyle.Legacy and RectangularViewfinderStyle.Legacy, which have no identical replacement) then 7→8 (new BarcodeCapture + context.setMode, new BarcodeCaptureOverlay + view.addOverlay, createRecommendedCameraSettings(), no BarcodeCaptureOverlayStyle argument), flags the visual style change as a judgment call, and keeps forLicenseKey or switches it to initialize without calling either a breaking change.",
+      "files": [
+        "fixtures/ScannerApp_v6_legacy_styles.js"
+      ],
+      "assertions": [
+        {"text": "new Scandit.BarcodeCapture( is present, registered via context.setMode( or context.addMode("},
+        {"text": "Scandit.BarcodeCapture.forContext( is NOT present in the output file"},
+        {"text": "new Scandit.BarcodeCaptureOverlay( is present, added via view.addOverlay("},
+        {"text": "Scandit.BarcodeCaptureOverlay.withBarcodeCaptureForViewWithStyle( is NOT present in the output file"},
+        {"text": "Scandit.BarcodeCapture.createRecommendedCameraSettings() is present"},
+        {"text": "Scandit.BarcodeCapture.recommendedCameraSettings is NOT present as a property access"},
+        {"text": "Scandit.BarcodeCaptureOverlayStyle.Legacy is NOT present anywhere in the output file"},
+        {"text": "Scandit.RectangularViewfinderStyle.Legacy is NOT present anywhere in the output file"},
+        {"text": "Scandit.DataCaptureContext.forLicenseKey( or Scandit.DataCaptureContext.initialize( is present in the output file"},
+        {"text": "Summary does not describe forLicenseKey → initialize as a breaking change"},
+        {"text": "Summary flags the loss of the Legacy overlay/viewfinder look as a visual judgment call for the user to confirm, not a silent 1:1 rename"}
+      ]
     }
   ]
 }

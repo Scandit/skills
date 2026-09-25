@@ -5,7 +5,7 @@
 - **Authority.** When this guide and the API reference disagree, trust the API reference — and a runtime check in the user's project — over this guide. Say which source you followed and why in the summary.
 - **Behaviour changes.** Never present a visual or behaviour change (new default, different overlay look, changed feedback, changed scan timing) as a 1:1 rename. List each one in the summary as a judgment call the user must confirm.
 - **Compatibility layer.** When the scanning code sits behind a shared scanner library or wrapper that other code calls, keep that library's public API frozen (same types, method names, callbacks) and change only the Scandit calls underneath.
-- **Dual-version code.** When code must run on both the old and the target version, branch at run time on a symbol this guide lists as removed in the target version — never on a version string, and never on the presence of the new API. A deprecated symbol that is still present proves nothing about the installed version. Example: `BarcodeCapture.forContext` is unchanged on Web and deprecated-but-present on React Native, Capacitor and Cordova v8, so probing it cannot tell v7 from v8.
+- **Dual-version code.** When code must run on both the old and the target version, branch at run time on a symbol this guide lists as removed in the target version — never on a version string, and never on the presence of the new API. A deprecated symbol that is still present proves nothing about the installed version. Example: `BarcodeCapture.forContext` is unchanged on Web but **removed** on React Native, Capacitor and Cordova v8, so probing for it (e.g. `typeof Scandit.BarcodeCapture.forContext === 'function'`) does tell v7 from v8 on those platforms — a deprecated-but-still-present symbol would not.
 
 ## Step 1: Detect the installed SDK version
 
@@ -61,7 +61,7 @@ If the project uses `BarcodeTracking` (MatrixScan) alongside BarcodeCapture, ren
 
 ### Scan intention default change
 
-The default scan intention is now `Scandit.ScanIntention.Smart`. If the project explicitly set `ScanIntention.Manual` on `BarcodeCaptureSettings`, leave it as is. If the project relied on the old default, the code still works — but the active behavior changes from `Manual` to `Smart`. Tell the user about the new default and let them choose to pin `Manual` explicitly.
+The default scan intention is now `Scandit.ScanIntention.Smart`. If the project explicitly set `ScanIntention.Manual` on `BarcodeCaptureSettings`, leave it as is. If the project relied on the old default, the code keeps running — but the active behavior changes from `Manual` to `Smart`. Tell the user about the new default and let them choose to pin `Manual` explicitly.
 
 ### `newlyRecognizedBarcodes` → `newlyRecognizedBarcode`
 
@@ -72,14 +72,22 @@ const barcode = session.newlyRecognizedBarcode;
 if (!barcode) return;
 ```
 
-### `recommendedCameraSettings` is now a static accessor
+### `recommendedCameraSettings`
 
-If the project does not yet use `Scandit.BarcodeCapture.recommendedCameraSettings` to configure the camera, no action is needed. If it does, the property is unchanged in v7 — keep using it.
+If the project does not yet use `Scandit.BarcodeCapture.recommendedCameraSettings` to configure the camera, no action is needed. The getter keeps working through all of v7 (deprecated since 7.6, **removed in v8** — see the 7→8 section). From 7.6 onward `Scandit.BarcodeCapture.createRecommendedCameraSettings()` is also available and is the only form that survives into v8.
+
+### Other v7 removals
+
+- `Scandit.LaserlineViewfinderStyle` is removed. `LaserlineViewfinder` never had a `color` property — use `enabledColor` / `disabledColor`.
+- `Scandit.RectangularViewfinderStyle.Legacy` is removed (`Rounded` and `Square` remain). **Judgment call:** the default `RectangularViewfinder` style also changed from `Legacy` to `Rounded` in v7 — flag this as a visual change for the user to confirm; there is no identical replacement for `Legacy`.
+- `Scandit.BarcodeCaptureOverlayStyle.Legacy` is removed (only `Frame` remains).
+- The static `BarcodeCaptureOverlay.defaultBrush` is removed.
+- Listener callbacks (`didScan`, `didUpdateSession`, etc.) are now typed to return `Promise<void>`.
 
 ### New v7 APIs (optional, no action required unless the user wants them)
 
 Mention only if the user asks:
-- Direct `BarcodeCaptureOverlay` constructor: `new Scandit.BarcodeCaptureOverlay(barcodeCapture)` (v7.6+). The static factory `BarcodeCaptureOverlay.withBarcodeCaptureForView(...)` continues to work.
+- Direct `BarcodeCaptureOverlay` constructor: `new Scandit.BarcodeCaptureOverlay(barcodeCapture)` (v7.6+). The static factory `BarcodeCaptureOverlay.withBarcodeCaptureForView(...)` continues to work in v7.
 - `BarcodeCapture` constructor: `new Scandit.BarcodeCapture(settings)` (v7.6+) — the canonical pattern in v8 (see below).
 
 ---
@@ -88,7 +96,7 @@ Mention only if the user asks:
 
 ### `DataCaptureContext.forLicenseKey` → `DataCaptureContext.initialize`
 
-This is the **main breaking change** on Cordova in v8. The context factory method was renamed.
+`forLicenseKey` still exists and works in v8 — this is not a breaking change. `initialize` (available since 7.2) is the preferred call going forward and returns the shared `DataCaptureContext` instance.
 
 **v7:**
 ```javascript
@@ -102,9 +110,9 @@ const context = Scandit.DataCaptureContext.initialize('YOUR_LICENSE_KEY');
 
 Replace every call to `Scandit.DataCaptureContext.forLicenseKey(...)` with `Scandit.DataCaptureContext.initialize(...)`, preserving the argument. Still call it inside the `deviceready` handler.
 
-### Capture mode factory deprecation: `BarcodeCapture.forContext` → `new BarcodeCapture` + `context.setMode`
+### `BarcodeCapture.forContext` removed → `new BarcodeCapture` + `context.setMode`
 
-The static factory method is deprecated in v8. Construct the mode directly and add it to the context explicitly.
+The static factory method is **removed in v8**; code that still calls it will fail to compile/run. Construct the mode directly and add it to the context explicitly. `context.setMode` / `context.addMode` now return a `Promise`.
 
 **v7:**
 ```javascript
@@ -114,7 +122,7 @@ const barcodeCapture = Scandit.BarcodeCapture.forContext(context, settings);
 **v8:**
 ```javascript
 const barcodeCapture = new Scandit.BarcodeCapture(settings);
-context.setMode(barcodeCapture);
+await context.setMode(barcodeCapture);
 ```
 
 `forContext` automatically attached the mode to the context; the new constructor does not. You must call `context.setMode(barcodeCapture)` (or `context.addMode(barcodeCapture)`) yourself.
@@ -123,9 +131,9 @@ The same pattern applies to other capture modes the project may use alongside Ba
 - `BarcodeBatch.forContext(context, settings)` → `new Scandit.BarcodeBatch(settings)` + `context.addMode(...)` / `context.setMode(...)`
 - `BarcodeSelection.forContext(context, settings)` → `new Scandit.BarcodeSelection(settings)` + `context.addMode(...)` / `context.setMode(...)`
 
-### `BarcodeCaptureOverlay.withBarcodeCaptureForView` → `new BarcodeCaptureOverlay` + `view.addOverlay`
+### `BarcodeCaptureOverlay.withBarcodeCaptureForView*` removed → `new BarcodeCaptureOverlay` + `view.addOverlay`
 
-The factory still works, but the canonical v8 pattern is the direct constructor plus an explicit `view.addOverlay` call.
+All `withBarcodeCapture*` static factories (including `withBarcodeCaptureForViewWithStyle`) are **removed in v8**. Use the direct constructor plus an explicit `view.addOverlay` call, which now returns a `Promise`.
 
 **v7:**
 ```javascript
@@ -135,10 +143,25 @@ const overlay = Scandit.BarcodeCaptureOverlay.withBarcodeCaptureForView(barcodeC
 **v8:**
 ```javascript
 const overlay = new Scandit.BarcodeCaptureOverlay(barcodeCapture);
-view.addOverlay(overlay);
+await view.addOverlay(overlay);
 ```
 
-If the project already uses `withBarcodeCaptureForView`, leaving it as is will still compile and run — but new code should use the constructor form for symmetry with the other capture modes.
+If the project still calls `withBarcodeCaptureForView`, it will fail at v8 — this call must be migrated, not left as is.
+
+### Other v8 removals and changes
+
+- `Scandit.BarcodeCapture.recommendedCameraSettings` getter is **removed**; use `Scandit.BarcodeCapture.createRecommendedCameraSettings()` (available since 7.6).
+- `Scandit.BarcodeCaptureOverlayStyle` enum is **removed entirely**.
+- `BarcodeCaptureSettings.batterySavingMode` → renamed `batterySaving`.
+- `Camera.isTorchAvailable` changes from a `boolean` getter to a `Promise<boolean>` getter (also available as `getIsTorchAvailable()`).
+- `context.addMode` / `context.setMode` / `context.removeMode`, and `view.addOverlay`, now return a `Promise`. On Cordova, `view.connectToElement` also now returns a `Promise` (Capacitor keeps it `void`).
+
+### Never valid in any version
+
+- `SymbologySettings.extensions` is private in every version — use `setExtensionEnabled(symbology, true)` instead of assigning to `extensions`.
+- A `BarcodeCaptureFeedback` object literal is a type error in every version — construct an instance and assign its properties.
+- `Vibration` has no public constructor in any version — use its static getters (e.g. `Vibration.defaultVibration`).
+- `LaserlineViewfinder.color` never existed — use `enabledColor` / `disabledColor`.
 
 ### New v8 APIs (optional, no action required unless the user wants them)
 

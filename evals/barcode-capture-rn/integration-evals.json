@@ -73,12 +73,12 @@
     {
       "id": 4,
       "prompt": "Customize the success feedback in my BarcodeCapture React Native app so it vibrates but does NOT play a sound on each scan.",
-      "expected_output": "The skill assigns a Feedback to barcodeCapture.feedback.success with a default vibration and a null sound, using BarcodeCaptureFeedback.defaultFeedback as the starting point.",
+      "expected_output": "The skill assigns a Feedback to barcodeCapture.feedback.success with a default vibration and a null sound, using BarcodeCaptureFeedback.default as the starting point.",
       "files": [
         "fixtures/IntegratedApp.tsx"
       ],
       "assertions": [
-        {"text": "BarcodeCaptureFeedback.defaultFeedback (or new BarcodeCaptureFeedback()) is used as the starting feedback"},
+        {"text": "BarcodeCaptureFeedback.default (or new BarcodeCaptureFeedback()) is used as the starting feedback"},
         {"text": "feedback.success is assigned a new Feedback instance"},
         {"text": "Vibration.defaultVibration is passed to the Feedback constructor"},
         {"text": "null is passed for the sound argument of Feedback (no sound)"},
