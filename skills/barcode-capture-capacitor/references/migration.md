@@ -5,7 +5,7 @@
 - **Authority.** When this guide and the API reference disagree, trust the API reference — and a runtime check in the user's project — over this guide. Say which source you followed and why in the summary.
 - **Behaviour changes.** Never present a visual or behaviour change (new default, different overlay look, changed feedback, changed scan timing) as a 1:1 rename. List each one in the summary as a judgment call the user must confirm.
 - **Compatibility layer.** When the scanning code sits behind a shared scanner library or wrapper that other code calls, keep that library's public API frozen (same types, method names, callbacks) and change only the Scandit calls underneath.
-- **Dual-version code.** When code must run on both the old and the target version, branch at run time on a symbol this guide lists as removed in the target version — never on a version string, and never on the presence of the new API. A deprecated symbol that is still present proves nothing about the installed version. Example: `BarcodeCapture.forContext` is unchanged on Web and deprecated-but-present on React Native, Capacitor and Cordova v8, so probing it cannot tell v7 from v8.
+- **Dual-version code.** When code must run on both the old and the target version, branch at run time on a symbol this guide lists as removed in the target version — never on a version string, and never on the presence of the new API. A deprecated symbol that is still present proves nothing about the installed version. Example: `BarcodeCapture.forContext` is unchanged on Web but **removed** on React Native, Capacitor and Cordova v8, so probing for it does tell v7 from v8 on those platforms — a deprecated-but-still-present symbol would not.
 
 ## Step 1: Detect the installed SDK version
 
@@ -62,7 +62,7 @@ Find the files that use BarcodeCapture (search the project for `BarcodeCapture`,
 
 ### Scan intention default change
 
-The default `ScanIntention` is now `Smart` (from 7.0). If the project explicitly set `ScanIntention.Manual` or another value on `BarcodeCaptureSettings`, leave it as is. If the project relied on an explicit `Smart` setting that is now the default, the code still works — no change needed.
+The default `ScanIntention` is now `Smart` (from 7.0). If the project explicitly set `ScanIntention.Manual` or another value on `BarcodeCaptureSettings`, leave it as is. If the project relied on an explicit `Smart` setting that is now the default, the code keeps working — no change needed.
 
 ### `codeDuplicateFilter` default sentinel value
 
@@ -84,7 +84,15 @@ These are available in v7 — mention them only if the user asks or if they requ
 - `new BarcodeCaptureOverlay(mode)` — direct constructor for the overlay. Add it with `view.addOverlay(overlay)`. Available from capacitor=7.6.
 - `BarcodeCapture.createRecommendedCameraSettings()` — replaces the legacy `BarcodeCapture.recommendedCameraSettings` getter pattern. Available from capacitor=7.6.
 
-The legacy `BarcodeCapture.forContext(context, settings)` and `BarcodeCaptureOverlay.withBarcodeCaptureForView(mode, view)` factories still work in v7 — there is no breaking change. Keep them as-is unless the user explicitly wants the modern style.
+The legacy `BarcodeCapture.forContext(context, settings)` and `BarcodeCaptureOverlay.withBarcodeCaptureForView(mode, view)` factories still work in v7 (deprecated since 7.6, **removed in v8**) — there is no breaking change for 6 → 7. Keep them as-is unless the user explicitly wants the modern style or is going on to v8.
+
+### Other v7 removals
+
+- `LaserlineViewfinderStyle` is removed. `LaserlineViewfinder` never had a `color` property — use `enabledColor` / `disabledColor`.
+- `RectangularViewfinderStyle.Legacy` is removed (`Rounded` and `Square` remain). **Judgment call:** the default `RectangularViewfinder` style also changed from `Legacy` to `Rounded` in v7 — flag this as a visual change for the user to confirm; there is no identical replacement for `Legacy`.
+- `BarcodeCaptureOverlayStyle.Legacy` is removed (only `Frame` remains).
+- The static `BarcodeCaptureOverlay.defaultBrush` is removed.
+- Listener callbacks (`didScan`, `didUpdateSession`) are now typed to return `Promise<void>`.
 
 ---
 
@@ -92,7 +100,7 @@ The legacy `BarcodeCapture.forContext(context, settings)` and `BarcodeCaptureOve
 
 ### `DataCaptureContext.forLicenseKey` → `DataCaptureContext.initialize`
 
-This is the **main breaking change** on Capacitor in v8. The context factory method was renamed and its semantics tightened.
+`forLicenseKey` still exists and works in v8 — this is not a breaking change. `initialize` (available since 7.2) is the preferred call going forward and returns the shared `DataCaptureContext` instance.
 
 **v7:**
 ```javascript
@@ -106,9 +114,9 @@ const context = DataCaptureContext.initialize('YOUR_LICENSE_KEY');
 
 Replace every call to `DataCaptureContext.forLicenseKey(...)` with `DataCaptureContext.initialize(...)`, preserving the argument. This call must still happen **after** `await ScanditCaptureCorePlugin.initializePlugins()`.
 
-### Capture mode factory deprecation: `BarcodeCapture.forContext` → `new BarcodeCapture`
+### `BarcodeCapture.forContext` removed → `new BarcodeCapture`
 
-The static factory method is deprecated in v8. Construct the mode directly and add it to the context with `setMode`.
+The static factory method is **removed in v8**; code that still calls it will fail. Construct the mode directly and add it to the context with `setMode` (now returns a `Promise`).
 
 **v7:**
 ```javascript
@@ -118,16 +126,16 @@ const barcodeCapture = BarcodeCapture.forContext(context, settings);
 **v8:**
 ```javascript
 const barcodeCapture = new BarcodeCapture(settings);
-context.setMode(barcodeCapture);
+await context.setMode(barcodeCapture);
 ```
 
 The same pattern applies to other capture modes the project may use alongside BarcodeCapture:
 - `BarcodeBatch.forContext(context, settings)` → `new BarcodeBatch(settings)` + `context.setMode(barcodeBatch)`
 - `BarcodeSelection.forContext(context, settings)` → `new BarcodeSelection(settings)` + `context.setMode(...)`
 
-### Overlay factory deprecation: `BarcodeCaptureOverlay.withBarcodeCaptureForView` → `new BarcodeCaptureOverlay`
+### `BarcodeCaptureOverlay.withBarcodeCaptureForView*` removed → `new BarcodeCaptureOverlay`
 
-The static factory is deprecated in v8. Construct the overlay directly and add it to the view with `view.addOverlay`.
+All `withBarcodeCapture*` static factories (including `withBarcodeCaptureForViewWithStyle`) are **removed in v8**. Construct the overlay directly and add it to the view with `view.addOverlay` (now returns a `Promise`).
 
 **v7:**
 ```javascript
@@ -137,8 +145,23 @@ const overlay = BarcodeCaptureOverlay.withBarcodeCaptureForView(barcodeCapture, 
 **v8:**
 ```javascript
 const overlay = new BarcodeCaptureOverlay(barcodeCapture);
-view.addOverlay(overlay);
+await view.addOverlay(overlay);
 ```
+
+### Other v8 removals and changes
+
+- `BarcodeCapture.recommendedCameraSettings` getter is **removed**; use `BarcodeCapture.createRecommendedCameraSettings()` (available since 7.6).
+- `BarcodeCaptureOverlayStyle` enum is **removed entirely**.
+- `BarcodeCaptureSettings.batterySavingMode` → renamed `batterySaving`.
+- `Camera.isTorchAvailable` changes from a `boolean` getter to a `Promise<boolean>` getter (also available as `getIsTorchAvailable()`).
+- `context.addMode` / `context.setMode` / `context.removeMode`, and `view.addOverlay`, now return a `Promise`. `view.connectToElement` stays `void` on Capacitor (it becomes a `Promise` on Cordova only).
+
+### Never valid in any version
+
+- `SymbologySettings.extensions` is private in every version — use `setExtensionEnabled(symbology, true)` instead of assigning to `extensions`.
+- A `BarcodeCaptureFeedback` object literal is a type error in every version — construct an instance and assign its properties.
+- `Vibration` has no public constructor in any version — use its static getters (e.g. `Vibration.defaultVibration`).
+- `LaserlineViewfinder.color` never existed — use `enabledColor` / `disabledColor`.
 
 ### New v8 APIs (optional, no action required unless the user wants them)
 

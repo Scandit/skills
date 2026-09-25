@@ -136,7 +136,7 @@ context.setMode(window.barcodeCapture);
 | Member | Available | Description |
 |--------|-----------|-------------|
 | `new BarcodeCapture(settings)` | capacitor=7.6 | Constructs a new instance. |
-| `BarcodeCapture.forContext(context, settings)` | capacitor=6.8 | Legacy factory; constructs and adds the mode to the context. Deprecated in v8. |
+| `BarcodeCapture.forContext(context, settings)` | capacitor=6.8-7.x | Legacy factory; constructs and adds the mode to the context. Removed in v8. |
 | `BarcodeCapture.createRecommendedCameraSettings()` | capacitor=7.6 | Returns camera settings optimized for BarcodeCapture. |
 | `addListener(listener)` / `removeListener(listener)` | capacitor=6.8 | Register/remove a `BarcodeCaptureListener`. |
 | `applySettings(settings)` | capacitor=6.8 | Update settings at runtime (returns `Promise<void>`). |
@@ -177,7 +177,7 @@ The HTML must contain a container element, sized to fill the camera area:
 | Member | Available | Description |
 |--------|-----------|-------------|
 | `new BarcodeCaptureOverlay(mode)` | capacitor=7.6 | Constructs the overlay. Add it to a view via `view.addOverlay`. |
-| `BarcodeCaptureOverlay.withBarcodeCaptureForView(mode, view)` | capacitor=6.8 | Legacy factory; constructs and adds the overlay to the view. |
+| `BarcodeCaptureOverlay.withBarcodeCaptureForView(mode, view)` | capacitor=6.8-7.x | Legacy factory; constructs and adds the overlay to the view. Removed in v8. |
 | `brush` | capacitor=6.8 | `Brush` — visual style for recognized barcodes. Set to a fully transparent brush to hide the highlight. |
 | `viewfinder` | capacitor=6.8 | `IViewfinder \| null` — optional viewfinder (e.g. `RectangularViewfinder`, `LaserlineViewfinder`). Default `null`. |
 | `shouldShowScanAreaGuides` | capacitor=6.8 | Debug: show the active scan area. Default `false`. |
@@ -333,7 +333,7 @@ import {
   Vibration,
 } from 'scandit-capacitor-datacapture-core';
 
-const feedback = BarcodeCaptureFeedback.defaultFeedback;
+const feedback = BarcodeCaptureFeedback.default;
 // Vibration only, no sound.
 feedback.success = new Feedback(Vibration.defaultVibration, null);
 window.barcodeCapture.feedback = feedback;
@@ -639,7 +639,7 @@ document.addEventListener('DOMContentLoaded', () => {
 ## Key Rules
 
 1. **Initialize plugins first** — `await ScanditCaptureCorePlugin.initializePlugins()` must be called before any other Scandit API. Capacitor-specific, no equivalent in other frameworks.
-2. **Context creation** — `DataCaptureContext.initialize(licenseKey)` is the current (v8) API. `forLicenseKey()` still exists but is deprecated.
+2. **Context creation** — `DataCaptureContext.initialize(licenseKey)` is the current, preferred API since 7.2. `forLicenseKey()` still exists and works in v8; it is not deprecated.
 3. **Mode registration** — `context.setMode(barcodeCapture)` registers the mode with the context. Replaces any previously active mode.
 4. **View + overlay wiring** — `DataCaptureView.forContext(context)` creates the view, `view.connectToElement(domEl)` attaches it, and `view.addOverlay(new BarcodeCaptureOverlay(barcodeCapture))` makes recognized barcodes visible.
 5. **Camera is separate** — Use `Camera.withSettings(BarcodeCapture.createRecommendedCameraSettings())` (≥7.6) or `Camera.default`, then `context.setFrameSource(camera)` and `camera.switchToDesiredState(FrameSourceState.On)`.

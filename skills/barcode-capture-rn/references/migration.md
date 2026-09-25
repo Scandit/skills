@@ -5,7 +5,7 @@
 - **Authority.** When this guide and the API reference disagree, trust the API reference — and a runtime check in the user's project — over this guide. Say which source you followed and why in the summary.
 - **Behaviour changes.** Never present a visual or behaviour change (new default, different overlay look, changed feedback, changed scan timing) as a 1:1 rename. List each one in the summary as a judgment call the user must confirm.
 - **Compatibility layer.** When the scanning code sits behind a shared scanner library or wrapper that other code calls, keep that library's public API frozen (same types, method names, callbacks) and change only the Scandit calls underneath.
-- **Dual-version code.** When code must run on both the old and the target version, branch at run time on a symbol this guide lists as removed in the target version — never on a version string, and never on the presence of the new API. A deprecated symbol that is still present proves nothing about the installed version. Example: `BarcodeCapture.forContext` is unchanged on Web and deprecated-but-present on React Native, Capacitor and Cordova v8, so probing it cannot tell v7 from v8.
+- **Dual-version code.** When code must run on both the old and the target version, branch at run time on a symbol this guide lists as removed in the target version — never on a version string, and never on the presence of the new API. A deprecated symbol that is still present proves nothing about the installed version. Example: `BarcodeCapture.forContext` is unchanged on Web but **removed** on React Native, Capacitor and Cordova v8, so probing for it does tell v7 from v8 on those platforms — a deprecated-but-still-present symbol would not.
 
 ## Step 1: Detect the installed SDK version
 
@@ -82,9 +82,19 @@ If the project explicitly set `codeDuplicateFilter` to a positive value, `0`, or
 
 If the project uses `BarcodeTracking` (MatrixScan) alongside BarcodeCapture, rename all occurrences to `BarcodeBatch`. Imports from `scandit-react-native-datacapture-barcode` need updating. The API is otherwise unchanged.
 
-### No source-level renames on `BarcodeCapture` itself
+### Mostly stable, with one exception: `recommendedCameraSettings`
 
-The `BarcodeCapture`, `BarcodeCaptureSettings`, `BarcodeCaptureOverlay`, and `BarcodeCaptureListener` surfaces are stable across 6 → 7. The `forContext` factory, the `didScan` / `didUpdateSession` listener signatures, and the overlay's `viewfinder`, `brush`, and `shouldShowScanAreaGuides` properties all remain valid.
+The `BarcodeCapture`, `BarcodeCaptureSettings`, `BarcodeCaptureOverlay`, and `BarcodeCaptureListener` surfaces are otherwise stable across 6 → 7. The `forContext` factory, the `didScan` / `didUpdateSession` listener signatures, and the overlay's `viewfinder`, `brush`, and `shouldShowScanAreaGuides` properties all remain valid.
+
+If v6 code uses the `BarcodeCapture.recommendedCameraSettings` getter to configure the camera, it keeps working through v7 (deprecated since 7.6) — no change required to reach v7. From 7.6 onward `BarcodeCapture.createRecommendedCameraSettings()` is also available and is the only form that survives into v8.
+
+### Other v7 removals
+
+- `LaserlineViewfinderStyle` is removed. `LaserlineViewfinder` never had a `color` property — use `enabledColor` / `disabledColor`.
+- `RectangularViewfinderStyle.Legacy` is removed (`Rounded` and `Square` remain). **Judgment call:** the default `RectangularViewfinder` style also changed from `Legacy` to `Rounded` in v7 — flag this as a visual change for the user to confirm; there is no identical replacement for `Legacy`.
+- `BarcodeCaptureOverlayStyle.Legacy` is removed (only `Frame` remains).
+- The static `BarcodeCaptureOverlay.defaultBrush` is removed.
+- Listener callbacks (`didScan`, `didUpdateSession`) are now typed to return `Promise<void>`.
 
 If the v6 code looks structurally correct after the package bump and the points above, no further source edits are needed for 6 → 7 of `BarcodeCapture`.
 
@@ -94,7 +104,7 @@ If the v6 code looks structurally correct after the package bump and the points 
 
 ### `DataCaptureContext.forLicenseKey` → `DataCaptureContext.initialize`
 
-This is the **main breaking change** on React Native in v8. The context factory method was renamed and its semantics tightened — it no longer returns the instance directly; the singleton is read from `DataCaptureContext.sharedInstance`.
+`forLicenseKey` still exists and works in v8 — this is not a breaking change. `initialize` (available since 7.2) is the preferred call going forward and returns the shared `DataCaptureContext` instance.
 
 **v7:**
 ```typescript
@@ -103,17 +113,16 @@ const context = DataCaptureContext.forLicenseKey('YOUR_LICENSE_KEY');
 
 **v8:**
 ```typescript
-DataCaptureContext.initialize('YOUR_LICENSE_KEY');
-const context = DataCaptureContext.sharedInstance;
+const context = DataCaptureContext.initialize('YOUR_LICENSE_KEY');
 ```
 
-Replace every call to `DataCaptureContext.forLicenseKey(...)` with `DataCaptureContext.initialize(...)` and replace subsequent references to the returned context with `DataCaptureContext.sharedInstance`. This call must still happen **before** any other Scandit API.
+Replace every call to `DataCaptureContext.forLicenseKey(...)` with `DataCaptureContext.initialize(...)`, preserving the argument and the returned instance. This call must still happen **before** any other Scandit API.
 
 A common v8 idiom is to put both lines in a small `CaptureContext.ts` module and export `DataCaptureContext.sharedInstance` as the default export — see `references/integration.md` step 1.
 
-### Capture mode factory deprecation: `BarcodeCapture.forContext` → `new BarcodeCapture` + `addMode`
+### `BarcodeCapture.forContext` removed → `new BarcodeCapture` + `addMode`
 
-The `BarcodeCapture.forContext(context, settings)` factory is deprecated in v8. The v8 idiom is to construct the mode directly and attach it to the context yourself.
+The `BarcodeCapture.forContext(context, settings)` factory is **removed in v8**; code that still calls it will fail to compile. Construct the mode directly and attach it to the context yourself. `addMode` now returns a `Promise`.
 
 **v7:**
 ```typescript
@@ -123,18 +132,16 @@ const barcodeCapture = BarcodeCapture.forContext(dataCaptureContext, settings);
 **v8:**
 ```typescript
 const barcodeCapture = new BarcodeCapture(settings);
-dataCaptureContext.addMode(barcodeCapture);
+await dataCaptureContext.addMode(barcodeCapture);
 ```
-
-The `forContext` form still works in v8 for backwards compatibility, but new code should use the constructor + `addMode` form.
 
 The same pattern applies to other capture modes the project may use:
 - `BarcodeBatch.forContext(context, settings)` → `new BarcodeBatch(settings)` + `context.addMode(...)`
 - `BarcodeSelection.forContext(context, settings)` → `new BarcodeSelection(settings)` + `context.addMode(...)`
 
-### `BarcodeCaptureOverlay.withBarcodeCaptureForView` → `new BarcodeCaptureOverlay` + `addOverlay`
+### `BarcodeCaptureOverlay.withBarcodeCaptureForView*` removed → `new BarcodeCaptureOverlay` + `addOverlay`
 
-The overlay has a v7.6+ constructor that mirrors the mode pattern.
+All `withBarcodeCapture*` static factories (including `withBarcodeCaptureForViewWithStyle`) are **removed in v8**. Use the v7.6+ constructor plus an explicit `addOverlay` call, which now returns a `Promise`.
 
 **v7:**
 ```typescript
@@ -144,10 +151,23 @@ const overlay = BarcodeCaptureOverlay.withBarcodeCaptureForView(barcodeCapture, 
 **v8:**
 ```typescript
 const overlay = new BarcodeCaptureOverlay(barcodeCapture);
-dataCaptureView.addOverlay(overlay);
+await dataCaptureView.addOverlay(overlay);
 ```
 
-The legacy factory still works — passing a non-null view auto-attaches.
+### Other v8 removals and changes
+
+- `BarcodeCapture.recommendedCameraSettings` getter is **removed**; use `BarcodeCapture.createRecommendedCameraSettings()` (available since 7.6).
+- `BarcodeCaptureOverlayStyle` enum is **removed entirely**.
+- `BarcodeCaptureSettings.batterySavingMode` → renamed `batterySaving`.
+- `Camera.isTorchAvailable` changes from a `boolean` getter to a `Promise<boolean>` getter (also available as `getIsTorchAvailable()`).
+- `context.addMode` / `context.setMode` / `context.removeMode`, and `view.addOverlay`, now return a `Promise`. (RN has no `connectToElement`.)
+
+### Never valid in any version
+
+- `SymbologySettings.extensions` is private in every version — use `setExtensionEnabled(symbology, true)` instead of assigning to `extensions`.
+- A `BarcodeCaptureFeedback` object literal is a type error in every version — construct an instance and assign its properties.
+- `Vibration` has no public constructor in any version — use its static getters (e.g. `Vibration.defaultVibration`).
+- `LaserlineViewfinder.color` never existed — use `enabledColor` / `disabledColor`.
 
 ### Cleanup: `dataCaptureContext.dispose()` → `dataCaptureContext.removeMode(barcodeCapture)`
 

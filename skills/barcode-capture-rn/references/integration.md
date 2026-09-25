@@ -143,11 +143,11 @@ import {
 import { BarcodeCapture } from 'scandit-react-native-datacapture-barcode';
 
 const camera = Camera.default;
-camera?.applySettings(BarcodeCapture.recommendedCameraSettings);
+camera?.applySettings(BarcodeCapture.createRecommendedCameraSettings());
 await dataCaptureContext.setFrameSource(camera);
 ```
 
-`Camera.default` returns the world-facing camera. `BarcodeCapture.recommendedCameraSettings` is a static getter that returns a `CameraSettings` tuned for barcode scanning. The camera is started later by switching it to `FrameSourceState.On` (Step 7).
+`Camera.default` returns the world-facing camera. `BarcodeCapture.createRecommendedCameraSettings()` returns a `CameraSettings` tuned for barcode scanning. The camera is started later by switching it to `FrameSourceState.On` (Step 7).
 
 ## Step 4 — Create the BarcodeCapture mode
 
@@ -161,11 +161,10 @@ import {
 const barcodeCapture = new BarcodeCapture(settings);
 dataCaptureContext.addMode(barcodeCapture);
 
-// v7 / v6 — still supported in v8 but discouraged in new code
-// const barcodeCapture = BarcodeCapture.forContext(dataCaptureContext, settings);
+// v7 / v6 — BarcodeCapture.forContext(dataCaptureContext, settings) — removed in v8
 ```
 
-`new BarcodeCapture(settings)` does not bind to a context; you must call `dataCaptureContext.addMode(barcodeCapture)` (or `setMode(...)`) to attach it. `BarcodeCapture.forContext(context, settings)` is the older factory that auto-attaches when `context` is non-null.
+`new BarcodeCapture(settings)` does not bind to a context; you must call `dataCaptureContext.addMode(barcodeCapture)` (or `setMode(...)`) to attach it. `BarcodeCapture.forContext(context, settings)`, the older factory that auto-attached when `context` was non-null, is **removed in v8**.
 
 ### BarcodeCapture Methods and Properties
 
@@ -175,7 +174,7 @@ dataCaptureContext.addMode(barcodeCapture);
 | `feedback` | `BarcodeCaptureFeedback` | Sound + vibration feedback. See Step 8. |
 | `applySettings(settings)` | `Promise<void>` | Update settings at runtime. |
 | `addListener(listener)` / `removeListener(listener)` | — | Register or remove a `BarcodeCaptureListener`. |
-| `BarcodeCapture.recommendedCameraSettings` | `CameraSettings` | Static — recommended camera settings for barcode capture. |
+| `BarcodeCapture.createRecommendedCameraSettings()` | `CameraSettings` | Static — recommended camera settings for barcode capture. |
 
 ## Step 5 — Render `<DataCaptureView>` and add a `BarcodeCaptureOverlay`
 
@@ -211,7 +210,7 @@ return (
 );
 ```
 
-The legacy factory `BarcodeCaptureOverlay.withBarcodeCaptureForView(barcodeCapture, view)` is still available — passing a non-null `view` adds the overlay automatically.
+The legacy factory `BarcodeCaptureOverlay.withBarcodeCaptureForView(barcodeCapture, view)` (which auto-added the overlay when passed a non-null `view`) is **removed in v8** — use the constructor + `addOverlay` shown above.
 
 ### BarcodeCaptureOverlay Properties
 
@@ -328,7 +327,7 @@ By default `BarcodeCapture` plays a beep and vibrates on every successful scan. 
 import { Feedback, Vibration } from 'scandit-react-native-datacapture-core';
 import { BarcodeCaptureFeedback } from 'scandit-react-native-datacapture-barcode';
 
-const feedback = BarcodeCaptureFeedback.defaultFeedback;
+const feedback = BarcodeCaptureFeedback.default;
 // Vibration only, no sound:
 feedback.success = new Feedback(Vibration.defaultVibration, null);
 barcodeCapture.feedback = feedback;
@@ -549,7 +548,7 @@ export const ScanScreen = () => {
 
   if (cameraRef.current === null) {
     const camera = Camera.default;
-    camera?.applySettings(BarcodeCapture.recommendedCameraSettings);
+    camera?.applySettings(BarcodeCapture.createRecommendedCameraSettings());
     dataCaptureContext.setFrameSource(camera);
     cameraRef.current = camera;
   }
@@ -638,7 +637,7 @@ const styles = StyleSheet.create({
 3. **Camera is not automatic** — `Camera.default` + `dataCaptureContext.setFrameSource(camera)` + `camera.switchToDesiredState(FrameSourceState.On)` are all required. The native view does not start the camera for you.
 4. **Disable the mode in `didScan`** — Set `barcodeCapture.isEnabled = false` before doing per-scan work to avoid duplicate callbacks. Re-enable when ready for the next code.
 5. **Cleanup on unmount** — Stop the camera, remove the overlay, remove the listener, and call `dataCaptureContext.removeMode(barcodeCapture)`. Do not call `dataCaptureContext.dispose()`.
-6. **Construction in v8** — Prefer `new BarcodeCapture(settings)` + `context.addMode(...)`. The `BarcodeCapture.forContext(context, settings)` factory is older but still works.
+6. **Construction in v8** — Use `new BarcodeCapture(settings)` + `context.addMode(...)`. The `BarcodeCapture.forContext(context, settings)` factory is removed in v8.
 7. **Imports** — Core types (`DataCaptureContext`, `DataCaptureView`, `Camera`, `FrameSourceState`, `Color`, `Brush`, viewfinders) from `scandit-react-native-datacapture-core`; barcode types (`BarcodeCapture`, `BarcodeCaptureSettings`, `BarcodeCaptureOverlay`, `Symbology`, `SymbologyDescription`, `BarcodeCaptureFeedback`) from `scandit-react-native-datacapture-barcode`.
 8. **Pod install** — Run `npx pod-install` (or `cd ios && pod install`) after installing or updating Scandit packages. Android auto-links.
 9. **Camera permissions** — iOS: `NSCameraUsageDescription` in `Info.plist`. Android: runtime request via `PermissionsAndroid` before navigating to the scan screen.
