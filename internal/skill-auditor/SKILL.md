@@ -132,7 +132,9 @@ only after the trigger fires. Sibling-parity findings are *review candidates*: f
 judging — if the platform supports the feature (per `api_availability` exclusions and
 `features.json`), the missing file/eval is a real gap; if not, it's expected divergence
 and should be recorded as an `excluded_platforms` entry in the product taxonomy so it
-stops surfacing. Product prefixes and parity exemptions live in `manifest.json`.
+stops surfacing. Product prefixes and parity exemptions live in `manifest.json`; two more
+manifest keys narrow parity further — `parity_scope` (a file only applies to the listed
+platforms) and `parity_known_gaps` (an in-scope file that's really missing, not a defect).
 
 ### `audit evals <product>`
 

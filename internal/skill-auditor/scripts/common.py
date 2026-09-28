@@ -9,23 +9,25 @@ REPO_ROOT = AUDITOR_ROOT.parents[1]
 EVALS_ROOT = REPO_ROOT / "evals"  # eval suites live outside the published skills/ bundle
 
 
-def eval_dir(skill_name: str) -> Path:
+def eval_dir(skill_name: str, evals_root: Path = EVALS_ROOT) -> Path:
     """Top-level eval suite directory for one skill (``evals/<skill>/``).
 
     Eval suites are kept out of ``skills/<skill>/`` (the tree installers copy
     wholesale) so they never ship to end users, but are resolved by skill name
     so scripts can still find them without a ``skills/<skill>/evals`` layout.
+    ``evals_root`` defaults to the real repo's ``evals/`` so callers that don't
+    care (coverage_matrix.py) keep today's behaviour unchanged.
     """
-    return EVALS_ROOT / skill_name
+    return evals_root / skill_name
 
 
-def eval_suite_files(skill_name: str) -> list[Path]:
+def eval_suite_files(skill_name: str, evals_root: Path = EVALS_ROOT) -> list[Path]:
     """Eval suite JSONs for one skill (``evals/<skill>/``, fixtures excluded).
 
     The single definition of which files count as a skill's eval suites —
     coverage scoring and layout parity must agree on it.
     """
-    ed = eval_dir(skill_name)
+    ed = eval_dir(skill_name, evals_root)
     if not ed.is_dir():
         return []
     return sorted(
