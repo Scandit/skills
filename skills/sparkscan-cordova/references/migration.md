@@ -5,7 +5,7 @@
 - **Authority.** When this guide and the API reference disagree, trust the API reference — and a runtime check in the user's project — over this guide. Say which source you followed and why in the summary.
 - **Behaviour changes.** Never present a visual or behaviour change (new default, different overlay look, changed feedback, changed scan timing) as a 1:1 rename. List each one in the summary as a judgment call the user must confirm.
 - **Compatibility layer.** When the scanning code sits behind a shared scanner library or wrapper that other code calls, keep that library's public API frozen (same types, method names, callbacks) and change only the Scandit calls underneath.
-- **Dual-version code.** When code must run on both the old and the target version, branch at run time on a symbol this guide lists as removed in the target version — never on a version string, and never on the presence of the new API. A deprecated symbol that is still present proves nothing about the installed version. Example: `BarcodeCapture.forContext` is unchanged on Web and deprecated-but-present on React Native, Capacitor and Cordova v8, so probing it cannot tell v7 from v8.
+- **Dual-version code.** When code must run on both the old and the target version, branch at run time on a symbol this guide lists as removed in the target version — never on a version string, and never on the presence of the new API. A deprecated symbol that is still present proves nothing about the installed version. Example: `SparkScan.forSettings` exists in v7 and is removed in v8, so probing it tells v7 from v8; `DataCaptureContext.forLicenseKey` is deprecated but still present in v8, so probing it cannot.
 
 ## Step 1: Detect the installed SDK version
 
@@ -134,9 +134,9 @@ const context = Scandit.DataCaptureContext.initialize('YOUR_LICENSE_KEY');
 
 Replace every call to `Scandit.DataCaptureContext.forLicenseKey(...)` with `Scandit.DataCaptureContext.initialize(...)`, preserving the argument. Still call it inside the `deviceready` handler.
 
-### Capture mode factory deprecation: `SparkScan.forSettings` → `new SparkScan`
+### Capture mode factory removed: `SparkScan.forSettings` → `new SparkScan`
 
-The static factory method is deprecated in v8. Construct the mode directly instead.
+The static factory method is removed in v8 — calling it fails to compile (TypeScript) or throws at run time (JavaScript). Construct the mode directly instead.
 
 **v7:**
 ```javascript
@@ -148,7 +148,7 @@ const sparkScan = Scandit.SparkScan.forSettings(sparkScanSettings);
 const sparkScan = new Scandit.SparkScan(sparkScanSettings);
 ```
 
-The same pattern applies to other capture modes the project may use alongside SparkScan:
+The `forContext` factories of the other capture modes are removed in v8 too; migrate them the same way:
 - `BarcodeCapture.forContext(context, settings)` → `new Scandit.BarcodeCapture(settings)` + `context.addMode(barcodeCapture)` (or `context.setMode(...)`)
 - `BarcodeBatch.forContext(context, settings)` → `new Scandit.BarcodeBatch(settings)` + `context.addMode(...)` / `context.setMode(...)`
 - `BarcodeSelection.forContext(context, settings)` → `new Scandit.BarcodeSelection(settings)` + `context.addMode(...)` / `context.setMode(...)`

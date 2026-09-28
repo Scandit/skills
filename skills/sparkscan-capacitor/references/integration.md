@@ -151,10 +151,10 @@ All callbacks are optional. Implement only what you need.
 ```javascript
 import { SparkScanView } from 'scandit-capacitor-datacapture-barcode';
 
-const sparkScanView = SparkScanView.forContext(context, sparkScan);
+const sparkScanView = SparkScanView.forContext(context, sparkScan, null);
 ```
 
-> The third parameter `SparkScanViewSettings | null` is optional. Pass `null` or omit it for defaults.
+> The third parameter `SparkScanViewSettings | null` is required. Pass `null` for defaults.
 
 ## Step 5 — SparkScanView Lifecycle
 
@@ -429,7 +429,7 @@ async function runApp() {
   });
 
   // 6. Create SparkScanView — native overlay, no DOM element needed
-  window.sparkScanView = SparkScanView.forContext(context, window.sparkScan);
+  window.sparkScanView = SparkScanView.forContext(context, window.sparkScan, null);
 
   // 7. Set per-barcode feedback
   window.sparkScanView.feedbackDelegate = {

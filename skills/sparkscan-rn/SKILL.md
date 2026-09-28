@@ -4,7 +4,7 @@ description: SparkScan single-barcode scanning with the pre-built scanning UI (`
 license: Apache-2.0
 metadata:
   author: scandit
-  version: "1.0.2"
+  version: "1.0.3"
 ---
 
 # SparkScan React Native Skill
