@@ -5,7 +5,7 @@
 - **Authority.** When this guide and the API reference disagree, trust the API reference — and a runtime check in the user's project — over this guide. Say which source you followed and why in the summary.
 - **Behaviour changes.** Never present a visual or behaviour change (new default, different overlay look, changed feedback, changed scan timing) as a 1:1 rename. List each one in the summary as a judgment call the user must confirm.
 - **Compatibility layer.** When the scanning code sits behind a shared scanner library or wrapper that other code calls, keep that library's public API frozen (same types, method names, callbacks) and change only the Scandit calls underneath.
-- **Dual-version code.** When code must run on both the old and the target version, branch at run time on a symbol this guide lists as removed in the target version — never on a version string, and never on the presence of the new API. A deprecated symbol that is still present proves nothing about the installed version. Example: `BarcodeCapture.forContext` is unchanged on Web and deprecated-but-present on React Native, Capacitor and Cordova v8, so probing it cannot tell v7 from v8.
+- **Dual-version code.** When code must run on both the old and the target version, branch at run time on a symbol this guide lists as removed in the target version — never on a version string, and never on the presence of the new API. A deprecated symbol that is still present proves nothing about the installed version. Example: `BarcodeBatch.forContext` exists in v7 and is removed in v8, so probing it tells v7 from v8; `DataCaptureContext.forLicenseKey` is deprecated but still present in v8, so probing it cannot.
 
 ## Step 1: Detect the installed SDK version
 
@@ -123,7 +123,7 @@ Replace every call to `DataCaptureContext.forLicenseKey(...)` with `DataCaptureC
 
 ### Capture mode factory: `BarcodeBatch.forContext` → `new BarcodeBatch`
 
-The static factory method is deprecated in v8. Construct the mode directly and register it with the context via `setMode`.
+The static factory method was removed in 8.0. Construct the mode directly and register it with the context via `setMode`.
 
 **v7:**
 ```javascript
