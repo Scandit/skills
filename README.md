@@ -19,7 +19,7 @@ Or install from your agent's own marketplace:
 | Agent | Install | Updates |
 | --- | --- | --- |
 | Codex / ChatGPT App | [One click install](https://chatgpt.com/plugins/plugins_6a6c6b6440a08191987ecc241e8660f7), or search **Scandit SDK** in the [plugin directory](https://learn.chatgpt.com/docs/plugins?surface=app#plugin-directory-in-the-codex-app) | Automatic |
-| Claude Code | `/plugin marketplace add scandit/skills`<br>`/plugin install scandit-sdk@scandit-plugins` | `/plugin` → **Marketplaces** → `scandit-plugins` → **Enable auto-update** |
+| Claude Code | `/plugin install scandit-sdk@claude-plugins-official`, or search **Scandit SDK** in `/plugin` → **Discover** | Automatic |
 | Cursor | [One click install](https://cursor.com/marketplace/scandit), or `/add-plugin scandit-sdk` in the editor | Automatic |
 | Codex CLI | `codex plugin marketplace add scandit/skills`<br>`codex plugin add scandit-sdk@scandit-plugins` | `codex plugin marketplace upgrade scandit-plugins` |
 | Copilot CLI | `copilot plugin marketplace add scandit/skills`<br>`copilot plugin install scandit-sdk@scandit-plugins` | `copilot plugin update scandit-sdk` |
