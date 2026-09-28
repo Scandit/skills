@@ -5,7 +5,7 @@
 - **Authority.** When this guide and the API reference disagree, trust the API reference — and a runtime check in the user's project — over this guide. Say which source you followed and why in the summary.
 - **Behaviour changes.** Never present a visual or behaviour change (new default, different overlay look, changed feedback, changed scan timing) as a 1:1 rename. List each one in the summary as a judgment call the user must confirm.
 - **Compatibility layer.** When the scanning code sits behind a shared scanner library or wrapper that other code calls, keep that library's public API frozen (same types, method names, callbacks) and change only the Scandit calls underneath.
-- **Dual-version code.** When code must run on both the old and the target version, branch at run time on a symbol this guide lists as removed in the target version — never on a version string, and never on the presence of the new API. A deprecated symbol that is still present proves nothing about the installed version. Example: `BarcodeCapture.forContext` is unchanged on Web and deprecated-but-present on React Native, Capacitor and Cordova v8, so probing it cannot tell v7 from v8.
+- **Dual-version code.** When code must run on both the old and the target version, branch at run time on a symbol this guide lists as removed in the target version — never on a version string, and never on the presence of the new API. A deprecated symbol that is still present proves nothing about the installed version. Example: `SparkScan.forSettings` exists in v7 and is removed in v8, so probing it tells v7 from v8; `DataCaptureContext.forLicenseKey` is deprecated but still present in v8, so probing it cannot.
 
 ## Step 1: Detect the installed SDK version
 
@@ -81,14 +81,16 @@ Apply these renames everywhere they appear in the project. These are renames —
 | `captureButtonTintColor` | `triggerButtonTintColor` |
 | `fastFindButtonVisible` | `barcodeFindButtonVisible` |
 
+> **Old names:** `torchButtonVisible`, `captureButtonBackgroundColor` and `captureButtonTintColor` still compile in v7 (deprecated) and are removed in v8 — rename them anyway.
+
 > **Note on `captureButtonBackgroundColor`:** v7 splits this single property into three separate color properties — one for the collapsed trigger-button state, one for the expanded state, and one for the animation. If the project set a single color, apply it to all three unless the user indicates otherwise.
 
 ### SparkScanView removed APIs
 
 Remove any usage of these properties — they no longer exist in v7 and will cause TypeScript/runtime errors:
 
-- `captureButtonActiveBackgroundColor` (on `SparkScanView`)
-- `stopCapturingText`, `startCapturingText`, `resumeCapturingText`, `scanningCapturingText` — the trigger button no longer displays text (on `SparkScanView`)
+- `captureButtonActiveBackgroundColor` (on `SparkScanView`) — deprecated but still present in v7, removed in v8
+- `stopCapturingText`, `startCapturingText`, `resumeCapturingText`, `scanningCapturingText` — the trigger button no longer displays text (on `SparkScanView`); deprecated but still present in v7, removed in v8
 - `handModeButtonVisible` (on `SparkScanView`) — the trigger is now fully floating
 - `defaultHandMode` (on `SparkScanViewSettings`)
 - `soundModeButtonVisible` (on `SparkScanView`)
@@ -108,8 +110,7 @@ These are available in v7 — mention them only if the user asks:
 - `triggerButtonVisible` — hide/show the trigger button entirely
 - `triggerButtonImage` — custom trigger button artwork
 - `SparkScanViewState` — controls the initial UI state of the view
-- `defaultMiniPreviewSize` — configures mini-preview dimensions
-- `miniPreviewCloseControlVisible` — shows/hides the mini-preview close button
+- `previewCloseControlVisible` — shows/hides the mini-preview close control
 
 ### BarcodeTracking → BarcodeBatch rename
 
@@ -139,9 +140,9 @@ const context = DataCaptureContext.initialize('YOUR_LICENSE_KEY');
 
 Replace every call to `DataCaptureContext.forLicenseKey(...)` with `DataCaptureContext.initialize(...)`, preserving the argument. This call must still happen **after** `await ScanditCaptureCorePlugin.initializePlugins()`.
 
-### Capture mode factory deprecation: `SparkScan.forSettings` → `new SparkScan`
+### Capture mode factory removed: `SparkScan.forSettings` → `new SparkScan`
 
-The static factory method is deprecated in v8. Construct the mode directly instead.
+The static factory method is removed in v8 — calling it fails to compile (TypeScript) or throws at run time (JavaScript). Construct the mode directly instead.
 
 **v7:**
 ```javascript
@@ -153,7 +154,7 @@ const sparkScan = SparkScan.forSettings(sparkScanSettings);
 const sparkScan = new SparkScan(sparkScanSettings);
 ```
 
-The same pattern applies to other capture modes the project may use alongside SparkScan:
+The `forContext` factories of the other capture modes are removed in v8 too; migrate them the same way:
 - `BarcodeCapture.forContext(context, settings)` → `new BarcodeCapture(settings)` + `context.addMode(barcodeCapture)` (or `context.setMode(...)`)
 - `BarcodeBatch.forContext(context, settings)` → `new BarcodeBatch(settings)` + `context.addMode(...)` / `context.setMode(...)`
 - `BarcodeSelection.forContext(context, settings)` → `new BarcodeSelection(settings)` + `context.addMode(...)` / `context.setMode(...)`
@@ -162,9 +163,9 @@ The same pattern applies to other capture modes the project may use alongside Sp
 
 ### `SparkScanView.forContext` behavior
 
-`SparkScanView.forContext(context, sparkScan)` still exists in v8 and remains the recommended way to create the view. The public constructor is now marked private — if any legacy code tries to call `new SparkScanView(...)` directly, replace it with `SparkScanView.forContext(...)`.
+`SparkScanView.forContext(context, sparkScan, settings)` still exists in v8 and remains the recommended way to create the view. The public constructor is now marked private — if any legacy code tries to call `new SparkScanView(...)` directly, replace it with `SparkScanView.forContext(...)`.
 
-If the project needs to pass `SparkScanViewSettings`, use the three-argument form:
+The third argument is required in v8 — pass `null` for default view settings, or a `SparkScanViewSettings` instance:
 
 ```javascript
 const viewSettings = new SparkScanViewSettings();
@@ -185,9 +186,8 @@ await window.sparkScanView.dispose();
 Available in v8 on `SparkScanView` — mention only if the user asks:
 - `labelCaptureButtonVisible` — toggles the label-capture entry point in the toolbar
 - `toolbarBackgroundColor`, `toolbarIconActiveTintColor`, `toolbarIconInactiveTintColor` — full toolbar color theming
-- `previewCloseControlVisible` — shows/hides the mini-preview close control
 - `zoomSwitchControlVisible` — shows/hides the zoom switch
-- `cameraSwitchControlVisible` — shows/hides the front/back camera switch (previously was `cameraSwitchButtonVisible` — verify which name is used in the installed version)
+- `cameraSwitchButtonVisible` — shows/hides the front/back camera switch
 - Text scanning in SparkScan (beta, opt-in) — v8 adds the ability to scan text alongside barcodes; purely additive, no existing code breaks
 
 ---
