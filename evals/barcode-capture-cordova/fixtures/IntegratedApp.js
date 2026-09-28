@@ -28,7 +28,7 @@ function setupBarcodeCapture() {
   context = Scandit.DataCaptureContext.initialize('-- ENTER YOUR SCANDIT LICENSE KEY HERE --');
 
   camera = Scandit.Camera.default;
-  camera.applySettings(Scandit.BarcodeCapture.recommendedCameraSettings);
+  camera.applySettings(Scandit.BarcodeCapture.createRecommendedCameraSettings());
   context.setFrameSource(camera);
 
   const settings = new Scandit.BarcodeCaptureSettings();

@@ -35,7 +35,7 @@ export const ScanScreen = () => {
 
   if (cameraRef.current === null) {
     const camera = Camera.default;
-    camera?.applySettings(BarcodeCapture.recommendedCameraSettings);
+    camera?.applySettings(BarcodeCapture.createRecommendedCameraSettings());
     dataCaptureContext.setFrameSource(camera);
     cameraRef.current = camera;
   }

@@ -108,7 +108,7 @@
         "fixtures/IntegratedApp.js"
       ],
       "assertions": [
-        {"text": "Scandit.BarcodeCaptureFeedback.defaultFeedback is referenced (or new Scandit.BarcodeCaptureFeedback() is constructed)"},
+        {"text": "Scandit.BarcodeCaptureFeedback.default is referenced (or new Scandit.BarcodeCaptureFeedback() is constructed)"},
         {"text": "feedback.success is assigned a new Scandit.Feedback( with Vibration.defaultVibration and null sound (or equivalent)"},
         {"text": "barcodeCapture.feedback = feedback is assigned"},
         {"text": "Existing integration code (context, barcodeCapture, view, overlay, listener) is preserved"}
