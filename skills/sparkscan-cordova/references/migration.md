@@ -76,14 +76,16 @@ Apply these renames everywhere they appear. These are renames — always replace
 | `captureButtonTintColor` | `triggerButtonTintColor` |
 | `fastFindButtonVisible` | `barcodeFindButtonVisible` |
 
+> **Old names:** `torchButtonVisible`, `captureButtonBackgroundColor` and `captureButtonTintColor` still compile in v7 (deprecated) and are removed in v8 — rename them anyway.
+
 > **Note on `captureButtonBackgroundColor`:** v7 splits this single property into three separate color properties — one for the collapsed trigger-button state, one for the expanded state, and one for the animation. If the project set a single color, apply it to all three unless the user indicates otherwise.
 
 ### SparkScanView removed APIs
 
 Remove any usage of these properties — they no longer exist in v7 and will cause runtime errors:
 
-- `captureButtonActiveBackgroundColor` (on `SparkScanView`)
-- `stopCapturingText`, `startCapturingText`, `resumeCapturingText`, `scanningCapturingText` — the trigger button no longer displays text
+- `captureButtonActiveBackgroundColor` (on `SparkScanView`) — deprecated but still present in v7, removed in v8
+- `stopCapturingText`, `startCapturingText`, `resumeCapturingText`, `scanningCapturingText` — the trigger button no longer displays text; deprecated but still present in v7, removed in v8
 - `handModeButtonVisible` (on `SparkScanView`) — the trigger is now fully floating
 - `defaultHandMode` (on `SparkScanViewSettings`)
 - `soundModeButtonVisible` (on `SparkScanView`)
@@ -103,8 +105,7 @@ Mention only if the user asks:
 - `triggerButtonVisible` — hide/show the trigger button entirely
 - `triggerButtonImage` — custom trigger-button artwork
 - `SparkScanViewState` — controls the initial UI state of the view
-- `defaultMiniPreviewSize` — configures mini-preview dimensions
-- `miniPreviewCloseControlVisible` — shows/hides the mini-preview close button
+- `previewCloseControlVisible` — shows/hides the mini-preview close control
 
 ### BarcodeTracking → BarcodeBatch rename
 
@@ -172,7 +173,7 @@ await sparkScanView.dispose();
 Available in v8 on `SparkScanView` — mention only if the user asks:
 - `labelCaptureButtonVisible`
 - `toolbarBackgroundColor`, `toolbarIconActiveTintColor`, `toolbarIconInactiveTintColor`
-- `previewCloseControlVisible`, `zoomSwitchControlVisible`, `cameraSwitchButtonVisible`
+- `zoomSwitchControlVisible`, `cameraSwitchButtonVisible`
 - Text scanning in SparkScan (beta, opt-in) — additive, no existing code breaks
 
 ---
