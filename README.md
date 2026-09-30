@@ -19,7 +19,7 @@ Or install from your agent's own marketplace:
 | Agent | Install | Updates |
 | --- | --- | --- |
 | Codex / ChatGPT App | [One click install](https://chatgpt.com/plugins/plugins_6a6c6b6440a08191987ecc241e8660f7), or search **Scandit SDK** in the [plugin directory](https://learn.chatgpt.com/docs/plugins?surface=app#plugin-directory-in-the-codex-app) | Automatic |
-| Claude Code | `/plugin marketplace add scandit/skills`<br>`/plugin install scandit-sdk@scandit-plugins` | `/plugin` → **Marketplaces** → `scandit-plugins` → **Enable auto-update** |
+| Claude Code | `/plugin install scandit-sdk@claude-plugins-official`, or search **Scandit SDK** in `/plugin` → **Discover** | Automatic |
 | Cursor | [One click install](https://cursor.com/marketplace/scandit), or `/add-plugin scandit-sdk` in the editor | Automatic |
 | Codex CLI | `codex plugin marketplace add scandit/skills`<br>`codex plugin add scandit-sdk@scandit-plugins` | `codex plugin marketplace upgrade scandit-plugins` |
 | Copilot CLI | `copilot plugin marketplace add scandit/skills`<br>`copilot plugin install scandit-sdk@scandit-plugins` | `copilot plugin update scandit-sdk` |
@@ -53,6 +53,12 @@ Describe what you want in plain language. Your agent loads the right skill on it
 /sparkscan-android replace our current third-party barcode scanner with SparkScan
 ```
 
+## Licence keys
+
+These skills write the integration; they don't provision the licence key by themselves. The [Scandit MCP server](https://ssl.scandit.com/mcp) does that part — connect it (`claude mcp add --transport http scandit https://ssl.scandit.com/mcp`) alongside the skills (`npx plugins add scandit/skills`) and each implementation skill's `## Licence key` section will use it to fetch a trial key straight into your project's `.env`.
+
+Keys provisioned this way are **trials only**, and the MCP server's auth is browser-based, so it does not work headless or in CI. Without it, the dashboard flow at <https://ssl.scandit.com> still works — every skill falls back to that.
+
 ## Available skills
 
 | Skill | Description |
@@ -81,6 +87,8 @@ We welcome feedback that improves the quality of these skills:
 - **Request new skills.** If a Scandit product, framework, or workflow you need isn't covered, open a feature request.
 
 **Branches:** development happens on [`main`](https://github.com/scandit/skills/tree/main), so target it with pull requests. The default `dist` branch is an install-only copy (no evals or internal tooling) that CI regenerates on every push to `main`; changes pushed to it are overwritten. Because `main` is not the default branch, `Fixes #N` in a PR does not close the issue on merge: close it by hand.
+
+**Pre-push check:** in a `main` clone, run `git config core.hooksPath internal/githooks` once. Every push then runs the skill-auditor structure lint and its tests, and is refused while either reports a finding.
 
 ## License
 

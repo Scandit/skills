@@ -4,7 +4,7 @@ description: Smart Label Capture (Scandit `LabelCapture`) in Capacitor projects 
 license: Apache-2.0
 metadata:
   author: scandit
-  version: "1.0.1"
+  version: "1.0.3"
 ---
 
 # Label Capture Capacitor Skill
@@ -50,6 +50,23 @@ Only use APIs that are explicitly documented in the Scandit references below. Do
 ## Framework variant policy
 
 Examples in this skill use **plain JavaScript with ES module imports** because that is the default for Capacitor templates and the official `LabelCaptureSimpleSample`. If the target project uses a framework (React, Vue, Angular, Ionic), keep the Scandit init/setup outside the component tree (e.g. in a small module that exports the singleton context) and call into it from the framework component. Don't introduce a state-management library just for Label Capture.
+
+## Licence key
+
+Scanning needs a Scandit licence key. For this skill the licence product is `native` and the licence platforms are `ios` and `android`.
+
+Work through these in order — never block the user on MCP:
+
+1. **The Scandit MCP server is connected** — call `ensure_scanner_setup` with product `native` and platforms `ios` and `android`, then run the command `get_license_env_command` returns, which writes the key into the project's `.env`. Show at most a masked preview in chat; never print a full key.
+2. **It is not connected** — offer to connect it once, then continue from step 1:
+   - Claude Code: `claude mcp add --transport http scandit https://ssl.scandit.com/mcp`
+   - Cursor: add `{"mcpServers": {"scandit": {"url": "https://ssl.scandit.com/mcp"}}}` to `~/.cursor/mcp.json`
+   - VS Code: add `{"servers": {"scandit": {"type": "http", "url": "https://ssl.scandit.com/mcp"}}}` to the MCP user configuration
+
+   Authentication is browser-based, so it is **not supported headless or in CI**. The server provisions **trial** keys only; it never creates, revokes, or modifies production licences.
+3. **The user declines, or has no MCP client** — they generate a key themselves at <https://ssl.scandit.com> (no account yet: <https://ssl.scandit.com/dashboard/sign-up?p=test>) and paste it in.
+
+**Then put the key into the code** in place of the placeholder; a key in `.env` does not reach the app by itself. Read it through the web bundler's env support, for example `import.meta.env` in Vite (which only exposes `VITE_`-prefixed names unless `envPrefix` says otherwise). The simplest route on any platform: read `.env` and put the key into the licence-key call directly, still showing only a masked preview in chat.
 
 ## References
 

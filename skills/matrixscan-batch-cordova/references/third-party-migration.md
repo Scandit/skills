@@ -1,5 +1,11 @@
 # Third-Party Multi-Barcode Scanner → MatrixScan Batch Migration (Cordova)
 
+## Migration principles
+
+- **Authority.** When this guide and the API reference disagree, trust the API reference — and a runtime check in the user's project — over this guide. Say which source you followed and why in the summary.
+- **Behaviour changes.** Never present a visual or behaviour change (new default, different overlay look, changed feedback, changed scan timing) as a 1:1 rename. List each one in the summary as a judgment call the user must confirm.
+- **Compatibility layer.** When the scanning code sits behind a shared scanner library or wrapper that other code calls, keep that library's public API frozen (same types, method names, callbacks) and replace only the third-party scanner calls underneath with Scandit ones.
+
 This guide covers replacing a third-party Cordova barcode plugin with Scandit MatrixScan Batch (`BarcodeBatch`).
 
 > **Language note**: Examples use plain JavaScript via the global `Scandit.*` namespace. Do not emit `import` from `scandit-cordova-datacapture-*` in WebView runtime code.

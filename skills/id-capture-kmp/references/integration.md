@@ -18,7 +18,7 @@ Examples below follow the shape of Scandit's official `IdCaptureSimpleSample` an
 - iOS distribution is a single umbrella SPM package, `Scandit/datacapture-kmp-spm` — pick **one** variant that bundles the `id` module (and any add-ons you need). An app can only link one Scandit KMP Kotlin framework — do not add a second variant alongside it.
 
   Pin this Swift package to the **exact same version** as the `com.scandit.datacapture.kmp:*` Maven dependencies (Xcode: *Dependency Rule → Exact Version*). A mismatch between the two causes link errors or runtime crashes, so bump both together.
-- A valid Scandit license key — sign in at https://ssl.scandit.com to generate one, or sign up at https://ssl.scandit.com/dashboard/sign-up?p=test.
+- A valid Scandit license key — see **Licence key** in this skill's `SKILL.md`.
 - Camera permission — `android.permission.CAMERA` in the Android manifest (requested at runtime before scanning starts) and `NSCameraUsageDescription` in `Info.plist` on iOS.
 
 ## Before writing code — ask the user

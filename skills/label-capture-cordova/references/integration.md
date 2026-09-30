@@ -11,7 +11,7 @@ Label Capture (Smart Label Capture) extracts multiple fields from a single label
 - After installing, run `cordova prepare ios` and `cordova prepare android`. For iOS, a fresh `pod install` inside `platforms/ios/` may be required.
 - Cordova `>=11`, `cordova-ios >=6.2`, `cordova-android >=10`.
 - Android `minSdkVersion` 24 or higher.
-- A valid Scandit license key from <https://ssl.scandit.com>.
+- A valid Scandit license key — see **Licence key** in this skill's `SKILL.md`.
 - Camera permissions:
   - iOS: `NSCameraUsageDescription` in `Info.plist` (or via `<config-file>` in `config.xml`).
   - Android: declared automatically by the plugin; request at runtime via `cordova.plugins.diagnostic` (or similar) if `minSdkVersion >= 23`.

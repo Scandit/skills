@@ -108,13 +108,13 @@ code39Settings.activeSymbolCounts = [7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18
 ## Step 4 — Configure the camera
 
 ```javascript
-const cameraSettings = Scandit.BarcodeCapture.recommendedCameraSettings;
+const cameraSettings = Scandit.BarcodeCapture.createRecommendedCameraSettings();
 const camera = Scandit.Camera.default;
 camera.applySettings(cameraSettings);
 context.setFrameSource(camera);
 ```
 
-`Scandit.BarcodeCapture.recommendedCameraSettings` returns the camera settings tuned for barcode capture. `context.setFrameSource(camera)` binds the camera to the context — frames will start flowing once the camera is switched on (Step 8).
+`Scandit.BarcodeCapture.createRecommendedCameraSettings()` returns the camera settings tuned for barcode capture. `context.setFrameSource(camera)` binds the camera to the context — frames will start flowing once the camera is switched on (Step 8).
 
 ## Step 5 — Create the BarcodeCapture mode
 
@@ -131,7 +131,7 @@ context.setMode(barcodeCapture);
 
 ```javascript
 const view = Scandit.DataCaptureView.forContext(context);
-view.connectToElement(document.getElementById('data-capture-view'));
+await view.connectToElement(document.getElementById('data-capture-view'));
 
 const overlay = new Scandit.BarcodeCaptureOverlay(barcodeCapture);
 overlay.viewfinder = new Scandit.RectangularViewfinder(
@@ -155,7 +155,7 @@ Listeners are JS object literals — implement only the callbacks you need.
 
 ```javascript
 barcodeCapture.addListener({
-  didScan: (barcodeCapture, session, _getFrameData) => {
+  didScan: async (barcodeCapture, session, _getFrameData) => {
     const barcode = session.newlyRecognizedBarcode;
     if (!barcode) return;
 
@@ -231,14 +231,14 @@ const teardownBarcodeCapture = () => {
 By default each scan emits a beep and a vibration. To customize, replace the feedback on the mode:
 
 ```javascript
-const feedback = Scandit.BarcodeCaptureFeedback.defaultFeedback;
+const feedback = Scandit.BarcodeCaptureFeedback.default;
 feedback.success = new Scandit.Feedback(Scandit.Vibration.defaultVibration, null);
 barcodeCapture.feedback = feedback;
 ```
 
 | Property / member | Description |
 |---|---|
-| `Scandit.BarcodeCaptureFeedback.defaultFeedback` | A new feedback instance with default values. |
+| `Scandit.BarcodeCaptureFeedback.default` | A new feedback instance with default values. |
 | `feedback.success` | The `Feedback` (sound + vibration) emitted on a successful scan. |
 | `barcodeCapture.feedback` | Assigning replaces the feedback used by the mode. |
 
@@ -304,7 +304,7 @@ There is no dedicated "reject" API. To accept only barcodes matching a rule, ins
 
 ```javascript
 barcodeCapture.addListener({
-  didScan: (barcodeCapture, session, _getFrameData) => {
+  didScan: async (barcodeCapture, session, _getFrameData) => {
     const barcode = session.newlyRecognizedBarcode;
     if (!barcode) return;
 
@@ -360,7 +360,7 @@ barcodeCapture.applySettings(settings);
 Restrict scanning to a specific region of the frame:
 
 ```javascript
-settings.locationSelection = Scandit.RadiusLocationSelection.withRadius(
+settings.locationSelection = new Scandit.RadiusLocationSelection(
   new Scandit.NumberWithUnit(0, Scandit.MeasureUnit.Fraction),
 );
 barcodeCapture.applySettings(settings);
@@ -424,11 +424,11 @@ Full working app, based on the official BarcodeCaptureSimpleSample.
 ```javascript
 // @ts-check
 
-document.addEventListener('deviceready', () => {
+document.addEventListener('deviceready', async () => {
   const context = Scandit.DataCaptureContext.initialize('-- ENTER YOUR SCANDIT LICENSE KEY HERE --');
 
   const camera = Scandit.Camera.default;
-  camera.applySettings(Scandit.BarcodeCapture.recommendedCameraSettings);
+  camera.applySettings(Scandit.BarcodeCapture.createRecommendedCameraSettings());
   context.setFrameSource(camera);
 
   const settings = new Scandit.BarcodeCaptureSettings();
@@ -450,7 +450,7 @@ document.addEventListener('deviceready', () => {
   context.setMode(barcodeCapture);
 
   barcodeCapture.addListener({
-    didScan: (_barcodeCapture, session, _getFrameData) => {
+    didScan: async (_barcodeCapture, session, _getFrameData) => {
       const barcode = session.newlyRecognizedBarcode;
       if (!barcode) return;
 
@@ -461,7 +461,7 @@ document.addEventListener('deviceready', () => {
   });
 
   const view = Scandit.DataCaptureView.forContext(context);
-  view.connectToElement(document.getElementById('data-capture-view'));
+  await view.connectToElement(document.getElementById('data-capture-view'));
 
   const overlay = new Scandit.BarcodeCaptureOverlay(barcodeCapture);
   overlay.viewfinder = new Scandit.RectangularViewfinder(

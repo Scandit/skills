@@ -21,9 +21,7 @@ Package root: `com.kmp.datacapture.*`. Use the latest published SDK version, not
 - **iOS (SPM)** — add the `Scandit/datacapture-kmp-spm` Swift package to the iOS app target. It vends a single umbrella XCFramework (one Kotlin `shared` framework per app) that bundles the Kotlin `shared` module together with the native Scandit XCFrameworks it depends on. Do not add the native `ScanditBarcodeCapture`/`ScanditCaptureCore` CocoaPods/SPM packages separately — everything comes through the umbrella framework.
 
   Pin this Swift package to the **exact same version** as the `com.scandit.datacapture.kmp:*` Maven dependencies (Xcode: *Dependency Rule → Exact Version*). A mismatch between the two causes link errors or runtime crashes, so bump both together.
-- **A valid Scandit license key**:
-  - Sign in at https://ssl.scandit.com to generate one
-  - No account yet? Sign up at https://ssl.scandit.com/dashboard/sign-up?p=test
+- **A valid Scandit license key** — see **Licence key** in this skill's `SKILL.md`.
 - **Camera permission**, both platforms:
   - Android `AndroidManifest.xml`:
     ```xml

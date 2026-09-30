@@ -14,9 +14,7 @@ MatrixScan Batch (API name: `BarcodeBatch*`) is a multi-barcode tracking mode th
 - Flutter `>=3.22.0`, Dart SDK `>=3.0.0 <4.0.0`.
 - After editing `pubspec.yaml`, run `flutter pub get` to fetch the packages.
 - Minimum SDK version for BarcodeBatch on Flutter: **6.7**. The modern constructors (`BarcodeBatch(settings)`, `BarcodeBatchBasicOverlay(mode, style: ...)`, `BarcodeBatchAdvancedOverlay(mode)`, `BarcodeBatch.createRecommendedCameraSettings()`) require **Flutter ≥7.6**.
-- A valid Scandit license key:
-  - Sign in at https://ssl.scandit.com to generate one.
-  - No account yet? Sign up at https://ssl.scandit.com/dashboard/sign-up?p=test.
+- A valid Scandit license key — see **Licence key** in this skill's `SKILL.md`.
 - Camera permissions configured by the app:
   - iOS: add `NSCameraUsageDescription` to `ios/Runner/Info.plist`.
   - Android: the manifest permission is declared by the plugin; request at runtime with `permission_handler`.
@@ -32,7 +30,7 @@ After providing the code, show this setup checklist:
 **Setup checklist:**
 1. Add `scandit_flutter_datacapture_barcode` and `permission_handler` to `pubspec.yaml`, then run `flutter pub get`.
 2. Add `NSCameraUsageDescription` to `ios/Runner/Info.plist` with a short usage explanation.
-3. Replace `'-- ENTER YOUR SCANDIT LICENSE KEY HERE --'` with the key from https://ssl.scandit.com.
+3. Replace `'-- ENTER YOUR SCANDIT LICENSE KEY HERE --'` with your key (see **Licence key** in `SKILL.md`).
 4. Ensure `main()` calls `WidgetsFlutterBinding.ensureInitialized()` and then `await ScanditFlutterDataCaptureBarcode.initialize()` before `runApp(...)`.
 5. Call `Permission.camera.request()` from `permission_handler` before the first scan (usually in `initState()` of the scanning screen).
 

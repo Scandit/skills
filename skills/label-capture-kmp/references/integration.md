@@ -15,9 +15,7 @@ If the user has no Label Capture code yet, the fastest path to a *correct* integ
 ## Prerequisites
 
 - Android `minSdk` 24 or higher.
-- A valid Scandit license key:
-  - Sign in at <https://ssl.scandit.com> to generate one.
-  - No account yet? Sign up at <https://ssl.scandit.com/dashboard/sign-up?p=test>.
+- A valid Scandit license key — see **Licence key** in this skill's `SKILL.md`.
 - Camera permission requested at runtime on each platform before the camera is switched on (Android: `android.permission.CAMERA` via `ActivityResultContracts.RequestPermission`; iOS: `AVCaptureDevice.requestAccess(for: .video)`), plus the iOS `NSCameraUsageDescription` Info.plist entry.
 
 ### Gradle setup (`commonMain`)

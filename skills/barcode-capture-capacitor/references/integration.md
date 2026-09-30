@@ -10,9 +10,7 @@ BarcodeCapture is a single-barcode scanning capture mode. In Capacitor it render
   - `scandit-capacitor-datacapture-core`
   - `scandit-capacitor-datacapture-barcode`
 - After installing, run `npx cap sync` to sync the native projects.
-- A valid Scandit license key:
-  - Sign in at https://ssl.scandit.com to generate one.
-  - No account yet? Sign up at https://ssl.scandit.com/dashboard/sign-up?p=test.
+- A valid Scandit license key — see **Licence key** in this skill's `SKILL.md`.
 - **Minimum SDK version**: BarcodeCapture on Capacitor: **6.8**. Modern constructors (`new BarcodeCapture(settings)`, `new BarcodeCaptureOverlay(mode)`, `BarcodeCapture.createRecommendedCameraSettings()`) require **7.6+**.
 - Camera permissions configured by the app:
   - iOS: add `NSCameraUsageDescription` to `ios/App/App/Info.plist`.
@@ -31,7 +29,7 @@ After providing the code, show this setup checklist:
 1. Install packages: `npm install scandit-capacitor-datacapture-core scandit-capacitor-datacapture-barcode`
 2. Run `npx cap sync` to apply native changes.
 3. Add `NSCameraUsageDescription` to `ios/App/App/Info.plist`. Android camera permission is declared automatically by the Scandit plugin — no manifest edit needed.
-4. Replace `'-- ENTER YOUR SCANDIT LICENSE KEY HERE --'` with your key from https://ssl.scandit.com.
+4. Replace `'-- ENTER YOUR SCANDIT LICENSE KEY HERE --'` with your key (see **Licence key** in `SKILL.md`).
 5. Add `<div id="data-capture-view">` to the scanning screen in your HTML and size it to fill the camera area.
 6. Store references to `barcodeCapture`, `view`, `camera`, and the overlay on `window` or at module scope to prevent garbage collection.
 
@@ -136,7 +134,7 @@ context.setMode(window.barcodeCapture);
 | Member | Available | Description |
 |--------|-----------|-------------|
 | `new BarcodeCapture(settings)` | capacitor=7.6 | Constructs a new instance. |
-| `BarcodeCapture.forContext(context, settings)` | capacitor=6.8 | Legacy factory; constructs and adds the mode to the context. Deprecated in v8. |
+| `BarcodeCapture.forContext(context, settings)` | capacitor=6.8-7.x | Legacy factory; constructs and adds the mode to the context. Removed in v8. |
 | `BarcodeCapture.createRecommendedCameraSettings()` | capacitor=7.6 | Returns camera settings optimized for BarcodeCapture. |
 | `addListener(listener)` / `removeListener(listener)` | capacitor=6.8 | Register/remove a `BarcodeCaptureListener`. |
 | `applySettings(settings)` | capacitor=6.8 | Update settings at runtime (returns `Promise<void>`). |
@@ -177,7 +175,7 @@ The HTML must contain a container element, sized to fill the camera area:
 | Member | Available | Description |
 |--------|-----------|-------------|
 | `new BarcodeCaptureOverlay(mode)` | capacitor=7.6 | Constructs the overlay. Add it to a view via `view.addOverlay`. |
-| `BarcodeCaptureOverlay.withBarcodeCaptureForView(mode, view)` | capacitor=6.8 | Legacy factory; constructs and adds the overlay to the view. |
+| `BarcodeCaptureOverlay.withBarcodeCaptureForView(mode, view)` | capacitor=6.8-7.x | Legacy factory; constructs and adds the overlay to the view. Removed in v8. |
 | `brush` | capacitor=6.8 | `Brush` — visual style for recognized barcodes. Set to a fully transparent brush to hide the highlight. |
 | `viewfinder` | capacitor=6.8 | `IViewfinder \| null` — optional viewfinder (e.g. `RectangularViewfinder`, `LaserlineViewfinder`). Default `null`. |
 | `shouldShowScanAreaGuides` | capacitor=6.8 | Debug: show the active scan area. Default `false`. |
@@ -333,7 +331,7 @@ import {
   Vibration,
 } from 'scandit-capacitor-datacapture-core';
 
-const feedback = BarcodeCaptureFeedback.defaultFeedback;
+const feedback = BarcodeCaptureFeedback.default;
 // Vibration only, no sound.
 feedback.success = new Feedback(Vibration.defaultVibration, null);
 window.barcodeCapture.feedback = feedback;
@@ -639,7 +637,7 @@ document.addEventListener('DOMContentLoaded', () => {
 ## Key Rules
 
 1. **Initialize plugins first** — `await ScanditCaptureCorePlugin.initializePlugins()` must be called before any other Scandit API. Capacitor-specific, no equivalent in other frameworks.
-2. **Context creation** — `DataCaptureContext.initialize(licenseKey)` is the current (v8) API. `forLicenseKey()` still exists but is deprecated.
+2. **Context creation** — `DataCaptureContext.initialize(licenseKey)` is the current, preferred API since 7.2. `forLicenseKey()` still exists and works in v8; it is not deprecated.
 3. **Mode registration** — `context.setMode(barcodeCapture)` registers the mode with the context. Replaces any previously active mode.
 4. **View + overlay wiring** — `DataCaptureView.forContext(context)` creates the view, `view.connectToElement(domEl)` attaches it, and `view.addOverlay(new BarcodeCaptureOverlay(barcodeCapture))` makes recognized barcodes visible.
 5. **Camera is separate** — Use `Camera.withSettings(BarcodeCapture.createRecommendedCameraSettings())` (≥7.6) or `Camera.default`, then `context.setFrameSource(camera)` and `camera.switchToDesiredState(FrameSourceState.On)`.
