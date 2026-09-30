@@ -36,7 +36,7 @@ jobs:
     env:
       # This workflow ships in dist too: a push to dist runs the workflow file of
       # the pushed commit, and workflow_dispatch needs it on the default branch.
-      PUBLISH: skills assets README.md LICENSE skills.sh.json .agents .claude-plugin .cursor-plugin .codex-plugin .github/plugin .github/workflows/publish-dist.yml
+      PUBLISH: skills assets README.md LICENSE skills.sh.json .mcp.json .agents .claude-plugin .cursor-plugin .codex-plugin .github/plugin .github/workflows/publish-dist.yml
       EXCLUDE: evals internal .gitignore
     steps:
       - uses: actions/checkout@v4
