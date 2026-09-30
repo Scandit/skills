@@ -56,6 +56,7 @@ EXCLUDE_FILES = [
     "skills.sh.json",    # third-party marketplace page-grouping config
     "README.md",         # repo-oriented, and advertises the other install channels
     ".gitignore",
+    ".mcp.json",         # marketplace installs get the MCP server; the Skills tab takes none
 ]
 # Removed from every skill: the eval harness ships competitor migration fixtures
 # and is not one of OpenAI's documented skill conventions. #85 relocated these to a
@@ -124,6 +125,15 @@ def strip_tree(root: Path) -> list[str]:
         if p.exists():
             p.unlink()
             removed.append(rel)
+    manifest = root / MANIFEST
+    if manifest.is_file():
+        try:
+            data = json.loads(manifest.read_text(encoding="utf-8"))
+        except json.JSONDecodeError:
+            data = None  # check_manifest reports it
+        if isinstance(data, dict) and data.pop("mcpServers", None) is not None:
+            manifest.write_text(json.dumps(data, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+            removed.append(f"{MANIFEST}#mcpServers")
     skills = root / "skills"
     if skills.is_dir():
         for skill in sorted(skills.iterdir()):

@@ -8,6 +8,11 @@
     "email": "support@scandit.com"
   },
   "license": "Apache-2.0",
+  "mcpServers": {
+    "scandit": {
+      "url": "https://ssl.scandit.com/mcp"
+    }
+  },
   "keywords": [
     "scandit",
     "barcode",
