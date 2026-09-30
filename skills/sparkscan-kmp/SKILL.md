@@ -1,7 +1,7 @@
 ---
 name: sparkscan-kmp
 description: SparkScan single-barcode scanning with the pre-built scanning UI in Kotlin Multiplatform (KMP) and Compose Multiplatform projects using Scandit's KMP SDK (`com.kmp.datacapture.*` imports). Use for integration, scan settings, result handling, feedback and UI customization, embedding `SparkScanView` in shared code, or troubleshooting.
-license: MIT
+license: Apache-2.0
 metadata:
   author: scandit
   version: "1.0.2"
@@ -103,7 +103,7 @@ Based on the user's request, load the appropriate reference file before respondi
   down the integration** (e.g. "add SparkScan to my KMP app", "set up barcode scanning in my
   shared module", "how do I use SparkScan with Compose Multiplatform", "reject a barcode and show
   an error", "enable continuous scanning", "hide the trigger button") → read
-  `references/integration.md` and follow the instructions there.
+  [`references/integration.md`](references/integration.md) and follow the instructions there.
 
 ## API Usage Policy
 
@@ -148,6 +148,6 @@ Direct users to the right resource based on their question:
 | Topic | Resource |
 |---|---|
 | Get Started | [Intro](https://docs.scandit.com/sdks/kmp/sparkscan/intro/) · [Get Started](https://docs.scandit.com/sdks/kmp/sparkscan/get-started/) |
-| Advanced topics (custom feedback, scanning behavior, UI customization) | `references/integration.md` |
+| Advanced topics (custom feedback, scanning behavior, UI customization) | [`references/integration.md`](references/integration.md) |
 | Compose Multiplatform | [Core Concepts](https://docs.scandit.com/sdks/kmp/core-concepts/) |
 | Core concepts (context, camera, views) | [Core Concepts](https://docs.scandit.com/sdks/kmp/core-concepts/) |

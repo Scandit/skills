@@ -1,7 +1,7 @@
 ---
 name: parser-kmp
 description: Scandit Parser in Kotlin Multiplatform (KMP) projects — com.scandit.datacapture.kmp:parser artifact, com.kmp.datacapture.parser imports. Parses barcode/RFID data strings (GS1 AI, GS1 Digital Link, HIBC, Swiss QR, VIN, IATA boarding pass, EPC) into ParsedField values in commonMain. AAMVA driver's licenses belong to ID Capture (id-capture-* skills). Use for Parser setup, data-format configuration, parsed-result handling, or troubleshooting parsing.
-license: MIT
+license: Apache-2.0
 metadata:
   author: scandit
   version: "1.0.2"
@@ -69,7 +69,7 @@ Based on the user's request, load the appropriate reference file before respondi
 - **Creating a Parser, parsing a data string/raw data, reading parsed fields, handling parser
   issues/exceptions, or combining Parser with a barcode scan result** (e.g. "add the Parser to my
   KMP app", "parse this GS1 barcode", "how do I read a HIBC field", "why did parseString throw",
-  "parse the barcode I just scanned") → read `references/integration.md` and follow the
+  "parse the barcode I just scanned") → read [`references/integration.md`](references/integration.md) and follow the
   instructions there.
 - **Setting up the camera, BarcodeCapture, or SparkScan itself** (not the parser) → this skill
   only covers the Parser half; hand the scanning setup off to `barcode-capture-kmp` or
