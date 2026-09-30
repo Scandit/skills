@@ -49,3 +49,25 @@ reads the backticked tokens, and the platform cell may hold more than one.
 | `-cordova` | `native` | `ios`, `android` |
 | `-kmp` | `native` | `ios`, `android` |
 | `id-bolt` | `id-bolt` | `webassembly` |
+
+## Key wiring
+
+A key in `.env` does not reach the app by itself: the reference code passes the
+placeholder, and most platforms have no built-in `.env` loading. Each skill's
+`## Licence key` section carries its row's sentence verbatim. Machine-read by
+`common.licence_wiring()`; keys resolve exactly as in the mapping above.
+
+| Skill | Wiring |
+| --- | --- |
+| `-web` | Read it through the bundler's env support, for example `import.meta.env` in Vite (which only exposes `VITE_`-prefixed names unless `envPrefix` says otherwise). |
+| `-android` | Read it in Gradle and expose it as a `BuildConfig` field (this needs `buildFeatures { buildConfig = true }`). |
+| `-ios` | Map the value through an `.xcconfig` file into `Info.plist`, then read it with `Bundle.main.object(forInfoDictionaryKey:)`. |
+| `-net-android` | .NET does not load `.env` by itself, so use the simplest route below. |
+| `-net-ios` | .NET does not load `.env` by itself, so use the simplest route below. |
+| `-net-maui` | .NET does not load `.env` by itself, so use the simplest route below. |
+| `-rn` | React Native does not load `.env` by itself: add a loader such as `react-native-config`, or use the simplest route below. |
+| `-flutter` | Pass it at build time with `--dart-define-from-file=.env` and read it with `String.fromEnvironment`. |
+| `-capacitor` | Read it through the web bundler's env support, for example `import.meta.env` in Vite (which only exposes `VITE_`-prefixed names unless `envPrefix` says otherwise). |
+| `-cordova` | Cordova does not load `.env` by itself, so use the simplest route below. |
+| `-kmp` | Kotlin Multiplatform does not load `.env` by itself, so use the simplest route below. |
+| `id-bolt` | Read it through the bundler's env support, for example `import.meta.env` in Vite (which only exposes `VITE_`-prefixed names unless `envPrefix` says otherwise). |

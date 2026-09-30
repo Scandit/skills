@@ -137,6 +137,14 @@ LICENCE_REFERENCE = """# Licence products and platforms
 | `-web` | `sdk` | `webassembly` |
 | `-ios` | `native` | `ios` |
 | `-rn` | `native` | `ios`, `android` |
+
+## Key wiring
+
+| Skill | Wiring |
+| --- | --- |
+| `-web` | Use the bundler, for example `import.meta.env`. |
+| `-ios` | Use `Info.plist`. |
+| `-rn` | Use a loader such as `react-native-config`. |
 """
 
 LICENCE_SECTION = """
@@ -144,6 +152,7 @@ LICENCE_SECTION = """
 
 For this skill the licence product is `{product}` and the platforms are {platforms}.
 Fallback: <https://ssl.scandit.com>.
+Then: {wiring}
 
 ## References
 """
@@ -166,14 +175,16 @@ class LintLicenceKeyTest(unittest.TestCase):
         ref.parent.mkdir(parents=True)
         ref.write_text(LICENCE_REFERENCE)
         self.skills = self.root / "skills"
-        for name, product, platforms in (
-            ("p-web", "sdk", "`webassembly`"),
-            ("p-rn", "native", "`ios` and `android`"),
+        for name, product, platforms, wiring in (
+            ("p-web", "sdk", "`webassembly`", "Use the bundler, for example `import.meta.env`."),
+            # wrapped across lines, as a hard-wrapped SKILL.md would carry it
+            ("p-rn", "native", "`ios` and `android`",
+             "Use a loader such as\n`react-native-config`."),
         ):
             (self.skills / name / "references").mkdir(parents=True)
             (self.skills / name / "SKILL.md").write_text(
                 FRONTMATTER.format(name=name)
-                + LICENCE_SECTION.format(product=product, platforms=platforms))
+                + LICENCE_SECTION.format(product=product, platforms=platforms, wiring=wiring))
         (self.skills / "p-exempt-ios").mkdir()
         (self.skills / "p-exempt-ios" / "SKILL.md").write_text(
             FRONTMATTER.format(name="p-exempt-ios"))
@@ -198,6 +209,21 @@ class LintLicenceKeyTest(unittest.TestCase):
             "(per internal/skill-auditor/references/licence-platforms.md)",
         ])
 
+    def test_missing_wiring_sentence_is_a_finding(self):
+        sk = self.skills / "p-web" / "SKILL.md"
+        sk.write_text(sk.read_text().replace("Use the bundler", "Use something"))
+        self.assertEqual(self.licence_findings(), [
+            "p-web: licence-key section does not carry its key-wiring sentence "
+            "(per internal/skill-auditor/references/licence-platforms.md)",
+        ])
+
+    def test_missing_wiring_table_is_a_finding_not_a_crash(self):
+        ref = self.root / "internal" / "skill-auditor" / "references" / "licence-platforms.md"
+        ref.write_text(LICENCE_REFERENCE.split("## Key wiring")[0])
+        self.assertEqual(self.licence_findings(), [
+            "internal/skill-auditor/references/licence-platforms.md: no `## Key wiring` section",
+        ])
+
     def test_link_outside_the_section_is_a_finding(self):
         (self.skills / "p-web" / "references" / "integration.md").write_text(
             "Get a key at https://ssl.scandit.com\n")
@@ -214,7 +240,8 @@ class LintLicenceKeyTest(unittest.TestCase):
     def test_unmapped_skill_is_a_finding(self):
         (self.skills / "p-kmp").mkdir()
         (self.skills / "p-kmp" / "SKILL.md").write_text(
-            FRONTMATTER.format(name="p-kmp") + LICENCE_SECTION.format(product="x", platforms="y"))
+            FRONTMATTER.format(name="p-kmp")
+            + LICENCE_SECTION.format(product="x", platforms="y", wiring="z"))
         self.assertIn(
             "p-kmp: no row in internal/skill-auditor/references/licence-platforms.md — "
             "add one before the licence-key section can be checked",

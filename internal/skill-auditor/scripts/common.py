@@ -68,6 +68,26 @@ def licence_platforms(path: Path = LICENCE_REFERENCE) -> dict[str, tuple[str, li
     return mapping
 
 
+# A "Key wiring" row: one backticked key, then the sentence sections carry verbatim.
+_WIRING_ROW = re.compile(r"^\|\s*`([^`|]+)`\s*\|([^|]+)\|\s*$")
+
+
+def licence_wiring(path: Path = LICENCE_REFERENCE) -> dict[str, str]:
+    """Skill → the sentence that gets the key from ``.env`` into the code.
+
+    From the ``## Key wiring`` table; keyed like ``licence_platforms``, so resolve
+    it with ``resolve_licence`` too.
+    """
+    section = path.read_text().split("## Key wiring", 1)
+    if len(section) != 2:
+        raise ValueError("no `## Key wiring` section")
+    wiring = {m.group(1): m.group(2).strip()
+              for m in map(_WIRING_ROW.match, section[1].splitlines()) if m}
+    if not wiring:
+        raise ValueError("`## Key wiring` table parsed to zero rows")
+    return wiring
+
+
 def resolve_licence(skill_name: str, mapping: dict[str, tuple[str, list[str]]]
                     ) -> tuple[str, list[str]] | None:
     """The licence product and platforms for one skill, or None if unmapped.

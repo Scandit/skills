@@ -55,8 +55,9 @@ Must exist and convey, in this order of preference:
 - **MCP connected:** call `ensure_scanner_setup` for that product and those platforms, then write the key into `.env` with the command `get_license_env_command` returns. A full key is never printed in chat.
 - **Not connected:** offer to connect the server once (`https://ssl.scandit.com/mcp`), with the Claude Code, Cursor and VS Code install steps. Browser authentication — never claimed to work headless or in CI. Trial keys only; production licences are never created, revoked or modified.
 - **Declined, or no MCP client:** fall back to generating a key in the dashboard, and never block on MCP.
+- **Then into the code:** how the key gets from `.env` into the app in place of the placeholder, as that framework's `## Key wiring` sentence in the same reference file, with the direct-paste route as the fallback.
 - The dashboard provisioning flow appears here and nowhere else in the skill, so a reader gets one instruction rather than two.
 
 _Exempt: `data-capture-sdk` (advisory skill — it recommends a product rather than integrating one), `scandit-xamarin-to-net-migration`, `matrixscan-ar-highlight-ios`, `matrixscan-ar-annotation-ios`._
 
-The deterministic half of this rule — section present, product and platforms correct, no stray provisioning link — is enforced by `internal/skill-auditor/scripts/lint_structure.py`. Audit the wording; let the linter count.
+The deterministic half of this rule — section present, product and platforms correct, key-wiring sentence present, no stray provisioning link — is enforced by `internal/skill-auditor/scripts/lint_structure.py`. Audit the wording; let the linter count.

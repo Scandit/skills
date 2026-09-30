@@ -13,8 +13,8 @@ Checks (per skill, and across siblings sharing a product prefix):
   principles    every references/migration.md and third-party-migration.md carries
                 its "Migration principles" labels
   licence       every non-exempt skill carries a `## Licence key` section naming the product
-                and licence platforms from references/licence-platforms.md, and carries the
-                dashboard provisioning link nowhere else
+                and licence platforms from references/licence-platforms.md plus its
+                key-wiring sentence, and carries the dashboard provisioning link nowhere else
   routing       every skills/<dir> is referenced in the router skill's SKILL.md and vice versa
 
 Product prefixes and parity exemptions live in ../manifest.json, not in code.
@@ -28,7 +28,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from common import (REPO_ROOT, frontmatter, list_skill_dirs, load_manifest, eval_dir,
-                    eval_suite_files, licence_platforms, resolve_licence)
+                    eval_suite_files, licence_platforms, licence_wiring, resolve_licence)
 
 # Descriptions are injected into every user session for every installed skill —
 # they are trigger metadata, not documentation. 600 chars ≈ 150 tokens each.
@@ -118,6 +118,11 @@ def lint(repo_root: Path, manifest: dict, prefix: str | None = None) -> tuple[li
     except (OSError, ValueError) as e:
         licence_map = {}
         findings.append(f"{LICENCE_REFERENCE_REL}: {e}")
+    try:
+        wiring_map = licence_wiring(repo_root / LICENCE_REFERENCE_REL)
+    except (OSError, ValueError) as e:
+        wiring_map = {}
+        findings.append(f"{LICENCE_REFERENCE_REL}: {e}")
     licence_exempt: set[str] = set(manifest.get("licence_key_exempt", []))
     licence_link_allow: set[str] = set(manifest.get("licence_link_allow", []))
     for d in skill_dirs:
@@ -142,6 +147,13 @@ def lint(repo_root: Path, manifest: dict, prefix: str | None = None) -> tuple[li
                         findings.append(
                             f"{d.name}: licence-key section does not name `{token}` "
                             f"(per {LICENCE_REFERENCE_REL})")
+            # A key left in `.env` never reaches the app on its own.
+            wiring = resolve_licence(d.name, wiring_map)
+            if wiring_map and wiring is None:
+                findings.append(f"{d.name}: no `## Key wiring` row in {LICENCE_REFERENCE_REL}")
+            elif wiring and wiring not in " ".join(section.group(1).split()):
+                findings.append(f"{d.name}: licence-key section does not carry its "
+                                f"key-wiring sentence (per {LICENCE_REFERENCE_REL})")
         # The dashboard fallback lives in the licence-key section and nowhere else,
         # so a skill never carries two competing provisioning instructions.
         for f in sorted(d.rglob("*.md")):

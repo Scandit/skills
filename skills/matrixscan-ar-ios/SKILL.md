@@ -57,6 +57,8 @@ Work through these in order — never block the user on MCP:
    Authentication is browser-based, so it is **not supported headless or in CI**. The server provisions **trial** keys only; it never creates, revokes, or modifies production licences.
 3. **The user declines, or has no MCP client** — they generate a key themselves at <https://ssl.scandit.com> (no account yet: <https://ssl.scandit.com/dashboard/sign-up?p=test>) and paste it in.
 
+**Then put the key into the code** in place of the placeholder; a key in `.env` does not reach the app by itself. Map the value through an `.xcconfig` file into `Info.plist`, then read it with `Bundle.main.object(forInfoDictionaryKey:)`. The simplest route on any platform: read `.env` and put the key into the licence-key call directly, still showing only a masked preview in chat.
+
 ## References
 
 Use this table to pick the right page to fetch for a given question, and include the link in your answer so the user can explore further.

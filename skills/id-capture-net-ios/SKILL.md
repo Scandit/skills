@@ -99,6 +99,8 @@ Work through these in order — never block the user on MCP:
    Authentication is browser-based, so it is **not supported headless or in CI**. The server provisions **trial** keys only; it never creates, revokes, or modifies production licences.
 3. **The user declines, or has no MCP client** — they generate a key themselves at <https://ssl.scandit.com> (no account yet: <https://ssl.scandit.com/dashboard/sign-up?p=test>) and paste it in.
 
+**Then put the key into the code** in place of the placeholder; a key in `.env` does not reach the app by itself. .NET does not load `.env` by itself, so use the simplest route below. The simplest route on any platform: read `.env` and put the key into the licence-key call directly, still showing only a masked preview in chat.
+
 ## References
 
 Direct users to the right resource based on their question:
