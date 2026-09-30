@@ -67,9 +67,7 @@ Do **not** guess, do **not** reuse a version from training data, and do **not** 
   ```
 
   If the project already has an `AppDelegate`, add the two `Initialize()` calls at the top of its existing `FinishedLaunching`. **This step is only required on Scandit SDK 8.0+ — earlier majors (6.x, 7.x) self-initialized, so for those versions skip it entirely.**
-- A valid Scandit license key:
-  - Sign in at https://ssl.scandit.com to generate one.
-  - No account yet? Sign up at https://ssl.scandit.com/dashboard/sign-up?p=test.
+- A valid Scandit license key — see **Licence key** in this skill's `SKILL.md`.
 
 ### Project scaffolding (new projects only)
 
@@ -130,7 +128,7 @@ After providing the code, show this setup checklist:
 2. Ensure `<SupportedOSPlatformVersion>15.0</SupportedOSPlatformVersion>` is set in the `.csproj`.
 3. Add `<key>NSCameraUsageDescription</key>` with a usage string to `Info.plist`.
 4. Add `ScanditCaptureCore.Initialize()` and `ScanditBarcodeCapture.Initialize()` to `AppDelegate.FinishedLaunching` (SDK 8.0+).
-5. Replace `-- ENTER YOUR SCANDIT LICENSE KEY HERE --` with your key from https://ssl.scandit.com.
+5. Replace `-- ENTER YOUR SCANDIT LICENSE KEY HERE --` with your key (see **Licence key** in `SKILL.md`).
 
 ## Step 1 — Create the DataCaptureContext
 

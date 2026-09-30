@@ -10,9 +10,7 @@ MatrixScan AR (API class: `BarcodeAr`) is a multi-barcode scanning mode that sim
   - `scandit-capacitor-datacapture-core`
   - `scandit-capacitor-datacapture-barcode`
 - After installing, run `npx cap sync` to sync the native projects.
-- A valid Scandit license key:
-  - Sign in at https://ssl.scandit.com to generate one
-  - No account yet? Sign up at https://ssl.scandit.com/dashboard/sign-up?p=test
+- A valid Scandit license key — see **Licence key** in this skill's `SKILL.md`.
 - **Minimum Capacitor SDK version: 8.2.** BarcodeAr is not available in earlier Capacitor SDK versions.
 - Camera permissions configured by the app:
   - iOS: `NSCameraUsageDescription` in `Info.plist`
@@ -30,7 +28,7 @@ After providing the code, show this setup checklist:
 1. Install packages: `npm install scandit-capacitor-datacapture-core scandit-capacitor-datacapture-barcode`
 2. Run `npx cap sync` to apply native changes.
 3. Add `NSCameraUsageDescription` to `ios/App/App/Info.plist`.
-4. Replace `'-- ENTER YOUR SCANDIT LICENSE KEY HERE --'` with your key from https://ssl.scandit.com.
+4. Replace `'-- ENTER YOUR SCANDIT LICENSE KEY HERE --'` with your key (see **Licence key** in `SKILL.md`).
 5. Add `<div id="barcode-ar-view">` to the scanning screen in your HTML and size it to fill the camera area.
 6. Store references to `barcodeAr` and `barcodeArView` on `window` or at module scope to prevent garbage collection.
 

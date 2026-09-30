@@ -149,10 +149,10 @@
     {
       "id": 13,
       "prompt": "Does Scandit offer a free trial or a free tier for testing?",
-      "expected_output": "Confirms that Scandit offers a free trial. Mentions that the SDK trial is 30 days and the Scandit Express trial is 14 days. Directs the user to https://www.scandit.com/trial/ to sign up. Does NOT provide pricing information or link to the pricing page. May offer to help with technical questions about Scandit products.",
+      "expected_output": "Confirms that Scandit offers a free trial. Mentions that both the SDK and Scandit Express trials are 30 days. Directs the user to https://www.scandit.com/trial/ to sign up. Does NOT provide pricing information or link to the pricing page. May offer to help with technical questions about Scandit products.",
       "assertions": [
         {"type": "content_check", "text": "Confirms that Scandit offers a free trial"},
-        {"type": "content_check", "text": "Mentions that the SDK trial is 30 days and the Scandit Express trial is 14 days"},
+        {"type": "content_check", "text": "Mentions that both the SDK and Scandit Express trials are 30 days"},
         {"type": "content_check", "text": "Directs the user to https://www.scandit.com/trial/ to sign up"},
         {"type": "content_check", "text": "Does NOT provide pricing information or link to the pricing page"},
         {"type": "content_check", "text": "May offer to help with technical questions about Scandit products"}

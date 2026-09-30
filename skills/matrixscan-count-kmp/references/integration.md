@@ -19,9 +19,7 @@ Both paths share the same `BarcodeCount` mode and `BarcodeCountSettings` — onl
 - iOS: add the **`Scandit/datacapture-kmp-spm`** Swift package to the iOS app target. This vends a single Kotlin framework re-exporting the core/barcode module surfaces — do not add separate per-module CocoaPods/SPM dependencies as you would for a native iOS app.
 
   Pin this Swift package to the **exact same version** as the `com.scandit.datacapture.kmp:*` Maven dependencies (Xcode: *Dependency Rule → Exact Version*). A mismatch between the two causes link errors or runtime crashes, so bump both together.
-- A valid Scandit license key:
-  - Sign in at https://ssl.scandit.com to generate one.
-  - No account yet? Sign up at https://ssl.scandit.com/dashboard/sign-up?p=test.
+- A valid Scandit license key — see **Licence key** in this skill's `SKILL.md`.
 - Camera permissions configured by the app (the SDK does not request them for you):
   - Android: `<uses-permission android:name="android.permission.CAMERA" />` in the manifest, plus a runtime permission request (e.g. `ActivityResultContracts.RequestPermission()`).
   - iOS: `NSCameraUsageDescription` in `Info.plist`.

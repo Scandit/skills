@@ -28,9 +28,7 @@ Do **not** guess, do **not** reuse a version from training data, and do **not** 
   </ItemGroup>
   ```
   Both packages are published on NuGet.org. Do **not** add `Scandit.DataCapture.Core.Maui` or `Scandit.DataCapture.Barcode.Maui` — those are MAUI-only.
-- A valid Scandit license key:
-  - Sign in at https://ssl.scandit.com to generate one.
-  - No account yet? Sign up at https://ssl.scandit.com/dashboard/sign-up?p=test.
+- A valid Scandit license key — see **Licence key** in this skill's `SKILL.md`.
 - **Camera usage description in `Info.plist`:**
   ```xml
   <key>NSCameraUsageDescription</key>
@@ -96,7 +94,7 @@ After providing the code, show this setup checklist:
 2. Add `NSCameraUsageDescription` to `Info.plist` with a short user-facing description.
 3. If targeting SDK 8.0+, ensure `AppDelegate.FinishedLaunching` calls `ScanditCaptureCore.Initialize()` and `ScanditBarcodeCapture.Initialize()` before constructing any Scandit type.
 4. Ensure `<SupportedOSPlatformVersion>15.0</SupportedOSPlatformVersion>` (or higher) is set in the `.csproj`.
-5. Replace `-- ENTER YOUR SCANDIT LICENSE KEY HERE --` with your key from https://ssl.scandit.com.
+5. Replace `-- ENTER YOUR SCANDIT LICENSE KEY HERE --` with your key (see **Licence key** in `SKILL.md`).
 
 ## Namespaces
 

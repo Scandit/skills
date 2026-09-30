@@ -14,7 +14,7 @@ If the user has no existing app yet, always offer the official sample as the fas
 
 Tell the user to clone the repo and open the sample folder. Once they have it open, help them:
 
-1. Replace `-- ENTER YOUR SCANDIT LICENSE KEY HERE --` with their key from <https://ssl.scandit.com>
+1. Replace `-- ENTER YOUR SCANDIT LICENSE KEY HERE --` with your key (see **Licence key** in `SKILL.md`).
 2. Adjust the enabled symbologies to match their use case
 3. Run `npm install` and start the app
 
@@ -27,7 +27,7 @@ Only proceed to the manual integration steps below if the user already has an ex
 - Scandit Data Capture SDK for web via npm, pnpm, or yarn:
   - `@scandit/web-datacapture-core`: <https://www.npmjs.com/package/@scandit/web-datacapture-core>
   - `@scandit/web-datacapture-barcode`: <https://www.npmjs.com/package/@scandit/web-datacapture-barcode>
-- A valid Scandit license key — sign in at <https://ssl.scandit.com> (no account? sign up at <https://ssl.scandit.com/dashboard/sign-up?p=test>)
+- A valid Scandit license key — see **Licence key** in this skill's `SKILL.md`.
 - Cross-origin isolation headers configured on the server (required — see below)
 
 ### Cross-origin isolation (COOP / COEP)
@@ -63,7 +63,7 @@ After providing the code, show this setup checklist:
 1. Install packages: `npm install @scandit/web-datacapture-core @scandit/web-datacapture-barcode`
 2. Set cross-origin headers (`COOP: same-origin` + `COEP: require-corp` or `credentialless`) on the server
 3. Configure `libraryLocation` to point to the SDK engine files (self-hosted) or set to the CDN path `https://cdn.jsdelivr.net/npm/@scandit/web-datacapture-barcode@8/sdc-lib/`
-4. Replace `'-- ENTER YOUR SCANDIT LICENSE KEY HERE --'` with your key from <https://ssl.scandit.com>
+4. Replace `'-- ENTER YOUR SCANDIT LICENSE KEY HERE --'` with your key (see **Licence key** in `SKILL.md`).
 5. Add a container element to your HTML (e.g. `<div id="barcode-ar-view" style="position:fixed;inset:0">`) with defined dimensions
 
 ## Step 1 — Initialize DataCaptureContext

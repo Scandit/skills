@@ -10,9 +10,7 @@ MatrixScan Count (API class: `BarcodeCount`) is a data capture mode that impleme
   - `scandit-capacitor-datacapture-core`
   - `scandit-capacitor-datacapture-barcode`
 - After installing, run `npx cap sync` to sync the native projects.
-- A valid Scandit license key:
-  - Sign in at https://ssl.scandit.com to generate one
-  - No account yet? Sign up at https://ssl.scandit.com/dashboard/sign-up?p=test
+- A valid Scandit license key — see **Licence key** in this skill's `SKILL.md`.
 - **Minimum Capacitor SDK version: 6.18** for BarcodeCount. Constructor `new BarcodeCount(settings)` requires **7.6**.
 - Camera permissions configured by the app:
   - iOS: `NSCameraUsageDescription` in `Info.plist`
@@ -31,7 +29,7 @@ After providing the code, show this setup checklist:
 1. Install packages: `npm install scandit-capacitor-datacapture-core scandit-capacitor-datacapture-barcode`
 2. Run `npx cap sync` to apply native changes.
 3. Add `NSCameraUsageDescription` to `ios/App/App/Info.plist`.
-4. Replace `'-- ENTER YOUR SCANDIT LICENSE KEY HERE --'` with your key from https://ssl.scandit.com.
+4. Replace `'-- ENTER YOUR SCANDIT LICENSE KEY HERE --'` with your key (see **Licence key** in `SKILL.md`).
 5. Add `<div id="data-capture-view">` to the scanning screen in your HTML and size it to fill the camera area.
 6. Store references to `barcodeCount` and `barcodeCountView` on `window` or at module scope to prevent garbage collection.
 

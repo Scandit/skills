@@ -15,7 +15,7 @@ Ask whether they are using React or plain web (TypeScript/JavaScript), then poin
 
 Tell the user to clone the repo and open the relevant sample folder. Once they have it open, help them:
 
-1. Replace `-- ENTER YOUR SCANDIT LICENSE KEY HERE --` with their key from <https://ssl.scandit.com>
+1. Replace `-- ENTER YOUR SCANDIT LICENSE KEY HERE --` with your key (see **Licence key** in `SKILL.md`).
 2. Adjust the enabled symbologies to match their use case (remind them to only enable what they need — fewer symbologies means better performance and accuracy)
 3. Run `npm install` (or their package manager of choice) and start the app
 
@@ -30,7 +30,7 @@ Only proceed to the manual integration steps below if the user already has an ex
 - Scandit Data Capture SDK for web — add via npm, pnpm or yarn:
   - `@scandit/web-datacapture-core`: <https://www.npmjs.com/package/@scandit/web-datacapture-core>
   - `@scandit/web-datacapture-barcode`: <https://www.npmjs.com/package/@scandit/web-datacapture-barcode>
-  - A valid Scandit license key — sign in at <https://ssl.scandit.com> to generate one (no account? sign up at <https://ssl.scandit.com/dashboard/sign-up?p=test>)
+  - A valid Scandit license key — see **Licence key** in this skill's `SKILL.md`.
 
 Ask the user which barcode symbologies they need to scan. When asking, mention that it's important to only enable the symbologies they actually need, as enabling fewer improves scanning performance and accuracy.
 
@@ -41,7 +41,7 @@ After providing the code, show this setup checklist:
 **Setup checklist:**
 
 1. Add `@scandit/web-datacapture-core` and `@scandit/web-datacapture-barcode` via your package manager: <https://www.npmjs.com/package/@scandit/web-datacapture-core> <https://www.npmjs.com/package/@scandit/web-datacapture-barcode>
-2. Replace `-- ENTER YOUR SCANDIT LICENSE KEY HERE --` with your key from <https://ssl.scandit.com>
+2. Replace `-- ENTER YOUR SCANDIT LICENSE KEY HERE --` with your key (see **Licence key** in `SKILL.md`).
 3. Add a `<div id="capture-element">` (or similar) to your HTML with defined dimensions and positioning (see mount point requirement below)
 4. If self-hosting the SDK engine files, update `libraryLocation` to point to the correct path. Alternatively, use the CDN path: `https://cdn.jsdelivr.net/npm/@scandit/web-datacapture-barcode@8/sdc-lib/`
 

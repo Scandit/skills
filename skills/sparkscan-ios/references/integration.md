@@ -7,9 +7,7 @@ SparkScan is a pre-built scanning UI for high-volume single-scanning workflows. 
 - Scandit Data Capture SDK for iOS — add via Swift Package Manager:
   - URL: `https://github.com/Scandit/datacapture-spm`
   - Add `ScanditBarcodeCapture` and `ScanditCaptureCore` package products to your target
-- A valid Scandit license key:
-  - Sign in at https://ssl.scandit.com to generate one
-  - No account yet? Sign up at https://ssl.scandit.com/dashboard/sign-up?p=test
+- A valid Scandit license key — see **Licence key** in this skill's `SKILL.md`.
 - `NSCameraUsageDescription` in `Info.plist`
 
 ## Minimal Integration (Swift)
@@ -33,7 +31,7 @@ After providing the code, show this setup checklist:
 **Setup checklist:**
 1. Add `ScanditBarcodeCapture` and `ScanditCaptureCore` via Swift Package Manager: `https://github.com/Scandit/datacapture-spm`
 2. Make sure you have `NSCameraUsageDescription` added to your `Info.plist`
-3. Replace `-- ENTER YOUR SCANDIT LICENSE KEY HERE --` with your key from https://ssl.scandit.com
+3. Replace `-- ENTER YOUR SCANDIT LICENSE KEY HERE --` with your key (see **Licence key** in `SKILL.md`).
 
 The code example below is for UIKit and shows the SparkScan pieces in isolation — merge these into the user's existing view controller rather than replacing it or adding a new one. If the user is using SwiftUI, integrate SparkScan into their existing view (for example `ContentView`) and use the SwiftUI get-started guide and sample for the specifics (see References) — do not create a new SwiftUI view for scanning.
 

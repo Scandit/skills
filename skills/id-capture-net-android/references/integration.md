@@ -61,9 +61,7 @@ ID Capture's modern document/scanner API (`AcceptedDocuments`, `IdCaptureScanner
   ```
 
   If the project already has an `Application` subclass, add the two `Initialize()` calls to its existing `OnCreate()` rather than creating a second one (Android refuses to load two `[Application]`-decorated classes).
-- A valid Scandit license key:
-  - Sign in at <https://ssl.scandit.com> to generate one.
-  - No account yet? Sign up at <https://ssl.scandit.com/dashboard/sign-up?p=test>.
+- A valid Scandit license key — see **Licence key** in this skill's `SKILL.md`.
 - `AndroidManifest.xml` setup — two concerns:
   1. **Camera entry** (top-level, sibling to `<application>`):
      ```xml
@@ -380,7 +378,7 @@ After writing the integration code, show this checklist:
 5. Create `MainApplication.cs` with `ScanditCaptureCore.Initialize()` **and `ScanditIdCapture.Initialize()`** (SDK 8.0+).
 6. Ensure the activity uses a `Theme.AppCompat` descendant (manifest `<application android:theme=...>` or the `[Activity]` `Theme=` attribute).
 7. Provide a layout with a container (e.g. a `FrameLayout`) for the `DataCaptureView`, or host it full-screen in a `FrameLayout` created in code.
-8. Replace `-- ENTER YOUR SCANDIT LICENSE KEY HERE --` with your key from <https://ssl.scandit.com>.
+8. Replace `-- ENTER YOUR SCANDIT LICENSE KEY HERE --` with your key (see **Licence key** in `SKILL.md`).
 
 ## Complete minimal example
 

@@ -39,9 +39,7 @@ Examples below are Kotlin, written for `commonMain` unless a file is explicitly 
 
   Pin this Swift package to the **exact same version** as the `com.scandit.datacapture.kmp:*` Maven dependencies (Xcode: *Dependency Rule → Exact Version*). A mismatch between the two causes link errors or runtime crashes, so bump both together.
 
-- A valid Scandit license key:
-  - Sign in at https://ssl.scandit.com to generate one.
-  - No account yet? Sign up at https://ssl.scandit.com/dashboard/sign-up?p=test.
+- A valid Scandit license key — see **Licence key** in this skill's `SKILL.md`.
 - Camera permission:
   - Android: add to `AndroidManifest.xml`
     ```xml
@@ -74,7 +72,7 @@ After providing the code, show this setup checklist:
 3. Add `<uses-permission android:name="android.permission.CAMERA" />` and the `<uses-feature>`
    element to `AndroidManifest.xml`; add `NSCameraUsageDescription` to `Info.plist`.
 4. Request the `CAMERA` permission at runtime on Android before scanning starts.
-5. Replace `-- ENTER YOUR SCANDIT LICENSE KEY HERE --` with your key from https://ssl.scandit.com.
+5. Replace `-- ENTER YOUR SCANDIT LICENSE KEY HERE --` with your key (see **Licence key** in `SKILL.md`).
 
 ### Step 1 — Create the DataCaptureContext
 
