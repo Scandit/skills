@@ -2,7 +2,9 @@
 import json
 import re
 from pathlib import Path
-from typing import Any
+from typing import Any, TypeVar
+
+T = TypeVar("T")
 
 AUDITOR_ROOT = Path(__file__).resolve().parents[1]  # internal/skill-auditor
 REPO_ROOT = AUDITOR_ROOT.parents[1]
@@ -88,8 +90,7 @@ def licence_wiring(path: Path = LICENCE_REFERENCE) -> dict[str, str]:
     return wiring
 
 
-def resolve_licence(skill_name: str, mapping: dict[str, tuple[str, list[str]]]
-                    ) -> tuple[str, list[str]] | None:
+def resolve_licence(skill_name: str, mapping: dict[str, T]) -> T | None:
     """The licence product and platforms for one skill, or None if unmapped.
 
     An exact directory name beats every suffix (``id-bolt`` is not a ``-bolt``
