@@ -1,7 +1,7 @@
 ---
 name: barcode-selection-kmp
 description: Barcode Selection (BarcodeSelection) in Kotlin Multiplatform (KMP) projects — com.scandit.datacapture.kmp Maven artifacts, com.kmp.datacapture.barcode.selection imports. Tap-to-select or aim-to-select one barcode among many visible at once in dense scenes, shared across Android/iOS with the Compose Multiplatform DataCaptureView. Use for integration, selection-strategy configuration, result handling, overlay brushes, or troubleshooting selection.
-license: MIT
+license: Apache-2.0
 metadata:
   author: scandit
   version: "1.0.2"
@@ -43,7 +43,7 @@ KMP-specific gotchas worth flagging:
 
 Based on the user's request, load the appropriate reference file before responding:
 
-- **Integrating BarcodeSelection from scratch, choosing tap vs aimer selection, configuring selection strategies, handling selections and per-barcode counts, freezing/unfreezing the camera, customizing overlay brushes, wiring the Compose Multiplatform view, or troubleshooting selection behavior** (e.g. "add BarcodeSelection to my KMP app", "let users tap to select barcodes", "switch to aim-to-select", "how many times was this barcode selected", "freeze the camera while selecting", "use BarcodeSelection with Compose Multiplatform") → read `references/integration.md` and follow the instructions there.
+- **Integrating BarcodeSelection from scratch, choosing tap vs aimer selection, configuring selection strategies, handling selections and per-barcode counts, freezing/unfreezing the camera, customizing overlay brushes, wiring the Compose Multiplatform view, or troubleshooting selection behavior** (e.g. "add BarcodeSelection to my KMP app", "let users tap to select barcodes", "switch to aim-to-select", "how many times was this barcode selected", "freeze the camera while selecting", "use BarcodeSelection with Compose Multiplatform") → read [`references/integration.md`](references/integration.md) and follow the instructions there.
 
 ## API Usage Policy
 
@@ -78,6 +78,6 @@ Direct users to the right resource based on their question:
 
 | Topic | Resource |
 |---|---|
-| Get Started | [Intro](https://docs.scandit.com/sdks/kmp/barcode-selection/intro/) · [Get Started](https://docs.scandit.com/sdks/kmp/barcode-selection/get-started/) · `references/integration.md` |
+| Get Started | [Intro](https://docs.scandit.com/sdks/kmp/barcode-selection/intro/) · [Get Started](https://docs.scandit.com/sdks/kmp/barcode-selection/get-started/) · [`references/integration.md`](references/integration.md) |
 | Compose Multiplatform | [Core Concepts](https://docs.scandit.com/sdks/kmp/core-concepts/) |
 | Core concepts (context, camera, views) | [Core Concepts](https://docs.scandit.com/sdks/kmp/core-concepts/) |

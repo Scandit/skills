@@ -1,7 +1,7 @@
 ---
 name: barcode-capture-kmp
 description: Scandit Barcode Capture (`BarcodeCapture`) in Kotlin Multiplatform (KMP) and Compose Multiplatform projects using Scandit's KMP SDK (`com.kmp.datacapture.*` imports) — the low-level, full-control single-barcode scanning mode without the pre-built SparkScan UI. Use for integration, scan settings, shared-code result handling, overlay and viewfinder customization, or troubleshooting.
-license: MIT
+license: Apache-2.0
 metadata:
   author: scandit
   version: "1.0.2"
@@ -36,7 +36,7 @@ KMP-specific gotchas worth flagging:
 
 Based on the user's request, load the appropriate reference file before responding:
 
-- **Integrating BarcodeCapture from scratch, configuring settings, customizing feedback, adding a viewfinder, handling scans, wiring the Compose Multiplatform view, or doing async work after a scan** (e.g. "add BarcodeCapture to my KMP app", "set up barcode scanning in my shared module", "how do I use BarcodeCapture with Compose Multiplatform", "filter duplicate scans", "suppress the beep", "add a viewfinder", "disable scanning while I look up the barcode") → read `references/integration.md` and follow the instructions there.
+- **Integrating BarcodeCapture from scratch, configuring settings, customizing feedback, adding a viewfinder, handling scans, wiring the Compose Multiplatform view, or doing async work after a scan** (e.g. "add BarcodeCapture to my KMP app", "set up barcode scanning in my shared module", "how do I use BarcodeCapture with Compose Multiplatform", "filter duplicate scans", "suppress the beep", "add a viewfinder", "disable scanning while I look up the barcode") → read [`references/integration.md`](references/integration.md) and follow the instructions there.
 
 ## API Usage Policy
 

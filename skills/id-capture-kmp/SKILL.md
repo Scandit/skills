@@ -1,7 +1,7 @@
 ---
 name: id-capture-kmp
 description: Scandit ID Capture (`IdCapture`) in Kotlin Multiplatform (KMP) / Compose Multiplatform projects (`com.kmp.datacapture.id.*`, shared commonMain targeting Android + iOS) — scanning passports, driver's licenses, ID cards, residence permits, visas via MRZ, VIZ, PDF417 barcode, or mobile documents. Use for integration, accepted-document and scanner configuration, CapturedId result handling, rejection rules, AAMVA verification, anonymization, and shared-view hosting — not the native Android or native iOS skills, whose APIs differ.
-license: MIT
+license: Apache-2.0
 metadata:
   author: scandit
   version: "1.0.2"
@@ -49,16 +49,16 @@ Your training data very likely has **no knowledge of Scandit's Kotlin Multiplatf
 
 - **This is a shared-code SDK — most logic belongs in `commonMain`.** `DataCaptureContext`, `IdCaptureSettings`, `IdCapture`, `IdCaptureListener`, and the `DataCaptureView` setup all live in a shared `ScreenModel`/view-model class in `commonMain`. Only the thin hosting code (embedding the native view, driving lifecycle events) differs between `androidApp` and `iosApp`.
 - **Accept only the documents you actually need.** Ask which document types and regions. Documents not in `acceptedDocuments` are rejected with `RejectionReason.NOT_ACCEPTED_DOCUMENT_TYPE`.
-- **Pick the scanner that matches the data you need.** `FullDocumentScanner()` for both sides/all zones, `SingleSideScanner(...)` for a specific zone, `MobileDocumentScanner(...)` for mDL/ISO 18013-5. See `references/integration.md`.
+- **Pick the scanner that matches the data you need.** `FullDocumentScanner()` for both sides/all zones, `SingleSideScanner(...)` for a specific zone, `MobileDocumentScanner(...)` for mDL/ISO 18013-5. See [`references/integration.md`](references/integration.md).
 - **Handle `onIdRejected`, not just `onIdCaptured`.** Give the user a distinct message per `RejectionReason`.
-- **Both listener callbacks may run off the main thread on the native side** — dispatch UI-affecting state changes through the shared `StateFlow`/`ScreenModel` pattern shown in `references/integration.md`, the same way the official samples do, rather than mutating UI state directly from the callback.
+- **Both listener callbacks may run off the main thread on the native side** — dispatch UI-affecting state changes through the shared `StateFlow`/`ScreenModel` pattern shown in [`references/integration.md`](references/integration.md), the same way the official samples do, rather than mutating UI state directly from the callback.
 - **AAMVA verification, EU driving-license back-decoding, and voided-document detection each require an extra Gradle/SPM dependency** in addition to the base `id` artifact — the add-on module exists purely to link the native detection library; the Kotlin API is entirely on the base `IdCaptureSettings`/`CapturedId`. Forgetting the add-on dependency means the settings flag has no effect at runtime.
 - **iOS ships as a single umbrella SPM package** (`Scandit/datacapture-kmp-spm`) — pick one variant that includes `id` (and any add-ons you use); an app can only link one Scandit KMP Kotlin framework.
 - **Hand off to a different skill for non-ID-Capture questions.** If the user asks about Barcode Capture, SparkScan, MatrixScan, or Label Capture on KMP, or about native Android/iOS ID Capture, defer to the appropriate skill.
 
 ## Intent Routing
 
-Based on the user's request, load `references/integration.md` and follow it. It covers:
+Based on the user's request, load [`references/integration.md`](references/integration.md) and follow it. It covers:
 
 - Prerequisites (Gradle/SPM dependencies, license key, camera permissions)
 - Minimal integration (shared `DataCaptureContext` → `IdCaptureSettings` → `IdCapture` → `DataCaptureView`/`IdCaptureOverlay` → Android/iOS hosting)
@@ -76,7 +76,7 @@ This is an integration-only skill — there is no separate migration guide becau
 
 ## API Usage Policy
 
-Only use APIs that are explicitly documented in the Scandit references below or verified in `references/integration.md`. Do not invent or guess method signatures, parameters, or property names. If unsure whether an API exists or how to call it — or if a compile error occurs — fetch the relevant documentation page before responding. Do not tell the user to check the docs themselves. After answering, always include the relevant link so the user can explore further.
+Only use APIs that are explicitly documented in the Scandit references below or verified in [`references/integration.md`](references/integration.md). Do not invent or guess method signatures, parameters, or property names. If unsure whether an API exists or how to call it — or if a compile error occurs — fetch the relevant documentation page before responding. Do not tell the user to check the docs themselves. After answering, always include the relevant link so the user can explore further.
 
 **Never construct or guess documentation URLs.** When you need a specific class or property's API page:
 1. First check whether the page you already fetched contains a direct hyperlink to it.
@@ -107,7 +107,7 @@ Work through these in order — never block the user on MCP:
 |---|---|
 | ID Capture overview (KMP) | [Intro](https://docs.scandit.com/sdks/kmp/id-capture/intro/) |
 | Get Started (KMP) | [Get Started](https://docs.scandit.com/sdks/kmp/id-capture/get-started/) |
-| Full integration guide | `references/integration.md` |
+| Full integration guide | [`references/integration.md`](references/integration.md) |
 | Advanced (scanner modes, verification, Compose) | [Advanced Configurations](https://docs.scandit.com/sdks/kmp/id-capture/advanced/) |
 | Supported documents | [Supported Documents](https://docs.scandit.com/sdks/kmp/id-capture/supported-documents/) |
 | Core concepts (context, camera, views, Compose) | [Core Concepts](https://docs.scandit.com/sdks/kmp/core-concepts/) |
@@ -134,11 +134,11 @@ check the linked reference pages for anything not listed here.
 - **`IdCaptureFeedback`** — `IdCaptureFeedback()`; `idCaptured` / `idRejected` (`Feedback`); static `defaultFeedback()`.
 - **`DataCaptureContext`** — `DataCaptureContext.initialize(licenseKey, ...)` (also `forLicenseKey(...)` and related overloads); `setFrameSource(frameSource)`; `addMode(mode)` / `removeMode(mode)` / `removeCurrentMode()` / `removeAllModes()`; static `sharedInstance`.
 - **`Camera`** — `Camera.getDefaultCamera(settings: CameraSettings): Camera?` (nullable — no camera on some devices); `switchToDesiredState(FrameSourceState.ON / OFF, callback)`.
-- **`DataCaptureView`** — hosted per-platform; expose it to the UI layer via the `toAndroidView()` / `toUIView()` extension functions shown in `references/integration.md`; `addOverlay(overlay)`; `logoStyle` (`LogoStyle`).
+- **`DataCaptureView`** — hosted per-platform; expose it to the UI layer via the `toAndroidView()` / `toUIView()` extension functions shown in [`references/integration.md`](references/integration.md); `addOverlay(overlay)`; `logoStyle` (`LogoStyle`).
 - **`RejectionReason`** enum — `NOT_ACCEPTED_DOCUMENT_TYPE`, `INVALID_FORMAT`, `DOCUMENT_VOIDED`, `TIMEOUT`, `SINGLE_IMAGE_NOT_RECOGNIZED`, `DOCUMENT_EXPIRED`, `DOCUMENT_EXPIRES_SOON`, `NOT_REAL_ID_COMPLIANT`, `HOLDER_UNDERAGE`, `FORGED_AAMVA_BARCODE`, `INCONSISTENT_DATA`, `BLUETOOTH_COMMUNICATION_ERROR`, `BLUETOOTH_UNAVAILABLE`, `CLOUD_REQUEST_FAILED`.
 - **`IdAnonymizationMode`** enum — `NONE`, `FIELDS_ONLY` (default), `IMAGES_ONLY`, `FIELDS_AND_IMAGES`.
 - **`IdImageType`** enum — `FACE`, `CROPPED_DOCUMENT`, `FRAME`. **`IdSide`** enum — `FRONT`, `BACK`. **`Sex`** enum — `FEMALE`, `MALE`, `UNSPECIFIED`.
-- **Compose Multiplatform** (`id-compose` module) — `@Composable IdCaptureView(settings, modifier, overlayStyle, onCapture, onReject, ...)`. See `references/integration.md` for details.
+- **Compose Multiplatform** (`id-compose` module) — `@Composable IdCaptureView(settings, modifier, overlayStyle, onCapture, onReject, ...)`. See [`references/integration.md`](references/integration.md) for details.
 
 ### Available on the KMP SDK but NOT covered by this skill
 
