@@ -1,7 +1,7 @@
 ---
 name: matrixscan-pick-kmp
 description: MatrixScan Pick (BarcodePick) in Kotlin Multiplatform (KMP) projects — com.scandit.datacapture.kmp Maven artifacts, com.kmp.datacapture.barcode.pick imports. Pick/put verification workflows shared across Android/iOS — BarcodePickView (Compose composable or platform view), product provider, highlight styles, pick/unpick confirmation. Use for integration, settings configuration, listener wiring, highlight styling, or troubleshooting pick workflows.
-license: MIT
+license: Apache-2.0
 metadata:
   author: scandit
   version: "1.0.2"
@@ -23,8 +23,8 @@ This skill is scoped to the **MatrixScan Pick picking workflow on KMP**: `DataCa
 
 Based on the user's request, load the appropriate reference file before responding:
 
-- **Setting up or adjusting the MatrixScan Pick picking flow** (e.g. "add MatrixScan Pick to my KMP app", "set up the product list", "show/hide the finish button", "mute the beep", "track what's been picked", "use the Compose BarcodePickView") → read `references/integration.md` and follow the instructions there. If the project already has MatrixScan Pick wired up, do not re-create the context, mode, view, or lifecycle — locate the existing ones (grep for `BarcodePickView`, then `BarcodePick.forContext`) and change only what the user asked for. Determine whether the project uses the base `com.kmp.datacapture.barcode.pick.BarcodePickView` (host builds and drives the platform view itself, e.g. `AndroidView`/`UIViewRepresentable`) or the `com.kmp.datacapture.barcode.compose` `BarcodePickView` composable, and follow the matching pattern.
-- **Customizing the highlights drawn over barcodes** (e.g. "change the highlight color per state", "use a rectangle instead of a dot", "show an icon / status badge on picked items", "draw a custom view over each barcode", "style the to-pick vs picked highlight") → read `references/highlights.md`. This assumes the basic integration is already in place; it covers the five highlight styles and the per-state brush / icon / status-icon / custom-view APIs.
+- **Setting up or adjusting the MatrixScan Pick picking flow** (e.g. "add MatrixScan Pick to my KMP app", "set up the product list", "show/hide the finish button", "mute the beep", "track what's been picked", "use the Compose BarcodePickView") → read [`references/integration.md`](references/integration.md) and follow the instructions there. If the project already has MatrixScan Pick wired up, do not re-create the context, mode, view, or lifecycle — locate the existing ones (grep for `BarcodePickView`, then `BarcodePick.forContext`) and change only what the user asked for. Determine whether the project uses the base `com.kmp.datacapture.barcode.pick.BarcodePickView` (host builds and drives the platform view itself, e.g. `AndroidView`/`UIViewRepresentable`) or the `com.kmp.datacapture.barcode.compose` `BarcodePickView` composable, and follow the matching pattern.
+- **Customizing the highlights drawn over barcodes** (e.g. "change the highlight color per state", "use a rectangle instead of a dot", "show an icon / status badge on picked items", "draw a custom view over each barcode", "style the to-pick vs picked highlight") → read [`references/highlights.md`](references/highlights.md). This assumes the basic integration is already in place; it covers the five highlight styles and the per-state brush / icon / status-icon / custom-view APIs.
 
 ## API Usage Policy
 
@@ -60,5 +60,5 @@ Use this table to pick the right page to fetch for a given question, and include
 | Topic | Resource |
 |---|---|
 | KMP integration (commonMain + Android/iOS hosts) | [Intro](https://docs.scandit.com/sdks/kmp/matrixscan-pick/intro/) · [Get Started](https://docs.scandit.com/sdks/kmp/matrixscan-pick/get-started/) |
-| Advanced (highlight styles, async providers) | [Advanced Configurations](https://docs.scandit.com/sdks/kmp/matrixscan-pick/advanced/) · `references/highlights.md` |
+| Advanced (highlight styles, async providers) | [Advanced Configurations](https://docs.scandit.com/sdks/kmp/matrixscan-pick/advanced/) · [`references/highlights.md`](references/highlights.md) |
 | Core concepts (context, camera, views) | [Core Concepts](https://docs.scandit.com/sdks/kmp/core-concepts/) |

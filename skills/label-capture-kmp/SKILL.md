@@ -1,7 +1,7 @@
 ---
 name: label-capture-kmp
 description: Smart Label Capture (Scandit `LabelCapture`) in Kotlin Multiplatform (KMP) / Compose Multiplatform projects (`com.kmp.datacapture.label.*`, shared commonMain consumed by Android and iOS) — extracting multiple fields (price, expiry date, serial or lot number, weight) from a label in one scan, using barcode fields, regex text fields, or the Kotlin DSL. Use for integration, label-definition configuration, captured-session handling, shared-view hosting, overlay customization, and the Validation Flow — in place of the single-platform Android or iOS skills.
-license: MIT
+license: Apache-2.0
 metadata:
   author: scandit
   version: "1.0.2"
@@ -20,11 +20,11 @@ Scandit's Kotlin Multiplatform (KMP) SDK is new: Label Capture first shipped on 
 - The license key placeholder is **exactly** `-- ENTER YOUR SCANDIT LICENSE KEY HERE --`.
 - iOS embedding uses `DataCaptureView(dataCaptureContext:)` + `.toUIView()`; Android embedding uses `DataCaptureView(context, dataCaptureContext)` + `.toAndroidView()`. Neither is a raw Android `View` or `UIView` constructor from the single-platform SDKs.
 
-**Always verify APIs against `references/integration.md` before writing or suggesting code.** Do not rely on memorized method signatures, parameters, or builder shapes from the single-platform Android/iOS Label Capture skills. If you cannot find an API in the provided reference, fetch the relevant documentation page before responding.
+**Always verify APIs against [`references/integration.md`](references/integration.md) before writing or suggesting code.** Do not rely on memorized method signatures, parameters, or builder shapes from the single-platform Android/iOS Label Capture skills. If you cannot find an API in the provided reference, fetch the relevant documentation page before responding.
 
 ## Intent Routing
 
-Based on the user's request, read `references/integration.md` and jump to the relevant section before responding:
+Based on the user's request, read [`references/integration.md`](references/integration.md) and jump to the relevant section before responding:
 
 - **Integrating Label Capture from scratch in a KMP shared module** (e.g. "add Label Capture to my Kotlin Multiplatform app", "scan a price tag with barcode and expiry date from commonMain", "wire up Label Capture for Android and iOS from one shared module") → read **Prerequisites** and **Minimal Integration**. Interactive: don't write code before you know the label's fields — ask what's on the label first (see the field catalogue in **Label definitions & fields**).
 - **Defining label structure** (fields, regex, presets, pre-built whole-label factories) → read **Label definitions & fields**. Prefer a pre-built field/factory over a hand-written regex whenever one matches — the same rule as the single-platform skills.
@@ -36,7 +36,7 @@ Based on the user's request, read `references/integration.md` and jump to the re
 
 ## API Usage Policy
 
-Only use APIs that are explicitly documented in `references/integration.md` or the linked Scandit KMP references below. Do not invent or guess method signatures, parameters, or builder shapes — and do not assume a single-platform Android/iOS Label Capture API exists unchanged on KMP; the KMP surface is a distinct `expect`/`actual` layer with its own shape (e.g. no `ApplySettingsAsync`, no `RecommendedCameraSettings` property — only `createRecommendedCameraSettings()`). If unsure whether an API exists or how it is called — or if a compile error occurs — fetch the relevant reference page before responding. Do not tell the user to check the docs themselves. After answering, always include the relevant link so the user can explore further.
+Only use APIs that are explicitly documented in [`references/integration.md`](references/integration.md) or the linked Scandit KMP references below. Do not invent or guess method signatures, parameters, or builder shapes — and do not assume a single-platform Android/iOS Label Capture API exists unchanged on KMP; the KMP surface is a distinct `expect`/`actual` layer with its own shape (e.g. no `ApplySettingsAsync`, no `RecommendedCameraSettings` property — only `createRecommendedCameraSettings()`). If unsure whether an API exists or how it is called — or if a compile error occurs — fetch the relevant reference page before responding. Do not tell the user to check the docs themselves. After answering, always include the relevant link so the user can explore further.
 
 **Never construct or guess documentation URLs.** When you need a specific class or property's API page:
 
@@ -70,6 +70,6 @@ Direct users to the right resource based on their question:
 |---|---|
 | Basic integration | [Intro](https://docs.scandit.com/sdks/kmp/label-capture/intro/) · [Get Started](https://docs.scandit.com/sdks/kmp/label-capture/get-started/) |
 | Label Definitions (fields, regex, presets) | [Label Definitions](https://docs.scandit.com/sdks/kmp/label-capture/label-definitions/) |
-| Overlays (Basic / Advanced / Validation Flow / Adaptive Recognition) | `references/integration.md` · [Advanced Configurations](https://docs.scandit.com/sdks/kmp/label-capture/advanced/) |
-| Compose Multiplatform | `references/integration.md` · [Core Concepts](https://docs.scandit.com/sdks/kmp/core-concepts/) |
+| Overlays (Basic / Advanced / Validation Flow / Adaptive Recognition) | [`references/integration.md`](references/integration.md) · [Advanced Configurations](https://docs.scandit.com/sdks/kmp/label-capture/advanced/) |
+| Compose Multiplatform | [`references/integration.md`](references/integration.md) · [Core Concepts](https://docs.scandit.com/sdks/kmp/core-concepts/) |
 | Core concepts (context, camera, views) | [Core Concepts](https://docs.scandit.com/sdks/kmp/core-concepts/) |

@@ -1,7 +1,7 @@
 ---
 name: matrixscan-ar-kmp
 description: MatrixScan AR (Barcode AR, BarcodeAr, Scandit KMP) in Kotlin Multiplatform (KMP) projects (`com.scandit.datacapture.kmp` packages, `com.kmp.datacapture.*` imports) — scanning multiple barcodes at once with AR highlights and annotations in shared commonMain code with Android/iOS hosts and the Compose Multiplatform BarcodeArView. Use for integration, scan settings, tracked-barcode handling, highlight and annotation providers, or troubleshooting.
-license: MIT
+license: Apache-2.0
 metadata:
   author: scandit
   version: "1.0.2"
@@ -84,7 +84,7 @@ Based on the user's request, load the appropriate reference file before respondi
   MatrixScan AR to my KMP app", "set up barcode AR scanning in Kotlin Multiplatform", "how do I
   use BarcodeAr with Compose Multiplatform", "how do I show highlights on tracked barcodes", "how
   do I show info annotations", "how do I filter tracked barcodes") → read
-  `references/integration.md` and follow the instructions there.
+  [`references/integration.md`](references/integration.md) and follow the instructions there.
 
 ## API Usage Policy
 
@@ -128,6 +128,6 @@ Direct users to the right resource based on their question:
 | Topic | Resource |
 |---|---|
 | Get Started | [Intro](https://docs.scandit.com/sdks/kmp/matrixscan-ar/intro/) · [Get Started](https://docs.scandit.com/sdks/kmp/matrixscan-ar/get-started/) |
-| Advanced topics (custom highlights, annotations, tap interactions, notifications, filter) | `references/integration.md` |
+| Advanced topics (custom highlights, annotations, tap interactions, notifications, filter) | [`references/integration.md`](references/integration.md) |
 | Compose Multiplatform | [Core Concepts](https://docs.scandit.com/sdks/kmp/core-concepts/) |
 | Core concepts (context, camera, views) | [Core Concepts](https://docs.scandit.com/sdks/kmp/core-concepts/) |

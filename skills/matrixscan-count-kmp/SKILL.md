@@ -1,7 +1,7 @@
 ---
 name: matrixscan-count-kmp
 description: MatrixScan Count (BarcodeCount) in Kotlin Multiplatform (KMP) projects — com.scandit.datacapture.kmp:* Maven artifacts (Scandit/datacapture-kmp-spm on iOS), com.kmp.datacapture.barcode.count imports. Counting and receiving workflows shared across Android/iOS with the Compose composable or base BarcodeCountView. Use for integration, settings configuration, listener wiring, view customization, status mode, or troubleshooting counting workflows.
-license: MIT
+license: Apache-2.0
 metadata:
   author: scandit
   version: "1.0.2"
@@ -21,7 +21,7 @@ KMP-specific gotchas worth flagging:
 - All Kotlin API packages are `com.kmp.datacapture.*` (e.g. `com.kmp.datacapture.barcode.count.BarcodeCount`), not `com.scandit.datacapture.*` — that package is the wrapped native implementation and is never imported by app code.
 - **Two ways to host the view — they expose different surfaces, not just different syntax:**
   - The **Compose Multiplatform wrapper** — `@Composable fun BarcodeCountView(...)` in `com.kmp.datacapture.barcode.compose` — is the fastest path and is what the official `MatrixScanCountSimpleSample` uses on Android. It only exposes: `settings`, `style`, button-visibility booleans (`showUserGuidanceView/showListButton/showExitButton/showShutterButton/showToolbar/showSingleScanButton`), `onScan`, `onExitTap`/`onListTap`/`onSingleScanTap`, an `overlay` slot, and an escape-hatch `barcodeCount` override.
-  - It does **not** expose brushes, icons, hint text, toolbar settings, the status provider, hardware trigger, tap-to-uncount, filter highlight settings, accessibility labels, or per-barcode delegate callbacks. For any of those you must drop to the **base (non-Compose) `BarcodeCountView`** class in `com.kmp.datacapture.barcode.count` and host it yourself (`toAndroidView()` on Android, `toUIView()` on iOS) — see `references/integration.md` for both the Compose and base-view interop patterns. Do not tell a user "just set `recognizedBrush` on the `BarcodeCountView` composable" — that parameter does not exist on the composable.
+  - It does **not** expose brushes, icons, hint text, toolbar settings, the status provider, hardware trigger, tap-to-uncount, filter highlight settings, accessibility labels, or per-barcode delegate callbacks. For any of those you must drop to the **base (non-Compose) `BarcodeCountView`** class in `com.kmp.datacapture.barcode.count` and host it yourself (`toAndroidView()` on Android, `toUIView()` on iOS) — see [`references/integration.md`](references/integration.md) for both the Compose and base-view interop patterns. Do not tell a user "just set `recognizedBrush` on the `BarcodeCountView` composable" — that parameter does not exist on the composable.
 - **The base `BarcodeCountView` constructor differs per platform and cannot be called uniformly from shared `commonMain` code**: Android's is `BarcodeCountView(context: Context, barcodeCount: BarcodeCount, style: BarcodeCountViewStyle = ICON)`; iOS's is `BarcodeCountView(barcodeCount: BarcodeCount, style: BarcodeCountViewStyle = ICON)` (no `Context` — it derives everything from the mode). Base-view construction therefore happens in **platform-specific** code (an Android Activity/Compose `AndroidView`, or Swift via `UIViewRepresentable`), exactly like the sample's iOS `ScannerView.swift` does.
 - **`BarcodeCount.forContext(dataCaptureContext, settings)`** is the constructor (not `BarcodeCount(settings)` — that Flutter/JS-only overload does not exist on KMP). Camera settings: `BarcodeCount.createRecommendedCameraSettings()` is a **method** on Android/KMP (unlike iOS/.NET native, where it is a property).
 - **No SDK-initialize step is needed** (unlike Flutter's `await ScanditFlutterDataCaptureBarcode.initialize()`). `DataCaptureContext.forLicenseKey(licenseKey)` (or `DataCaptureContext.sharedInstance` after `DataCaptureContext.initialize(licenseKey)`) is usable immediately.
@@ -34,7 +34,7 @@ KMP-specific gotchas worth flagging:
 
 ## Intent Routing
 
-This skill has a single reference file. For any MatrixScan Count / BarcodeCount request on KMP — integrating from scratch, hosting the view (Compose or base-view interop), capture lists, status mode, toolbar/UI customization, lifecycle, or troubleshooting — read `references/integration.md` and follow the instructions there.
+This skill has a single reference file. For any MatrixScan Count / BarcodeCount request on KMP — integrating from scratch, hosting the view (Compose or base-view interop), capture lists, status mode, toolbar/UI customization, lifecycle, or troubleshooting — read [`references/integration.md`](references/integration.md) and follow the instructions there.
 
 ## API Usage Policy
 
