@@ -64,6 +64,9 @@ jobs:
           done
           exit $fail
 
+      - name: Every manifest carries the same release version
+        run: python3 internal/release/versions.py check
+
       - name: Build dist tree
         run: |
           set -euo pipefail
