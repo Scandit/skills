@@ -2,6 +2,40 @@
 
 Internal. This directory is stripped from every published plugin bundle.
 
+## Cutting a release
+
+Every plugin manifest, and the Cursor and Copilot marketplace `metadata`,
+carries one version, and every release bumps it. Installed copies on all channels only update when that string
+changes, so a merge without a bump reaches nobody who already installed.
+
+1. `internal/release/versions.py set 1.2.0`, commit, merge.
+2. Tag the merge commit: `git tag v1.2.0 && git push origin v1.2.0`.
+   `versions.py check --tag v1.2.0` confirms the tag matches the manifests.
+3. Publish to the directories that pin a reviewed snapshot:
+   [Claude Code](#claude-code-official-directory) and
+   [OpenAI](#openai-plugin-directory).
+
+`versions.py check` runs in the pre-push hook and in `publish-dist`, so
+manifests that drift apart never reach `dist`.
+
+## Claude Code official directory
+
+`scandit-sdk@claude-plugins-official` is pinned to one commit of this repo in
+[anthropics/claude-plugins-official](https://github.com/anthropics/claude-plugins-official/blob/main/.claude-plugin/marketplace.json).
+New commits go live only after Anthropic reviews them and moves the pin. No
+resubmission is needed, but until their automatic pickup ships, send our
+Anthropic partner contact the release tag and the `dist` commit built from it.
+`publish-dist` creates that commit on GitHub, so wait for its run on the tagged
+commit to finish, then fetch before looking it up (empty output = not built yet):
+
+```bash
+git fetch origin dist
+git log origin/dist --format=%H -1 --grep "built from main $(git rev-parse v1.2.0^{commit})"
+```
+
+Ask for the `dist` commit, not the tag: `main` also carries `evals/` and
+`internal/`, which the plugin cache would then clone.
+
 ## OpenAI plugin directory
 
 `build_openai_bundle.py` packages the skills-only ZIP that the OpenAI plugin
@@ -32,24 +66,23 @@ The OpenAI directory does **not** track this repo. An approved listing is a
 frozen, reviewed snapshot, so nothing shipped to `main` reaches directory
 users until a new version is reviewed and published. Each update is:
 
-1. Bump `version` in `.codex-plugin/plugin.json`. A new release must not reuse
-   the published version (`plugin_version_unchanged`), and `name` must stay
+1. [Cut a release](#cutting-a-release). The portal refuses a version it has
+   already published (`plugin_version_unchanged`), and `name` must stay
    `scandit-sdk` (`plugin_name_mismatch` blocks the upload otherwise).
-2. Merge, then tag the release (`git tag v1.2.0 && git push origin v1.2.0`).
-3. `internal/release/build_openai_bundle.py --ref v1.2.0`.
-4. Install the ZIP locally and run the submission test cases against that exact
+2. `internal/release/build_openai_bundle.py --ref v1.2.0`.
+3. Install the ZIP locally and run the submission test cases against that exact
    tree, not against a working checkout.
-5. In the portal, create a new draft version of the existing plugin, upload the
+4. In the portal, create a new draft version of the existing plugin, upload the
    ZIP, write release notes describing what changed, and submit for review.
-6. Publish the approved version. It replaces the previous one.
+5. Publish the approved version. It replaces the previous one.
 
 Only one version can be published and one in review at a time. To change
 anything after submitting, cancel the review in the portal and resubmit. Skill
 safety and security scans can take up to two hours, so do not treat a
 resubmission as same-day.
 
-The repo-marketplace channel (`codex plugin marketplace add scandit/skills`) is
-unaffected by any of this and keeps updating from the repo. The two channels
+The repo-marketplace channel (`codex plugin marketplace add scandit/skills`) picks
+up each release straight from the repo, with no portal review. The two channels
 move at different speeds on purpose.
 
 ### Local install check
