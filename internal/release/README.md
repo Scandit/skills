@@ -4,8 +4,8 @@ Internal. This directory is stripped from every published plugin bundle.
 
 ## Cutting a release
 
-Every plugin and marketplace manifest carries one version, and every release
-bumps it. Installed copies on all channels only update when that string
+Every plugin manifest, and the Cursor and Copilot marketplace `metadata`,
+carries one version, and every release bumps it. Installed copies on all channels only update when that string
 changes, so a merge without a bump reaches nobody who already installed.
 
 1. `internal/release/versions.py set 1.2.0`, commit, merge.
@@ -24,9 +24,12 @@ manifests that drift apart never reach `dist`.
 [anthropics/claude-plugins-official](https://github.com/anthropics/claude-plugins-official/blob/main/.claude-plugin/marketplace.json).
 New commits go live only after Anthropic reviews them and moves the pin. No
 resubmission is needed, but until their automatic pickup ships, send our
-Anthropic partner contact the release tag and the `dist` commit built from it:
+Anthropic partner contact the release tag and the `dist` commit built from it.
+`publish-dist` creates that commit on GitHub, so wait for its run on the tagged
+commit to finish, then fetch before looking it up (empty output = not built yet):
 
 ```bash
+git fetch origin dist
 git log origin/dist --format=%H -1 --grep "built from main $(git rev-parse v1.2.0^{commit})"
 ```
 
