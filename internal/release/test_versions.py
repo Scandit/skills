@@ -34,6 +34,14 @@ class VersionsTest(unittest.TestCase):
         self.edit(".claude-plugin/plugin.json", lambda d: d.pop("version"))
         self.assertIn(".claude-plugin/plugin.json: no version", versions.check(self.root, None))
 
+    def test_missing_marketplace_metadata_version_fails(self):
+        for rel in versions.VERSIONED_MARKETPLACES:
+            with self.subTest(rel=rel):
+                self.setUp()
+                self.edit(rel, lambda d: d["metadata"].pop("version"))
+                self.assertIn(f"{rel}: no metadata.version", versions.check(self.root, None))
+                self.assertTrue(versions.set_version(self.root, "7.8.9"))
+
     def test_marketplace_entry_version_fails(self):
         self.edit(".github/plugin/marketplace.json", lambda d: d["plugins"][0].update(version="9.9.9"))
         self.assertTrue(any("plugin entry" in p for p in versions.check(self.root, None)))

@@ -32,6 +32,11 @@ MARKETPLACES = (
     ".github/plugin/marketplace.json",
     ".agents/plugins/marketplace.json",
 )
+# The Cursor and Copilot catalogs version themselves; the others have no field.
+VERSIONED_MARKETPLACES = (
+    ".cursor-plugin/marketplace.json",
+    ".github/plugin/marketplace.json",
+)
 SEMVER_RE = re.compile(r"^\d+\.\d+\.\d+$")
 VERSION_LINE_RE = re.compile(r'("version"\s*:\s*")([^"]*)(")')
 
@@ -50,6 +55,8 @@ def collect(root: Path) -> tuple[dict[str, str], list[str]]:
         data = json.loads((root / rel).read_text())
         if "version" in data.get("metadata", {}):
             versions[f"{rel} metadata"] = data["metadata"]["version"]
+        elif rel in VERSIONED_MARKETPLACES:
+            problems.append(f"{rel}: no metadata.version")
         for entry in data.get("plugins", []):
             if "version" in entry:
                 problems.append(f"{rel}: plugin entry {entry.get('name')!r} sets version; keep it in plugin.json only")
