@@ -55,6 +55,19 @@ class VersionsTest(unittest.TestCase):
         self.assertEqual(set(found.values()), {"7.8.9"})
         self.assertEqual(versions.check(self.root, "v7.8.9"), [])
 
+    def test_set_leaves_nested_version_keys_alone(self):
+        self.edit(".claude-plugin/plugin.json", lambda d: d.update(extra={"version": "2.0.0"}))
+        self.assertEqual(versions.set_version(self.root, "7.8.9"), [])
+        data = json.loads((self.root / ".claude-plugin/plugin.json").read_text())
+        self.assertEqual((data["version"], data["extra"]["version"]), ("7.8.9", "2.0.0"))
+
+    def test_set_refuses_ambiguous_version_line(self):
+        rel = ".claude-plugin/plugin.json"
+        self.edit(rel, lambda d: d.update(extra={"version": d["version"]}))
+        before = (self.root / ".codex-plugin/plugin.json").read_text()
+        self.assertTrue(any("more than once" in p for p in versions.set_version(self.root, "7.8.9")))
+        self.assertEqual((self.root / ".codex-plugin/plugin.json").read_text(), before)
+
     def test_set_rejects_non_semver(self):
         self.assertTrue(versions.set_version(self.root, "1.2"))
 

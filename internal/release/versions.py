@@ -38,7 +38,6 @@ VERSIONED_MARKETPLACES = (
     ".github/plugin/marketplace.json",
 )
 SEMVER_RE = re.compile(r"^\d+\.\d+\.\d+$")
-VERSION_LINE_RE = re.compile(r'("version"\s*:\s*")([^"]*)(")')
 
 
 def collect(root: Path) -> tuple[dict[str, str], list[str]]:
@@ -80,13 +79,21 @@ def check(root: Path, tag: str | None) -> list[str]:
 def set_version(root: Path, new: str) -> list[str]:
     if not SEMVER_RE.match(new):
         return [f"{new!r} is not MAJOR.MINOR.PATCH"]
-    _, problems = collect(root)
+    found, problems = collect(root)
     if problems:
         return problems
-    for rel in PLUGIN_MANIFESTS + MARKETPLACES:
-        path = root / rel
-        text = path.read_text()
-        path.write_text(VERSION_LINE_RE.sub(lambda m: m.group(1) + new + m.group(3), text))
+    # Text edit, not a JSON rewrite, so each file keeps its own formatting.
+    # Touch only the owned key's line; any other line with that value refuses.
+    edits: dict[str, str] = {}
+    for where, old in found.items():
+        rel = where.removesuffix(" metadata")
+        text = (root / rel).read_text()
+        line = re.compile(r'("version"\s*:\s*")' + re.escape(old) + r'(")')
+        if len(line.findall(text)) != 1:
+            return [f'{rel}: "version": "{old}" appears more than once; bump it by hand']
+        edits[rel] = line.sub(lambda m: m.group(1) + new + m.group(2), text)
+    for rel, text in edits.items():
+        (root / rel).write_text(text)
     return check(root, None)
 
 
