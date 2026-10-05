@@ -90,6 +90,7 @@ class _ScannerPageState extends State<ScannerPage>
   CameraPosition _position = CameraPosition.worldFacing;
   bool _torchOn = false;
   bool _permissionDenied = false;
+  bool _cameraUnavailable = false;
 
   @override
   void initState() {
@@ -115,17 +116,25 @@ class _ScannerPageState extends State<ScannerPage>
     await _useCamera(Camera.atPosition(_position));
   }
 
-  Future<void> _useCamera(Camera? next) async {
-    if (next == null) return;
+  // Returns false when no camera exists at that position; a failed switch keeps the current one.
+  Future<bool> _useCamera(Camera? next) async {
+    if (next == null) {
+      if (_camera == null && mounted) setState(() => _cameraUnavailable = true);
+      return false;
+    }
     final previous = _camera;
     previous?.removeListener(this);
     await previous?.switchToDesiredState(FrameSourceState.off);
+    _camera = next; // dispose() turns off whatever is current, even mid-setup
     await next.applySettings(BarcodeCapture.createRecommendedCameraSettings());
+    if (!mounted) return false;
     next.addListener(this);
     await _context.setFrameSource(next);
-    _camera = next;
+    if (!mounted) return false;
     _barcodeCapture.isEnabled = true;
     await next.switchToDesiredState(FrameSourceState.on);
+    if (!mounted) await next.switchToDesiredState(FrameSourceState.off);
+    return true;
   }
 
   void _toggleTorch() {
@@ -134,10 +143,10 @@ class _ScannerPageState extends State<ScannerPage>
   }
 
   Future<void> _switchCamera() async {
-    _position = _position == CameraPosition.worldFacing
+    final target = _position == CameraPosition.worldFacing
         ? CameraPosition.userFacing
         : CameraPosition.worldFacing;
-    await _useCamera(Camera.atPosition(_position));
+    if (await _useCamera(Camera.atPosition(target))) _position = target;
   }
 
   @override
@@ -152,8 +161,8 @@ class _ScannerPageState extends State<ScannerPage>
 
   @override
   Widget build(BuildContext context) => Scaffold(
-        body: _permissionDenied
-            ? const Center(child: Text('Camera permission denied')) // or the original errorBuilder widget
+        body: _permissionDenied || _cameraUnavailable // or the original errorBuilder widget
+            ? Center(child: Text(_permissionDenied ? 'Camera permission denied' : 'No camera available'))
             : _captureView,
       );
 
@@ -183,7 +192,7 @@ Rules this encodes:
 ## Step 7: Preserve scan-area logic
 
 - **Fixed "scan box" via `boundingBox` overlap tests** (ML Kit) → `settings.locationSelection = RectangularLocationSelection.withSize(SizeWithUnit(DoubleWithUnit(0.75, MeasureUnit.fraction), DoubleWithUnit(0.28, MeasureUnit.fraction)))`. The semantics differ (the code must be inside the region, not 70% overlapping); flag it as a judgment call.
-- **Hit-testing a barcode yourself** → `session.newlyRecognizedBarcode.location` (a `Quadrilateral` with `topLeft`/`topRight`/`bottomLeft`/`bottomRight` `Point`s in view coordinates).
+- **Hit-testing a barcode yourself** → `session.newlyRecognizedBarcode.location` (a `Quadrilateral` with `topLeft`/`topRight`/`bottomLeft`/`bottomRight` `Point`s in **camera-frame** coordinates). Convert it with `await captureView.viewQuadrilateralForFrameQuadrilateral(location)` before comparing with a scan box or painter laid out in the view.
 - **Per-frame quality gates and throttles** (blur checks, 300 ms throttles) have no BarcodeCapture equivalent: Scandit processes frames itself. Say they were removed and why; do not drop them silently.
 
 ## Step 8: ML Kit + `camera` pipelines
