@@ -37,6 +37,8 @@ Based on the user's request, load the appropriate reference file before respondi
 
 Only use APIs that are explicitly documented in the Scandit references below. Do not invent or guess method signatures, parameters, property names, or imports. If unsure whether an API exists or how it is called — or if an analyzer / runtime error occurs — fetch the relevant reference page before responding. Do not tell the user to check the docs themselves. After answering, always include the relevant link so the user can explore further.
 
+After writing or migrating code, run `dart analyze` (or `flutter analyze`) and fix every error and warning before answering.
+
 **Never construct or guess documentation URLs.** When you need a specific class or property's API page:
 1. First check whether the page you already fetched (e.g. the Advanced Configurations page) contains a direct hyperlink to it — topic pages link directly to relevant API symbols. Always request links alongside content in your fetch prompt.
 2. If no direct link was found, fetch the API index (see **Full API reference** in the table below), extract the actual link from it, and follow that.
