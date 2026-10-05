@@ -1,5 +1,5 @@
 // SOURCE: https://github.com/0xteamCookie/echo/blob/1bebf45403148097ac3b54a0ff5926b8eb3a638b/lib/screens/scanner_screen.dart
-// LICENSE: MIT
+// LICENSE: MIT (full notice: THIRD_PARTY_NOTICES.md)
 // PLUGIN: mobile_scanner 7.2.0
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';

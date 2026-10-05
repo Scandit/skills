@@ -59,7 +59,7 @@
         {"text": "The pop-once guard (the scanned bool flag, set to true after popping) is preserved so repeated didScan calls do not pop twice"},
         {"text": "The mounted check before touching context/setState is preserved in the scan callback (semantic)"},
         {"text": "The 'Aucun Code-Bare trouvé' fallback string for the no-barcode case is preserved or its removal is explained (BarcodeCapture only calls didScan with a barcode) (semantic)"},
-        {"text": "The WidgetsBindingObserver mixin, addObserver in initState and removeObserver in dispose are preserved, driving camera on/off from didChangeAppLifecycleState"},
+        {"text": "The WidgetsBindingObserver registration (addObserver in initState, removeObserver in dispose) is kept, and didChangeAppLifecycleState is added to turn the camera off on paused and on on resumed (the source registers the observer but never implements the callback)"},
         {"text": "The torch toggle (ToggleFlashlightButton) is kept and re-wired to Scandit (camera.desiredTorchState or TorchSwitchControl) instead of the mobile_scanner controller (semantic)"},
         {"text": "The switch-camera control (SwitchCameraButton) is kept and re-wired to Scandit (Camera.atPosition / switching the frame source) instead of the mobile_scanner controller (semantic)"},
         {"text": "The ScannerErrorWidget errorBuilder behaviour is addressed: either a Scandit-based permission/camera error path is kept or the output states that DataCaptureView has no errorBuilder equivalent (semantic)"},
@@ -67,6 +67,7 @@
         {"text": "dispose releases Scandit resources (removeListener, camera switched off) in place of controller.dispose()"},
         {"text": "Setup checklist mentions scandit_flutter_datacapture_barcode (and core) in pubspec.yaml and flutter pub get"},
         {"text": "Setup checklist mentions iOS NSCameraUsageDescription in ios/Runner/Info.plist"},
+        {"text": "Setup checklist mentions the Android runtime camera permission request (permission_handler Permission.camera.request() or equivalent)"},
         {"text": "Setup checklist mentions await ScanditFlutterDataCaptureBarcode.initialize() in main() before runApp"},
         {"text": "A summary of changes is shown listing which mobile_scanner APIs were removed and what Scandit APIs replaced them"}
       ],
@@ -101,6 +102,7 @@
         {"text": "dispose switches the camera off and removes the listener in place of controller.dispose(); camera on/off is managed (initState/dispose or lifecycle)"},
         {"text": "Setup checklist mentions scandit_flutter_datacapture_barcode (and core) in pubspec.yaml and flutter pub get"},
         {"text": "Setup checklist mentions iOS NSCameraUsageDescription in ios/Runner/Info.plist"},
+        {"text": "Setup checklist mentions the Android runtime camera permission request (permission_handler Permission.camera.request() or equivalent)"},
         {"text": "Setup checklist mentions await ScanditFlutterDataCaptureBarcode.initialize() in main() before runApp"},
         {"text": "A summary of changes is shown listing which mobile_scanner APIs were removed and what Scandit APIs replaced them"}
       ],
@@ -138,6 +140,7 @@
         {"text": "The 250x250 guide box Center overlay and the bottomSheet ('Code: Cut Mode', 'Scan Food' button) are preserved around the DataCaptureView"},
         {"text": "Setup checklist mentions scandit_flutter_datacapture_barcode (and core) in pubspec.yaml and flutter pub get"},
         {"text": "Setup checklist mentions iOS NSCameraUsageDescription in ios/Runner/Info.plist"},
+        {"text": "Setup checklist mentions the Android runtime camera permission request (permission_handler Permission.camera.request() or equivalent)"},
         {"text": "Setup checklist mentions await ScanditFlutterDataCaptureBarcode.initialize() in main() before runApp"},
         {"text": "A summary of changes is shown listing which mobile_scanner APIs were removed and what Scandit APIs replaced them"}
       ],
@@ -176,6 +179,7 @@
         {"text": "The AnimationController, TickerProviderStateMixin and WidgetsBindingObserver remain; dispose removes the observer and listener and turns the camera off"},
         {"text": "Setup checklist mentions scandit_flutter_datacapture_barcode (and core) in pubspec.yaml and flutter pub get"},
         {"text": "Setup checklist mentions iOS NSCameraUsageDescription in ios/Runner/Info.plist"},
+        {"text": "Setup checklist mentions the Android runtime camera permission request (permission_handler Permission.camera.request() or equivalent)"},
         {"text": "Setup checklist mentions await ScanditFlutterDataCaptureBarcode.initialize() in main() before runApp"},
         {"text": "A summary of changes is shown listing which mobile_scanner APIs were removed and what Scandit APIs replaced them"}
       ],
@@ -215,6 +219,7 @@
         {"text": "The controller exposes or accepts what the UI needs (e.g. the DataCaptureView/context) because the camera preview comes from DataCaptureView rather than CameraPreview (semantic)"},
         {"text": "Setup checklist mentions scandit_flutter_datacapture_barcode (and core) in pubspec.yaml and flutter pub get"},
         {"text": "Setup checklist mentions iOS NSCameraUsageDescription in ios/Runner/Info.plist"},
+        {"text": "Setup checklist mentions the Android runtime camera permission request (permission_handler Permission.camera.request() or equivalent)"},
         {"text": "Setup checklist mentions await ScanditFlutterDataCaptureBarcode.initialize() in main() before runApp"},
         {"text": "A summary of changes is shown listing which google_mlkit_barcode_scanning and camera APIs were removed and what Scandit APIs replaced them"}
       ],
@@ -258,6 +263,7 @@
         {"text": "The AppBar back button, 'Mode: ${formatConfig.presetLabel}' title, and bottom History/Settings _BottomAction buttons (Navigator.push to HistoryScreen/SettingsScreen) are preserved"},
         {"text": "Setup checklist mentions scandit_flutter_datacapture_barcode (and core) in pubspec.yaml and flutter pub get"},
         {"text": "Setup checklist mentions iOS NSCameraUsageDescription in ios/Runner/Info.plist"},
+        {"text": "Setup checklist mentions the Android runtime camera permission request (permission_handler Permission.camera.request() or equivalent)"},
         {"text": "Setup checklist mentions await ScanditFlutterDataCaptureBarcode.initialize() in main() before runApp"},
         {"text": "A summary of changes is shown listing which google_mlkit_barcode_scanning and camera APIs were removed and what Scandit APIs replaced them, including the stub change"}
       ],
@@ -295,6 +301,7 @@
         {"text": "The isScanning flag remains in state (or its removal is justified)"},
         {"text": "Setup checklist mentions scandit_flutter_datacapture_barcode (and core) in pubspec.yaml and flutter pub get"},
         {"text": "Setup checklist mentions iOS NSCameraUsageDescription in ios/Runner/Info.plist"},
+        {"text": "Setup checklist mentions the Android runtime camera permission request (permission_handler Permission.camera.request() or equivalent)"},
         {"text": "Setup checklist mentions await ScanditFlutterDataCaptureBarcode.initialize() in main() before runApp"},
         {"text": "A summary of changes is shown listing which mobile_scanner APIs were removed and what Scandit APIs replaced them"}
       ],

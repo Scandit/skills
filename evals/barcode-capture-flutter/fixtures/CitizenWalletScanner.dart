@@ -1,6 +1,6 @@
 // SOURCE: https://github.com/citizenwallet/app/blob/4bcc5c34a1712bdd8a6cd38186f5435effbefaac/lib/widgets/scanner/scanner.dart
 // EDITED: removed unused import 'package:flutter/foundation.dart' (analyze warning once local imports are stubbed)
-// LICENSE: MIT
+// LICENSE: MIT (full notice: THIRD_PARTY_NOTICES.md)
 // PLUGIN: mobile_scanner ^7.0.0
 import 'dart:async';
 

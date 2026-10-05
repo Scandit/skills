@@ -1,5 +1,5 @@
 // SOURCE: https://github.com/felipecastrosales/payflow/blob/e49fe9284890acccf2a32ce557328270fed7d4b9/lib/modules/barcode_scanner/barcode_scanner_controller.dart
-// LICENSE: MIT
+// LICENSE: MIT (full notice: THIRD_PARTY_NOTICES.md)
 // PLUGIN: google_mlkit_barcode_scanning ^0.12.0 + camera ^0.11.0+2
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';

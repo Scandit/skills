@@ -1,5 +1,5 @@
 // SOURCE: https://github.com/HackErSEx3/barcode_scanner_app/blob/a22151f8444c57803dd6f4c08f709a0b99731d28/lib/screens/barcode_scanner_screen.dart
-// LICENSE: MIT
+// LICENSE: MIT (full notice: THIRD_PARTY_NOTICES.md)
 // PLUGIN: google_mlkit_barcode_scanning ^0.10.0 + camera ^0.10.5+5
 import 'dart:io';
 

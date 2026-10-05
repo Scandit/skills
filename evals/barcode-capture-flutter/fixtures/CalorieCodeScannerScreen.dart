@@ -1,5 +1,5 @@
 // SOURCE: https://github.com/roddhc/caloriecode/blob/19443cb347330434fc017c1753359b101b5f3ca6/lib/screens/scanner_screen.dart
-// LICENSE: MIT
+// LICENSE: MIT (full notice: THIRD_PARTY_NOTICES.md)
 // PLUGIN: mobile_scanner ^7.2.0
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';

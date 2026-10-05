@@ -1,5 +1,5 @@
 // SOURCE: https://github.com/TobyG74/cahaya-erlangga/blob/9bb717c61dba3936c5a7e5b8c60cc3feb77cf6d4/lib/widgets/barcode_scanner.dart
-// LICENSE: MIT
+// LICENSE: MIT (full notice: THIRD_PARTY_NOTICES.md)
 // PLUGIN: mobile_scanner ^5.2.3
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';

@@ -1,5 +1,5 @@
 // SOURCE: https://github.com/lachouettecoop/InventoryCoop/blob/28fc307e288667758a63a43ed157a969543f42e6/lib/barcode_scanner.dart
-// LICENSE: MIT
+// LICENSE: MIT (full notice: THIRD_PARTY_NOTICES.md)
 // PLUGIN: mobile_scanner ^6.0.2
 import 'dart:async';
 
