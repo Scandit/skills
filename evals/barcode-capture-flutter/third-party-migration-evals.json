@@ -70,6 +70,7 @@
         {"text": "Setup checklist mentions Android minSdk 24 or higher and replacing the licence-key placeholder with a real key"},
         {"text": "Setup checklist mentions the Android runtime camera permission request (permission_handler Permission.camera.request() or equivalent)"},
         {"text": "Setup checklist mentions await ScanditFlutterDataCaptureBarcode.initialize() in main() before runApp"},
+        {"text": "Setup checklist calls WidgetsFlutterBinding.ensureInitialized() in main() before the await"},
         {"text": "A summary of changes is shown listing which mobile_scanner APIs were removed and what Scandit APIs replaced them"}
       ],
       "tags": ["third-party-migration"]
@@ -106,6 +107,7 @@
         {"text": "Setup checklist mentions Android minSdk 24 or higher and replacing the licence-key placeholder with a real key"},
         {"text": "Setup checklist mentions the Android runtime camera permission request (permission_handler Permission.camera.request() or equivalent)"},
         {"text": "Setup checklist mentions await ScanditFlutterDataCaptureBarcode.initialize() in main() before runApp"},
+        {"text": "Setup checklist calls WidgetsFlutterBinding.ensureInitialized() in main() before the await"},
         {"text": "A summary of changes is shown listing which mobile_scanner APIs were removed and what Scandit APIs replaced them"}
       ],
       "tags": ["third-party-migration"]
@@ -145,6 +147,7 @@
         {"text": "Setup checklist mentions Android minSdk 24 or higher and replacing the licence-key placeholder with a real key"},
         {"text": "Setup checklist mentions the Android runtime camera permission request (permission_handler Permission.camera.request() or equivalent)"},
         {"text": "Setup checklist mentions await ScanditFlutterDataCaptureBarcode.initialize() in main() before runApp"},
+        {"text": "Setup checklist calls WidgetsFlutterBinding.ensureInitialized() in main() before the await"},
         {"text": "A summary of changes is shown listing which mobile_scanner APIs were removed and what Scandit APIs replaced them"}
       ],
       "tags": ["third-party-migration"]
@@ -185,6 +188,7 @@
         {"text": "Setup checklist mentions Android minSdk 24 or higher and replacing the licence-key placeholder with a real key"},
         {"text": "Setup checklist mentions the Android runtime camera permission request (permission_handler Permission.camera.request() or equivalent)"},
         {"text": "Setup checklist mentions await ScanditFlutterDataCaptureBarcode.initialize() in main() before runApp"},
+        {"text": "Setup checklist calls WidgetsFlutterBinding.ensureInitialized() in main() before the await"},
         {"text": "A summary of changes is shown listing which mobile_scanner APIs were removed and what Scandit APIs replaced them"}
       ],
       "tags": ["third-party-migration"]
@@ -217,8 +221,8 @@
         {"text": "getAvailableCameras is replaced by Scandit camera setup (Camera.defaultCamera, applyCameraSettings, setFrameSource, camera on); the try/catch still sets BarcodeScannerStatus.error(e.toString()) with the debugPrint of error and stack"},
         {"text": "scanWithCamera is preserved: it sets BarcodeScannerStatus.available() and the 10 second Future.delayed that sets BarcodeScannerStatus.error('Timeout de leitura de boleto') when status.hasBarcode is false"},
         {"text": "The static defaultSize constant and the status getter are preserved"},
-        {"text": "scanWithImagePicker (image_picker gallery decode via InputImage.fromFilePath) is explicitly called out as having no BarcodeCapture equivalent, since BarcodeCapture only scans live camera frames; the output says so rather than faking it (semantic)"},
-        {"text": "The output gives the user an honest option for the gallery feature: drop it or evaluate another Scandit API (no ML Kit dependency remains), without inventing a BarcodeCapture image-file API (semantic)"},
+        {"text": "scanWithImagePicker is migrated to Scandit, not dropped: the picked file's bytes go to ImageFrameSource.create(bytes), which is set as the context frame source and switched on so BarcodeCapture decodes the still image; the output does not claim Scandit cannot decode gallery images (semantic)"},
+        {"text": "The gallery path keeps no ML Kit code (InputImage.fromFilePath removed) and invents no Scandit API beyond ImageFrameSource (semantic)"},
         {"text": "The controller's dispose is preserved with _disposed = true and releases Scandit resources (removeListener, camera off) instead of cameraController.dispose()/barcodeScanner.close()"},
         {"text": "The controller exposes or accepts what the UI needs (e.g. the DataCaptureView/context) because the camera preview comes from DataCaptureView rather than CameraPreview (semantic)"},
         {"text": "Setup checklist mentions scandit_flutter_datacapture_barcode (and core) in pubspec.yaml and flutter pub get"},
@@ -226,6 +230,7 @@
         {"text": "Setup checklist mentions Android minSdk 24 or higher and replacing the licence-key placeholder with a real key"},
         {"text": "Setup checklist mentions the Android runtime camera permission request (permission_handler Permission.camera.request() or equivalent)"},
         {"text": "Setup checklist mentions await ScanditFlutterDataCaptureBarcode.initialize() in main() before runApp"},
+        {"text": "Setup checklist calls WidgetsFlutterBinding.ensureInitialized() in main() before the await"},
         {"text": "A summary of changes is shown listing which google_mlkit_barcode_scanning and camera APIs were removed and what Scandit APIs replaced them"}
       ],
       "tags": ["third-party-migration"]
@@ -271,6 +276,7 @@
         {"text": "Setup checklist mentions Android minSdk 24 or higher and replacing the licence-key placeholder with a real key"},
         {"text": "Setup checklist mentions the Android runtime camera permission request (permission_handler Permission.camera.request() or equivalent)"},
         {"text": "Setup checklist mentions await ScanditFlutterDataCaptureBarcode.initialize() in main() before runApp"},
+        {"text": "Setup checklist calls WidgetsFlutterBinding.ensureInitialized() in main() before the await"},
         {"text": "A summary of changes is shown listing which google_mlkit_barcode_scanning and camera APIs were removed and what Scandit APIs replaced them, including the stub change"}
       ],
       "tags": ["third-party-migration"]
@@ -310,6 +316,7 @@
         {"text": "Setup checklist mentions Android minSdk 24 or higher and replacing the licence-key placeholder with a real key"},
         {"text": "Setup checklist mentions the Android runtime camera permission request (permission_handler Permission.camera.request() or equivalent)"},
         {"text": "Setup checklist mentions await ScanditFlutterDataCaptureBarcode.initialize() in main() before runApp"},
+        {"text": "Setup checklist calls WidgetsFlutterBinding.ensureInitialized() in main() before the await"},
         {"text": "A summary of changes is shown listing which mobile_scanner APIs were removed and what Scandit APIs replaced them"}
       ],
       "tags": ["third-party-migration"]

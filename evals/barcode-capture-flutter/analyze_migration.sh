@@ -18,7 +18,7 @@ for s in "$@"; do cp "$s" "$DIR/lib/stubs/$(basename "$s")"; done
 cp "$FILE" "$DIR/lib/$(basename "$FILE")"
 if [ $KEEP = 1 ]; then cp "$HERE/fixtures/pubspec.yaml" "$DIR/pubspec.yaml"
 else sed '/# BEGIN third-party scanners/,/# END third-party scanners/d' "$HERE/fixtures/pubspec.yaml" > "$DIR/pubspec.yaml"; fi
-( cd "$DIR" && "$FLUTTER" pub get >/dev/null 2>&1 \
+( cd "$DIR" && "$FLUTTER" pub get >/dev/null \
   && "$FLUTTER" analyze --no-fatal-infos --no-fatal-warnings "lib/$(basename "$FILE")" ) \
   && echo "ANALYZE-PASS: $FILE" \
   || { echo "ANALYZE-FAIL: $FILE"; exit 1; }
