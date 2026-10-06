@@ -23,7 +23,7 @@ Identify the plugin by its imports and types: `MobileScannerController`, the `Mo
 
 ## Step 2: Remove the third-party plugin
 
-1. Delete the dependency from `pubspec.yaml` once nothing imports it (keep it if a gallery/still-image path stays, see Step 7).
+1. Delete the dependency from `pubspec.yaml` once nothing imports it (a gallery/still-image path migrates too, see Step 7).
 2. Remove its import and types (`MobileScannerController`, `MobileScanner`, `onDetect`, `BarcodeFormat`).
 3. Add `scandit_flutter_datacapture_barcode` (pulls in core) and `permission_handler`; run `flutter pub get`.
 
@@ -117,7 +117,7 @@ Imports: `scandit_flutter_datacapture_barcode.dart`, `scandit_flutter_datacaptur
 
 `CameraController` + `startImageStream` + `InputImage` + `processImage`: delete the whole frame-conversion and decode path; SparkScan owns camera and decoding. Keep the owner class's public status/notifier API and publish results from `didScan`; the consumer widget must now render `SparkScanView` instead of `CameraPreview`. `boundingBox` region checks (scan box) have no SparkScan equivalent; use `barcode-capture-flutter` (location selection) if the region logic must stay.
 
-**Gallery / still-image decode** (`InputImage.fromFilePath`, `image_picker`) has **no SparkScan path**; keep it on `google_mlkit_barcode_scanning` (leave the dependency) or flag it as unsupported. Never replace it with an error status silently.
+**Gallery / still-image decode** (`InputImage.fromFilePath`, `image_picker`) has no SparkScan path; decode it with BarcodeCapture and an `ImageFrameSource` instead (`ImageFrameSource.create(bytes)` set as the context's frame source, switched to `FrameSourceState.on`; one frame per switch to On, see `barcode-capture-flutter` third-party migration Step 8). Never replace it with an error status silently.
 
 ## Step 8: Verify and fix
 
@@ -126,12 +126,12 @@ Run `dart analyze` on the migrated file (or `flutter analyze`) and fix every err
 ## Step 9: Setup checklist & summary
 
 **Setup checklist:**
-1. Remove `mobile_scanner` from `pubspec.yaml` (unless a gallery path stays); add `scandit_flutter_datacapture_barcode` and `permission_handler`, then run `flutter pub get`.
+1. Remove `mobile_scanner` from `pubspec.yaml`; add `scandit_flutter_datacapture_barcode` and `permission_handler`, then run `flutter pub get`.
 2. Add `NSCameraUsageDescription` to `ios/Runner/Info.plist`; on Android the runtime request is in the screen.
 3. Replace `'-- ENTER YOUR SCANDIT LICENSE KEY HERE --'` with your key (see **Licence key** in `SKILL.md`).
 4. Ensure `main()` calls `WidgetsFlutterBinding.ensureInitialized()` then `await ScanditFlutterDataCaptureBarcode.initialize()` before `runApp(...)`.
 
-**Summary**: list what was removed (`mobile_scanner` controller, widget, `onDetect`) and added (SparkScan mode, listener, `SparkScanView`), the format→symbology mapping, and every judgment call (new scanning UI, duplicate filter, removed torch/switch buttons, dropped error UI, kept gallery path, symbologies not narrowed). Do not list code that was already correct.
+**Summary**: list what was removed (`mobile_scanner` controller, widget, `onDetect`) and added (SparkScan mode, listener, `SparkScanView`), the format→symbology mapping, and every judgment call (new scanning UI, duplicate filter, removed torch/switch buttons, dropped error UI, gallery path moved to `ImageFrameSource`, symbologies not narrowed). Do not list code that was already correct.
 
 ## API reference
 
