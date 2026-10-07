@@ -1,0 +1,31 @@
+name: third_party_migration_fixtures
+description: Resolves the third-party-migration fixtures and their stubs. analyze_migration.sh drops the third-party scanner block for migrated outputs.
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.7.0 <4.0.0"
+  flutter: ">=3.29.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  scandit_flutter_datacapture_core: ^8.6.0
+  scandit_flutter_datacapture_barcode: ^8.6.0
+
+  # Non-scanner packages the fixtures use; permission_handler is what the skill prescribes.
+  provider: ^6.1.0
+  lottie: ^3.1.0
+  image_picker: ^1.1.2
+  permission_handler: ^11.3.0
+
+  # InventoryCoopScanner targets mobile_scanner 6: two v6-only API errors under this pin, no missing imports.
+  # BEGIN third-party scanners
+  mobile_scanner: ^7.2.0
+  google_mlkit_barcode_scanning: ^0.12.0
+  camera: ^0.11.0+2
+  # END third-party scanners
+
+dev_dependencies:
+  flutter_lints: ^5.0.0
