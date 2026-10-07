@@ -212,6 +212,7 @@ The AIO view owns the frame source, so an app with a scan-from-photo path (see *
 vision-camera v5 `scanCodesInImageAsync(image)` and expo-camera `scanFromURLAsync(url, types)` decode a file; Scandit does this with `ImageFrameSource`, so the still-image path migrates too (never answer "there is no API for it"). Read the file as a **base64 string**, create the source, make it the frame source and switch it on; the result arrives in the same `didScan`. Read the file with the library the app already has: `expo-file-system` (`await new File(uri).base64()`) in an Expo app, otherwise `react-native-fs` (`RNFS.readFile(path, 'base64')`; add the dependency). Compiled against 8.6.1:
 
 ```ts
+import { AppState } from 'react-native';
 import RNFS from 'react-native-fs';
 import { Camera, DataCaptureContext, FrameSourceState, ImageFrameSource } from 'scandit-react-native-datacapture-core';
 import { BarcodeCapture } from 'scandit-react-native-datacapture-barcode';
@@ -222,16 +223,18 @@ export const scanImageFile = async (
   path: string,
   camera: Camera | null,
   barcodeCapture: BarcodeCapture,
-  isScreenActive: () => boolean, // false once the screen unmounts or the app backgrounds
+  isMounted: () => boolean, // false once the scan screen unmounts
 ) => {
   const base64 = await RNFS.readFile(path, 'base64');
+  if (!isMounted()) return;
   barcodeCapture.isEnabled = true;
   const source = ImageFrameSource.create(base64);
   source.addListener({
     didChangeState: async (_source, state) => {
-      if (state !== FrameSourceState.Off || !camera || !isScreenActive()) return;
+      if (state !== FrameSourceState.Off || !camera || !isMounted()) return;
       await dataCaptureContext.setFrameSource(camera);
-      if (isScreenActive()) await camera.switchToDesiredState(FrameSourceState.On);
+      // In the background, the screen's AppState handler switches it On on return.
+      if (isMounted() && AppState.currentState === 'active') await camera.switchToDesiredState(FrameSourceState.On);
     },
   });
   await dataCaptureContext.setFrameSource(source);
