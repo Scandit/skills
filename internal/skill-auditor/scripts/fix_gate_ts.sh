@@ -12,7 +12,7 @@ set -euo pipefail
 PLAT=${1:?usage: fix_gate_ts.sh <web|rn|capacitor> <ts-file> [version]}
 FILE=${2:?usage: fix_gate_ts.sh <web|rn|capacitor> <ts-file> [version]}
 VER=${3:-8.4.0}
-TS_VERSION=5.9.3
+TS_VERSION=7.0.2
 command -v npm >/dev/null 2>&1 || { echo "GATE-SKIP: npm not found"; exit 3; }
 case "$PLAT" in
   web)       CORE="@scandit/web-datacapture-core"; BC="@scandit/web-datacapture-barcode"; LIB='"es2019", "dom"';;
@@ -28,7 +28,7 @@ cat > "$DIR/package.json" <<EOF
 EOF
 cat > "$DIR/tsconfig.json" <<EOF
 { "compilerOptions": { "strict": true, "noEmit": true, "skipLibCheck": true,
-  "moduleResolution": "node", "esModuleInterop": true, "target": "es2019",
+  "module": "esnext", "moduleResolution": "bundler", "esModuleInterop": true, "target": "es2019",
   "lib": [$LIB], "types": [] }, "include": ["src/**/*.ts"] }
 EOF
 ( cd "$DIR" && npm install --ignore-scripts --no-audit --no-fund >/dev/null 2>&1 && node_modules/.bin/tsc --noEmit ) \
