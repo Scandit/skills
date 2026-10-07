@@ -67,7 +67,7 @@ Names are the vision-camera (v4 and v5) spelling; expo-camera drops the dash (`'
 |---|---|
 | `onCodeScanned(codes)` / `onBarcodeScanned(barcodes)` / `onBarcodeScanned(result)` | `didScan(mode, session)` — read `session.newlyRecognizedBarcode` (a single `Barcode \| null`) |
 | `code.value` / `barcode.rawValue` / `result.data` | `barcode.data` (`string \| null`; keep the old null guard) |
-| `code.type` / `barcode.format` / `result.type` | `barcode.symbology` (`Symbology`); show `new SymbologyDescription(barcode.symbology).readableName`. App models that stored the old type string now store a `Symbology` or that name. |
+| `code.type` / `barcode.format` / `result.type` | `barcode.symbology` (`Symbology`); use `new SymbologyDescription(barcode.symbology).readableName` for display only. If the app stores, compares or passes on the old format string (`'qr'`, `'code128'`), keep that contract: map each enabled `Symbology` back to its old string with a small lookup. |
 | `code.corners` / `barcode.cornerPoints` / `result.cornerPoints`, `bounds` | `barcode.location` (`Quadrilateral` in **frame** coordinates). To compare with anything laid out in the view call `await view.viewQuadrilateralForFrameQuadrilateral(barcode.location)` on the `DataCaptureView`. |
 | "scanned once" flag (`scanned ? undefined : handleScan`) | `barcodeCapture.isEnabled = false` at the top of `didScan`; the old "Scan again" button sets it back to `true`. |
 | Duplicate suppression by value | keep the app's own dedupe in `didScan`; `settings.codeDuplicateFilter` (milliseconds, `-1` = once) only changes how often the SDK repeats a code. Mention a changed filter as a judgment call. |
@@ -76,7 +76,7 @@ Move the body of the old callback into `didScan` unchanged (dedupe, state update
 
 ## Camera, permission, torch, facing, lifecycle
 
-`DataCaptureView` does not request camera permission on Android: replace the library's `useCameraPermission` / `useCameraPermissions` with the `requestCameraPermission()` helper from `references/integration.md` Step 14 (`PermissionsAndroid` on Android; iOS prompts when the camera first starts and needs `NSCameraUsageDescription`). Core 8.6+ also exports a `useCameraPermission()` hook, but it is optimistic on iOS, so keep the explicit request. Keep the original's denied screen. The working shape, compiled against 8.6.1 (keep the app's own list UI and styles):
+`DataCaptureView` does not request camera permission on Android: replace the library's `useCameraPermission` / `useCameraPermissions` with the `requestCameraPermission()` helper from `references/integration.md` Step 14 (`PermissionsAndroid` on Android; iOS prompts when the camera first starts and needs `NSCameraUsageDescription`). That helper (and core 8.6+'s `useCameraPermission()` hook) returns granted on iOS without checking, so a denial there shows a black view rather than the denied screen. If the original showed a denied screen on iOS, keep it by reading the real iOS status (`react-native-permissions`: `request(PERMISSIONS.IOS.CAMERA)`) and gate on that; otherwise flag the change as a judgment call. The working shape, compiled against 8.6.1 (keep the app's own list UI and styles):
 
 ```tsx
 import React, { useCallback, useEffect, useRef, useState } from 'react';
@@ -132,6 +132,7 @@ export const ScanScreen = () => {
 
   useEffect(() => {
     if (!permission) return;
+    let mounted = true;
     const startCamera = async () => {
       if (!cameraRef.current) {
         const camera = Camera.withSettings(BarcodeCapture.createRecommendedCameraSettings());
@@ -139,13 +140,19 @@ export const ScanScreen = () => {
         cameraRef.current = camera;
         await dataCaptureContext.setFrameSource(camera);
       }
-      await cameraRef.current.switchToDesiredState(FrameSourceState.On);
+      // Teardown or backgrounding may have happened during the await.
+      if (mounted && AppState.currentState === 'active') {
+        await cameraRef.current.switchToDesiredState(FrameSourceState.On);
+      }
     };
     void startCamera();
     const subscription = AppState.addEventListener('change', state => {
       void cameraRef.current?.switchToDesiredState(state === 'active' ? FrameSourceState.On : FrameSourceState.Off);
     });
-    return () => subscription.remove();
+    return () => {
+      mounted = false;
+      subscription.remove();
+    };
   }, [permission]);
 
   useEffect(() => {
@@ -211,14 +218,20 @@ import { BarcodeCapture } from 'scandit-react-native-datacapture-barcode';
 
 const dataCaptureContext = DataCaptureContext.sharedInstance;
 
-export const scanImageFile = async (path: string, camera: Camera | null, barcodeCapture: BarcodeCapture) => {
+export const scanImageFile = async (
+  path: string,
+  camera: Camera | null,
+  barcodeCapture: BarcodeCapture,
+  isScreenActive: () => boolean, // false once the screen unmounts or the app backgrounds
+) => {
   const base64 = await RNFS.readFile(path, 'base64');
   barcodeCapture.isEnabled = true;
   const source = ImageFrameSource.create(base64);
   source.addListener({
-    didChangeState: (_source, state) => {
-      if (state !== FrameSourceState.Off || !camera) return;
-      void dataCaptureContext.setFrameSource(camera).then(() => camera.switchToDesiredState(FrameSourceState.On));
+    didChangeState: async (_source, state) => {
+      if (state !== FrameSourceState.Off || !camera || !isScreenActive()) return;
+      await dataCaptureContext.setFrameSource(camera);
+      if (isScreenActive()) await camera.switchToDesiredState(FrameSourceState.On);
     },
   });
   await dataCaptureContext.setFrameSource(source);
@@ -238,7 +251,7 @@ Type-check the migrated file (`npx tsc --noEmit`) and fix every error. The usual
 
 **Setup checklist:**
 1. Remove the old scanner packages from `package.json`; install `npm install scandit-react-native-datacapture-core scandit-react-native-datacapture-barcode` (plus `react-native-fs` only if the still-image path needs it).
-2. Run `npx pod-install` (iOS). Android auto-links.
+2. Run `npx pod-install` (iOS). Android auto-links. **Expo app:** Scandit's packages are native modules and do not run in Expo Go, so build a development client instead (`npx expo prebuild`, then `npx expo run:ios` / `npx expo run:android`), and set `NSCameraUsageDescription` under `expo.ios.infoPlist` in `app.json`, since a managed project has no `ios/` directory until prebuild.
 3. Keep or add `NSCameraUsageDescription` in `ios/<App>/Info.plist`. On Android the plugin declares the manifest permission; the screen requests it at runtime.
 4. Replace `'-- ENTER YOUR SCANDIT LICENSE KEY HERE --'` with your key (see **Licence key** in `SKILL.md`).
 5. Restart Metro with `--reset-cache`.
