@@ -4,7 +4,7 @@ description: Smart Label Capture (Scandit `LabelCapture`) in web/browser (TypeSc
 license: Apache-2.0
 metadata:
   author: scandit
-  version: "1.0.3"
+  version: "1.0.4"
 ---
 
 # Label Capture Web Skill

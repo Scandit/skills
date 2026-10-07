@@ -4,7 +4,7 @@ description: Scandit Barcode Capture (`BarcodeCapture`) in web/browser (TypeScri
 license: Apache-2.0
 metadata:
   author: scandit
-  version: "1.0.3"
+  version: "1.0.4"
 ---
 
 # BarcodeCapture Web Skill
@@ -25,7 +25,9 @@ Web-specific gotchas worth flagging:
 - `codeDuplicateFilter` is a **number in milliseconds** on web (e.g. `500`) — not a `TimeInterval` object like Android.
 - `BarcodeCapture.recommendedCameraSettings` is a **static property**, not a method call.
 - The DOM element passed to `view.connectToElement()` must have defined dimensions and positioning — a zero-sized or unpositioned element will not render the camera preview.
-- Camera is managed manually: call `context.frameSource.switchToDesiredState(FrameSourceState.On)` to start and `FrameSourceState.Off` to stop. The camera does not stop automatically.
+- Turn the camera on with `context.frameSource.switchToDesiredState(FrameSourceState.On)` and off with `FrameSourceState.Off`. Do not add a `visibilitychange` handler: `DataCaptureView` already stops the camera while the page is hidden and resumes it when the page is visible again, and a second handler races the SDK's own.
+- When the SDK is loaded from a CDN, pin one exact version (for example `@8.6.1`) in every URL: the import map and `libraryLocation`. A floating `@8` lets the JavaScript and the engine worker resolve to different releases, which breaks start-up.
+- `DataCaptureContext.forLicenseKey()` is idempotent, so calling it again is safe. `dispose()` releases the context, its engine and the camera: call `forLicenseKey()` again before scanning after it.
 
 ## Intent Routing
 

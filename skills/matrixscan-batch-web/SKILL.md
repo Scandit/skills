@@ -4,7 +4,7 @@ description: MatrixScan Batch (MatrixScan, BarcodeBatch, legacy BarcodeTracking)
 license: Apache-2.0
 metadata:
   author: scandit
-  version: "1.0.3"
+  version: "1.0.4"
 ---
 
 # MatrixScan Batch Web Skill
@@ -25,12 +25,14 @@ Web-specific gotchas worth flagging:
 - `clearTrackedBarcodeViews()` on `BarcodeBatchAdvancedOverlay` is also **synchronous** (returns `void`).
 - `BarcodeBatch.recommendedCameraSettings` is a **static property**, not a method call.
 - The module loader is `barcodeCaptureLoader()` (from `@scandit/web-datacapture-barcode`) — there is no separate `barcodeBatchLoader`. Both BarcodeCapture and BarcodeBatch use the same loader.
-- **Multithreading is mandatory for BarcodeBatch.** Without `Cross-Origin-Opener-Policy: same-origin` and `Cross-Origin-Embedder-Policy: require-corp` (self-hosted) or `credentialless` (CDN), the SDK falls back to single-threaded mode and batch tracking will be too slow to use.
+- **Multithreading is mandatory for BarcodeBatch.** Without `Cross-Origin-Opener-Policy: same-origin` and `Cross-Origin-Embedder-Policy: require-corp`, the SDK falls back to single-threaded mode and batch tracking will be too slow to use. `require-corp` also works when the SDK comes from the jsDelivr CDN; do not recommend `credentialless`, which Safari does not support.
 - **AR views on web use plain HTML elements** — `TrackedBarcodeView.withHTMLElement(element, options)` returns a `Promise<TrackedBarcodeView>`. Pass that Promise directly to `setViewForTrackedBarcode` or return it from `viewForTrackedBarcode` — both accept a Promise. This is NOT a subclass pattern.
 - `session.removedTrackedBarcodes` returns `string[]` (identifiers serialized as strings) — use `Number.parseInt(id, 10)` when comparing against `TrackedBarcode.identifier` (which is a `number`).
 - The `DataCaptureView` can be created before context init: `new DataCaptureView()` → `connectToElement(element)` → `await view.setContext(context)`. This allows a progress bar to be shown during SDK loading. The alternative `await DataCaptureView.forContext(context)` is equally valid.
 - The DOM element passed to `view.connectToElement()` must have defined dimensions and a set `position` (e.g. `fixed` or `absolute`) — zero-sized or unpositioned containers will not render the camera preview.
-- Camera is managed manually: call `await context.frameSource?.switchToDesiredState(FrameSourceState.On)` to start and `FrameSourceState.Off` to stop. The camera does not stop automatically when the page loses focus.
+- Turn the camera on with `await context.frameSource?.switchToDesiredState(FrameSourceState.On)` and off with `FrameSourceState.Off`. Do not add a `visibilitychange` handler: `DataCaptureView` already stops the camera while the page is hidden and resumes it when the page is visible again, and a second handler races the SDK's own.
+- When the SDK is loaded from a CDN, pin one exact version (for example `@8.6.1`) in every URL: the import map and `libraryLocation`. A floating `@8` lets the JavaScript and the engine worker resolve to different releases, which breaks start-up.
+- `DataCaptureContext.forLicenseKey()` is idempotent, so calling it again is safe. Use `DataCaptureContext.sharedInstance` instead of caching the context. `dispose()` releases the context, its engine and the camera: call `forLicenseKey()` again before scanning after it.
 
 ## Intent Routing
 

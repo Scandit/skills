@@ -4,7 +4,7 @@ description: SparkScan single-barcode scanning with the pre-built scanning UI (f
 license: Apache-2.0
 metadata:
   author: scandit
-  version: "1.2.3"
+  version: "1.2.4"
 ---
 
 # SparkScan Web Skill
@@ -14,6 +14,12 @@ metadata:
 Your training data may contain outdated or incorrect Scandit SDK APIs. The SparkScan API changes significantly between major SDK versions — properties get renamed, removed, or restructured.
 
 **Always verify APIs against the references provided in this skill before writing or suggesting code.** Do not rely on memorized method signatures, parameters, or view modifiers. If you cannot find an API in the provided references, fetch the relevant documentation page before responding.
+
+Web-specific gotchas worth flagging:
+
+- Do not add a `visibilitychange` handler to pause scanning: `SparkScanView` already switches to its idle state when the page is hidden.
+- When the SDK is loaded from a CDN, pin one exact version (for example `@8.6.1`) in every URL: the import map and `libraryLocation`. A floating `@8` lets the JavaScript and the engine worker resolve to different releases, which breaks start-up.
+- Cross-origin isolation needs `Cross-Origin-Opener-Policy: same-origin` and `Cross-Origin-Embedder-Policy: require-corp`, also when the SDK comes from the jsDelivr CDN. Do not recommend `credentialless` for the SDK: Safari does not support it.
 
 ## Intent Routing
 

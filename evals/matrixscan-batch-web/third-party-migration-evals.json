@@ -4,7 +4,7 @@
     {
       "id": "tpm0",
       "prompt": "I have a web app using ZXing-js (@zxing/library + @zxing/browser) to continuously scan multiple barcodes by re-decoding the video feed and collecting distinct values. I want to replace it with Scandit MatrixScan Batch so all visible barcodes are tracked at once. It needs to keep reading EAN-13, UPC-A, Code 128, and QR. Here is the scanner: zxing-scanner.ts.",
-      "expected_output": "The skill removes the ZXing-js APIs (BrowserMultiFormatReader, decodeFromVideoDevice, BarcodeFormat/DecodeHintType hints, the <video> element) and replaces them with MatrixScan Batch: DataCaptureContext.forLicenseKey, BarcodeBatchSettings with EAN13UPCA + Code128 + QR, BarcodeBatch.forContext, a DataCaptureView, a BarcodeBatchBasicOverlay, and an IBarcodeBatchListener.didUpdateSession that iterates session.addedTrackedBarcodes. The ScannedBarcode interface and the dedupe/accumulate logic are preserved (dedupe moved to the tracking identifier). It maps ZXing BarcodeFormat to the correct web Symbology values, flags COOP/COEP as a new requirement, and shows a summary.",
+      "expected_output": "The skill removes the ZXing-js APIs (BrowserMultiFormatReader, decodeFromVideoDevice, BarcodeFormat/DecodeHintType hints, the <video> element) and replaces them with MatrixScan Batch: DataCaptureContext.forLicenseKey, BarcodeBatchSettings with EAN13UPCA + Code128 + QR, BarcodeBatch.forContext, a DataCaptureView, a BarcodeBatchBasicOverlay, and an IBarcodeBatchListener.didUpdateSession that iterates session.addedTrackedBarcodes. The ScannedBarcode interface and the dedupe/accumulate logic are preserved (dedupe stays keyed on barcode.data, because a barcode that leaves the frame and comes back gets a new tracking identifier). It maps ZXing BarcodeFormat to the correct web Symbology values, flags COOP/COEP as a new requirement, and shows a summary.",
       "files": [
         "fixtures/zxing-scanner.ts"
       ],
@@ -61,7 +61,7 @@
           "text": "The ScannedBarcode interface (or equivalent data model) is preserved"
         },
         {
-          "text": "Deduplication is preserved and keyed on the tracking identifier (trackedBarcode.identifier) instead of a Set of strings (semantic)"
+          "text": "Deduplication is preserved and keyed on the barcode data (trackedBarcode.barcode.data), not on trackedBarcode.identifier (semantic)"
         },
         {
           "text": "Cross-origin isolation (COOP/COEP) headers are flagged as a new requirement that ZXing-js did not need (semantic)"

@@ -56,11 +56,13 @@ async function run(): Promise<void> {
 
     advancedOverlay.listener = {
         viewForTrackedBarcode: (_overlay, trackedBarcode) => {
+            const pixelRatio = window.devicePixelRatio;
             const el = document.createElement("div");
             el.textContent = trackedBarcode.barcode.data ?? "";
             el.style.cssText =
-                "background:#2196F3;color:#fff;padding:4px 8px;border-radius:4px;font-size:12px;";
-            return TrackedBarcodeView.withHTMLElement(el, { scale: 1 / window.devicePixelRatio });
+                `background:#2196F3;color:#fff;padding:${4 * pixelRatio}px ${8 * pixelRatio}px;` +
+                `border-radius:${4 * pixelRatio}px;font-size:${12 * pixelRatio}px;`;
+            return TrackedBarcodeView.withHTMLElement(el, { scale: 1 / pixelRatio });
         },
         anchorForTrackedBarcode: () => Anchor.TopCenter,
         offsetForTrackedBarcode: () =>

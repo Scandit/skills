@@ -41,6 +41,7 @@ After providing the code, show this setup checklist:
 
 1. Add `@scandit/web-datacapture-core` and `@scandit/web-datacapture-barcode` via your package manager: <https://www.npmjs.com/package/@scandit/web-datacapture-core> <https://www.npmjs.com/package/@scandit/web-datacapture-barcode>
 2. Replace `-- ENTER YOUR SCANDIT LICENSE KEY HERE --` with your key (see **Licence key** in `SKILL.md`).
+3. If the SDK comes from the CDN, pin one exact version in every URL (see [Loading the SDK from a CDN](#loading-the-sdk-from-a-cdn)).
 
 The code example below is a basic TypeScript v8 implementation.
 If the user is using React, use the React get-started guide and SparkScanReactSample instead (see References).
@@ -94,7 +95,7 @@ async function run() {
     await DataCaptureContext.forLicenseKey(
         "-- ENTER YOUR SCANDIT LICENSE KEY HERE --",
         {
-         // or use the cdn https://cdn.jsdelivr.net/npm/@scandit/web-datacapture-barcode@8/sdc-lib/
+         // or use the CDN, pinned to the exact version you import: https://cdn.jsdelivr.net/npm/@scandit/web-datacapture-barcode@8.6.1/sdc-lib/
          libraryLocation: new URL("self-hosted-scandit-sdc-lib", document.baseURI).toString(),
          moduleLoaders: [barcodeCaptureLoader()],
         }
@@ -167,6 +168,45 @@ async function run() {
 run();
 
 ```
+
+`SparkScanView` already switches to its idle state when the page is hidden, so do not add a `visibilitychange` handler to pause scanning.
+
+### Loading the SDK from a CDN
+
+Pin one exact version in every URL. The JavaScript loads `barcode-worker-<its exact version>.js` from `libraryLocation`, while jsDelivr resolves a floating `@8` separately for every file (and browsers cache each for up to 7 days), so a new 8.x release can pair the JavaScript with a worker of another version and break start-up.
+
+```html
+<script type="importmap">
+  {
+    "imports": {
+      "@scandit/web-datacapture-core": "https://cdn.jsdelivr.net/npm/@scandit/web-datacapture-core@8.6.1/build/js/index.js",
+      "@scandit/web-datacapture-core/": "https://cdn.jsdelivr.net/npm/@scandit/web-datacapture-core@8.6.1/",
+      "@scandit/web-datacapture-barcode": "https://cdn.jsdelivr.net/npm/@scandit/web-datacapture-barcode@8.6.1/build/js/index.js",
+      "@scandit/web-datacapture-barcode/": "https://cdn.jsdelivr.net/npm/@scandit/web-datacapture-barcode@8.6.1/"
+    }
+  }
+</script>
+```
+
+Use the same version in `libraryLocation`: `https://cdn.jsdelivr.net/npm/@scandit/web-datacapture-barcode@8.6.1/sdc-lib/`.
+
+For the multithreaded engine, serve the page with `Cross-Origin-Opener-Policy: same-origin` and `Cross-Origin-Embedder-Policy: require-corp`; jsDelivr answers with `Cross-Origin-Resource-Policy: cross-origin` and `Access-Control-Allow-Origin: *`, which `require-corp` accepts. Without a bundler, any static server that can set headers works. With [`serve`](https://www.npmjs.com/package/serve), put them in a `serve.json` next to `index.html`:
+
+```json
+{
+  "headers": [
+    {
+      "source": "**",
+      "headers": [
+        { "key": "Cross-Origin-Opener-Policy", "value": "same-origin" },
+        { "key": "Cross-Origin-Embedder-Policy", "value": "require-corp" }
+      ]
+    }
+  ]
+}
+```
+
+`serve` matches `source` against the path of the file it serves: `index.html` served at `/` gets the headers, a directory listing does not. If those headers break other cross-origin images on the page, see `troubleshooting.md`.
 
 ## SparkScan feedback API
 
