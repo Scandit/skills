@@ -1,10 +1,10 @@
 ---
 name: sparkscan-flutter
-description: SparkScan single-barcode scanning with the pre-built scanning UI (`SparkScanView` widget) in Flutter (Dart) projects. Use for integration, scan settings, result handling, UI customization, SDK version migration, or troubleshooting.
+description: SparkScan single-barcode scanning with the pre-built scanning UI (`SparkScanView` widget) in Flutter (Dart) projects. Use for integration, scan settings, result handling, UI customization, SDK version migration, replacing a third-party scanner (mobile_scanner, ML Kit), or troubleshooting.
 license: Apache-2.0
 metadata:
   author: scandit
-  version: "1.0.3"
+  version: "1.0.4"
 ---
 
 # SparkScan Flutter Skill
@@ -27,6 +27,7 @@ Based on the user's request, load the appropriate reference file before respondi
 
 - **Integrating SparkScan from scratch** (e.g. "add SparkScan to my app", "set up barcode scanning", "how do I use SparkScan in Flutter", "how do I handle feedback in SparkScan") → read [references/integration.md](references/integration.md) and follow the instructions there.
 - **Migrating or upgrading an existing SparkScan integration** (e.g. "upgrade from v6 to v7", "migrate my SparkScan", "bump the Scandit packages to v8", "what changed between SDK versions") → read [references/migration.md](references/migration.md) and follow the instructions there.
+- **Replacing a third-party scanner with SparkScan** (e.g. "migrate from mobile_scanner", "replace google_mlkit_barcode_scanning with Scandit", "swap our existing barcode plugin for SparkScan") → read [references/third-party-migration.md](references/third-party-migration.md) and follow the instructions there.
 
 ## API Usage Policy
 

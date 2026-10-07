@@ -1,10 +1,10 @@
 ---
 name: barcode-capture-flutter
-description: Scandit Barcode Capture (`BarcodeCapture`) in Flutter (Dart) projects — the low-level, full-control single-barcode scanning mode (BarcodeCapture + DataCaptureView + BarcodeCaptureOverlay), without the pre-built SparkScan UI. Use for integration, scan settings, result handling, overlay customization, SDK version migration, or troubleshooting.
+description: Scandit Barcode Capture (`BarcodeCapture`) in Flutter (Dart) projects — the low-level, full-control single-barcode scanning mode (BarcodeCapture + DataCaptureView + BarcodeCaptureOverlay), without the pre-built SparkScan UI. Use for integration, scan settings, result handling, overlay customization, SDK version migration, replacing a third-party scanner (mobile_scanner, ML Kit), or troubleshooting.
 license: Apache-2.0
 metadata:
   author: scandit
-  version: "1.0.3"
+  version: "1.0.4"
 ---
 
 # BarcodeCapture Flutter Skill
@@ -31,6 +31,7 @@ Based on the user's request, load the appropriate reference file before respondi
 
 - **Integrating BarcodeCapture from scratch** (e.g. "add BarcodeCapture to my app", "set up barcode scanning", "how do I use BarcodeCapture in Flutter", "how do I handle the camera in BarcodeCapture") → read [references/integration.md](references/integration.md) and follow the instructions there.
 - **Migrating or upgrading an existing BarcodeCapture integration** (e.g. "upgrade from v6 to v7", "migrate my BarcodeCapture", "bump the Scandit packages to v8", "what changed between SDK versions") → read [references/migration.md](references/migration.md) and follow the instructions there.
+- **Replacing a third-party scanner with BarcodeCapture** (e.g. "migrate from mobile_scanner", "replace google_mlkit_barcode_scanning with Scandit", "swap our existing barcode plugin for Scandit") → read [references/third-party-migration.md](references/third-party-migration.md) and follow the instructions there.
 
 ## API Usage Policy
 

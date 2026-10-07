@@ -206,9 +206,12 @@ class ScannerBloc implements BarcodeCaptureListener {
     barcodeCapture.addListener(this);
     dataCaptureContext.addMode(barcodeCapture);
 
-    camera = Camera.defaultCamera;
-    camera?.applySettings(BarcodeCapture.createRecommendedCameraSettings());
-    if (camera != null) dataCaptureContext.setFrameSource(camera!);
+    final defaultCamera = Camera.defaultCamera;
+    camera = defaultCamera;
+    if (defaultCamera != null) {
+      defaultCamera.applySettings(BarcodeCapture.createRecommendedCameraSettings());
+      dataCaptureContext.setFrameSource(defaultCamera);
+    }
 
     captureView = DataCaptureView.forContext(dataCaptureContext);
     overlay = BarcodeCaptureOverlay(barcodeCapture);
