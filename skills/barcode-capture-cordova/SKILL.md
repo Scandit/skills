@@ -1,10 +1,10 @@
 ---
 name: barcode-capture-cordova
-description: Cordova — Scandit Barcode Capture (`BarcodeCapture`) in Apache Cordova hybrid apps via the `scandit-cordova-datacapture-*` plugins (global `window.Scandit`), the low-level, full-control single-barcode scanning mode (BarcodeCapture + DataCaptureView + BarcodeCaptureOverlay) without the pre-built SparkScan UI, not the browser-only web SDK. Use for integration, scan settings, result handling, overlay wiring, SDK version migration, or troubleshooting.
+description: Cordova — Scandit Barcode Capture (`BarcodeCapture`) in Apache Cordova hybrid apps via the `scandit-cordova-datacapture-*` plugins (global `window.Scandit`), the low-level, full-control single-barcode scanning mode (BarcodeCapture + DataCaptureView + BarcodeCaptureOverlay) without the pre-built SparkScan UI, not the browser-only web SDK. Use for integration, scan settings, result handling, overlay wiring, SDK version migration, replacing a third-party scanner (phonegap-plugin-barcodescanner), or troubleshooting.
 license: Apache-2.0
 metadata:
   author: scandit
-  version: "1.0.4"
+  version: "1.0.5"
 ---
 
 # BarcodeCapture Cordova Skill
@@ -28,6 +28,7 @@ Based on the user's request, load the appropriate reference file before respondi
 
 - **Integrating BarcodeCapture from scratch** (e.g. "add BarcodeCapture to my app", "set up barcode scanning", "how do I use BarcodeCapture in Cordova", "how do I render the camera preview") → read [references/integration.md](references/integration.md) and follow the instructions there.
 - **Migrating or upgrading an existing BarcodeCapture integration** (e.g. "upgrade from v6 to v7", "migrate my BarcodeCapture", "bump the Scandit plugins to v8", "what changed between SDK versions") → read [references/migration.md](references/migration.md) and follow the instructions there.
+- **Replacing a third-party scanner with BarcodeCapture** (e.g. "migrate from phonegap-plugin-barcodescanner to Scandit", "replace cordova.plugins.barcodeScanner.scan with BarcodeCapture", "swap our Cordova barcode scanner plugin for Scandit") → read [references/third-party-migration.md](references/third-party-migration.md) and follow the instructions there.
 
 ## API Usage Policy
 

@@ -86,13 +86,12 @@
       "references/react.md": ["web"],
       "references/troubleshooting.md": ["web"],
       "evals/react-advanced-evals.json": ["web"],
-      "references/third-party-migration.md": ["android", "ios", "net-android", "net-ios", "net-maui"],
-      "evals/third-party-migration-evals.json": ["android", "ios", "net-android", "net-ios", "net-maui"]
+      "references/third-party-migration.md": ["android", "cordova", "flutter", "ios", "net-android", "net-ios", "net-maui", "rn"],
+      "evals/third-party-migration-evals.json": ["android", "cordova", "flutter", "ios", "net-android", "net-ios", "net-maui", "rn"]
     }
   },
   "parity_known_gaps": {
     "barcode-capture-capacitor": ["references/third-party-migration.md"],
-    "barcode-capture-cordova": ["references/third-party-migration.md"],
     "barcode-capture-web": ["references/third-party-migration.md"],
     "id-capture-web": ["references/integration.md"],
     "id-capture-net-android": ["evals/migration-evals.json"],
