@@ -3,7 +3,7 @@
 # Type-checks a .ts file against the resolved REAL Scandit published npm packages via
 # `tsc --noEmit` (anti-hallucination: every Scandit symbol must resolve; NOT runtime).
 #
-# Usage: fix_gate_ts.sh <platform: web|rn|capacitor> <ts-file> [version]
+# Usage: fix_gate_ts.sh <platform: web|rn|capacitor> <ts-or-tsx-file> [version]
 #   version default 8.4.0
 # Note: cordova re-exports the shared frameworks package, so its signatures are covered by
 #   the rn/capacitor check; cordova plain-JS syntax is checked separately with `node --check`.
@@ -20,15 +20,21 @@ case "$PLAT" in
   *) echo "unknown platform: $PLAT (web|rn|capacitor)"; exit 2;;
 esac
 DIR=$(mktemp -d); trap 'rm -rf "$DIR"' EXIT
-mkdir -p "$DIR/src"; cp "$FILE" "$DIR/src/gate.ts"
+# A .tsx file (React / React Native screen) keeps its extension and gets React types.
+EXT=ts; EXTRA_DEPS=""
+case "$FILE" in *.tsx)
+  EXT=tsx; EXTRA_DEPS=', "react":"19.1.0", "@types/react":"19.1.0"'
+  [ "$PLAT" = rn ] && EXTRA_DEPS="$EXTRA_DEPS"', "react-native":"0.81.4"';;
+esac
+mkdir -p "$DIR/src"; cp "$FILE" "$DIR/src/gate.$EXT"
 cat > "$DIR/package.json" <<EOF
 { "name":"fix-gate-ts","private":true,
-  "dependencies": { "$CORE":"$VER", "$BC":"$VER" } }
+  "dependencies": { "$CORE":"$VER", "$BC":"$VER"$EXTRA_DEPS } }
 EOF
 cat > "$DIR/tsconfig.json" <<'EOF'
 { "compilerOptions": { "strict": true, "noEmit": true, "skipLibCheck": true,
   "moduleResolution": "node", "esModuleInterop": true, "target": "es2019",
-  "lib": ["es2019"], "types": [] }, "include": ["src/**/*.ts"] }
+  "jsx": "react-jsx", "lib": ["es2019"], "types": [] }, "include": ["src/**/*.ts", "src/**/*.tsx"] }
 EOF
 ( cd "$DIR" && npm install --ignore-scripts --no-audit --no-fund >/dev/null 2>&1 && npx --yes tsc --noEmit ) \
   && echo "GATE-PASS: $FILE vs $BC $VER ($PLAT)" \
