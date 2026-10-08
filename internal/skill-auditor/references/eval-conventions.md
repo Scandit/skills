@@ -78,7 +78,7 @@ drafted; each resolves the real Scandit packages, compiles, and prints `GATE-PAS
 `GATE-FAIL` / `GATE-SKIP` (skip = toolchain absent, exit 3 — don't pretend it passed):
 
     scripts/fix_gate_flutter.sh <dart-file> [version] [pub-pkg]
-    scripts/fix_gate_ts.sh      <web|rn|capacitor> <ts-file> [version]
+    scripts/fix_gate_ts.sh      <web|rn|capacitor> <ts-or-tsx-file> [version]
     scripts/fix_gate_swift.sh   <swift-file> [frameworks-csv]
     scripts/fix_gate_dotnet.sh  <cs-file> [version] [extra-pkg ...]   # covers net-android/net-ios/net-maui
     scripts/fix_gate_kmp.sh     <kotlin-file>   # KMP; needs SDK checkout + $GITLAB_PRIVATE_TOKEN
