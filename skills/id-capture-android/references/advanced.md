@@ -192,7 +192,7 @@ settings.scanner = IdCaptureScanner(
 override fun onIdCaptured(mode: IdCapture, id: CapturedId) {
     mode.isEnabled = false
     id.mobileDocument?.let { mobile ->   // MobileDocumentResult? (ISO 18013-5 mdoc)
-        Log.d("IdCapture", "${mobile.fullName} ${mobile.dateOfBirth}")
+        handleMobileDocument(mobile) // fullName, dateOfBirth, documentNumber… — personal data, never log it
     }
     // The harmonized top-level fields (id.fullName, id.dateOfBirth, …)
     // are still populated for mobile documents — reach into mobileDocument only

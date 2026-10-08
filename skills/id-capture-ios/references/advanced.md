@@ -195,7 +195,7 @@ settings.scanner = IdCaptureScanner(
 ```swift
 func idCapture(_ idCapture: IdCapture, didCapture capturedId: CapturedId) {
     if let mobile = capturedId.mobileDocumentResult {  // MobileDocumentResult? (ISO 18013-5 mdoc)
-        print(mobile.fullName as Any, mobile.dateOfBirth as Any)
+        handleMobileDocument(mobile) // fullName, dateOfBirth, documentNumber… — personal data, never log it
     }
     // The harmonized top-level fields (capturedId.fullName, capturedId.dateOfBirth, …)
     // are still populated for mobile documents — reach into mobileDocumentResult only

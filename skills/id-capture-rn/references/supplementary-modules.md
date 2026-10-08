@@ -218,12 +218,12 @@ const listener = {
   didCaptureId: (_: IdCapture, capturedId: CapturedId) => {
     const mobile = capturedId.mobileDocument;       // MobileDocumentResult | null (ISO 18013-5 mdoc)
     if (mobile) {
-      console.log(mobile.fullName, mobile.dateOfBirth, mobile.documentNumber);
+      handleMobileDocument(mobile); // fullName, dateOfBirth, documentNumber… — personal data, never log it
       // MobileDocumentResult also exposes portrait (base64 string | null), drivingLicenseCategories, issuingAuthority, etc.
     }
     const ocr = capturedId.mobileDocumentOcr;       // MobileDocumentOCRResult | null (on-screen OCR)
     if (ocr) {
-      console.log(ocr.fullName, ocr.documentNumber, ocr.dateOfExpiry);
+      handleMobileDocumentOcr(ocr); // fullName, dateOfBirth, documentNumber… — personal data, never log it
     }
   },
 };

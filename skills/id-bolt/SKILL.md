@@ -105,11 +105,8 @@ async function startIdBolt() {
     locale: "en-US",
     onCompletion: (result) => {
       if (result.capturedId) {
-        console.log("Document type:", result.capturedId.documentType);
-        console.log("Full name:", result.capturedId.fullName);
-        console.log("Document number:", result.capturedId.documentNumber);
-        console.log("Date of birth:", result.capturedId.dateOfBirth);
-        console.log("Date of expiry:", result.capturedId.dateOfExpiry);
+        // fullName, documentNumber, dateOfBirth, dateOfExpiry… — personal data, never log it.
+        handleCapturedId(result.capturedId);
       }
     },
     onCancellation: (reason) => {
