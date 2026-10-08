@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-"""Build and validate the skills-only ZIP for the OpenAI plugin directory.
+"""Build and validate the MCP-backed ZIP for the OpenAI plugin directory.
 
-The OpenAI submission portal (platform.openai.com/plugins) takes a ZIP upload on
-its Skills tab. There is no CLI packer, and the portal's validation rules are
+The OpenAI submission portal (platform.openai.com/plugins) takes a ZIP upload.
+The skills call the Scandit MCP server, so the bundle ships `.mcp.json`; connect
+it on the draft's MCPs tab after upload. There is no CLI packer, and the portal's validation rules are
 documented only as error codes, so this script does the packaging and runs the
 same checks locally, before an upload burns a review cycle.
 
@@ -56,7 +57,6 @@ EXCLUDE_FILES = [
     "skills.sh.json",    # third-party marketplace page-grouping config
     "README.md",         # repo-oriented, and advertises the other install channels
     ".gitignore",
-    ".mcp.json",         # marketplace installs get the MCP server; the Skills tab takes none
 ]
 # Removed from every skill: the eval harness ships competitor migration fixtures
 # and is not one of OpenAI's documented skill conventions. #85 relocated these to a
@@ -125,15 +125,6 @@ def strip_tree(root: Path) -> list[str]:
         if p.exists():
             p.unlink()
             removed.append(rel)
-    manifest = root / MANIFEST
-    if manifest.is_file():
-        try:
-            data = json.loads(manifest.read_text(encoding="utf-8"))
-        except json.JSONDecodeError:
-            data = None  # check_manifest reports it
-        if isinstance(data, dict) and data.pop("mcpServers", None) is not None:
-            manifest.write_text(json.dumps(data, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
-            removed.append(f"{MANIFEST}#mcpServers")
     skills = root / "skills"
     if skills.is_dir():
         for skill in sorted(skills.iterdir()):
@@ -291,6 +282,24 @@ def check_image(root: Path, field: str, value: str) -> None:
             error("raster_image_dimensions_too_large", f"{value} is {w}x{h}, maximum 4096x4096")
 
 
+def check_mcp(root: Path, manifest: dict) -> None:
+    # The portal connects one MCP server per plugin, and only a remote HTTPS one.
+    if manifest.get("mcpServers") != "./.mcp.json":
+        error("mcp_configuration_missing", 'manifest must set "mcpServers": "./.mcp.json"')
+        return
+    try:
+        servers = json.loads((root / ".mcp.json").read_text(encoding="utf-8")).get("mcpServers")
+    except (OSError, json.JSONDecodeError, AttributeError):
+        error("mcp_configuration_missing", ".mcp.json is missing or not a JSON object")
+        return
+    if not isinstance(servers, dict) or len(servers) != 1:
+        error("mcp_server_count", ".mcp.json must declare exactly one server under mcpServers")
+        return
+    (name, server), = servers.items()
+    if not isinstance(server, dict) or server.get("type") != "http" or not str(server.get("url", "")).startswith("https://"):
+        error("mcp_server_not_remote_https", f"MCP server {name!r} must be type http with an HTTPS url")
+
+
 def check_manifest(root: Path) -> dict:
     path = root / MANIFEST
     if not path.is_file():
@@ -341,11 +350,9 @@ def check_manifest(root: Path) -> dict:
     if homepage and not homepage.startswith("https://"):
         error("plugin_homepage_format", "homepage must be HTTPS")
 
-    # Skills-only uploads must not carry MCP or app wiring.
-    if "mcpServers" in manifest or (root / ".mcp.json").exists():
-        error("mcp_configuration_excluded", "skills-only bundle must not include mcpServers or .mcp.json")
+    check_mcp(root, manifest)
     if "apps" in manifest or (root / ".app.json").exists():
-        error("app_configuration_excluded", "skills-only bundle must not include apps or .app.json")
+        error("app_configuration_excluded", "bundle must not include apps or .app.json")
 
     interface = manifest.get("interface")
     if not isinstance(interface, dict):
@@ -423,8 +430,8 @@ def check_manifest(root: Path) -> dict:
 
     if "screenshots" in interface:
         error("screenshot_configuration_excluded",
-              "skills-only bundle must not include interface.screenshots (even an empty list); "
-              "screenshots require an MCP-backed submission with custom UI")
+              "bundle must not include interface.screenshots (even an empty list); "
+              "screenshots require an MCP server with custom UI")
 
     for field in ("websiteURL", "privacyPolicyURL", "termsOfServiceURL", "supportURL"):
         value = interface.get(field)
@@ -748,7 +755,7 @@ def main() -> int:
         print(f"zip            {out}")
         print(f"compressed     {size / 1_048_576:.1f} MiB")
         print(f"sha256         {digest}")
-        print(f"\nUpload this file on the Skills tab at https://platform.openai.com/plugins")
+        print(f"\nUpload this file at https://platform.openai.com/plugins, then connect the MCP on the MCPs tab")
         return 0
     finally:
         if args.keep_tree:
