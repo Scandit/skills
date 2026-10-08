@@ -201,7 +201,7 @@ return (
 );
 ```
 
-> Props `context`, `sparkScan`, and `style` are required. `sparkScanViewSettings` is optional — pass a default `new SparkScanViewSettings()` if you don't need to tweak view-level config.
+> Props `context`, `sparkScan`, `sparkScanViewSettings` and `style` are required (8.6.1 typings: `BaseSparkScanViewProps`). Pass a default `new SparkScanViewSettings()` if you don't need to tweak view-level config.
 
 ## Step 5 — SparkScanView Lifecycle and Cleanup
 
