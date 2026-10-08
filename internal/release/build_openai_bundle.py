@@ -441,16 +441,20 @@ def check_manifest(root: Path) -> dict:
               "bundle must not include interface.screenshots (even an empty list); "
               "screenshots require an MCP server with custom UI")
 
-    for field in ("websiteURL", "privacyPolicyURL", "termsOfServiceURL", "supportURL"):
+    # Optional for skills-only ZIPs, required once the plugin carries an MCP server (check_mcp).
+    for field, slug in (("websiteURL", "website_url"), ("privacyPolicyURL", "privacy_policy_url"),
+                        ("termsOfServiceURL", "terms_of_service_url"), ("supportURL", "support_url")):
         value = interface.get(field)
         if value is None:
-            continue
-        if not value:
-            error(f"plugin_{field.lower()}_empty", f"interface.{field} must be non-empty when present")
+            error(f"plugin_{slug}_missing", f"interface.{field} is required for a plugin with an MCP server")
+        elif not isinstance(value, str):
+            error(f"plugin_{slug}_wrong_type", f"interface.{field} must be a string")
+        elif not value.strip():
+            error(f"plugin_{slug}_empty", f"interface.{field} must be non-empty")
         elif not is_https_url(value):
-            error(f"plugin_{field.lower()}_format", f"interface.{field} must be HTTPS")
+            error(f"plugin_{slug}_format", f"interface.{field} must be HTTPS")
         elif len(value) > 1024:
-            error(f"plugin_{field.lower()}_too_long", f"interface.{field} is {len(value)} characters, limit 1024")
+            error(f"plugin_{slug}_too_long", f"interface.{field} is {len(value)} characters, limit 1024")
 
     for field, reference in (("brandColor", 1.0), ("brandColorDark", srgb_luminance("#212121"))):
         value = interface.get(field)
