@@ -1,0 +1,43 @@
+{
+  "skill_name": "sparkscan-cordova",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "My Cordova stock-count screen scans with phonegap-plugin-barcodescanner. I want to replace it with Scandit SparkScan and keep the list with quantities, the total, the Clear button and the torch. Here is my screen: PhonegapScannerApp.js",
+      "expected_output": "The skill removes the cordova.plugins.barcodeScanner.scan call, its options and the re-trigger loop, creates a SparkScan mode with exactly EAN13UPCA and Code128, moves the handler into SparkScanListener.didScan reading session.newlyRecognizedBarcode, creates a SparkScanView with torchControlVisible, keeps the quantity increment, total and Clear, drops the scan button and the prompt as flagged UI changes, and shows a setup checklist.",
+      "files": [
+        "fixtures/PhonegapScannerApp.js"
+      ],
+      "assertions": [
+        {"text": "cordova.plugins.barcodeScanner.scan( is NOT called in the new code (may appear in a before/after summary table)"},
+        {"text": "The phonegap result.cancelled / result.text / result.format object shape is NOT used in the new code (may appear in a summary)"},
+        {"text": "document.addEventListener('deviceready' is used as the init gate"},
+        {"text": "Scandit.DataCaptureContext.initialize( is present (v8 API used)"},
+        {"text": "Scandit.DataCaptureContext.forLicenseKey( is NOT present"},
+        {"text": "new Scandit.SparkScanSettings() is created and passed to new Scandit.SparkScan("},
+        {"text": "Scandit.SparkScan.forContext( is NOT present"},
+        {"text": "settings.enableSymbologies(...) enables exactly Scandit.Symbology.EAN13UPCA (from EAN_13 and UPC_A) and Scandit.Symbology.Code128, and nothing else"},
+        {"text": "Scandit.Symbology.QR_CODE and Scandit.Symbology.QRCode do NOT appear (the original did not scan QR codes)"},
+        {"text": "addListener( is called on the SparkScan mode with a didScan callback"},
+        {"text": "The didScan callback is declared async (SparkScanListener returns Promise<void>)"},
+        {"text": "The didScan callback reads session.newlyRecognizedBarcode and does not loop over an array of barcodes"},
+        {"text": "barcode.data is null-guarded before use"},
+        {"text": "Scandit.SparkScanView.forContext( is called with the context, the SparkScan mode and a SparkScanViewSettings (or null) as three arguments"},
+        {"text": "No DataCaptureView, connectToElement or BarcodeCaptureOverlay is created (SparkScan needs no DOM element)"},
+        {"text": "Scanning a code that is already in the list increments its quantity instead of adding a second row (semantic)"},
+        {"text": "The 'Total items:' sum of quantities is preserved in the rendered output"},
+        {"text": "The Clear button still empties the list and re-renders"},
+        {"text": "The startScan re-trigger loop is removed: no call re-opens a scanner from inside the scan callback (semantic)"},
+        {"text": "torchControlVisible = true is set on the SparkScanView (the original had showTorchButton: true)"},
+        {"text": "cameraSwitchButtonVisible is NOT set to true (the original had showFlipCameraButton: false)"},
+        {"text": "The summary lists the torch moving from the plugin's button to the SparkScan toolbar, and the scan button / prompt text going away, as UI changes for the user to confirm (semantic)"},
+        {"text": "The Scandit.* global is used (no 'import ... from scandit-cordova-datacapture-*' statements in runtime code)"},
+        {"text": "Setup checklist mentions cordova plugin add scandit-cordova-datacapture-core and scandit-cordova-datacapture-barcode"},
+        {"text": "Setup checklist mentions removing the old plugin (cordova plugin remove phonegap-plugin-barcodescanner)"},
+        {"text": "Setup checklist mentions cordova prepare after the plugin changes"},
+        {"text": "A summary of changes is shown listing what was removed (phonegap-plugin-barcodescanner) and what was added (Scandit SparkScan)"}
+      ],
+      "tags": ["third-party-migration"]
+    }
+  ]
+}

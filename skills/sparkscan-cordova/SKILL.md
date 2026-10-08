@@ -1,6 +1,6 @@
 ---
 name: sparkscan-cordova
-description: Cordova — SparkScan single-barcode scanning with the pre-built scanning UI in Apache Cordova hybrid apps via the `scandit-cordova-datacapture-*` plugins (global `window.Scandit`), not the browser-only web SDK. Use for integration, scan settings, result handling, UI customization, SDK version migration, or troubleshooting.
+description: Cordova — SparkScan single-barcode scanning with the pre-built scanning UI in Apache Cordova hybrid apps via the `scandit-cordova-datacapture-*` plugins (global `window.Scandit`), not the browser-only web SDK. Use for integration, scan settings, result handling, UI customization, SDK version migration, replacing a third-party scanner (phonegap-plugin-barcodescanner), or troubleshooting.
 license: Apache-2.0
 metadata:
   author: scandit
@@ -26,6 +26,7 @@ Based on the user's request, load the appropriate reference file before respondi
 
 - **Integrating SparkScan from scratch** (e.g. "add SparkScan to my app", "set up barcode scanning", "how do I use SparkScan in Cordova", "how do I handle feedback in SparkScan") → read [references/integration.md](references/integration.md) and follow the instructions there.
 - **Migrating or upgrading an existing SparkScan integration** (e.g. "upgrade from v6 to v7", "migrate my SparkScan", "bump the Scandit plugins to v8", "what changed between SDK versions") → read [references/migration.md](references/migration.md) and follow the instructions there.
+- **Replacing a third-party scanner with SparkScan** (e.g. "migrate from phonegap-plugin-barcodescanner to SparkScan", "replace cordova.plugins.barcodeScanner.scan with Scandit", "swap our Cordova barcode scanner plugin for SparkScan") → read [references/third-party-migration.md](references/third-party-migration.md) and follow the instructions there.
 
 ## API Usage Policy
 
