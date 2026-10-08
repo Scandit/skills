@@ -52,8 +52,8 @@ _Exempt: `data-capture-sdk`._
 Must exist and convey, in this order of preference:
 
 - The licence product and licence platforms this skill's framework needs — the values in [../skill-auditor/references/licence-platforms.md](../skill-auditor/references/licence-platforms.md), which is the only place that mapping lives.
-- **MCP connected:** call `ensure_scanner_setup` for that product and those platforms, then write the key into `.env` with the command `get_license_env_command` returns. A full key is never printed in chat.
-- **Not connected:** offer to connect the server once (`https://ssl.scandit.com/mcp`), with the Claude Code, Cursor and VS Code install steps. Browser authentication — never claimed to work headless or in CI. Trial keys only; production licences are never created, revoked or modified.
+- **MCP connected:** call `ensure_scanner_setup` for that product and those platforms, then show the user the command `get_license_env_command` returns and run it only once they approve. A full key is never printed in chat.
+- **Not connected:** tell the user once that they can connect the server (`https://ssl.scandit.com/mcp`) in their MCP client; the agent never edits MCP client configuration itself (the OpenAI skill scan flags that, and running the returned command unasked). Browser authentication — never claimed to work headless or in CI. Trial keys only; production licences are never created, revoked or modified.
 - **Declined, or no MCP client:** fall back to generating a key in the dashboard, and never block on MCP.
 - **Then into the code:** how the key gets from `.env` into the app in place of the placeholder, as that framework's `## Key wiring` sentence in the same reference file, with the direct-paste route as the fallback.
 - The dashboard provisioning flow appears here and nowhere else in the skill, so a reader gets one instruction rather than two.

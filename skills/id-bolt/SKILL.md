@@ -105,11 +105,14 @@ async function startIdBolt() {
     locale: "en-US",
     onCompletion: (result) => {
       if (result.capturedId) {
-        console.log("Document type:", result.capturedId.documentType);
-        console.log("Full name:", result.capturedId.fullName);
-        console.log("Document number:", result.capturedId.documentNumber);
-        console.log("Date of birth:", result.capturedId.dateOfBirth);
-        console.log("Date of expiry:", result.capturedId.dateOfExpiry);
+        // Your UI. Personal data — never log it.
+        showResult(
+          result.capturedId.documentType,
+          result.capturedId.fullName,
+          result.capturedId.documentNumber,
+          result.capturedId.dateOfBirth,
+          result.capturedId.dateOfExpiry,
+        );
       }
     },
     onCancellation: (reason) => {
@@ -152,11 +155,8 @@ Scanning needs a Scandit licence key. For this skill the licence product is `id-
 
 Work through these in order — never block the user on MCP:
 
-1. **The Scandit MCP server is connected** — call `ensure_scanner_setup` with product `id-bolt` and platforms `webassembly`, then run the command `get_license_env_command` returns, which writes the key into the project's `.env`. Show at most a masked preview in chat; never print a full key.
-2. **It is not connected** — offer to connect it once, then continue from step 1:
-   - Claude Code: `claude mcp add --transport http scandit https://ssl.scandit.com/mcp`
-   - Cursor: add `{"mcpServers": {"scandit": {"url": "https://ssl.scandit.com/mcp"}}}` to `~/.cursor/mcp.json`
-   - VS Code: add `{"servers": {"scandit": {"type": "http", "url": "https://ssl.scandit.com/mcp"}}}` to the MCP user configuration
+1. **The Scandit MCP server is connected** — call `ensure_scanner_setup` with product `id-bolt` and platforms `webassembly`, then call `get_license_env_command`. It returns a shell command that writes the key into the project's `.env`: show that command to the user and run it only after they approve it. Show at most a masked preview in chat; never print a full key.
+2. **It is not connected** — tell the user once that they can connect the remote Scandit MCP server, `https://ssl.scandit.com/mcp`, in their MCP client, then continue from step 1. Do not edit MCP client configuration yourself.
 
    Authentication is browser-based, so it is **not supported headless or in CI**. The server provisions **trial** keys only; it never creates, revokes, or modifies production licences.
 3. **The user declines, or has no MCP client** — they generate a key themselves at <https://ssl.scandit.com> (no account yet: <https://ssl.scandit.com/dashboard/sign-up?p=id-bolt>) and paste it in.
