@@ -1,10 +1,10 @@
 ---
 name: sparkscan-rn
-description: SparkScan single-barcode scanning with the pre-built scanning UI (`SparkScanView` component) in React Native projects. Use for integration, scan settings, result handling, UI customization, SDK version migration, or troubleshooting.
+description: SparkScan single-barcode scanning with the pre-built scanning UI (`SparkScanView` component) in React Native projects. Use for integration, scan settings, result handling, UI customization, SDK version migration, replacing a third-party scanner (expo-camera, react-native-vision-camera), or troubleshooting.
 license: Apache-2.0
 metadata:
   author: scandit
-  version: "1.0.4"
+  version: "1.0.5"
 ---
 
 # SparkScan React Native Skill
@@ -28,6 +28,7 @@ Based on the user's request, load the appropriate reference file before respondi
 
 - **Integrating SparkScan from scratch** (e.g. "add SparkScan to my app", "set up barcode scanning", "how do I use SparkScan in React Native", "how do I handle feedback in SparkScan") → read [references/integration.md](references/integration.md) and follow the instructions there.
 - **Migrating or upgrading an existing SparkScan integration** (e.g. "upgrade from v6 to v7", "migrate my SparkScan", "bump the Scandit packages to v8", "what changed between SDK versions") → read [references/migration.md](references/migration.md) and follow the instructions there.
+- **Replacing a third-party scanner with SparkScan** (e.g. "migrate from expo-camera CameraView to SparkScan", "replace react-native-vision-camera useCodeScanner / useBarcodeScannerOutput with Scandit", "swap our barcode scanner library for SparkScan") → read [references/third-party-migration.md](references/third-party-migration.md) and follow the instructions there.
 
 ## API Usage Policy
 

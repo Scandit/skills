@@ -181,7 +181,7 @@ Rules this encodes:
 
 ## SDK 8.7+: BarcodeCaptureAioView
 
-On 8.7 or newer you may replace the whole camera section above with one component. It creates the mode, camera and overlay, and handles app foreground/background itself. It does **not** request camera permission: keep `requestCameraPermission()` and render the view only once it is granted. Props are from the 8.7 source (`BarcodeCaptureAioView.tsx`); check them against the installed `.d.ts`.
+On 8.7 or newer you may replace the whole camera section above with one component. It creates the mode, camera and overlay, and handles app foreground/background itself. It must be rendered inside a root `<ScanditProvider licenseKey="...">` from `scandit-react-native-datacapture-core` (wrap the app or navigator once); the provider initialises the context, so drop the module-level `DataCaptureContext.initialize` on this path. It does **not** request camera permission: keep `requestCameraPermission()` and render the view only once it is granted. Props are from the 8.7 source (`BarcodeCaptureAioView.tsx`); check them against the installed `.d.ts`.
 
 | Old | `BarcodeCaptureAioView` |
 |---|---|
