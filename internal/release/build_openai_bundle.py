@@ -42,6 +42,7 @@ import tempfile
 import unicodedata
 import zipfile
 from pathlib import Path
+from urllib.parse import urlsplit
 
 # Paths removed from the submitted bundle, relative to the plugin root.
 # Anything matched here is deleted from the staged tree before validation.
@@ -282,6 +283,13 @@ def check_image(root: Path, field: str, value: str) -> None:
             error("raster_image_dimensions_too_large", f"{value} is {w}x{h}, maximum 4096x4096")
 
 
+def is_https_url(value: object) -> bool:
+    if not isinstance(value, str):
+        return False
+    parts = urlsplit(value)
+    return parts.scheme == "https" and bool(parts.hostname)
+
+
 def check_mcp(root: Path, manifest: dict) -> None:
     # The portal connects one MCP server per plugin, and only a remote HTTPS one.
     if manifest.get("mcpServers") != "./.mcp.json":
@@ -296,7 +304,7 @@ def check_mcp(root: Path, manifest: dict) -> None:
         error("mcp_server_count", ".mcp.json must declare exactly one server under mcpServers")
         return
     (name, server), = servers.items()
-    if not isinstance(server, dict) or server.get("type") != "http" or not str(server.get("url", "")).startswith("https://"):
+    if not isinstance(server, dict) or server.get("type") != "http" or not is_https_url(server.get("url")):
         error("mcp_server_not_remote_https", f"MCP server {name!r} must be type http with an HTTPS url")
 
 
@@ -344,10 +352,10 @@ def check_manifest(root: Path) -> dict:
         value = author.get(field) if isinstance(author, dict) else None
         if value:
             check_len(value, limit, f"plugin_author_{field}_too_long", f"author.{field}")
-            if field == "url" and not value.startswith("https://"):
+            if field == "url" and not is_https_url(value):
                 error("plugin_author_url_not_https", "author.url must be HTTPS")
     homepage = manifest.get("homepage")
-    if homepage and not homepage.startswith("https://"):
+    if homepage and not is_https_url(homepage):
         error("plugin_homepage_format", "homepage must be HTTPS")
 
     check_mcp(root, manifest)
@@ -439,7 +447,7 @@ def check_manifest(root: Path) -> dict:
             continue
         if not value:
             error(f"plugin_{field.lower()}_empty", f"interface.{field} must be non-empty when present")
-        elif not value.startswith("https://"):
+        elif not is_https_url(value):
             error(f"plugin_{field.lower()}_format", f"interface.{field} must be HTTPS")
         elif len(value) > 1024:
             error(f"plugin_{field.lower()}_too_long", f"interface.{field} is {len(value)} characters, limit 1024")
