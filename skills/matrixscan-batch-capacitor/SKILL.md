@@ -1,10 +1,10 @@
 ---
 name: matrixscan-batch-capacitor
-description: Capacitor MatrixScan Batch (scandit-capacitor-datacapture-barcode) — MatrixScan, BarcodeBatch, legacy BarcodeTracking — tracking and scanning multiple barcodes at once with basic/advanced AR overlays in Capacitor iOS/Android apps (not the plain-web sibling). Use for integration, settings and symbologies, per-barcode brushes, TrackedBarcodeView annotations, lifecycle, SDK version migration, or troubleshooting.
+description: Capacitor MatrixScan Batch (scandit-capacitor-datacapture-barcode) — MatrixScan, BarcodeBatch, legacy BarcodeTracking — tracking and scanning multiple barcodes at once with basic/advanced AR overlays in Capacitor iOS/Android apps (not the plain-web sibling). Use for integration, settings and symbologies, per-barcode brushes, TrackedBarcodeView annotations, lifecycle, SDK version migration, replacing a third-party scanner (@capacitor-mlkit/barcode-scanning), or troubleshooting.
 license: Apache-2.0
 metadata:
   author: scandit
-  version: "1.0.4"
+  version: "1.0.5"
 ---
 
 # MatrixScan Batch Capacitor Skill
@@ -32,7 +32,8 @@ Capacitor-specific gotchas worth flagging:
 Based on the user's request, load the appropriate reference file before responding:
 
 - **Integrating MatrixScan Batch from scratch** (e.g. "add MatrixScan to my app", "set up BarcodeBatch", "track multiple barcodes simultaneously", "show AR overlays", "per-barcode brushes", "tap handling", "overlay style (frame/dot)", "feedback / beep / vibration on scan", "lifecycle or cleanup", "camera permissions") → read [references/integration.md](references/integration.md) and follow the instructions there.
-- **Upgrading the Scandit SDK version** (e.g. "migrate from v6/v7 to v8", "BarcodeTracking is gone", "rename BarcodeTracking to BarcodeBatch", "DataCaptureContext.forLicenseKey not found") **or replacing a third-party scanner** (e.g. "switch from @capacitor-mlkit/barcode-scanning / ML Kit to MatrixScan Batch") → read [references/migration.md](references/migration.md) and follow the instructions there.
+- **Upgrading the Scandit SDK version** (e.g. "migrate from v6/v7 to v8", "BarcodeTracking is gone", "rename BarcodeTracking to BarcodeBatch", "DataCaptureContext.forLicenseKey not found") → read [references/migration.md](references/migration.md) and follow the instructions there.
+- **Replacing a third-party multi-barcode scanner** (e.g. "switch from @capacitor-mlkit/barcode-scanning / ML Kit to MatrixScan Batch", "replace BarcodeScanner.startScan and barcodesScanned with Scandit") → read [references/third-party-migration.md](references/third-party-migration.md) and follow the instructions there.
 
 ## API Usage Policy
 
