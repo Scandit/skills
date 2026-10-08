@@ -194,7 +194,7 @@ settings.scanner = IdCaptureScanner(
 Future<void> didCaptureId(IdCapture idCapture, CapturedId capturedId) async {
   final mobile = capturedId.mobileDocument;     // MobileDocumentResult? (ISO 18013-5 mdoc)
   if (mobile != null) {
-    handleMobileDocument(mobile); // fullName, dateOfBirth, documentNumber… — personal data, never log it
+    showDocument(mobile.fullName, mobile.dateOfBirth); // your UI; personal data — never log it
   }
   final ocr = capturedId.mobileDocumentOcr;     // on-screen OCR result (nullable)
   // The harmonized top-level fields (capturedId.fullName, dateOfBirth, …) are still
