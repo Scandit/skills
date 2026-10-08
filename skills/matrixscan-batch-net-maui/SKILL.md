@@ -4,7 +4,7 @@ description: MatrixScan Batch (MatrixScan, BarcodeBatch, legacy BarcodeTracking)
 license: Apache-2.0
 metadata:
   author: scandit
-  version: "1.0.3"
+  version: "1.0.4"
 ---
 
 # MatrixScan Batch .NET MAUI Skill
