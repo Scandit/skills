@@ -101,7 +101,6 @@
     "label-capture-web": ["references/validation-flow.md"],
     "matrixscan-ar-android": ["references/migration.md"],
     "matrixscan-ar-web": ["evals/migration-evals.json"],
-    "matrixscan-batch-capacitor": ["references/third-party-migration.md"],
     "matrixscan-batch-rn": ["references/migration.md", "evals/migration-evals.json"],
     "matrixscan-count-android": ["references/migration.md", "evals/migration-evals.json"],
     "matrixscan-count-ios": ["references/migration.md", "evals/migration-evals.json"],
