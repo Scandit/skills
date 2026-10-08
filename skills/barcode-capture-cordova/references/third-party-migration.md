@@ -14,7 +14,7 @@ This guide replaces **`phonegap-plugin-barcodescanner`** (and its forks `cordova
 
 Read the existing code. Do not ask the user to describe what their scanner does. Identify:
 
-- Every `cordova.plugins.barcodeScanner.scan(success, error, options)` call and its `options` (`formats`, `preferFrontCamera`, `showFlipCameraButton`, `showTorchButton`, `torchOn`, `orientation`, `prompt`, `resultDisplayDuration`, `disableSuccessBeep`, `disableAnimations`).
+- Every `cordova.plugins.barcodeScanner.scan(success, error, options)` call and its `options` (`formats`, `preferFrontCamera`, `showFlipCameraButton`, `showTorchButton`, `torchOn`, `saveHistory`, `orientation`, `prompt`, `resultDisplayDuration`, `disableSuccessBeep`, `disableAnimations`).
 - What `success` does with the result (`text`, `format`, `cancelled`): dedupe, list, navigation, lookups. What `error` does.
 - Whether the app treats `scan()` as one-shot (one call, one result, scanner closes) or re-calls it for each code.
 
@@ -59,8 +59,8 @@ Map **only** the formats the app passed in `options.formats` (a comma-separated 
 | `MSI` | `MSIPlessey` |
 | `RSS14` | `GS1Databar` |
 | `RSS_EXPANDED` | `GS1DatabarExpanded` |
-| `MAXICODE` | `MaxiCode` |
-| `UPC_EAN_EXTENSION` | No symbology of its own: the 2/5-digit add-on arrives as `barcode.addOnData` on the EAN/UPC result. Look up how to enable add-ons in the API reference before writing it. |
+| `MAXICODE` (not in the plugin's documented list; Android passes it through to ZXing, iOS ignores it) | `MaxiCode` |
+| `UPC_EAN_EXTENSION` (not in the plugin's documented list; Android accepts it but it enables no reader on its own, iOS ignores it) | No symbology of its own: the 2/5-digit add-on arrives as `barcode.addOnData` on the EAN/UPC result. Look up how to enable add-ons in the API reference before writing it. |
 
 **No `formats` option** means the plugin scanned every format it supports. Never guess one symbology: search the project for what the app really consumes and enable exactly that. If nothing narrows it, enable the table's symbologies and add a summary line "symbologies were not narrowed by the original; confirm this list". If a format is not in the table, look it up in the API reference before writing it.
 
@@ -244,7 +244,7 @@ Run `node --check` on the migrated file. Then confirm each Scandit symbol you wr
 4. Replace `'-- ENTER YOUR SCANDIT LICENSE KEY HERE --'` with your key (see **Licence key** in `SKILL.md`).
 5. Camera permissions are declared by the Scandit plugins; test the first-run prompt and the denied case on a device, since the old plugin handled both itself.
 
-**Summary:** list what was removed and added, the format → symbology mapping, and every judgment call (scanner now lives in your page instead of a full-screen native screen, Scandit torch and flip buttons replace the plugin's, `prompt` text and `resultDisplayDuration` dropped, `orientation` kept in `config.xml`, symbologies not narrowed, no `cancelled` result). Do not list code that was already correct.
+**Summary:** list what was removed and added, the format → symbology mapping, and every judgment call (scanner now lives in your page instead of a full-screen native screen, Scandit torch and flip buttons replace the plugin's, `prompt` text, `resultDisplayDuration`, `disableAnimations` and `saveHistory` dropped, `orientation` kept in `config.xml`, symbologies not narrowed, no `cancelled` result). Do not list code that was already correct.
 
 ## API reference
 

@@ -15,7 +15,7 @@ This guide replaces **`phonegap-plugin-barcodescanner`** (and its forks `cordova
 
 ## Step 1: Decide whether SparkScan fits
 
-Read the existing code first; do not ask the user to describe it. Find every `cordova.plugins.barcodeScanner.scan(success, error, options)` call, its `options` (`formats`, `preferFrontCamera`, `showFlipCameraButton`, `showTorchButton`, `torchOn`, `orientation`, `prompt`, `resultDisplayDuration`, `disableSuccessBeep`, `disableAnimations`) and what `success` / `error` do. Then decide:
+Read the existing code first; do not ask the user to describe it. Find every `cordova.plugins.barcodeScanner.scan(success, error, options)` call, its `options` (`formats`, `preferFrontCamera`, `showFlipCameraButton`, `showTorchButton`, `torchOn`, `saveHistory`, `orientation`, `prompt`, `resultDisplayDuration`, `disableSuccessBeep`, `disableAnimations`) and what `success` / `error` do. Then decide:
 
 - **SparkScan fits** a screen that scans one code at a time and either keeps going ("scan, add to a list, keep scanning") or stops once, and whose camera UI is just the preview plus a few buttons (torch, flip camera).
 - **Use `barcode-capture-cordova` instead** (its `references/third-party-migration.md`) when the camera view must stay as it is: your own `prompt` text over a full-screen preview, a viewfinder, region-of-interest logic, or a one-shot `scan()` wrapper that must open and close a full-screen scanner. Say so in one line and continue with that skill.
@@ -113,7 +113,7 @@ document.addEventListener('deviceready', setupSparkScan, false);
 - **Flip camera** (`showFlipCameraButton: true`) → `sparkScanView.cameraSwitchButtonVisible = true`. **Only if the original had it.**
 - **Front camera** (`preferFrontCamera: true`) → `viewSettings.defaultCameraPosition = Scandit.CameraPosition.UserFacing` on the `SparkScanViewSettings` you pass to `forContext`.
 - **`orientation`** has no Scandit option; keep it in `config.xml` (`<preference name="Orientation" value="portrait" />`).
-- **`prompt`, `resultDisplayDuration`, `disableAnimations`** have no equivalent; say they were dropped.
+- **`prompt`, `resultDisplayDuration`, `disableAnimations`, `saveHistory`** have no equivalent; say they were dropped.
 - **`disableSuccessBeep`** → `viewSettings.soundEnabled = false` on the `SparkScanViewSettings` (haptics stay on unless `hapticEnabled = false`). Flag it.
 - **Permission.** The Scandit plugins declare the camera permission. The old plugin handled the first-run prompt and the denied case itself, so test both on a device.
 
@@ -129,7 +129,7 @@ Run `node --check` on the migrated file and confirm every Scandit symbol exists.
 3. Replace `'-- ENTER YOUR SCANDIT LICENSE KEY HERE --'` with your key (see **Licence key** in `SKILL.md`).
 4. No DOM element is needed for SparkScan; camera permissions are declared by the plugins.
 
-**Summary:** list what was removed and added, the format → symbology mapping, and every judgment call (new scanning UI with trigger button and mini preview, the scan button gone, torch / camera-switch controls moved to the SparkScan toolbar, `prompt` and `resultDisplayDuration` dropped, `orientation` kept in `config.xml`, duplicate filter, symbologies not narrowed, no `cancelled` result). Do not list code that was already correct.
+**Summary:** list what was removed and added, the format → symbology mapping, and every judgment call (new scanning UI with trigger button and mini preview, the scan button gone, torch / camera-switch controls moved to the SparkScan toolbar, `prompt`, `resultDisplayDuration`, `disableAnimations` and `saveHistory` dropped, `disableSuccessBeep` mapped to `soundEnabled = false`, `orientation` kept in `config.xml`, duplicate filter, symbologies not narrowed, no `cancelled` result). Do not list code that was already correct.
 
 ## API reference
 
