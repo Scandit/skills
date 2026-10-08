@@ -87,6 +87,10 @@ If the previous implementation reached into `Platforms/iOS/AvCameraScanner.cs` a
 
 Same approach: remove the `<PackageReference>`, drop the builder extension call (`.UseCamera()` / `.UseBarcodeReader()` / etc.), remove the XAML control, and re-implement the scan handler against `SparkScan.BarcodeScanned`.
 
+### Still-image decode (`BarcodeReader.DecodeAsync`, `Methods.ScanFromImageAsync`)
+
+SparkScan has no image path: it only scans from its own camera. Decode gallery or file images with BarcodeCapture and an `ImageFrameSource` (`CreateImageFrameSourceAsync` on a MAUI `ImageSource`); follow the "Still-image decode" section of the `barcode-capture-net-maui` third-party migration guide. Never drop the image path or replace it with an error message.
+
 ## Preserve in place
 
 - The MAUI navigation, MVVM, and data layer can stay.
