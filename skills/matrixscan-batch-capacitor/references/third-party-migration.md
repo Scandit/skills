@@ -89,9 +89,9 @@ ML Kit runs its camera behind a transparent WebView, so the app's buttons and li
 | `barcodesScanned` event, `event.barcodes` per frame | `didUpdateSession(barcodeBatch, session)`: `session.addedTrackedBarcodes` (new this frame), `session.updatedTrackedBarcodes`, `session.removedTrackedBarcodes` (identifier strings), `session.trackedBarcodes` (all currently visible, keyed by identifier) |
 | `barcode.rawValue` / `barcode.displayValue` | `trackedBarcode.barcode.data` |
 | `barcode.format` | `trackedBarcode.barcode.symbology` |
-| `barcode.cornerPoints` | `trackedBarcode.location` (a `Quadrilateral`); `BarcodeBatchBasicOverlay` draws the highlight for you |
-| (none — no tracking) | `trackedBarcode.identifier` (a `number`), stable while the barcode stays in view. `removedTrackedBarcodes` and the `trackedBarcodes` keys are strings — compare with `String(trackedBarcode.identifier)` |
-| `Set` of seen `rawValue`s | Keep it, or upgrade to a `Set` of `trackedBarcode.identifier`s fed from `session.addedTrackedBarcodes` |
+| `barcode.cornerPoints` | `trackedBarcode.location` (a `Quadrilateral`) — **requires the MatrixScan AR add-on**; without it every corner is `(0, 0)`. If the app reads the corners, name the add-on as a prerequisite in the summary. `BarcodeBatchBasicOverlay` draws the highlight without the add-on |
+| (none — no tracking) | `trackedBarcode.identifier` (a `number`), stable while the barcode stays in view, and reusable for another barcode once it is lost. `removedTrackedBarcodes` and the `trackedBarcodes` keys are strings — compare with `String(trackedBarcode.identifier)` |
+| `Set` of seen `rawValue`s | Keep it, fed from `session.trackedBarcodes` on every callback (see **Preserve** for per-track counting) |
 | `valueType`, `wifi`, `contactInfo`, `driverLicense`, … (ML Kit's parsed content) | No BarcodeBatch equivalent — parse `barcode.data` yourself. Name each dropped field in the summary. |
 
 **Session safety**: do not keep `session` or its arrays outside `didUpdateSession`. Copy what you need before the callback returns.
@@ -100,7 +100,7 @@ ML Kit runs its camera behind a transparent WebView, so the app's buttons and li
 
 | ML Kit call | Scandit equivalent |
 |---|---|
-| `readBarcodesFromImage({ path })` / `({ blob })` | `ImageFrameSource.create(base64Image)` set as the frame source: `context.setFrameSource(imageSource)` + `await imageSource.switchToDesiredState(FrameSourceState.On)`; results arrive in the same `didUpdateSession`. Read the file as a base64 string first (e.g. `@capacitor/filesystem` `readFile`). Switch the camera back with `context.setFrameSource(camera)` afterwards. |
+| `readBarcodesFromImage({ path })` / `({ blob })` | `ImageFrameSource.create(base64Image)` set as the frame source: `context.setFrameSource(imageSource)` + `barcodeBatch.isEnabled = true` + `await imageSource.switchToDesiredState(FrameSourceState.On)`; results arrive in the same `didUpdateSession`. Read the file as a base64 string first (e.g. `@capacitor/filesystem` `readFile`). Afterwards restore the previous `isEnabled` value and switch back with `context.setFrameSource(camera)`. |
 | `enableTorch()` / `disableTorch()` / `toggleTorch()` | `camera.desiredTorchState = TorchState.On` / `TorchState.Off`; or add a `TorchSwitchControl` to the view with `view.addControl(new TorchSwitchControl())` |
 | `isTorchAvailable()` | `await camera.getIsTorchAvailable()` |
 | `setZoomRatio({ zoomRatio })` | `cameraSettings.zoomFactor = zoomRatio; await camera.applySettings(cameraSettings)` |
@@ -120,7 +120,7 @@ The Scandit Capacitor plugins do not scan in a browser. If the app also ships a 
 ## Preserve
 
 - The data model and the accumulated list — keep them.
-- Dedup — move it into `didUpdateSession`. Keep value-based dedup (`trackedBarcode.barcode.data`), or upgrade to identifier-based dedup: iterate `session.addedTrackedBarcodes` and record `trackedBarcode.identifier` in a `Set`. Identifier dedup counts two physical copies of the same code as two items; value dedup counts them once. If the summary means "unique values", keep value dedup.
+- Dedup — move it into `didUpdateSession` and iterate `Object.values(session.trackedBarcodes)` on every callback: a track can arrive with `data === null` and decode later, which an `addedTrackedBarcodes`-only loop misses. Keep value-based dedup (`trackedBarcode.barcode.data`) when the summary means "unique values". For per-track counting, add `String(trackedBarcode.identifier)` to a `Set` only once `data` is non-null, and delete every `session.removedTrackedBarcodes` id from it, because identifiers are reused after a track is lost. Per-track counting counts two physical copies, or one barcode that leaves and comes back, as separate items; value dedup counts them once.
 - The render function and any downstream logic on a new barcode (network lookup, list update).
 - Start/stop entry points (button handlers, page lifecycle) — rewire them to the Scandit start/stop.
 
