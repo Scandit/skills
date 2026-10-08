@@ -1,6 +1,6 @@
 {
   "name": "scandit-sdk",
-  "version": "1.1.5",
+  "version": "1.1.6",
   "description": "AI agent skills for integrating the Scandit Data Capture SDK — product selection, documentation, and implementation guides for barcode scanning, ID capture, and smart label capture.",
   "author": {
     "name": "Scandit",
@@ -51,6 +51,7 @@
     "websiteURL": "https://www.scandit.com/",
     "privacyPolicyURL": "https://www.scandit.com/privacy/",
     "termsOfServiceURL": "https://ssl.scandit.com/terms-archive",
+    "supportURL": "https://support.scandit.com/",
     "defaultPrompt": [
       "Help me choose the right Scandit product for my scanning use case.",
       "Add SparkScan barcode scanning to my app.",
