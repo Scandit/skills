@@ -34,6 +34,83 @@
         {"text": "A summary of changes is shown listing what vision-camera code was removed and what Scandit code was added"}
       ],
       "tags": ["third-party-migration"]
+    },
+    {
+      "id": 2,
+      "prompt": "I have a React Native screen that scans barcodes with react-native-vision-camera v5 and the react-native-vision-camera-barcode-scanner plugin (useBarcodeScannerOutput). I want to replace it with Scandit BarcodeCapture and keep the torch toggle, the dedupe and summary, and the scan-from-photo button. Here is my screen: VisionCameraV5Scanner.tsx",
+      "expected_output": "The skill removes react-native-vision-camera, the barcode-scanner plugin and react-native-nitro-image usage, enables a stated default symbology set for the 'all-formats' source and flags it for confirmation, preserves dedupe and the Scanned count, maps torchMode to camera.desiredTorchState, replaces the permission hook with a PermissionsAndroid request, moves the photo scan to ImageFrameSource.create with a base64 string, and shows a setup checklist.",
+      "files": [
+        "fixtures/VisionCameraV5Scanner.tsx"
+      ],
+      "assertions": [
+        {"text": "react-native-vision-camera is NOT imported in the output code (it may appear in a before/after summary)"},
+        {"text": "react-native-vision-camera-barcode-scanner is NOT imported in the output code (it may appear in a before/after summary)"},
+        {"text": "useBarcodeScannerOutput is NOT called in the output code (it may appear in a before/after summary)"},
+        {"text": "scanCodesInImageAsync is NOT called in the output code (it may appear in a before/after summary)"},
+        {"text": "DataCaptureContext.initialize( is present (v8 API)"},
+        {"text": "DataCaptureContext.sharedInstance is used to obtain the context"},
+        {"text": "new BarcodeCapture(settings) is present"},
+        {"text": "dataCaptureContext.addMode( is called to attach the BarcodeCapture mode"},
+        {"text": "<DataCaptureView is rendered as JSX with a context prop"},
+        {"text": "new BarcodeCaptureOverlay( is constructed and added via addOverlay"},
+        {"text": "barcodeCapture.addListener( is called with a didScan callback"},
+        {"text": "The didScan callback reads session.newlyRecognizedBarcode"},
+        {"text": "camera.switchToDesiredState(FrameSourceState.On) is called to start the camera"},
+        {"text": "Symbology.QRCode does NOT appear as a Symbology enum value (the correct case is Symbology.QR)"},
+        {"text": "dataCaptureContext.dispose() is NOT called anywhere in the code"},
+        {"text": "settings.enableSymbologies(...) is called with a default set for the 'all-formats' source that includes at least Symbology.EAN13UPCA, Symbology.Code128 and Symbology.QR"},
+        {"text": "The summary says the symbologies were not narrowed by the original and asks the user to confirm the list (semantic)"},
+        {"text": "camera.desiredTorchState is set with TorchState.On / TorchState.Off driven by the torch toggle state"},
+        {"text": "PermissionsAndroid.request( is used for the camera permission (the old permission hook is gone)"},
+        {"text": "ImageFrameSource.create( is called with a base64 string read from the picked file"},
+        {"text": "The ImageFrameSource is set with dataCaptureContext.setFrameSource( and switched on with switchToDesiredState(FrameSourceState.On)"},
+        {"text": "The camera is set back as the frame source after the photo scan (semantic)"},
+        {"text": "The existing dedup behavior is preserved (a scanned value already in the list is not added again) (semantic)"},
+        {"text": "The scanned-count summary (Scanned: <count>) is preserved in the rendered output"},
+        {"text": "Setup checklist mentions scandit-react-native-datacapture-core and scandit-react-native-datacapture-barcode"},
+        {"text": "Setup checklist mentions npx pod-install for iOS"},
+        {"text": "Setup checklist mentions NSCameraUsageDescription in the iOS Info.plist"},
+        {"text": "A summary of changes is shown listing what was removed and what Scandit code was added"}
+      ],
+      "tags": ["third-party-migration"]
+    },
+    {
+      "id": 3,
+      "prompt": "I have a React Native Expo screen that scans barcodes with expo-camera's CameraView (onBarcodeScanned). I want to replace it with Scandit BarcodeCapture and keep the one-shot behaviour with the Scan again button, the torch toggle, and the scan-from-image button. Here is my screen: ExpoCameraScanner.tsx",
+      "expected_output": "The skill removes expo-camera (CameraView, useCameraPermissions, scanFromURLAsync), enables exactly EAN13UPCA, Code128 and QR, keeps the one-shot flow by disabling the mode in didScan and re-enabling it on Scan again, maps enableTorch to camera.desiredTorchState, moves the image scan to ImageFrameSource.create with base64, and shows a setup checklist.",
+      "files": [
+        "fixtures/ExpoCameraScanner.tsx"
+      ],
+      "assertions": [
+        {"text": "expo-camera is NOT imported in the output code (it may appear in a before/after summary)"},
+        {"text": "CameraView is NOT rendered in the output code (it may appear in a before/after summary)"},
+        {"text": "scanFromURLAsync is NOT called in the output code (it may appear in a before/after summary)"},
+        {"text": "onBarcodeScanned is NOT used in the output code (it may appear in a before/after summary)"},
+        {"text": "DataCaptureContext.initialize( is present (v8 API)"},
+        {"text": "DataCaptureContext.sharedInstance is used to obtain the context"},
+        {"text": "new BarcodeCapture(settings) is present"},
+        {"text": "dataCaptureContext.addMode( is called to attach the BarcodeCapture mode"},
+        {"text": "<DataCaptureView is rendered as JSX with a context prop"},
+        {"text": "new BarcodeCaptureOverlay( is constructed and added via addOverlay"},
+        {"text": "barcodeCapture.addListener( is called with a didScan callback"},
+        {"text": "The didScan callback reads session.newlyRecognizedBarcode"},
+        {"text": "camera.switchToDesiredState(FrameSourceState.On) is called to start the camera"},
+        {"text": "Symbology.QRCode does NOT appear as a Symbology enum value (the correct case is Symbology.QR)"},
+        {"text": "dataCaptureContext.dispose() is NOT called anywhere in the code"},
+        {"text": "settings.enableSymbologies(...) enables exactly Symbology.EAN13UPCA (from 'ean13' and 'upc_a'), Symbology.Code128 and Symbology.QR, and nothing else"},
+        {"text": "barcodeCapture.isEnabled = false is set in the didScan callback so only one code is accepted (semantic)"},
+        {"text": "The Scan again button sets barcodeCapture.isEnabled = true to resume scanning"},
+        {"text": "camera.desiredTorchState is set with TorchState.On / TorchState.Off driven by the torch toggle state"},
+        {"text": "PermissionsAndroid.request( is used for the camera permission (the old permission hook is gone)"},
+        {"text": "ImageFrameSource.create( is called with a base64 string read from the picked file"},
+        {"text": "The ImageFrameSource is set with dataCaptureContext.setFrameSource( and switched on with switchToDesiredState(FrameSourceState.On)"},
+        {"text": "The result text shows the symbology name and the data (semantic)"},
+        {"text": "Setup checklist mentions scandit-react-native-datacapture-core and scandit-react-native-datacapture-barcode"},
+        {"text": "Setup checklist mentions npx pod-install for iOS"},
+        {"text": "Setup checklist mentions NSCameraUsageDescription in the iOS Info.plist"},
+        {"text": "A summary of changes is shown listing what was removed and what Scandit code was added"}
+      ],
+      "tags": ["third-party-migration"]
     }
   ]
 }

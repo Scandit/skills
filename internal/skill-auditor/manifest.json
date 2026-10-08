@@ -93,7 +93,6 @@
   "parity_known_gaps": {
     "barcode-capture-capacitor": ["references/third-party-migration.md"],
     "barcode-capture-cordova": ["references/third-party-migration.md"],
-    "barcode-capture-rn": ["references/third-party-migration.md"],
     "barcode-capture-web": ["references/third-party-migration.md"],
     "id-capture-web": ["references/integration.md"],
     "id-capture-net-android": ["evals/migration-evals.json"],
