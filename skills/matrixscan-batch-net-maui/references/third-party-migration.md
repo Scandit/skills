@@ -96,10 +96,12 @@ If you encounter a symbology not in this table, check the BarcodeBatch API refer
 
 ZXing.Net.Maui `BarcodeReader.Decode` / `DecodeAsync` / `DecodeFromFileAsync` (with `Multiple = true`) and BarcodeScanning.Native.Maui `Methods.ScanFromImageAsync(byte[] / FileResult / string / Stream)` map to an `ImageFrameSource` that feeds the same `BarcodeBatch` mode:
 
-1. `var imageSource = await ImageSource.FromFile(path).CreateImageFrameSourceAsync(mauiContext);` where `mauiContext` is the `IMauiContext` of a loaded element, e.g. `this.Handler.MauiContext` in a page (use `ImageSource.FromStream(() => stream)` for a stream or `byte[]`). The extension is in `Scandit.DataCapture.Core.Source` (`Scandit.DataCapture.Core.Maui`, Android and iOS). `null` means the image could not be loaded.
+1. `var imageSource = await ImageSource.FromFile(path).CreateImageFrameSourceAsync(mauiContext);` where `mauiContext` is the `IMauiContext` of a loaded element, e.g. `this.Handler.MauiContext` in a page (for a `FileResult` use `ImageSource.FromFile(file.FullPath)`, for a `Stream` `ImageSource.FromStream(() => stream)`, for a `byte[]` `ImageSource.FromStream(() => new MemoryStream(bytes))`). The extension is in `Scandit.DataCapture.Core.Source` (`Scandit.DataCapture.Core.Maui`, Android and iOS). `null` means the image could not be loaded.
 2. Enable the symbologies in `BarcodeBatchSettings`, `await context.SetFrameSourceAsync(imageSource);`, keep `barcodeBatch.Enabled = true`, then `await imageSource.SwitchToDesiredStateAsync(FrameSourceState.On);`
 3. The results arrive in `SessionUpdated` / `OnSessionUpdated` as `session.AddedTrackedBarcodes`, not as a return value. If the caller awaited the result set, keep its signature and complete a `TaskCompletionSource` from the handler, with a short timeout for an image that holds no barcode (a judgment call for the summary).
 4. One frame per switch to On: create a new source per image, and set the camera back (`SetFrameSourceAsync(camera)`) before live scanning resumes.
+
+An image-only page needs no `DataCaptureView`, overlay, camera or camera permission: skip those integration steps and register `.UseScanditCore().UseScanditBarcode()`. Keep them only when the page also scans live.
 
 ---
 
@@ -244,4 +246,4 @@ And the page code-behind creates the basic overlay inside `HandlerChanged` (see 
 
 ---
 
-When done, show only what changed. Do not list APIs that were unchanged. Include the setup checklist from `references/integration.md` so the user knows which NuGet packages to add (all four: Core, Core.Maui, Barcode, Barcode.Maui), the `MauiProgram.cs` builder chain update, the `<scandit:DataCaptureView>` XAML namespace + element, and the platform permission entries (`NSCameraUsageDescription` on iOS; `Permissions.Camera` on Android).
+When done, show only what changed. Do not list APIs that were unchanged. Include the setup checklist from `references/integration.md` so the user knows which NuGet packages to add (all four: Core, Core.Maui, Barcode, Barcode.Maui), the `MauiProgram.cs` builder chain update, and, when the page scans live, the `<scandit:DataCaptureView>` XAML namespace + element and the platform permission entries (`NSCameraUsageDescription` on iOS; `Permissions.Camera` on Android).

@@ -85,7 +85,7 @@ Gallery or file scanning moves to an `ImageFrameSource` that feeds the same `Bar
 
 Steps:
 
-1. Create `BarcodeCapture` on the context with the symbologies enabled, and subscribe to `BarcodeScanned`. No `DataCaptureView` or camera is needed for an image-only screen.
+1. Create `BarcodeCapture` on the context with the symbologies enabled, and subscribe to `BarcodeScanned`. An image-only screen needs no `DataCaptureView`, overlay, camera or camera permission, and registers `.UseScanditCore().UseScanditBarcode()`.
 2. `await context.SetFrameSourceAsync(imageSource);` and make sure `barcodeCapture.Enabled = true`.
 3. `await imageSource.SwitchToDesiredStateAsync(FrameSourceState.On);` The result arrives in `BarcodeScanned`, not as a return value.
 4. The source delivers its image once per switch to On. Create a new source per image, and set the camera back as the frame source (`SetFrameSourceAsync(camera)`) before live scanning resumes.
@@ -104,4 +104,4 @@ When the old code used the return value (`var results = await BarcodeReader.Deco
 
 ---
 
-When done, show only what changed. Do not list APIs that were unchanged. If a still-image path moved to `ImageFrameSource`, say so in the summary and list the timeout as a judgment call. Include the setup checklist from `references/integration.md` so the user knows which NuGet packages to add (all four: Core, Core.Maui, Barcode, Barcode.Maui), the `MauiProgram.cs` builder chain update, the `<scandit:DataCaptureView>` XAML namespace + element, and the platform permission entries (`NSCameraUsageDescription` on iOS; `Permissions.Camera` on Android).
+When done, show only what changed. Do not list APIs that were unchanged. If a still-image path moved to `ImageFrameSource`, say so in the summary and list the timeout as a judgment call. Include the setup checklist from `references/integration.md` so the user knows which NuGet packages to add (all four: Core, Core.Maui, Barcode, Barcode.Maui), the `MauiProgram.cs` builder chain update, and, when the page scans live, the `<scandit:DataCaptureView>` XAML namespace + element and the platform permission entries (`NSCameraUsageDescription` on iOS; `Permissions.Camera` on Android).
