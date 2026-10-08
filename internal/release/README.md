@@ -38,8 +38,8 @@ Ask for the `dist` commit, not the tag: `main` also carries `evals/` and
 
 ## OpenAI plugin directory
 
-`build_openai_bundle.py` packages the skills-only ZIP that the OpenAI plugin
-submission portal takes on its Skills tab, and validates it first against the
+`build_openai_bundle.py` packages the ZIP that the OpenAI plugin submission
+portal takes, Scandit MCP server included, and validates it first against the
 rules in
 [submission-errors](https://developers.openai.com/plugins/deploy/submission-errors).
 There is no `codex plugin pack` command, so this script is the packer.
@@ -55,8 +55,8 @@ same ref always yields the same bytes and the same SHA-256, which is what makes
 "the tree we tested is the tree we submitted" checkable rather than assumed.
 
 Stripped from the bundle: `internal/`, the Claude, Cursor and Copilot manifests,
-`.agents/`, `skills.sh.json`, `README.md`, `.gitignore`, `.mcp.json`, the Codex
-manifest's `mcpServers` key, and every `skills/*/evals/` directory. `internal/` is the one exclusion that is a real
+`.agents/`, `skills.sh.json`, `README.md`, `.gitignore`, and every
+`skills/*/evals/` directory. `internal/` is the one exclusion that is a real
 risk rather than hygiene: `skill-auditor/sources.yaml` names private Scandit
 repos, and uploaded skills are scanned for sensitive information.
 
@@ -111,7 +111,10 @@ still be rejected. The script checks the strict tier.
 | Listing URLs | 2,048 | 1,024 |
 | `interface.longDescription` | 4,000 | 4,000 |
 
-Skills-only bundles must not carry `interface.screenshots`, `mcpServers`,
-`apps`, `.mcp.json`, or `.app.json`. Screenshots require an MCP-backed
-submission with custom UI. The repo-marketplace channels do ship the Scandit MCP
-server (`.mcp.json`); the builder strips it, so directory users get skills only.
+The bundle keeps `.mcp.json` and the manifest's `mcpServers`: the skills call
+the Scandit MCP server for licence keys, and without it the portal reports no
+MCP. The builder requires exactly one remote HTTPS server, the portal's limit.
+After upload, connect it on the draft's MCPs tab (domain verification on
+`ssl.scandit.com`). OpenAI does not support adding an MCP server to an existing
+skills-only plugin, so the first MCP upload may need a new plugin draft. Bundles
+must not carry `interface.screenshots`, `apps`, or `.app.json`.
