@@ -165,11 +165,11 @@ const listener = {
   didCaptureId: (_: IdCapture, capturedId: CapturedId) => {
     const mobile = capturedId.mobileDocument;     // MobileDocumentResult | null (ISO 18013-5 mdoc)
     if (mobile) {
-      console.log(mobile.fullName, mobile.dateOfBirth, mobile.documentNumber);
+      showDocument(mobile.fullName, mobile.dateOfBirth, mobile.documentNumber); // your UI; personal data — never log it
     }
     const ocr = capturedId.mobileDocumentOcr;      // MobileDocumentOCRResult | null (on-screen OCR)
     if (ocr) {
-      console.log(ocr.fullName, ocr.documentNumber);
+      showDocument(ocr.fullName, ocr.documentNumber); // your UI; personal data — never log it
     }
   },
 };
