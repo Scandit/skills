@@ -1,10 +1,10 @@
 ---
 name: barcode-capture-rn
-description: Scandit Barcode Capture (`BarcodeCapture`) in React Native projects — the low-level, full-control single-barcode scanning mode (BarcodeCapture + DataCaptureView + BarcodeCaptureOverlay), without the pre-built SparkScan UI. Use for integration, symbology configuration, result handling, viewfinder and feedback customization, SDK version migration, or troubleshooting.
+description: Scandit Barcode Capture (`BarcodeCapture`) in React Native projects — the low-level, full-control single-barcode scanning mode (BarcodeCapture + DataCaptureView + BarcodeCaptureOverlay), without the pre-built SparkScan UI. Use for integration, symbology configuration, result handling, viewfinder and feedback customization, SDK version migration, replacing a third-party scanner (react-native-vision-camera, expo-camera), or troubleshooting.
 license: Apache-2.0
 metadata:
   author: scandit
-  version: "1.0.4"
+  version: "1.0.5"
 ---
 
 # BarcodeCapture React Native Skill
@@ -30,6 +30,7 @@ Based on the user's request, load the appropriate reference file before respondi
 
 - **Integrating BarcodeCapture from scratch** (e.g. "add BarcodeCapture to my app", "set up barcode scanning", "how do I use BarcodeCapture in React Native", "how do I add a viewfinder") → read [references/integration.md](references/integration.md) and follow the instructions there.
 - **Migrating or upgrading an existing BarcodeCapture integration** (e.g. "upgrade from v6 to v7", "migrate my BarcodeCapture", "bump the Scandit packages to v8", "what changed between SDK versions") → read [references/migration.md](references/migration.md) and follow the instructions there.
+- **Replacing a third-party scanner with BarcodeCapture** (e.g. "replace react-native-vision-camera useCodeScanner with Scandit", "migrate from vision-camera v5 / expo-camera CameraView to Scandit", "switch from my barcode scanner library to BarcodeCapture") → read [references/third-party-migration.md](references/third-party-migration.md) and follow the instructions there.
 
 ## API Usage Policy
 
