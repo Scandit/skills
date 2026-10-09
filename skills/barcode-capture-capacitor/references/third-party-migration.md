@@ -48,7 +48,7 @@ Follow `references/integration.md`. The shape of the rewrite:
 5. **Mode**: `new BarcodeCapture(settings)` then `await context.setMode(barcodeCapture)`.
 6. **Replace the `barcodesScanned` listener** with `barcodeCapture.addListener({ didScan })` (see **Result mapping**).
 7. **Preview**: `DataCaptureView.forContext(context)` + `view.connectToElement(element)` on an element with `z-index: -1`, and `view.addOverlay(new BarcodeCaptureOverlay(barcodeCapture))`.
-8. **Start**: `barcodeCapture.isEnabled = true` and `await camera.switchToDesiredState(FrameSourceState.On)`. **Stop** (the `stopScan()` equivalent): `barcodeCapture.isEnabled = false`, remove the listener (or clear the callback a permanent listener calls), `await camera.switchToDesiredState(FrameSourceState.Off)`, `view.detachFromElement()`.
+8. **Start**: `barcodeCapture.isEnabled = true` and `await camera.switchToDesiredState(FrameSourceState.On)`. **Stop** (the `stopScan()` equivalent): `barcodeCapture.isEnabled = false`, remove the listener (or clear the callback a permanent listener calls), `await camera.switchToDesiredState(FrameSourceState.Off)`, `view.detachFromElement()`. A stop can arrive while a start is still awaiting setup: bump a counter in stop, and have start bail out after each `await` when the counter changed, so a closed screen never turns the camera on.
 
 ### Preview placement: keep the app's HTML on top
 
@@ -174,6 +174,7 @@ let scannerPromise: Promise<Scanner> | null = null;
 let camera: Camera | null = null;
 let cameraPosition: CameraPosition | null = null;
 let onScanCb: ((result: ScanResult) => void) | null = null;
+let generation = 0; // bumped by stopScan(): a startScan() still setting up then bails out
 
 function getScanner(): Promise<Scanner> {
   if (!scannerPromise) {
@@ -222,7 +223,9 @@ export async function startScan(
   if (!isScanningSupported()) {
     throw new Error('Scanning is not available in a browser');
   }
+  const mine = ++generation;
   const { context, barcodeCapture, view } = await getScanner();
+  if (mine !== generation) return; // stopped while setting up
 
   // A camera is bound to one position: create a new one only when the position changes.
   let active = camera;
@@ -234,6 +237,7 @@ export async function startScan(
     await context.setFrameSource(active);
     camera = active;
     cameraPosition = position;
+    if (mine !== generation) return;
   }
 
   onScanCb = onScan;
@@ -249,6 +253,7 @@ export function setTorch(on: boolean): void {
 }
 
 export async function stopScan(): Promise<void> {
+  generation++;
   if (!scannerPromise) return;
   const { barcodeCapture, view } = await scannerPromise;
   barcodeCapture.isEnabled = false;

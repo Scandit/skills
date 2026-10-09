@@ -49,7 +49,7 @@ Follow `references/integration.md`. The shape of the rewrite:
 ML Kit's scanner has a close button; leaving it resolves `scan()` with an empty `barcodes` array. SparkScan has no such promise, so a wrapper that only resolves in `didScan` hangs forever when the user dismisses the scanner — the caller's "scanning…" state never clears.
 
 - Set `view.uiListener = { didChangeViewState }`. `SparkScanViewState` is `Initial`, `Idle`, `Inactive`, `Active` or `Error`. Remember when the state has been `Active`; when it later becomes `Idle` while a call is still pending, resolve with `{ barcodes: [] }` and hide the view. The preview's close control and `pauseScanning()` both switch to `Idle`. Do **not** resolve on `Inactive`: releasing the trigger without a read also lands there while the user is still scanning, and a successful read reaches `Inactive` only after `didScan` has already resolved the call.
-- Also expose a `cancelScan()` the app can call from its own close or back button — a collapsed SparkScan shows only its trigger button, and the user may never reach `Active`.
+- Also expose a `cancelScan()` the app can call from its own close or back button — a collapsed SparkScan shows only its trigger button, and the user may never reach `Active`. It can run while `scan()` is still setting up, before a resolver exists: set a flag that `scan()` checks after each `await`, so a cancelled call returns `{ barcodes: [] }` instead of showing the scanner.
 - **Never** use `didTapBarcodeCountButton` (or `didTapBarcodeFindButton` / `didTapLabelCaptureButton`) as a close hook: they fire when the user taps the Count / Find / Label Capture mode buttons, not on close. Hide those buttons instead (`view.barcodeCountButtonVisible = false`, `view.barcodeFindButtonVisible = false`, `view.labelCaptureButtonVisible = false`) so the user cannot reach a mode the app does not handle.
 
 ### Symbology mapping
@@ -147,6 +147,7 @@ let setUp: Promise<void> | null = null;
 let pending: ((result: { barcodes: ScannedBarcode[] }) => void) | null = null;
 let sawActive = false;
 let busy = false;
+let cancelled = false;
 
 function settingsFor(symbologies: Symbology[]): SparkScanSettings {
   const settings = new SparkScanSettings();
@@ -195,6 +196,7 @@ async function createOnce(symbologies: Symbology[]): Promise<void> {
 }
 
 export function cancelScan(): Promise<void> {
+  cancelled = true; // also stops a scan() that is still setting up
   return settle([]);
 }
 
@@ -206,6 +208,7 @@ export async function scan(
   }
   if (busy) throw new Error('A scan is already in progress');
   busy = true;
+  cancelled = false;
   try {
     setUp ??= createOnce(symbologies).catch((error: unknown) => {
       setUp = null; // let the next scan() retry a failed initialisation
@@ -215,13 +218,14 @@ export async function scan(
     if (!sparkScan || !view) throw new Error('Scanner failed to initialise');
 
     await sparkScan.applySettings(settingsFor(symbologies));
+    if (cancelled) return { barcodes: [] }; // cancelScan() ran during setup
     sawActive = false;
     const result = new Promise<{ barcodes: ScannedBarcode[] }>((resolve) => {
       pending = resolve;
     });
     try {
       await view.show();
-      await view.startScanning();
+      if (!cancelled) await view.startScanning();
     } catch (error) {
       pending = null;
       await view.stopScanning().catch(() => undefined);
