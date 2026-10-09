@@ -1,0 +1,198 @@
+{
+  "symbologies": {
+    "ean13upca": {"kotlin": "EAN13_UPCA", "swift": "ean13UPCA", "dart": "ean13Upca", "js": "EAN13UPCA", "csharp": "Ean13Upca"},
+    "ean8": {"kotlin": "EAN8", "swift": "ean8", "dart": "ean8", "js": "EAN8", "csharp": "Ean8"},
+    "upce": {"kotlin": "UPCE", "swift": "upce", "dart": "upce", "js": "UPCE", "csharp": "Upce"},
+    "code39": {"kotlin": "CODE39", "swift": "code39", "dart": "code39", "js": "Code39", "csharp": "Code39"},
+    "code93": {"kotlin": "CODE93", "swift": "code93", "dart": "code93", "js": "Code93", "csharp": "Code93"},
+    "code128": {"kotlin": "CODE128", "swift": "code128", "dart": "code128", "js": "Code128", "csharp": "Code128"},
+    "itf": {"kotlin": "INTERLEAVED_TWO_OF_FIVE", "swift": "interleavedTwoOfFive", "dart": "interleavedTwoOfFive", "js": "InterleavedTwoOfFive", "csharp": "InterleavedTwoOfFive"},
+    "codabar": {"kotlin": "CODABAR", "swift": "codabar", "dart": "codabar", "js": "Codabar", "csharp": "Codabar"},
+    "qr": {"kotlin": "QR", "swift": "qr", "dart": "qr", "js": "QR", "csharp": "Qr"},
+    "datamatrix": {"kotlin": "DATA_MATRIX", "swift": "dataMatrix", "dart": "dataMatrix", "js": "DataMatrix", "csharp": "DataMatrix"},
+    "aztec": {"kotlin": "AZTEC", "swift": "aztec", "dart": "aztec", "js": "Aztec", "csharp": "Aztec"},
+    "pdf417": {"kotlin": "PDF417", "swift": "pdf417", "dart": "pdf417", "js": "PDF417", "csharp": "Pdf417"},
+    "msi": {"kotlin": "MSI_PLESSEY", "swift": "msiPlessey", "dart": "msiPlessey", "js": "MSIPlessey", "csharp": "MsiPlessey"},
+    "gs1databar": {"kotlin": "GS1_DATABAR", "swift": "gs1Databar", "dart": "gs1Databar", "js": "GS1Databar", "csharp": "Gs1Databar"},
+    "gs1databar-limited": {"kotlin": "GS1_DATABAR_LIMITED", "swift": "gs1DatabarLimited", "dart": "gs1DatabarLimited", "js": "GS1DatabarLimited", "csharp": "Gs1DatabarLimited"},
+    "gs1databar-expanded": {"kotlin": "GS1_DATABAR_EXPANDED", "swift": "gs1DatabarExpanded", "dart": "gs1DatabarExpanded", "js": "GS1DatabarExpanded", "csharp": "Gs1DatabarExpanded"},
+    "maxicode": {"kotlin": "MAXI_CODE", "swift": "maxiCode", "dart": "maxiCode", "js": "MaxiCode", "csharp": "MaxiCode"}
+  },
+  "formats": {
+    "qr": {"symbology": "qr", "note": {"js": "**not** `QRCode`", "dart": "**not** `qrCode`"}},
+    "ean-13": {"symbology": "ean13upca"},
+    "ean-8": {"symbology": "ean8"},
+    "upc-a": {"symbology": "ean13upca", "note": "UPC-A is read by the EAN-13/UPC-A symbology"},
+    "upc-e": {"symbology": "upce"},
+    "code-39": {"symbology": "code39"},
+    "code-93": {"symbology": "code93"},
+    "code-128": {"symbology": "code128"},
+    "itf": {"symbology": "itf", "note": "no ITF-14 symbology; ITF-14 is a 14-digit Interleaved 2 of 5"},
+    "codabar": {"symbology": "codabar"},
+    "data-matrix": {"symbology": "datamatrix"},
+    "aztec": {"symbology": "aztec"},
+    "pdf-417": {"symbology": "pdf417"},
+    "msi": {"symbology": "msi"},
+    "gs1-databar": {"symbology": "gs1databar"},
+    "gs1-databar-limited": {"symbology": "gs1databar-limited"},
+    "gs1-databar-expanded": {"symbology": "gs1databar-expanded"},
+    "maxicode": {"symbology": "maxicode"},
+    "upc-ean-extension": {"symbology": null, "note": "No symbology of its own: the 2/5-digit add-on arrives as `barcode.addOnData` on the EAN/UPC result. Look up how to enable add-ons in the API reference before writing it."},
+    "all-formats": {"symbology": null, "note": "No equivalent. Enable what the app really consumes; if nothing narrows it, the recommended default set below. Never enable everything."}
+  },
+  "default_set": ["qr", "ean13upca", "ean8", "upce", "code39", "code93", "code128", "itf", "codabar", "datamatrix", "aztec", "pdf417"],
+  "sources": {
+    "zxing": {
+      "label": "ZXing `BarcodeFormat`",
+      "rows": {
+        "qr": ["QR_CODE"], "ean-13": ["EAN_13"], "ean-8": ["EAN_8"], "upc-a": ["UPC_A"], "upc-e": ["UPC_E"],
+        "code-39": ["CODE_39"], "code-93": ["CODE_93"], "code-128": ["CODE_128"], "itf": ["ITF"], "codabar": ["CODABAR"],
+        "data-matrix": ["DATA_MATRIX"], "aztec": ["AZTEC"], "pdf-417": ["PDF_417"]
+      }
+    },
+    "zxing-net": {
+      "label": "ZXing.Net / ZXing.Net.Mobile `BarcodeFormat`",
+      "rows_from": "zxing"
+    },
+    "zxing-js": {
+      "label": "ZXing-js `BarcodeFormat`",
+      "rows_from": "zxing"
+    },
+    "mlkit": {
+      "label": "ML Kit `Barcode.FORMAT_*`",
+      "rows": {
+        "qr": ["FORMAT_QR_CODE"], "ean-13": ["FORMAT_EAN_13"], "ean-8": ["FORMAT_EAN_8"], "upc-a": ["FORMAT_UPC_A"], "upc-e": ["FORMAT_UPC_E"],
+        "code-39": ["FORMAT_CODE_39"], "code-93": ["FORMAT_CODE_93"], "code-128": ["FORMAT_CODE_128"], "itf": ["FORMAT_ITF"], "codabar": ["FORMAT_CODABAR"],
+        "data-matrix": ["FORMAT_DATA_MATRIX"], "aztec": ["FORMAT_AZTEC"], "pdf-417": ["FORMAT_PDF417"],
+        "all-formats": ["FORMAT_ALL_FORMATS"]
+      }
+    },
+    "mlkit-cordova": {
+      "label": "ML Kit `format` constant",
+      "rows": {
+        "qr": {"names": ["256"], "note": "`FORMAT_QR_CODE`"},
+        "ean-13": {"names": ["32"], "note": "`FORMAT_EAN_13`"},
+        "ean-8": {"names": ["64"], "note": "`FORMAT_EAN_8`"},
+        "upc-a": {"names": ["512"], "note": "`FORMAT_UPC_A`"},
+        "upc-e": {"names": ["1024"], "note": "`FORMAT_UPC_E`"},
+        "code-39": {"names": ["2"], "note": "`FORMAT_CODE_39`"},
+        "code-93": {"names": ["4"], "note": "`FORMAT_CODE_93`"},
+        "code-128": {"names": ["1"], "note": "`FORMAT_CODE_128`"},
+        "itf": {"names": ["128"], "note": "`FORMAT_ITF`"},
+        "codabar": {"names": ["8"], "note": "`FORMAT_CODABAR`"},
+        "data-matrix": {"names": ["16"], "note": "`FORMAT_DATA_MATRIX`"},
+        "aztec": {"names": ["4096"], "note": "`FORMAT_AZTEC`"},
+        "pdf-417": {"names": ["2048"], "note": "`FORMAT_PDF417`"}
+      }
+    },
+    "phonegap": {
+      "label": "`phonegap-plugin-barcodescanner` `formats` string",
+      "rows": {
+        "qr": ["QR_CODE"], "ean-13": ["EAN_13"], "ean-8": ["EAN_8"], "upc-a": ["UPC_A"], "upc-e": ["UPC_E"],
+        "code-39": ["CODE_39"], "code-93": ["CODE_93"], "code-128": ["CODE_128"], "itf": ["ITF"], "codabar": ["CODABAR"],
+        "data-matrix": ["DATA_MATRIX"], "aztec": ["AZTEC"], "pdf-417": ["PDF_417"],
+        "msi": ["MSI"], "gs1-databar": ["RSS14"], "gs1-databar-expanded": ["RSS_EXPANDED"],
+        "maxicode": {"names": ["MAXICODE"], "note": "not in the plugin's documented list; Android passes it through to ZXing, iOS ignores it"},
+        "upc-ean-extension": {"names": ["UPC_EAN_EXTENSION"], "note": "not in the plugin's documented list; Android accepts it but it enables no reader on its own, iOS ignores it"}
+      }
+    },
+    "capacitor-mlkit": {
+      "label": "`@capacitor-mlkit/barcode-scanning` `BarcodeFormat` (value)",
+      "rows": {
+        "qr": {"names": ["BarcodeFormat.QrCode"], "note": "`'QR_CODE'`"},
+        "ean-13": {"names": ["BarcodeFormat.Ean13"], "note": "`'EAN_13'`"},
+        "ean-8": {"names": ["BarcodeFormat.Ean8"], "note": "`'EAN_8'`"},
+        "upc-a": {"names": ["BarcodeFormat.UpcA"], "note": "`'UPC_A'`"},
+        "upc-e": {"names": ["BarcodeFormat.UpcE"], "note": "`'UPC_E'`"},
+        "code-39": {"names": ["BarcodeFormat.Code39"], "note": "`'CODE_39'`"},
+        "code-93": {"names": ["BarcodeFormat.Code93"], "note": "`'CODE_93'`"},
+        "code-128": {"names": ["BarcodeFormat.Code128"], "note": "`'CODE_128'`"},
+        "itf": {"names": ["BarcodeFormat.Itf"], "note": "`'ITF'`"},
+        "codabar": {"names": ["BarcodeFormat.Codabar"], "note": "`'CODABAR'`"},
+        "data-matrix": {"names": ["BarcodeFormat.DataMatrix"], "note": "`'DATA_MATRIX'`"},
+        "aztec": {"names": ["BarcodeFormat.Aztec"], "note": "`'AZTEC'`"},
+        "pdf-417": {"names": ["BarcodeFormat.Pdf417"], "note": "`'PDF_417'`"}
+      }
+    },
+    "mobile_scanner": {
+      "label": "mobile_scanner / ML Kit `BarcodeFormat`",
+      "rows": {
+        "qr": ["qrCode"], "ean-13": ["ean13"], "ean-8": ["ean8"], "upc-a": ["upcA"], "upc-e": ["upcE"],
+        "code-39": ["code39"], "code-93": ["code93"], "code-128": ["code128"], "itf": ["itf"], "codabar": ["codabar"],
+        "data-matrix": ["dataMatrix"], "aztec": ["aztec"], "pdf-417": ["pdf417"]
+      }
+    },
+    "vision-camera-v4": {
+      "label": "vision-camera v4 `CodeType`",
+      "rows": {
+        "qr": ["'qr'"], "ean-13": ["'ean-13'"], "ean-8": ["'ean-8'"], "upc-a": ["'upc-a'"], "upc-e": ["'upc-e'"],
+        "code-39": ["'code-39'"], "code-93": ["'code-93'"], "code-128": ["'code-128'"], "itf": ["'itf'", "'itf-14'"], "codabar": ["'codabar'"],
+        "data-matrix": ["'data-matrix'"], "aztec": ["'aztec'"], "pdf-417": ["'pdf-417'"],
+        "gs1-databar": ["'gs1-data-bar'"], "gs1-databar-limited": ["'gs1-data-bar-limited'"], "gs1-databar-expanded": ["'gs1-data-bar-expanded'"]
+      }
+    },
+    "vision-camera-v5": {
+      "label": "vision-camera v5 `TargetBarcodeFormat`",
+      "rows": {
+        "qr": ["'qr-code'"], "ean-13": ["'ean-13'"], "ean-8": ["'ean-8'"], "upc-a": ["'upc-a'"], "upc-e": ["'upc-e'"],
+        "code-39": ["'code-39'"], "code-93": ["'code-93'"], "code-128": ["'code-128'"], "itf": ["'itf'"], "codabar": ["'codabar'"],
+        "data-matrix": ["'data-matrix'"], "aztec": ["'aztec'"], "pdf-417": ["'pdf-417'"],
+        "all-formats": ["'all-formats'"]
+      }
+    },
+    "expo-camera": {
+      "label": "expo-camera `BarcodeType`",
+      "rows": {
+        "qr": ["'qr'"], "ean-13": ["'ean13'"], "ean-8": ["'ean8'"], "upc-a": ["'upc_a'"], "upc-e": ["'upc_e'"],
+        "code-39": ["'code39'"], "code-93": ["'code93'"], "code-128": ["'code128'"], "itf": ["'itf14'"], "codabar": ["'codabar'"],
+        "data-matrix": ["'datamatrix'"], "aztec": ["'aztec'"], "pdf-417": ["'pdf417'"]
+      }
+    },
+    "avfoundation-swift": {
+      "label": "AVFoundation `AVMetadataObject.ObjectType`",
+      "rows": {
+        "qr": [".qr"], "ean-13": [".ean13"], "ean-8": [".ean8"], "upc-e": [".upce"],
+        "code-39": [".code39"], "code-93": [".code93"], "code-128": [".code128"], "itf": [".itf14"],
+        "data-matrix": [".dataMatrix"], "aztec": [".aztec"], "pdf-417": [".pdf417"]
+      }
+    },
+    "avfoundation-net-constant": {
+      "label": "AVFoundation `AVMetadataObject.Type*`",
+      "rows": {
+        "qr": ["TypeQRCode"], "ean-13": ["TypeEAN13Code"], "ean-8": ["TypeEAN8Code"],
+        "upc-a": {"names": [], "note": "no direct type; subset of EAN-13"},
+        "upc-e": ["TypeUPCECode"], "code-39": ["TypeCode39Code"], "code-93": ["TypeCode93Code"], "code-128": ["TypeCode128Code"],
+        "itf": {"names": ["TypeITF14Code"], "note": "ITF-14 is a fixed-length subset"},
+        "codabar": {"names": [], "note": "no AVFoundation equivalent"},
+        "data-matrix": ["TypeDataMatrixCode"], "aztec": ["TypeAztecCode"], "pdf-417": ["TypePDF417Code"]
+      }
+    },
+    "avfoundation-net-enum": {
+      "label": "AVFoundation `AVMetadataObjectType`",
+      "rows": {
+        "qr": ["QRCode"], "ean-13": ["EAN13Code"], "ean-8": ["EAN8Code"],
+        "upc-a": {"names": [], "note": "no direct type; subset of EAN-13"},
+        "upc-e": ["UPCECode"], "code-39": ["Code39Code", "Code39Mod43Code"], "code-93": ["Code93Code"], "code-128": ["Code128Code"],
+        "itf": ["ITF14Code", "Interleaved2of5Code"],
+        "codabar": {"names": [], "note": "no AVFoundation equivalent"},
+        "data-matrix": ["DataMatrixCode"], "aztec": ["AztecCode"], "pdf-417": ["PDF417Code"]
+      }
+    },
+    "zxing-net-maui": {
+      "label": "ZXing.Net.Maui `BarcodeFormat`",
+      "rows": {
+        "qr": ["QrCode"], "ean-13": ["Ean13"], "ean-8": ["Ean8"], "upc-a": ["UpcA"], "upc-e": ["UpcE"],
+        "code-39": ["Code39"], "code-93": ["Code93"], "code-128": ["Code128"], "itf": ["Itf"], "codabar": ["Codabar"],
+        "data-matrix": ["DataMatrix"], "aztec": ["Aztec"], "pdf-417": ["Pdf417"]
+      }
+    },
+    "barcodescanning-native-maui": {
+      "label": "BarcodeScanning.Native.Maui `BarcodeFormats`",
+      "rows": {
+        "qr": ["QRCode"], "ean-13": ["Ean13"], "ean-8": ["Ean8"], "upc-a": ["Upca"], "upc-e": ["Upce"],
+        "code-39": ["Code39"], "code-93": ["Code93"], "code-128": ["Code128"], "itf": ["Itf", "I2OF5"], "codabar": ["CodaBar"],
+        "data-matrix": ["DataMatrix"], "aztec": ["Aztec"], "pdf-417": ["Pdf417"]
+      }
+    }
+  }
+}

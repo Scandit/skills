@@ -31,16 +31,27 @@ Identify the plugin by its imports and types: `MobileScannerController`, the `Mo
 
 Map **only** the formats the app scanned.
 
-| `BarcodeFormat` | Scandit `Symbology` |
+<!-- BEGIN GENERATED symbology-table sources=mobile_scanner style=dart -->
+| mobile_scanner / ML Kit `BarcodeFormat` | Scandit `Symbology` |
 |---|---|
-| `ean13`, `upcA` | `Symbology.ean13Upca` |
-| `ean8` / `upcE` | `Symbology.ean8` / `Symbology.upce` |
-| `code39` / `code93` / `code128` | `Symbology.code39` / `code93` / `code128` |
-| `itf` / `codabar` | `Symbology.interleavedTwoOfFive` / `Symbology.codabar` |
 | `qrCode` | `Symbology.qr` (**not** `qrCode`) |
-| `dataMatrix` / `aztec` / `pdf417` | `Symbology.dataMatrix` / `aztec` / `pdf417` |
+| `ean13` | `Symbology.ean13Upca` |
+| `ean8` | `Symbology.ean8` |
+| `upcA` | `Symbology.ean13Upca` (UPC-A is read by the EAN-13/UPC-A symbology) |
+| `upcE` | `Symbology.upce` |
+| `code39` | `Symbology.code39` |
+| `code93` | `Symbology.code93` |
+| `code128` | `Symbology.code128` |
+| `itf` | `Symbology.interleavedTwoOfFive` (no ITF-14 symbology; ITF-14 is a 14-digit Interleaved 2 of 5) |
+| `codabar` | `Symbology.codabar` |
+| `dataMatrix` | `Symbology.dataMatrix` |
+| `aztec` | `Symbology.aztec` |
+| `pdf417` | `Symbology.pdf417` |
 
-**"All formats" (no `formats:` argument).** Do not guess a list or invent symbol counts. Search the project for what the app consumes (parsers, backend checks) and enable exactly those; if nothing narrows it, enable the common retail and logistics set and flag "symbologies were not narrowed by the original; confirm this list". Symbologies go on `SparkScanSettings.enableSymbologies({...})`.
+**Recommended default set** when the source scanned every format and nothing in the app narrows it: `Symbology.qr`, `Symbology.ean13Upca`, `Symbology.ean8`, `Symbology.upce`, `Symbology.code39`, `Symbology.code93`, `Symbology.code128`, `Symbology.interleavedTwoOfFive`, `Symbology.codabar`, `Symbology.dataMatrix`, `Symbology.aztec`, `Symbology.pdf417`.
+<!-- END GENERATED symbology-table -->
+
+**"All formats" (no `formats:` argument).** Do not guess a list or invent symbol counts. Search the project for what the app consumes (parsers, backend checks) and enable exactly those; if nothing narrows it, enable the recommended default set under the table and flag "symbologies were not narrowed by the original; confirm this list". Symbologies go on `SparkScanSettings.enableSymbologies({...})`.
 
 `DetectionSpeed` maps to `settings.codeDuplicateFilter` (`Duration`): `noDuplicates` → `const Duration(seconds: -1)`, `normal` → about 500 ms, `unrestricted` → `Duration.zero`. List the chosen value as a judgment call.
 

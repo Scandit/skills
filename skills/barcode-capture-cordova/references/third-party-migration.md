@@ -44,25 +44,32 @@ Follow `references/integration.md`. The shape of the rewrite:
 
 Map **only** the formats the app passed in `options.formats` (a comma-separated string); fewer symbologies scan faster and more accurately. Do not derive Scandit names from the plugin's names.
 
-| `formats` string | Scandit `Scandit.Symbology.*` |
+<!-- BEGIN GENERATED symbology-table sources=phonegap style=js namespace=Scandit.Symbology -->
+| `phonegap-plugin-barcodescanner` `formats` string | Scandit `Scandit.Symbology` |
 |---|---|
-| `QR_CODE` | `QR` (**not** `QRCode` or `QR_CODE`) |
-| `EAN_13`, `UPC_A` | `EAN13UPCA` (UPC-A is read as EAN-13/UPC-A) |
-| `EAN_8` | `EAN8` |
-| `UPC_E` | `UPCE` |
-| `CODE_39` / `CODE_93` / `CODE_128` | `Code39` / `Code93` / `Code128` |
-| `ITF` | `InterleavedTwoOfFive` |
-| `CODABAR` | `Codabar` |
-| `DATA_MATRIX` | `DataMatrix` |
-| `AZTEC` | `Aztec` |
-| `PDF_417` | `PDF417` |
-| `MSI` | `MSIPlessey` |
-| `RSS14` | `GS1Databar` |
-| `RSS_EXPANDED` | `GS1DatabarExpanded` |
-| `MAXICODE` (not in the plugin's documented list; Android passes it through to ZXing, iOS ignores it) | `MaxiCode` |
+| `QR_CODE` | `Scandit.Symbology.QR` (**not** `QRCode`) |
+| `EAN_13` | `Scandit.Symbology.EAN13UPCA` |
+| `EAN_8` | `Scandit.Symbology.EAN8` |
+| `UPC_A` | `Scandit.Symbology.EAN13UPCA` (UPC-A is read by the EAN-13/UPC-A symbology) |
+| `UPC_E` | `Scandit.Symbology.UPCE` |
+| `CODE_39` | `Scandit.Symbology.Code39` |
+| `CODE_93` | `Scandit.Symbology.Code93` |
+| `CODE_128` | `Scandit.Symbology.Code128` |
+| `ITF` | `Scandit.Symbology.InterleavedTwoOfFive` (no ITF-14 symbology; ITF-14 is a 14-digit Interleaved 2 of 5) |
+| `CODABAR` | `Scandit.Symbology.Codabar` |
+| `DATA_MATRIX` | `Scandit.Symbology.DataMatrix` |
+| `AZTEC` | `Scandit.Symbology.Aztec` |
+| `PDF_417` | `Scandit.Symbology.PDF417` |
+| `MSI` | `Scandit.Symbology.MSIPlessey` |
+| `RSS14` | `Scandit.Symbology.GS1Databar` |
+| `RSS_EXPANDED` | `Scandit.Symbology.GS1DatabarExpanded` |
+| `MAXICODE` (not in the plugin's documented list; Android passes it through to ZXing, iOS ignores it) | `Scandit.Symbology.MaxiCode` |
 | `UPC_EAN_EXTENSION` (not in the plugin's documented list; Android accepts it but it enables no reader on its own, iOS ignores it) | No symbology of its own: the 2/5-digit add-on arrives as `barcode.addOnData` on the EAN/UPC result. Look up how to enable add-ons in the API reference before writing it. |
 
-**No `formats` option** means the plugin scanned every format it supports. Never guess one symbology: search the project for what the app really consumes and enable exactly that. If nothing narrows it, enable the table's symbologies and add a summary line "symbologies were not narrowed by the original; confirm this list". If a format is not in the table, look it up in the API reference before writing it.
+**Recommended default set** when the source scanned every format and nothing in the app narrows it: `Scandit.Symbology.QR`, `Scandit.Symbology.EAN13UPCA`, `Scandit.Symbology.EAN8`, `Scandit.Symbology.UPCE`, `Scandit.Symbology.Code39`, `Scandit.Symbology.Code93`, `Scandit.Symbology.Code128`, `Scandit.Symbology.InterleavedTwoOfFive`, `Scandit.Symbology.Codabar`, `Scandit.Symbology.DataMatrix`, `Scandit.Symbology.Aztec`, `Scandit.Symbology.PDF417`.
+<!-- END GENERATED symbology-table -->
+
+**No `formats` option** means the plugin scanned every format it supports. Never guess one symbology: search the project for what the app really consumes and enable exactly that. If nothing narrows it, enable the recommended default set under the table and add a summary line "symbologies were not narrowed by the original; confirm this list". If a format is not in the table, look it up in the API reference before writing it.
 
 ## Options mapping
 

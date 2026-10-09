@@ -41,21 +41,25 @@ Follow `references/integration.md`. When configuring `BarcodeCaptureSettings`, m
 
 ### Symbology mapping
 
-| ZXing.Net / ZXing.Net.Mobile `BarcodeFormat` | AVFoundation `AVMetadataObject.Type*` | Scandit `Symbology.*` |
+<!-- BEGIN GENERATED symbology-table sources=zxing-net,avfoundation-net-constant style=csharp -->
+| ZXing.Net / ZXing.Net.Mobile `BarcodeFormat` | AVFoundation `AVMetadataObject.Type*` | Scandit `Symbology` |
 |---|---|---|
 | `QR_CODE` | `TypeQRCode` | `Symbology.Qr` |
 | `EAN_13` | `TypeEAN13Code` | `Symbology.Ean13Upca` |
 | `EAN_8` | `TypeEAN8Code` | `Symbology.Ean8` |
-| `UPC_A` | (no direct type; subset of EAN-13) | `Symbology.Ean13Upca` |
+| `UPC_A` | (no direct type; subset of EAN-13) | `Symbology.Ean13Upca` (UPC-A is read by the EAN-13/UPC-A symbology) |
 | `UPC_E` | `TypeUPCECode` | `Symbology.Upce` |
 | `CODE_39` | `TypeCode39Code` | `Symbology.Code39` |
 | `CODE_93` | `TypeCode93Code` | `Symbology.Code93` |
 | `CODE_128` | `TypeCode128Code` | `Symbology.Code128` |
-| `ITF` | `TypeITF14Code` (note: ITF-14 is a fixed-length subset) | `Symbology.InterleavedTwoOfFive` |
+| `ITF` | `TypeITF14Code` (ITF-14 is a fixed-length subset) | `Symbology.InterleavedTwoOfFive` (no ITF-14 symbology; ITF-14 is a 14-digit Interleaved 2 of 5) |
 | `CODABAR` | (no AVFoundation equivalent) | `Symbology.Codabar` |
 | `DATA_MATRIX` | `TypeDataMatrixCode` | `Symbology.DataMatrix` |
 | `AZTEC` | `TypeAztecCode` | `Symbology.Aztec` |
 | `PDF_417` | `TypePDF417Code` | `Symbology.Pdf417` |
+
+**Recommended default set** when the source scanned every format and nothing in the app narrows it: `Symbology.Qr`, `Symbology.Ean13Upca`, `Symbology.Ean8`, `Symbology.Upce`, `Symbology.Code39`, `Symbology.Code93`, `Symbology.Code128`, `Symbology.InterleavedTwoOfFive`, `Symbology.Codabar`, `Symbology.DataMatrix`, `Symbology.Aztec`, `Symbology.Pdf417`.
+<!-- END GENERATED symbology-table -->
 
 If you encounter a symbology not in this table, check the [BarcodeCapture API reference](https://docs.scandit.com/data-capture-sdk/dotnet.ios/barcode-capture/api.html) for the correct `Symbology` enum value before writing the code.
 

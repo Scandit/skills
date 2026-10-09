@@ -50,21 +50,25 @@ When configuring `BarcodeBatchSettings`, map formats from ZXing using the table 
 
 ### Symbology mapping
 
-| ZXing-js `BarcodeFormat` | Scandit `Symbology` (Web) |
+<!-- BEGIN GENERATED symbology-table sources=zxing-js style=js -->
+| ZXing-js `BarcodeFormat` | Scandit `Symbology` |
 |---|---|
-| `QR_CODE` | `Symbology.QR` |
+| `QR_CODE` | `Symbology.QR` (**not** `QRCode`) |
 | `EAN_13` | `Symbology.EAN13UPCA` |
 | `EAN_8` | `Symbology.EAN8` |
-| `UPC_A` | `Symbology.EAN13UPCA` (UPC-A is decoded by the EAN-13/UPC-A symbology) |
+| `UPC_A` | `Symbology.EAN13UPCA` (UPC-A is read by the EAN-13/UPC-A symbology) |
 | `UPC_E` | `Symbology.UPCE` |
 | `CODE_39` | `Symbology.Code39` |
 | `CODE_93` | `Symbology.Code93` |
 | `CODE_128` | `Symbology.Code128` |
-| `ITF` | `Symbology.InterleavedTwoOfFive` |
+| `ITF` | `Symbology.InterleavedTwoOfFive` (no ITF-14 symbology; ITF-14 is a 14-digit Interleaved 2 of 5) |
 | `CODABAR` | `Symbology.Codabar` |
 | `DATA_MATRIX` | `Symbology.DataMatrix` |
 | `AZTEC` | `Symbology.Aztec` |
 | `PDF_417` | `Symbology.PDF417` |
+
+**Recommended default set** when the source scanned every format and nothing in the app narrows it: `Symbology.QR`, `Symbology.EAN13UPCA`, `Symbology.EAN8`, `Symbology.UPCE`, `Symbology.Code39`, `Symbology.Code93`, `Symbology.Code128`, `Symbology.InterleavedTwoOfFive`, `Symbology.Codabar`, `Symbology.DataMatrix`, `Symbology.Aztec`, `Symbology.PDF417`.
+<!-- END GENERATED symbology-table -->
 
 > **Note on the web `Symbology` enum casing:** web uses `Symbology.QR` (the value `"qr"`) — **not** `Symbology.QrCode` (which does not exist) and not `Symbology.Qr` (that is the .NET/native form). Note also that some members are all-caps on web: `Symbology.PDF417`, `Symbology.UPCE`, `Symbology.EAN13UPCA`. When in doubt, check the BarcodeBatch API reference linked in `SKILL.md` before writing the code.
 
