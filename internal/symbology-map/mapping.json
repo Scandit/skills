@@ -188,7 +188,11 @@
     },
     "barcodescanning-native-maui": {
       "label": "BarcodeScanning.Native.Maui `BarcodeFormats`",
-      "rows_from": "zxing-net-maui"
+      "rows": {
+        "qr": ["QRCode"], "ean-13": ["Ean13"], "ean-8": ["Ean8"], "upc-a": ["Upca"], "upc-e": ["Upce"],
+        "code-39": ["Code39"], "code-93": ["Code93"], "code-128": ["Code128"], "itf": ["Itf", "I2OF5"], "codabar": ["CodaBar"],
+        "data-matrix": ["DataMatrix"], "aztec": ["Aztec"], "pdf-417": ["Pdf417"]
+      }
     }
   }
 }

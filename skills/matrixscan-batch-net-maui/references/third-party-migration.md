@@ -62,16 +62,16 @@ When configuring `BarcodeBatchSettings`, map symbologies from the old scanner us
 <!-- BEGIN GENERATED symbology-table sources=zxing-net-maui,zxing-net,barcodescanning-native-maui style=csharp -->
 | ZXing.Net.Maui `BarcodeFormat` | ZXing.Net / ZXing.Net.Mobile `BarcodeFormat` | BarcodeScanning.Native.Maui `BarcodeFormats` | Scandit `Symbology` |
 |---|---|---|---|
-| `QrCode` | `QR_CODE` | `QrCode` | `Symbology.Qr` |
+| `QrCode` | `QR_CODE` | `QRCode` | `Symbology.Qr` |
 | `Ean13` | `EAN_13` | `Ean13` | `Symbology.Ean13Upca` |
 | `Ean8` | `EAN_8` | `Ean8` | `Symbology.Ean8` |
-| `UpcA` | `UPC_A` | `UpcA` | `Symbology.Ean13Upca` (UPC-A is read by the EAN-13/UPC-A symbology) |
-| `UpcE` | `UPC_E` | `UpcE` | `Symbology.Upce` |
+| `UpcA` | `UPC_A` | `Upca` | `Symbology.Ean13Upca` (UPC-A is read by the EAN-13/UPC-A symbology) |
+| `UpcE` | `UPC_E` | `Upce` | `Symbology.Upce` |
 | `Code39` | `CODE_39` | `Code39` | `Symbology.Code39` |
 | `Code93` | `CODE_93` | `Code93` | `Symbology.Code93` |
 | `Code128` | `CODE_128` | `Code128` | `Symbology.Code128` |
-| `Itf` | `ITF` | `Itf` | `Symbology.InterleavedTwoOfFive` (no ITF-14 symbology; ITF-14 is a 14-digit Interleaved 2 of 5) |
-| `Codabar` | `CODABAR` | `Codabar` | `Symbology.Codabar` |
+| `Itf` | `ITF` | `Itf` / `I2OF5` | `Symbology.InterleavedTwoOfFive` (no ITF-14 symbology; ITF-14 is a 14-digit Interleaved 2 of 5) |
+| `Codabar` | `CODABAR` | `CodaBar` | `Symbology.Codabar` |
 | `DataMatrix` | `DATA_MATRIX` | `DataMatrix` | `Symbology.DataMatrix` |
 | `Aztec` | `AZTEC` | `Aztec` | `Symbology.Aztec` |
 | `Pdf417` | `PDF_417` | `Pdf417` | `Symbology.Pdf417` |

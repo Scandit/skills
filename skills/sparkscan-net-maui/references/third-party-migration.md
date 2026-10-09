@@ -48,16 +48,16 @@ Format mapping for ZXing.Net.Maui and BarcodeScanning.Native.Maui. Map only the 
 <!-- BEGIN GENERATED symbology-table sources=zxing-net-maui,barcodescanning-native-maui style=csharp -->
 | ZXing.Net.Maui `BarcodeFormat` | BarcodeScanning.Native.Maui `BarcodeFormats` | Scandit `Symbology` |
 |---|---|---|
-| `QrCode` | `QrCode` | `Symbology.Qr` |
+| `QrCode` | `QRCode` | `Symbology.Qr` |
 | `Ean13` | `Ean13` | `Symbology.Ean13Upca` |
 | `Ean8` | `Ean8` | `Symbology.Ean8` |
-| `UpcA` | `UpcA` | `Symbology.Ean13Upca` (UPC-A is read by the EAN-13/UPC-A symbology) |
-| `UpcE` | `UpcE` | `Symbology.Upce` |
+| `UpcA` | `Upca` | `Symbology.Ean13Upca` (UPC-A is read by the EAN-13/UPC-A symbology) |
+| `UpcE` | `Upce` | `Symbology.Upce` |
 | `Code39` | `Code39` | `Symbology.Code39` |
 | `Code93` | `Code93` | `Symbology.Code93` |
 | `Code128` | `Code128` | `Symbology.Code128` |
-| `Itf` | `Itf` | `Symbology.InterleavedTwoOfFive` (no ITF-14 symbology; ITF-14 is a 14-digit Interleaved 2 of 5) |
-| `Codabar` | `Codabar` | `Symbology.Codabar` |
+| `Itf` | `Itf` / `I2OF5` | `Symbology.InterleavedTwoOfFive` (no ITF-14 symbology; ITF-14 is a 14-digit Interleaved 2 of 5) |
+| `Codabar` | `CodaBar` | `Symbology.Codabar` |
 | `DataMatrix` | `DataMatrix` | `Symbology.DataMatrix` |
 | `Aztec` | `Aztec` | `Symbology.Aztec` |
 | `Pdf417` | `Pdf417` | `Symbology.Pdf417` |
