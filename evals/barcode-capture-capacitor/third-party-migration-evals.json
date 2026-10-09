@@ -179,7 +179,7 @@
           "text": "Capacitor.getPlatform() === 'web' is checked before ScanditCaptureCorePlugin.initializePlugins()"
         },
         {
-          "text": "Symbology.QR is enabled and the enabled set is NOT narrowed below what the original scanned (the original passed no formats; QR only is acceptable for a QR-form component but a wider default set is better)"
+          "text": "Symbology.QR is enabled and the enabled set is NOT narrowed below what the original scanned (the original passed no formats, so the recommended default set is enabled, not QR only)"
         }
       ],
       "tags": [
@@ -228,7 +228,7 @@
           "text": "onBeforeUnmount / stopReading disables the mode, removes the listener, turns the camera Off and detaches the view"
         },
         {
-          "text": "Symbology.QR is enabled and the enabled set is NOT narrowed below what the original scanned (the original passed no formats, so QR is enabled at minimum and the default set is preferred)"
+          "text": "Symbology.QR is enabled and the enabled set is NOT narrowed below what the original scanned (the original passed no formats, so the recommended default set is enabled, not QR only)"
         }
       ],
       "tags": [

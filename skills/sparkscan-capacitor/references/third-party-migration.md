@@ -41,7 +41,7 @@ Follow `references/integration.md`. The shape of the rewrite:
 1. **Initialize first**: `await ScanditCaptureCorePlugin.initializePlugins()` before any other Scandit call.
 2. **One context, one mode, one view for the whole app.** Create `DataCaptureContext.initialize(licenseKey)`, `SparkScan` and `SparkScanView.forContext(context, sparkScan, null)` the first time `scan()` is called and reuse them for every later call. Never re-initialise the context per scan: it is wasteful and leaves a second native view behind.
 3. **Replace `formats` with `SparkScanSettings`**: `settings.enableSymbologies([...])`, using the mapping table below. Apply a different set on a later call with `await sparkScan.applySettings(settings)`.
-4. **Wrap the listener in a promise.** `sparkScan.addListener({ didScan })` is registered once; each `scan()` call stores a resolver. The first `didScan` resolves it with `{ barcodes: [...] }` (see **Result mapping**), then stops and hides the view.
+4. **Wrap the listener in a promise.** `sparkScan.addListener({ didScan })` is registered once; each `scan()` call stores a resolver. The first `didScan` stops and hides the view, then resolves it with `{ barcodes: [...] }` (see **Result mapping**). Allow one scan at a time: reject a `scan()` call while another is running. If `show()` or `startScanning()` throws, clear the resolver, stop and hide the view, then rethrow.
 5. **Show and start** per call: `await view.show()` then `await view.startScanning()`. Stop and hide: `await view.stopScanning()` then `await view.hide()`. Release everything with `await view.dispose()` only when the whole screen or app is torn down.
 
 ### Cancel: resolve, never hang
@@ -146,6 +146,7 @@ let view: SparkScanView | null = null;
 let setUp: Promise<void> | null = null;
 let pending: ((result: { barcodes: ScannedBarcode[] }) => void) | null = null;
 let sawActive = false;
+let busy = false;
 
 function settingsFor(symbologies: Symbology[]): SparkScanSettings {
   const settings = new SparkScanSettings();
@@ -157,9 +158,12 @@ async function settle(barcodes: ScannedBarcode[]): Promise<void> {
   const resolve = pending;
   pending = null;
   if (!resolve || !view) return;
-  resolve({ barcodes });
-  await view.stopScanning();
-  await view.hide();
+  try {
+    await view.stopScanning();
+    await view.hide();
+  } finally {
+    resolve({ barcodes }); // after cleanup, so the next scan() starts on a hidden view
+  }
 }
 
 async function createOnce(symbologies: Symbology[]): Promise<void> {
@@ -200,22 +204,34 @@ export async function scan(
   if (Capacitor.getPlatform() === 'web') {
     throw new Error('Scanning is not available in the browser');
   }
-  await settle([]);
-  setUp ??= createOnce(symbologies).catch((error: unknown) => {
-    setUp = null; // let the next scan() retry a failed initialisation
-    throw error;
-  });
-  await setUp;
-  if (!sparkScan || !view) throw new Error('Scanner failed to initialise');
+  if (busy) throw new Error('A scan is already in progress');
+  busy = true;
+  try {
+    setUp ??= createOnce(symbologies).catch((error: unknown) => {
+      setUp = null; // let the next scan() retry a failed initialisation
+      throw error;
+    });
+    await setUp;
+    if (!sparkScan || !view) throw new Error('Scanner failed to initialise');
 
-  await sparkScan.applySettings(settingsFor(symbologies));
-  sawActive = false;
-  const result = new Promise<{ barcodes: ScannedBarcode[] }>((resolve) => {
-    pending = resolve;
-  });
-  await view.show();
-  await view.startScanning();
-  return result;
+    await sparkScan.applySettings(settingsFor(symbologies));
+    sawActive = false;
+    const result = new Promise<{ barcodes: ScannedBarcode[] }>((resolve) => {
+      pending = resolve;
+    });
+    try {
+      await view.show();
+      await view.startScanning();
+    } catch (error) {
+      pending = null;
+      await view.stopScanning().catch(() => undefined);
+      await view.hide().catch(() => undefined);
+      throw error;
+    }
+    return await result;
+  } finally {
+    busy = false;
+  }
 }
 
 // Caller: the permission gate and the denied message stay as they were.
