@@ -1,6 +1,6 @@
 ---
 name: barcode-capture-capacitor
-description: Capacitor — Scandit Barcode Capture (`BarcodeCapture`) in Capacitor (Ionic) hybrid apps via the Scandit Capacitor plugins (`ScanditCaptureCorePlugin`), the low-level, full-control single-barcode scanning mode (BarcodeCapture + DataCaptureView + BarcodeCaptureOverlay) without the pre-built SparkScan UI, not the browser-only web SDK. Use for integration, symbology settings, result handling, viewfinder and feedback customization, SDK version migration, or troubleshooting.
+description: Capacitor — Scandit Barcode Capture (`BarcodeCapture`) in Capacitor (Ionic) hybrid apps via the Scandit Capacitor plugins (`ScanditCaptureCorePlugin`), the low-level, full-control single-barcode scanning mode (BarcodeCapture + DataCaptureView + BarcodeCaptureOverlay) without the pre-built SparkScan UI, not the browser-only web SDK. Use for integration, symbology settings, result handling, viewfinder and feedback customization, SDK version migration, replacing a third-party scanner (@capacitor-mlkit/barcode-scanning), or troubleshooting.
 license: Apache-2.0
 metadata:
   author: scandit
@@ -29,6 +29,7 @@ Based on the user's request, load the appropriate reference file before respondi
 
 - **Integrating BarcodeCapture from scratch** (e.g. "add BarcodeCapture to my app", "set up barcode scanning", "how do I use BarcodeCapture in Capacitor", "wire up the overlay", "handle the camera lifecycle") → read [references/integration.md](references/integration.md) and follow the instructions there.
 - **Migrating or upgrading an existing BarcodeCapture integration** (e.g. "upgrade from v6 to v7", "migrate my BarcodeCapture", "bump the Scandit plugins to v8", "what changed between SDK versions") → read [references/migration.md](references/migration.md) and follow the instructions there.
+- **Replacing a third-party scanner** (e.g. "switch from @capacitor-mlkit/barcode-scanning / ML Kit to Scandit", "replace BarcodeScanner.startScan and barcodesScanned with BarcodeCapture") → read [references/third-party-migration.md](references/third-party-migration.md) and follow the instructions there.
 
 ## API Usage Policy
 

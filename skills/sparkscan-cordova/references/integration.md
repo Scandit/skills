@@ -271,7 +271,7 @@ sparkScanView.uiListener = {
   didTapBarcodeCountButton: (view) => { /* navigate to Barcode Count */ },
   didTapBarcodeFindButton: (view) => { /* navigate to Barcode Find */ },
   didTapLabelCaptureButton: (view) => { /* handle Label Capture */ },
-  didChangeViewState: (newState) => { /* expanded/collapsed */ },
+  didChangeViewState: (newState) => { /* initial, idle, inactive, active, error */ },
   didChangeScanningMode: (newScanningMode) => { /* single vs continuous toggle */ },
 };
 ```

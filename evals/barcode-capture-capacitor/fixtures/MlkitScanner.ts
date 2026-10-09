@@ -31,7 +31,7 @@ function addProduct(barcode: Barcode): void {
   // Deduplicate: ignore a code we have already scanned.
   const exists = scannedProducts.some((p) => p.value === barcode.rawValue);
   if (exists) return;
-  scannedProducts.push({ value: barcode.rawValue, format: String(barcode.format) });
+  scannedProducts.push({ value: barcode.rawValue ?? '', format: String(barcode.format) });
   renderSummary();
 }
 

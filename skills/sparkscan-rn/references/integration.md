@@ -350,7 +350,7 @@ Listen for user interactions with the SparkScan overlay buttons. Assign via the 
         didTapBarcodeCountButton: () => navigation.navigate('count'),
         didTapBarcodeFindButton: () => navigation.navigate('find'),
         didTapLabelCaptureButton: () => navigation.navigate('label'),
-        didChangeViewState: newState => { /* expanded/collapsed */ },
+        didChangeViewState: newState => { /* initial, idle, inactive, active, error */ },
         didChangeScanningMode: newMode => { /* single vs continuous */ },
       };
     }
