@@ -31,6 +31,7 @@ Common third-party MAUI barcode scanners:
 - The third-party XAML namespace and control from each page (e.g. `<zxing:CameraBarcodeReaderView>`).
 - All `using ZXing.*;` / `using BarcodeScanning.*;` directives.
 - The scanner's event handler (e.g. `BarcodesDetected`) and any options class (e.g. `BarcodeReaderOptions`).
+- Still-image decode calls (`BarcodeReader.DecodeAsync`, `Methods.ScanFromImageAsync`) migrate too; see "Still-image decode" below. Never drop them or replace them with an error message.
 
 ---
 
@@ -69,6 +70,32 @@ BarcodeCapture replaces the third-party scanner's camera, preview, and event sur
 
 ---
 
+## Still-image decode
+
+Gallery or file scanning moves to an `ImageFrameSource` that feeds the same `BarcodeCapture` mode.
+
+| Third-party call | Scandit replacement |
+|---|---|
+| ZXing.Net.Maui `BarcodeReader.Decode(stream, options)` / `DecodeAsync(...)` / `DecodeFromFileAsync(path, ...)` → `BarcodeResult[]` | `await ImageSource.FromFile(path).CreateImageFrameSourceAsync(mauiContext)` (or `ImageSource.FromStream(() => stream)`) → `ImageFrameSource?` |
+| BarcodeScanning.Native.Maui `Methods.ScanFromImageAsync(byte[] / FileResult / string / Stream)` → `IReadOnlySet<BarcodeResult>` | Same. For a `FileResult` use `ImageSource.FromFile(file.FullPath)`; for `byte[]` use `ImageSource.FromStream(() => new MemoryStream(bytes))` |
+| `BarcodeReaderOptions.Formats` | The `BarcodeCaptureSettings` symbologies (mapping table above) |
+| `result.Value` / `result.DisplayValue` | `args.Session.NewlyRecognizedBarcode?.Data` in `BarcodeScanned` |
+
+`CreateImageFrameSourceAsync` is an extension method in `Scandit.DataCapture.Core.Source` (package `Scandit.DataCapture.Core.Maui`, Android and iOS targets). It takes the `IMauiContext` of a loaded element, e.g. `this.Handler.MauiContext` in a page. It returns `null` when the image cannot be loaded: report that as the old "nothing decoded" case.
+
+Steps:
+
+1. Create `BarcodeCapture` on the context with the symbologies enabled, and subscribe to `BarcodeScanned`. An image-only screen needs no `DataCaptureView`, overlay, camera or camera permission, and registers `.UseScanditCore().UseScanditBarcode()`.
+2. `await context.SetFrameSourceAsync(imageSource);` and make sure `barcodeCapture.Enabled = true`.
+3. `await imageSource.SwitchToDesiredStateAsync(FrameSourceState.On);` The result arrives in `BarcodeScanned`, not as a return value.
+4. The source delivers its image once per switch to On. Create a new source per image, and set the camera back as the frame source (`SetFrameSourceAsync(camera)`) before live scanning resumes.
+
+When the old code used the return value (`var results = await BarcodeReader.DecodeAsync(...)`), keep the method's signature and complete a `TaskCompletionSource` of the old return type from `BarcodeScanned`. Nothing signals "no barcode in this image", so finish with `null` after a short timeout (e.g. `Task.WhenAny(tcs.Task, Task.Delay(TimeSpan.FromSeconds(2)))`). After the result or the timeout, clear the pending `TaskCompletionSource` (so a later image cannot complete a stale one) and switch the source Off. List the timeout as a judgment call in the summary. `BarcodeScanned` runs on a background thread, so update UI through `MainThread.BeginInvokeOnMainThread`.
+
+`BarcodeCapture` reports one barcode per image. When the old code read several results from one image (`Multiple = true`, a loop over the result set), use `matrixscan-batch-net-maui` instead.
+
+---
+
 ## Preserve
 
 - Custom data models — keep as-is.
@@ -77,4 +104,4 @@ BarcodeCapture replaces the third-party scanner's camera, preview, and event sur
 
 ---
 
-When done, show only what changed. Do not list APIs that were unchanged. Include the setup checklist from `references/integration.md` so the user knows which NuGet packages to add (all four: Core, Core.Maui, Barcode, Barcode.Maui), the `MauiProgram.cs` builder chain update, the `<scandit:DataCaptureView>` XAML namespace + element, and the platform permission entries (`NSCameraUsageDescription` on iOS; `Permissions.Camera` on Android).
+When done, show only what changed. Do not list APIs that were unchanged. If a still-image path moved to `ImageFrameSource`, say so in the summary and list the timeout as a judgment call. Include the setup checklist from `references/integration.md` so the user knows which NuGet packages to add (all four: Core, Core.Maui, Barcode, Barcode.Maui), the `MauiProgram.cs` builder chain update, and, when the page scans live, the `<scandit:DataCaptureView>` XAML namespace + element and the platform permission entries (`NSCameraUsageDescription` on iOS; `Permissions.Camera` on Android).

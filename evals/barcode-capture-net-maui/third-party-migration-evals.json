@@ -36,6 +36,34 @@
         {"text": "A concrete version number is used for the dependencies (not a [version] placeholder)"},
         {"text": "Setup checklist mentions NSCameraUsageDescription (for iOS target) or Permissions.Camera (for both targets)"}
       ]
+    },
+    {
+      "id": 2,
+      "prompt": "My .NET MAUI app decodes barcodes from photos the user picks, using ZXing.Net.Maui's BarcodeReader.DecodeAsync. I want to replace it with Scandit BarcodeCapture. Here is my page: ZxingMauiPhotoPage.xaml + ZxingMauiPhotoPage.xaml.cs",
+      "expected_output": "Replaces BarcodeReader.DecodeAsync with a Scandit ImageFrameSource created from the picked photo via CreateImageFrameSourceAsync, set as the DataCaptureContext frame source and switched on, with BarcodeCapture (Ean13Upca and DataMatrix enabled) reporting the result through BarcodeScanned. Keeps DecodeAsync's Task<ScannedBarcode?> contract by bridging the event with a TaskCompletionSource and a timeout for photos with no barcode. Preserves the ScannedBarcode record, the deduplicated history, the photo picker and the label text.",
+      "files": [
+        "fixtures/ZxingMauiPhotoPage.xaml",
+        "fixtures/ZxingMauiPhotoPage.xaml.cs"
+      ],
+      "assertions": [
+        {"text": "using ZXing.Net.Maui and BarcodeReader.DecodeAsync / BarcodeReaderOptions are NOT present in the migrated code (may appear in a before/after summary)"},
+        {"text": "The photo path is migrated, not dropped: the output does not claim Scandit cannot decode still images or gallery photos (semantic)"},
+        {"text": "An ImageFrameSource is created from the picked photo with CreateImageFrameSourceAsync on a MAUI ImageSource or Image (e.g. ImageSource.FromFile(photo.FullPath) or ImageSource.FromStream), passing an IMauiContext such as this.Handler.MauiContext"},
+        {"text": "A null ImageFrameSource (image could not be loaded) is handled, e.g. treated as no barcode found"},
+        {"text": "The ImageFrameSource is set as the context's frame source (SetFrameSourceAsync) and switched on with SwitchToDesiredStateAsync(FrameSourceState.On)"},
+        {"text": "BarcodeCaptureSettings enables Symbology.Ean13Upca and Symbology.DataMatrix, and BarcodeCapture is created on the DataCaptureContext before the image is processed"},
+        {"text": "The result is read from the BarcodeScanned event (args.Session.NewlyRecognizedBarcode Data and Symbology), not from a return value of a Scandit decode call; no invented decode method such as ScanImageAsync or Decode exists on a Scandit type (semantic)"},
+        {"text": "DecodeAsync keeps returning Task<ScannedBarcode?>: the BarcodeScanned event completes a TaskCompletionSource (or equivalent), with a timeout or other end condition that yields null when the photo holds no barcode"},
+        {"text": "A new ImageFrameSource is created per picked photo (no single source reused across picks without switching it off and on again)"},
+        {"text": "No camera, DataCaptureView or BarcodeCaptureOverlay is added for this image-only page, or if one is added the output explains why (semantic)"},
+        {"text": "DataCaptureContext.ForLicenseKey( is used to create the context"},
+        {"text": "The ScannedBarcode record, the scannedBarcodes list and its deduplication check are preserved"},
+        {"text": "The MediaPicker.Default.PickPhotoAsync() photo picker and the 'No barcode found in this photo' / 'Last scan' label texts are preserved"},
+        {"text": "UI updates triggered from BarcodeScanned (background thread) are dispatched with MainThread.BeginInvokeOnMainThread, or the label is only set after awaiting DecodeAsync on the UI thread"},
+        {"text": "MauiProgram.cs is updated with the Scandit builder calls (.UseScanditCore(...) and .UseScanditBarcode()) and ZXing's .UseBarcodeReader() is removed"},
+        {"text": "Setup checklist mentions the Scandit NuGet packages including Scandit.DataCapture.Core.Maui (where CreateImageFrameSourceAsync lives) and removing the ZXing.Net.Maui package"},
+        {"text": "The summary lists the move from BarcodeReader.DecodeAsync to ImageFrameSource and the no-barcode timeout as judgment calls or behaviour changes"}
+      ]
     }
   ]
 }
