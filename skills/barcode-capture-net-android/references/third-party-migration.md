@@ -41,21 +41,26 @@ Follow `references/integration.md`. When configuring `BarcodeCaptureSettings`, m
 
 ### Symbology mapping
 
-| ZXing.Net / ZXing.Net.Mobile `BarcodeFormat` | ML Kit `Barcode.Format*` | Scandit `Symbology.*` |
+<!-- BEGIN GENERATED symbology-table sources=zxing-net,mlkit style=csharp -->
+| ZXing.Net / ZXing.Net.Mobile `BarcodeFormat` | ML Kit `Barcode.FORMAT_*` | Scandit `Symbology` |
 |---|---|---|
 | `QR_CODE` | `FORMAT_QR_CODE` | `Symbology.Qr` |
 | `EAN_13` | `FORMAT_EAN_13` | `Symbology.Ean13Upca` |
 | `EAN_8` | `FORMAT_EAN_8` | `Symbology.Ean8` |
-| `UPC_A` | `FORMAT_UPC_A` | `Symbology.Ean13Upca` (UPC-A is a subset of EAN-13/UPC-A in Scandit) |
+| `UPC_A` | `FORMAT_UPC_A` | `Symbology.Ean13Upca` (UPC-A is read by the EAN-13/UPC-A symbology) |
 | `UPC_E` | `FORMAT_UPC_E` | `Symbology.Upce` |
 | `CODE_39` | `FORMAT_CODE_39` | `Symbology.Code39` |
 | `CODE_93` | `FORMAT_CODE_93` | `Symbology.Code93` |
 | `CODE_128` | `FORMAT_CODE_128` | `Symbology.Code128` |
-| `ITF` | `FORMAT_ITF` | `Symbology.InterleavedTwoOfFive` |
+| `ITF` | `FORMAT_ITF` | `Symbology.InterleavedTwoOfFive` (no ITF-14 symbology; ITF-14 is a 14-digit Interleaved 2 of 5) |
 | `CODABAR` | `FORMAT_CODABAR` | `Symbology.Codabar` |
 | `DATA_MATRIX` | `FORMAT_DATA_MATRIX` | `Symbology.DataMatrix` |
 | `AZTEC` | `FORMAT_AZTEC` | `Symbology.Aztec` |
 | `PDF_417` | `FORMAT_PDF417` | `Symbology.Pdf417` |
+| — | `FORMAT_ALL_FORMATS` | No equivalent. Enable what the app really consumes; if nothing narrows it, the recommended default set below. Never enable everything. |
+
+**Recommended default set** when the source scanned every format and nothing in the app narrows it: `Symbology.Qr`, `Symbology.Ean13Upca`, `Symbology.Ean8`, `Symbology.Upce`, `Symbology.Code39`, `Symbology.Code93`, `Symbology.Code128`, `Symbology.InterleavedTwoOfFive`, `Symbology.Codabar`, `Symbology.DataMatrix`, `Symbology.Aztec`, `Symbology.Pdf417`.
+<!-- END GENERATED symbology-table -->
 
 If you encounter a symbology not in this table, check the [BarcodeCapture API reference](https://docs.scandit.com/data-capture-sdk/dotnet.android/barcode-capture/api.html) for the correct `Symbology` enum value before writing the code.
 

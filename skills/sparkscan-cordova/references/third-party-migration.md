@@ -30,7 +30,7 @@ Read the existing code first; do not ask the user to describe it. Find every `co
 
 ## Step 3: Map formats to symbologies
 
-Use the `barcode-capture-cordova` **Symbology mapping** table. Map **only** the formats in `options.formats` (a comma-separated string). With no `formats` option, enable what the app really consumes, or its stated default set plus a summary line "symbologies were not narrowed by the original; confirm this list". Symbologies go on `SparkScanSettings`:
+Use the `barcode-capture-cordova` **Symbology mapping** table. Map **only** the formats in `options.formats` (a comma-separated string). With no `formats` option, enable what the app really consumes, or the recommended default set under that table plus a summary line "symbologies were not narrowed by the original; confirm this list". Symbologies go on `SparkScanSettings`:
 
 ```javascript
 const settings = new Scandit.SparkScanSettings();

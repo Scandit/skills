@@ -43,23 +43,33 @@ Follow `references/integration.md`. The shape of the rewrite:
 
 Map **only** the formats the app actually scanned; fewer symbologies scan faster and more accurately. Do not derive Scandit names from the old library's names.
 
-Names are the vision-camera (v4 and v5) spelling; expo-camera drops the dash (`'ean13'`, `'code128'`, `'datamatrix'`). Exceptions are in brackets.
+One column per source library; — means that library has no name for the format.
 
-| Source format | Scandit `Symbology.*` |
-|---|---|
-| `'qr'` (v5: `'qr-code'`) | `QR` (**not** `QRCode`) |
-| `'ean-13'`, `'upc-a'` (expo: `'upc_a'`) | `EAN13UPCA` (UPC-A is read as EAN-13/UPC-A) |
-| `'ean-8'` | `EAN8` |
-| `'upc-e'` (expo: `'upc_e'`) | `UPCE` |
-| `'code-39'` / `'code-93'` / `'code-128'` | `Code39` / `Code93` / `Code128` |
-| `'itf'`, v4 `'itf-14'` (expo: `'itf14'`) | `InterleavedTwoOfFive` (no ITF-14 member; ITF-14 is a 14-digit Interleaved 2 of 5) |
-| `'codabar'` | `Codabar` |
-| `'data-matrix'` | `DataMatrix` |
-| `'aztec'` | `Aztec` |
-| `'pdf-417'` | `PDF417` |
-| v4 only: `'gs1-data-bar'`, `-limited`, `-expanded` | `GS1Databar`, `GS1DatabarLimited`, `GS1DatabarExpanded` |
+<!-- BEGIN GENERATED symbology-table sources=vision-camera-v4,vision-camera-v5,expo-camera style=js -->
+| vision-camera v4 `CodeType` | vision-camera v5 `TargetBarcodeFormat` | expo-camera `BarcodeType` | Scandit `Symbology` |
+|---|---|---|---|
+| `'qr'` | `'qr-code'` | `'qr'` | `Symbology.QR` (**not** `QRCode`) |
+| `'ean-13'` | `'ean-13'` | `'ean13'` | `Symbology.EAN13UPCA` |
+| `'ean-8'` | `'ean-8'` | `'ean8'` | `Symbology.EAN8` |
+| `'upc-a'` | `'upc-a'` | `'upc_a'` | `Symbology.EAN13UPCA` (UPC-A is read by the EAN-13/UPC-A symbology) |
+| `'upc-e'` | `'upc-e'` | `'upc_e'` | `Symbology.UPCE` |
+| `'code-39'` | `'code-39'` | `'code39'` | `Symbology.Code39` |
+| `'code-93'` | `'code-93'` | `'code93'` | `Symbology.Code93` |
+| `'code-128'` | `'code-128'` | `'code128'` | `Symbology.Code128` |
+| `'itf'` / `'itf-14'` | `'itf'` | `'itf14'` | `Symbology.InterleavedTwoOfFive` (no ITF-14 symbology; ITF-14 is a 14-digit Interleaved 2 of 5) |
+| `'codabar'` | `'codabar'` | `'codabar'` | `Symbology.Codabar` |
+| `'data-matrix'` | `'data-matrix'` | `'datamatrix'` | `Symbology.DataMatrix` |
+| `'aztec'` | `'aztec'` | `'aztec'` | `Symbology.Aztec` |
+| `'pdf-417'` | `'pdf-417'` | `'pdf417'` | `Symbology.PDF417` |
+| `'gs1-data-bar'` | — | — | `Symbology.GS1Databar` |
+| `'gs1-data-bar-limited'` | — | — | `Symbology.GS1DatabarLimited` |
+| `'gs1-data-bar-expanded'` | — | — | `Symbology.GS1DatabarExpanded` |
+| — | `'all-formats'` | — | No equivalent. Enable what the app really consumes; if nothing narrows it, the recommended default set below. Never enable everything. |
 
-**"All formats"** (v5 `'all-formats'`, or no `barcodeTypes` / `codeTypes` filter). Never leave it to a guess: an agent that picks one symbology silently drops the rest. Search the project for what the app really consumes and enable exactly that. If nothing narrows it, enable the 12 non-GS1 symbologies in the table (`QR` through `PDF417`) and add a summary line "symbologies were not narrowed by the original; confirm this list". If a symbology is not in the table, look it up in the API reference before writing it.
+**Recommended default set** when the source scanned every format and nothing in the app narrows it: `Symbology.QR`, `Symbology.EAN13UPCA`, `Symbology.EAN8`, `Symbology.UPCE`, `Symbology.Code39`, `Symbology.Code93`, `Symbology.Code128`, `Symbology.InterleavedTwoOfFive`, `Symbology.Codabar`, `Symbology.DataMatrix`, `Symbology.Aztec`, `Symbology.PDF417`.
+<!-- END GENERATED symbology-table -->
+
+**"All formats"** (v5 `'all-formats'`, or no `barcodeTypes` / `codeTypes` filter). Never leave it to a guess: an agent that picks one symbology silently drops the rest. Search the project for what the app really consumes and enable exactly that. If nothing narrows it, enable the recommended default set under the table and add a summary line "symbologies were not narrowed by the original; confirm this list". If a symbology is not in the table, look it up in the API reference before writing it.
 
 ## Result mapping
 

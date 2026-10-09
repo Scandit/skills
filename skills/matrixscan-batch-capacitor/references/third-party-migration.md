@@ -64,21 +64,25 @@ ML Kit runs its camera behind a transparent WebView, so the app's buttons and li
 
 **Do not guess or derive Scandit symbology names from ML Kit names** — they differ. ML Kit's `BarcodeFormat` is a string enum; map each member:
 
-| ML Kit `BarcodeFormat` (value) | Scandit `Symbology` |
+<!-- BEGIN GENERATED symbology-table sources=capacitor-mlkit style=js -->
+| `@capacitor-mlkit/barcode-scanning` `BarcodeFormat` (value) | Scandit `Symbology` |
 |---|---|
+| `BarcodeFormat.QrCode` (`'QR_CODE'`) | `Symbology.QR` (**not** `QRCode`) |
 | `BarcodeFormat.Ean13` (`'EAN_13'`) | `Symbology.EAN13UPCA` |
 | `BarcodeFormat.Ean8` (`'EAN_8'`) | `Symbology.EAN8` |
-| `BarcodeFormat.UpcA` (`'UPC_A'`) | `Symbology.EAN13UPCA` (UPC-A is decoded by the EAN-13/UPC-A symbology) |
+| `BarcodeFormat.UpcA` (`'UPC_A'`) | `Symbology.EAN13UPCA` (UPC-A is read by the EAN-13/UPC-A symbology) |
 | `BarcodeFormat.UpcE` (`'UPC_E'`) | `Symbology.UPCE` |
-| `BarcodeFormat.Code128` (`'CODE_128'`) | `Symbology.Code128` |
 | `BarcodeFormat.Code39` (`'CODE_39'`) | `Symbology.Code39` |
 | `BarcodeFormat.Code93` (`'CODE_93'`) | `Symbology.Code93` |
+| `BarcodeFormat.Code128` (`'CODE_128'`) | `Symbology.Code128` |
+| `BarcodeFormat.Itf` (`'ITF'`) | `Symbology.InterleavedTwoOfFive` (no ITF-14 symbology; ITF-14 is a 14-digit Interleaved 2 of 5) |
 | `BarcodeFormat.Codabar` (`'CODABAR'`) | `Symbology.Codabar` |
-| `BarcodeFormat.Itf` (`'ITF'`) | `Symbology.InterleavedTwoOfFive` |
-| `BarcodeFormat.QrCode` (`'QR_CODE'`) | `Symbology.QR` |
 | `BarcodeFormat.DataMatrix` (`'DATA_MATRIX'`) | `Symbology.DataMatrix` |
-| `BarcodeFormat.Pdf417` (`'PDF_417'`) | `Symbology.PDF417` |
 | `BarcodeFormat.Aztec` (`'AZTEC'`) | `Symbology.Aztec` |
+| `BarcodeFormat.Pdf417` (`'PDF_417'`) | `Symbology.PDF417` |
+
+**Recommended default set** when the source scanned every format and nothing in the app narrows it: `Symbology.QR`, `Symbology.EAN13UPCA`, `Symbology.EAN8`, `Symbology.UPCE`, `Symbology.Code39`, `Symbology.Code93`, `Symbology.Code128`, `Symbology.InterleavedTwoOfFive`, `Symbology.Codabar`, `Symbology.DataMatrix`, `Symbology.Aztec`, `Symbology.PDF417`.
+<!-- END GENERATED symbology-table -->
 
 > The Scandit symbology for QR is `Symbology.QR` (not `QrCode`). Code that compared `barcode.format` against these strings must compare `trackedBarcode.barcode.symbology` against `Symbology` values instead. For a format not in this table, fetch the [BarcodeBatch API reference](https://docs.scandit.com/data-capture-sdk/capacitor/barcode-capture/api.html) before writing code.
 
