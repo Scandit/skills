@@ -333,7 +333,7 @@ class _HomePageState extends State<HomePage> implements SparkScanViewUiListener 
   void didTapLabelCaptureButton(SparkScanView view) { /* ... */ }
 
   @override
-  void didChangeViewState(SparkScanViewState newState) { /* expanded/collapsed */ }
+  void didChangeViewState(SparkScanViewState newState) { /* initial, idle, inactive, active, error */ }
 }
 ```
 

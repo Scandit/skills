@@ -108,10 +108,13 @@ import { BarcodeCapture } from 'scandit-capacitor-datacapture-barcode';
 // Recommended camera settings for BarcodeCapture (SDK ≥7.6).
 const cameraSettings = BarcodeCapture.createRecommendedCameraSettings();
 window.camera = Camera.withSettings(cameraSettings);
+if (!window.camera) {
+  throw new Error('No camera available'); // Camera.withSettings returns null without a camera
+}
 context.setFrameSource(window.camera);
 ```
 
-> **SDK <7.6 fallback**: `BarcodeCapture.createRecommendedCameraSettings()` is available from capacitor=7.6. On older SDKs, use `Camera.default` or construct `CameraSettings` manually.
+> **SDK <7.6 fallback**: `BarcodeCapture.createRecommendedCameraSettings()` is available from capacitor=7.6. On older SDKs, use `Camera.default` (also `null` when no camera is available — guard it the same way) or construct `CameraSettings` manually.
 
 ## Step 4 — Construct BarcodeCapture
 
@@ -582,6 +585,9 @@ async function runApp() {
   // 3. Set up the camera.
   const cameraSettings = BarcodeCapture.createRecommendedCameraSettings();
   window.camera = Camera.withSettings(cameraSettings);
+  if (!window.camera) {
+    throw new Error('No camera available');
+  }
   context.setFrameSource(window.camera);
 
   // 4. Configure BarcodeCaptureSettings.

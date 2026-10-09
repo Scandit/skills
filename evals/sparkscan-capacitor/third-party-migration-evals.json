@@ -1,0 +1,174 @@
+{
+  "skill_name": "sparkscan-capacitor",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Replace the @capacitor-mlkit/barcode-scanning scanner in my React wallet app with Scandit SparkScan. scanQrCode() in utils.ts requests camera permission, waits for the Google barcode module, calls BarcodeScanner.scan() with no formats and returns the first DID found in a scanned value (or null); main.tsx installs the Google module on start-up. Files: utils.ts, main.tsx.",
+      "expected_output": "The skill reads references/third-party-migration.md. scanQrCode() keeps its signature and result (DID string or null) and keeps the permission gate (returning null when denied). scan() becomes a promise wrapper around one reused DataCaptureContext/SparkScan/SparkScanView that resolves on the first didScan and resolves with empty barcodes on cancel (didChangeViewState), never via didTapBarcodeCountButton. The Google module availability/install code in utils.ts and main.tsx is removed. Because the original passed no formats, the recommended default symbology set is enabled, not just QR.",
+      "files": [
+        "fixtures/02-kc-react-wallet/utils.ts",
+        "fixtures/02-kc-react-wallet/main.tsx"
+      ],
+      "assertions": [
+        {
+          "text": "The import from '@capacitor-mlkit/barcode-scanning' (static or dynamic import()) is removed from the migrated code"
+        },
+        {
+          "text": "BarcodeScanner.scan( is not present in the migrated code"
+        },
+        {
+          "text": "await ScanditCaptureCorePlugin.initializePlugins() is present and awaited before any other Scandit call"
+        },
+        {
+          "text": "SparkScanView.forContext( is used and the first didScan resolves the promise returned by the scan wrapper with a { barcodes: [...] } shape (semantic)"
+        },
+        {
+          "text": "The wrapper resolves with an empty barcodes array when the user cancels, driven by SparkScanView uiListener didChangeViewState (Idle after Active, never Inactive) and/or an app-callable cancel, so the caller never hangs (semantic)"
+        },
+        {
+          "text": "didTapBarcodeCountButton, didTapBarcodeFindButton and didTapLabelCaptureButton are not used to detect a close or cancel"
+        },
+        {
+          "text": "DataCaptureContext.initialize( is called once and reused across scans, not re-initialised on every scan call (semantic)"
+        },
+        {
+          "text": "The view is stopped and hidden (stopScanning / hide) after a result or cancel"
+        },
+        {
+          "text": "Symbology.QR is enabled and the enabled set is not narrower than the original ML Kit formats; 'Symbology.QRCode' is not used"
+        },
+        {
+          "text": "Summary lists the scanning UI change (full-screen scanner to SparkScan trigger button / mini preview) as a judgment call to confirm"
+        },
+        {
+          "text": "isGoogleBarcodeScannerModuleAvailable and installGoogleBarcodeScannerModule are removed from utils.ts and main.tsx, with no replacement module-install step"
+        },
+        {
+          "text": "scanQrCode still returns a DID string or null and still returns null when camera permission is denied (permission gate kept, not faked as granted)"
+        },
+        {
+          "text": "Because the original scan() passed no formats, more than QR is enabled (the recommended default set: EAN13UPCA, Code128, DataMatrix, ... in addition to QR)"
+        },
+        {
+          "text": "extractDid and the loop over barcodes using rawValue are preserved unchanged (semantic)"
+        }
+      ],
+      "tags": [
+        "third-party-migration"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Migrate the QR scanning composable useQrScan.ts from @capacitor-mlkit/barcode-scanning to Scandit SparkScan. It imports the plugin dynamically, installs the Google module on Android, scans for QR codes only, treats an empty result as user-cancelled, and routes the scanned invite link. File: useQrScan.ts.",
+      "expected_output": "The skill reads references/third-party-migration.md. The dynamic import and the Google module availability/install block are removed. scan() keeps its behaviour: toast for unsupported (web) platforms via isSupported, call the new SparkScan wrapper with QR only, return silently on empty barcodes (cancel) and route the value otherwise. The wrapper resolves empty on cancel so the empty-barcodes branch is reachable; context is created once and reused rather than per scan.",
+      "files": [
+        "fixtures/03-decentralised/useQrScan.ts"
+      ],
+      "assertions": [
+        {
+          "text": "The import from '@capacitor-mlkit/barcode-scanning' (static or dynamic import()) is removed from the migrated code"
+        },
+        {
+          "text": "BarcodeScanner.scan( is not present in the migrated code"
+        },
+        {
+          "text": "await ScanditCaptureCorePlugin.initializePlugins() is present and awaited before any other Scandit call"
+        },
+        {
+          "text": "SparkScanView.forContext( is used and the first didScan resolves the promise returned by the scan wrapper with a { barcodes: [...] } shape (semantic)"
+        },
+        {
+          "text": "The wrapper resolves with an empty barcodes array when the user cancels, driven by SparkScanView uiListener didChangeViewState (Idle after Active, never Inactive) and/or an app-callable cancel, so the caller never hangs (semantic)"
+        },
+        {
+          "text": "didTapBarcodeCountButton, didTapBarcodeFindButton and didTapLabelCaptureButton are not used to detect a close or cancel"
+        },
+        {
+          "text": "DataCaptureContext.initialize( is called once and reused across scans, not re-initialised on every scan call (semantic)"
+        },
+        {
+          "text": "The view is stopped and hidden (stopScanning / hide) after a result or cancel"
+        },
+        {
+          "text": "Symbology.QR is enabled and the enabled set is not narrower than the original ML Kit formats; 'Symbology.QRCode' is not used"
+        },
+        {
+          "text": "Summary lists the scanning UI change (full-screen scanner to SparkScan trigger button / mini preview) as a judgment call to confirm"
+        },
+        {
+          "text": "The dynamic await import('@capacitor-mlkit/barcode-scanning') and the Google module install block are removed"
+        },
+        {
+          "text": "The 'if (!barcodes.length) return' cancel branch still works because the wrapper resolves { barcodes: [] } on cancel (semantic)"
+        },
+        {
+          "text": "isSupported is kept (Capacitor.isNativePlatform() or equivalent web guard) so the scan entry point is still hidden or refused on web"
+        },
+        {
+          "text": "routeScanned and the toast messages are preserved unchanged (semantic)"
+        },
+        {
+          "text": "Only Symbology.QR is enabled, matching the original formats: [QrCode] (no narrowing, no unrequested widening is required)"
+        }
+      ],
+      "tags": [
+        "third-party-migration"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Replace the QR scan button's @capacitor-mlkit/barcode-scanning usage in AddDeviceModal.tsx with Scandit SparkScan. It asks for camera permission, shows an error when it is missing, disables the button with 'scanning...' while scanning, and parses the QR payload as JSON with a device_token. File: AddDeviceModal.tsx.",
+      "expected_output": "The skill reads references/third-party-migration.md. handleScan keeps the camera-permission check and its denied-permission error message path, keeps setScanning(true/false) around the call, and clears the scanning state on a result, on cancel (empty barcodes) and on error, so the button is never left disabled. The JSON-with-device_token parsing and plain-token fallback are untouched. SparkScan is created once and reused, with QR enabled.",
+      "files": [
+        "fixtures/04-cc-island-mobile/AddDeviceModal.tsx"
+      ],
+      "assertions": [
+        {
+          "text": "The import from '@capacitor-mlkit/barcode-scanning' (static or dynamic import()) is removed from the migrated code"
+        },
+        {
+          "text": "BarcodeScanner.scan( is not present in the migrated code"
+        },
+        {
+          "text": "await ScanditCaptureCorePlugin.initializePlugins() is present and awaited before any other Scandit call"
+        },
+        {
+          "text": "SparkScanView.forContext( is used and the first didScan resolves the promise returned by the scan wrapper with a { barcodes: [...] } shape (semantic)"
+        },
+        {
+          "text": "The wrapper resolves with an empty barcodes array when the user cancels, driven by SparkScanView uiListener didChangeViewState (Idle after Active, never Inactive) and/or an app-callable cancel, so the caller never hangs (semantic)"
+        },
+        {
+          "text": "didTapBarcodeCountButton, didTapBarcodeFindButton and didTapLabelCaptureButton are not used to detect a close or cancel"
+        },
+        {
+          "text": "DataCaptureContext.initialize( is called once and reused across scans, not re-initialised on every scan call (semantic)"
+        },
+        {
+          "text": "The view is stopped and hidden (stopScanning / hide) after a result or cancel"
+        },
+        {
+          "text": "Symbology.QR is enabled and the enabled set is not narrower than the original ML Kit formats; 'Symbology.QRCode' is not used"
+        },
+        {
+          "text": "Summary lists the scanning UI change (full-screen scanner to SparkScan trigger button / mini preview) as a judgment call to confirm"
+        },
+        {
+          "text": "The permission-denied path is kept: a missing camera permission still sets the error message and does not call the scanner (permission check backed by an app-side mechanism, not faked as always granted)"
+        },
+        {
+          "text": "setScanning(false) runs after a result, after a cancel (empty barcodes) and after an error, so the 'scanning...' button is not disabled forever"
+        },
+        {
+          "text": "The JSON parsing with device_token / server_url and the plain-token fallback are preserved unchanged (semantic)"
+        },
+        {
+          "text": "The ML Kit BarcodeFormat enum is not used; QR is enabled through Symbology.QR"
+        }
+      ],
+      "tags": [
+        "third-party-migration"
+      ]
+    }
+  ]
+}

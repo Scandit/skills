@@ -37,6 +37,253 @@
         {"text": "A summary of changes is shown describing what ML Kit APIs were removed and what Scandit APIs replaced them"}
       ],
       "tags": ["third-party-migration"]
+    },
+    {
+      "id": 2,
+      "prompt": "My Capacitor app (React) uses @capacitor-mlkit/barcode-scanning for QR scanning and I want to switch to Scandit BarcodeCapture. The scanner helpers are in native-scanner.ts; the scan screen's own close button and layout live in other files and must keep working. Please migrate it.",
+      "expected_output": "Replaces the ML Kit helpers (installNativeScanner, getScanningStream, startScanning, stopScanning, scanSingle) with BarcodeCapture while keeping their exported signatures; the connected element has z-index -1 so the app's own HTML stays on top; stop turns the camera off, disables the mode and removes the listener; permission denial still throws; no formats were passed, so the default symbology set is enabled.",
+      "files": [
+        "fixtures/01-nostrudel/native-scanner.ts"
+      ],
+      "assertions": [
+        {
+          "text": "@capacitor-mlkit/barcode-scanning is NOT imported in the new code (it may appear in a before/after summary)"
+        },
+        {
+          "text": "await ScanditCaptureCorePlugin.initializePlugins() is present and runs before DataCaptureContext.initialize("
+        },
+        {
+          "text": "new BarcodeCapture(settings) is used with context.setMode( (not BarcodeCapture.forContext)"
+        },
+        {
+          "text": "barcodeCapture.addListener( registers a didScan callback that reads session.newlyRecognizedBarcode and skips a null barcode.data (semantic)"
+        },
+        {
+          "text": "A summary of changes lists each judgment call (enabled symbologies, duplicate filter, overlay) and what was removed"
+        },
+        {
+          "text": "The element passed to view.connectToElement( has a negative z-index (z-index: -1) so the native view sits UNDER the app's HTML (semantic)"
+        },
+        {
+          "text": "connectToElement is called only after the element exists: React useEffect, after the container renders (semantic)"
+        },
+        {
+          "text": "The exported helper names (installNativeScanner, getScanningStream, startScanning, stopScanning, scanSingle) are kept so callers do not change"
+        },
+        {
+          "text": "The permission-denied path still reports an error and never fakes a granted state"
+        },
+        {
+          "text": "installGoogleBarcodeScannerModule and isSupported are removed, not ported"
+        },
+        {
+          "text": "stopScanning turns the camera Off, sets barcodeCapture.isEnabled = false and removes the listener"
+        },
+        {
+          "text": "Symbology.QR is enabled and the enabled set is NOT narrowed below what the original scanned (the original passed no formats, so the recommended default set (QR, EAN-13/UPC-A, EAN-8, UPC-E, Code 39, Code 93, Code 128, ITF, Codabar, Data Matrix, Aztec, PDF417) is enabled)"
+        }
+      ],
+      "tags": [
+        "third-party-migration"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "My Ionic React wallet scans QR codes with @capacitor-mlkit/barcode-scanning in Scan.tsx (types in Scan.types.ts). Replace it with Scandit BarcodeCapture. The title, paste-content button and denied-permission screen must keep working, and the front/back camera prop must still work.",
+      "expected_output": "Migrates Scan.tsx to BarcodeCapture: the view is connected to its own element with z-index -1 (not the container that holds the title and paste button), the scan-active body class is kept, the cameraDirection prop keeps working through CameraPosition, the app's permission check and denied UI are kept, and stopScan tears everything down.",
+      "files": [
+        "fixtures/05-veridian-wallet/Scan.tsx",
+        "fixtures/05-veridian-wallet/Scan.types.ts"
+      ],
+      "assertions": [
+        {
+          "text": "@capacitor-mlkit/barcode-scanning is NOT imported in the new code (it may appear in a before/after summary)"
+        },
+        {
+          "text": "await ScanditCaptureCorePlugin.initializePlugins() is present and runs before DataCaptureContext.initialize("
+        },
+        {
+          "text": "new BarcodeCapture(settings) is used with context.setMode( (not BarcodeCapture.forContext)"
+        },
+        {
+          "text": "barcodeCapture.addListener( registers a didScan callback that reads session.newlyRecognizedBarcode and skips a null barcode.data (semantic)"
+        },
+        {
+          "text": "A summary of changes lists each judgment call (enabled symbologies, duplicate filter, overlay) and what was removed"
+        },
+        {
+          "text": "The element passed to view.connectToElement( has a negative z-index (z-index: -1) so the native view sits UNDER the app's HTML (semantic)"
+        },
+        {
+          "text": "connectToElement is called only after the element exists: React useEffect, after the container renders (semantic)"
+        },
+        {
+          "text": "The cameraDirection / lensFacing behaviour is kept: LensFacing.Front maps to CameraPosition.UserFacing and LensFacing.Back to CameraPosition.WorldFacing (e.g. Camera.atPosition or Camera.asPositionWithSettings)"
+        },
+        {
+          "text": "The title, paste-content button and paste modal are preserved and not covered by the native view"
+        },
+        {
+          "text": "The permission-denied UI (no-permission class, scan.permissionalert text) is kept and is not replaced by a faked granted state"
+        },
+        {
+          "text": "The body class scan-active is still added while scanning and removed on stop"
+        },
+        {
+          "text": "Symbology.QR is enabled and the enabled set is NOT narrowed below what the original scanned (the original scanned QR only, so QR only is acceptable; narrowing a source that scanned more is not)"
+        }
+      ],
+      "tags": [
+        "third-party-migration"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "My Angular + Ionic app scans a QR code in qr-form.component.ts with @capacitor-mlkit/barcode-scanning. Migrate it to Scandit BarcodeCapture.",
+      "expected_output": "Migrates the Angular component: the DataCaptureView element is connected after the Angular view exists (ngAfterViewInit) with z-index -1, the scanner-active body class is kept, the first result is emitted and scanning is then stopped (camera Off, mode disabled, view detached), and ngOnDestroy tears the scanner down.",
+      "files": [
+        "fixtures/06-radar-questionnaire/qr-form.component.ts"
+      ],
+      "assertions": [
+        {
+          "text": "@capacitor-mlkit/barcode-scanning is NOT imported in the new code (it may appear in a before/after summary)"
+        },
+        {
+          "text": "await ScanditCaptureCorePlugin.initializePlugins() is present and runs before DataCaptureContext.initialize("
+        },
+        {
+          "text": "new BarcodeCapture(settings) is used with context.setMode( (not BarcodeCapture.forContext)"
+        },
+        {
+          "text": "barcodeCapture.addListener( registers a didScan callback that reads session.newlyRecognizedBarcode and skips a null barcode.data (semantic)"
+        },
+        {
+          "text": "A summary of changes lists each judgment call (enabled symbologies, duplicate filter, overlay) and what was removed"
+        },
+        {
+          "text": "The element passed to view.connectToElement( has a negative z-index (z-index: -1) so the native view sits UNDER the app's HTML (semantic)"
+        },
+        {
+          "text": "connectToElement is called only after the element exists: Angular ngAfterViewInit (semantic)"
+        },
+        {
+          "text": "After the first result the scan is stopped: camera Off, barcodeCapture.isEnabled = false, listener removed or its callback cleared, body class removed (semantic)"
+        },
+        {
+          "text": "ngOnDestroy stops the scan and calls view.detachFromElement()"
+        },
+        {
+          "text": "The ory / qr / token emitters and the ORY_KEY routing are preserved"
+        },
+        {
+          "text": "Capacitor.getPlatform() === 'web' is checked before ScanditCaptureCorePlugin.initializePlugins()"
+        },
+        {
+          "text": "Symbology.QR is enabled and the enabled set is NOT narrowed below what the original scanned (the original passed no formats, so the recommended default set is enabled, not QR only)"
+        }
+      ],
+      "tags": [
+        "third-party-migration"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "My Vue 3 + Capacitor wallet scans multi-part (animated UR) QR codes with @capacitor-mlkit/barcode-scanning in QrCodeScanner.vue. Migrate the mobile scanning path to Scandit BarcodeCapture. The close button and progress bar must keep working.",
+      "expected_output": "Migrates scanMobile to BarcodeCapture: z-index -1 element so #camera-close-btn and the progress UI stay visible and clickable, connectToElement in onMounted/after the mobile scanner element is shown, codeDuplicateFilter = 0 so every UR fragment reaches didScan, stopReading disables the mode, removes the listener and turns the camera Off, openSettings is kept via the app's own mechanism.",
+      "files": [
+        "fixtures/07-superhero-wallet/QrCodeScanner.vue"
+      ],
+      "assertions": [
+        {
+          "text": "@capacitor-mlkit/barcode-scanning is NOT imported in the new code (it may appear in a before/after summary)"
+        },
+        {
+          "text": "await ScanditCaptureCorePlugin.initializePlugins() is present and runs before DataCaptureContext.initialize("
+        },
+        {
+          "text": "new BarcodeCapture(settings) is used with context.setMode( (not BarcodeCapture.forContext)"
+        },
+        {
+          "text": "barcodeCapture.addListener( registers a didScan callback that reads session.newlyRecognizedBarcode and skips a null barcode.data (semantic)"
+        },
+        {
+          "text": "A summary of changes lists each judgment call (enabled symbologies, duplicate filter, overlay) and what was removed"
+        },
+        {
+          "text": "The element passed to view.connectToElement( has a negative z-index (z-index: -1) so the native view sits UNDER the app's HTML (semantic)"
+        },
+        {
+          "text": "connectToElement is called only after the element exists: Vue onMounted (or after the mobile scanner element is rendered) (semantic)"
+        },
+        {
+          "text": "settings.codeDuplicateFilter = 0 is set so consecutive multi-part QR fragments are not filtered out"
+        },
+        {
+          "text": "The #camera-close-btn handler and the multi-fragment progress handling (decoder.receivePart, scanProgress) are preserved"
+        },
+        {
+          "text": "openSettings is not mapped to a nonexistent Scandit API; the app's own settings mechanism is kept or the gap is stated"
+        },
+        {
+          "text": "onBeforeUnmount / stopReading disables the mode, removes the listener, turns the camera Off and detaches the view"
+        },
+        {
+          "text": "Symbology.QR is enabled and the enabled set is NOT narrowed below what the original scanned (the original passed no formats, so the recommended default set is enabled, not QR only)"
+        }
+      ],
+      "tags": [
+        "third-party-migration"
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "My React (MUI) forms library scans QR codes with @capacitor-mlkit/barcode-scanning in QRCodeButton.tsx and QRCodeFormField/index.tsx. Migrate to Scandit BarcodeCapture. The ScannerOverlay stop button and the camera-permission UI must keep working.",
+      "expected_output": "Migrates the button: the view element has z-index -1 so the ScannerOverlay stop button stays on top and clickable, codeDuplicateFilter = 0 so the 10-consecutive-identical-reads rule still counts, permission handling still uses @capacitor/camera and the denied UI, web platform keeps its disabled-button message, hideAppBackground/showAppBackground stay.",
+      "files": [
+        "fixtures/08-faims3-forms/QRCodeButton.tsx",
+        "fixtures/08-faims3-forms/index.tsx"
+      ],
+      "assertions": [
+        {
+          "text": "@capacitor-mlkit/barcode-scanning is NOT imported in the new code (it may appear in a before/after summary)"
+        },
+        {
+          "text": "await ScanditCaptureCorePlugin.initializePlugins() is present and runs before DataCaptureContext.initialize("
+        },
+        {
+          "text": "new BarcodeCapture(settings) is used with context.setMode( (not BarcodeCapture.forContext)"
+        },
+        {
+          "text": "barcodeCapture.addListener( registers a didScan callback that reads session.newlyRecognizedBarcode and skips a null barcode.data (semantic)"
+        },
+        {
+          "text": "A summary of changes lists each judgment call (enabled symbologies, duplicate filter, overlay) and what was removed"
+        },
+        {
+          "text": "The element passed to view.connectToElement( has a negative z-index (z-index: -1) so the native view sits UNDER the app's HTML (semantic)"
+        },
+        {
+          "text": "connectToElement is called only after the element exists: React useEffect, after the ScannerOverlay element renders (semantic)"
+        },
+        {
+          "text": "settings.codeDuplicateFilter = 0 is set so the REQUIRED_CONSECUTIVE_SCANS = 10 consecutive-read counting still receives every read"
+        },
+        {
+          "text": "ScannerOverlay, hideAppBackground and showAppBackground are preserved and the stop button is not covered by the native view"
+        },
+        {
+          "text": "Camera permission still goes through @capacitor/camera (Camera.requestPermissions) and the CameraPermissionIssue denied UI is kept"
+        },
+        {
+          "text": "The web platform branch (isWeb, disabled button with 'QR scanning requires a mobile device') is kept and no Scandit API runs on web"
+        },
+        {
+          "text": "Symbology.QR is enabled and the enabled set is NOT narrowed below what the original scanned (the original passed no formats, so the recommended default set is enabled, not QR only)"
+        }
+      ],
+      "tags": [
+        "third-party-migration"
+      ]
     }
   ]
 }
