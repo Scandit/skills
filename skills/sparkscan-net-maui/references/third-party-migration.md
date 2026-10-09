@@ -36,23 +36,34 @@ SparkScan is the pre-built single-scanning UI: a draggable trigger button + mini
    ```
 4. **Delete code-behind**: `OnBarcodesDetected`, `BarcodeReaderOptions`, `CameraLocation` setters, and any `IsTorchOn` toggling.
 5. **Map options to SparkScan**:
-   - `BarcodeReaderOptions.Formats` → `SparkScanSettings.EnableSymbology(...)`. Mapping:
-     - `BarcodeFormat.Ean13` → `Symbology.Ean13Upca`
-     - `BarcodeFormat.Ean8` → `Symbology.Ean8`
-     - `BarcodeFormat.UpcA` → `Symbology.Ean13Upca`
-     - `BarcodeFormat.UpcE` → `Symbology.Upce`
-     - `BarcodeFormat.Code128` → `Symbology.Code128`
-     - `BarcodeFormat.Code39` → `Symbology.Code39`
-     - `BarcodeFormat.ITF` → `Symbology.InterleavedTwoOfFive`
-     - `BarcodeFormat.QrCode` → `Symbology.Qr`
-     - `BarcodeFormat.DataMatrix` → `Symbology.DataMatrix`
-     - `BarcodeFormat.Pdf417` → `Symbology.Pdf417`
-     - `BarcodeFormat.Aztec` → `Symbology.Aztec`
+   - `BarcodeReaderOptions.Formats` → `SparkScanSettings.EnableSymbology(...)`, mapped with the format table below.
    - `AutoRotate = true` → no equivalent needed; SparkScan handles rotation automatically.
    - `Multiple = true` → not a concept in SparkScan single-scan. If you need multi-scan UX, use `barcode-capture-net-maui`.
    - `TryHarder = true` → not needed; SparkScan's engine tunes itself.
    - `IsTorchOn` → `SparkScanViewSettings.DefaultTorchState = TorchState.On` (or expose the torch via `SparkScanView.TorchControlVisible = true` and let the user toggle).
    - `CameraLocation` → `SparkScanViewSettings.DefaultCameraPosition = CameraPosition.UserFacing` / `WorldFacing`.
+
+Format mapping for ZXing.Net.Maui and BarcodeScanning.Native.Maui. Map only the formats the app scanned:
+
+<!-- BEGIN GENERATED symbology-table sources=zxing-net-maui,barcodescanning-native-maui style=csharp -->
+| ZXing.Net.Maui `BarcodeFormat` | BarcodeScanning.Native.Maui `BarcodeFormats` | Scandit `Symbology` |
+|---|---|---|
+| `QrCode` | `QrCode` | `Symbology.Qr` |
+| `Ean13` | `Ean13` | `Symbology.Ean13Upca` |
+| `Ean8` | `Ean8` | `Symbology.Ean8` |
+| `UpcA` | `UpcA` | `Symbology.Ean13Upca` (UPC-A is read by the EAN-13/UPC-A symbology) |
+| `UpcE` | `UpcE` | `Symbology.Upce` |
+| `Code39` | `Code39` | `Symbology.Code39` |
+| `Code93` | `Code93` | `Symbology.Code93` |
+| `Code128` | `Code128` | `Symbology.Code128` |
+| `Itf` | `Itf` | `Symbology.InterleavedTwoOfFive` (no ITF-14 symbology; ITF-14 is a 14-digit Interleaved 2 of 5) |
+| `Codabar` | `Codabar` | `Symbology.Codabar` |
+| `DataMatrix` | `DataMatrix` | `Symbology.DataMatrix` |
+| `Aztec` | `Aztec` | `Symbology.Aztec` |
+| `Pdf417` | `Pdf417` | `Symbology.Pdf417` |
+
+**Recommended default set** when the source scanned every format and nothing in the app narrows it: `Symbology.Qr`, `Symbology.Ean13Upca`, `Symbology.Ean8`, `Symbology.Upce`, `Symbology.Code39`, `Symbology.Code93`, `Symbology.Code128`, `Symbology.InterleavedTwoOfFive`, `Symbology.Codabar`, `Symbology.DataMatrix`, `Symbology.Aztec`, `Symbology.Pdf417`.
+<!-- END GENERATED symbology-table -->
 
 ### `BarcodeScanning.Native.Maui` (Google ML Kit / Apple Vision wrapper)
 
@@ -73,7 +84,7 @@ SparkScan is the pre-built single-scanning UI: a draggable trigger button + mini
 5. **Map detection callback to SparkScan**:
    - `OnDetectionFinishedEventArg.BarcodeResults[0].DisplayValue` → `args.Session.NewlyRecognizedBarcode.Data` (inside `BarcodeScanned`).
    - `OnDetectionFinishedEventArg.BarcodeResults[0].RawValue` → `barcode.RawData` (returns the raw bytes when available).
-   - `BarcodeFormat` flag bitmask → `SparkScanSettings.EnableSymbologies(...)` with the matching `Symbology` set.
+   - `BarcodeFormat` flag bitmask → `SparkScanSettings.EnableSymbologies(...)` with the matching `Symbology` set (format table in the ZXing.Net.Maui section).
 
 ### Native AVFoundation / Camera2 launched via a `DependencyService`
 

@@ -1,10 +1,13 @@
 #!/bin/sh
-# Blocks a push while the skill-auditor structure lint has findings or the
-# plugin manifests disagree on the release version.
+# Blocks a push while the skill-auditor structure lint has findings, a
+# generated symbology table is stale, or the plugin manifests disagree on the
+# release version.
 # Enable once per clone: git config core.hooksPath internal/githooks
 set -e
 cd "$(git rev-parse --show-toplevel)"
 python3 -m unittest discover -s internal/skill-auditor/scripts -p 'test_*.py' -q
 python3 internal/skill-auditor/scripts/lint_structure.py
+python3 -m unittest discover -s internal/symbology-map -p 'test_*.py' -q
+python3 internal/symbology-map/generate.py --check
 python3 -m unittest discover -s internal/release -p 'test_*.py' -q
 python3 internal/release/versions.py check

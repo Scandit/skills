@@ -35,7 +35,7 @@ Also read the installed Scandit SDK version (`scandit-react-native-datacapture-*
 
 ## Step 3: Map formats to symbologies
 
-Use the `barcode-capture-rn` **Symbology mapping** table (vision-camera spelling, expo-camera exceptions such as `'ean13'`, `'upc_a'`, `'itf14'`). Map **only** the formats the app scanned; `'qr'` is `Symbology.QR`, never `QRCode`. "All formats" (no `barcodeTypes` / `codeTypes`, or v5 `'all-formats'`) follows that guide's rule: enable what the app really consumes, or its stated default set plus a summary line "symbologies were not narrowed by the original; confirm this list".
+Use the `barcode-capture-rn` **Symbology mapping** table (one column each for vision-camera v4, v5 and expo-camera). Map **only** the formats the app scanned; `'qr'` is `Symbology.QR`, never `QRCode`. "All formats" (no `barcodeTypes` / `codeTypes`, or v5 `'all-formats'`) follows that guide's rule: enable what the app really consumes, or the recommended default set under that table plus a summary line "symbologies were not narrowed by the original; confirm this list".
 
 Symbologies go on `SparkScanSettings`:
 

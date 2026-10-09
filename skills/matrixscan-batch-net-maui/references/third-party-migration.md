@@ -59,21 +59,25 @@ When configuring `BarcodeBatchSettings`, map symbologies from the old scanner us
 
 ### Symbology mapping
 
-| ZXing.Net.Maui `BarcodeFormat` / ZXing `BarcodeFormat` | BarcodeScanning.Native.Maui `BarcodeFormats` | Scandit `Symbology.*` |
-|---|---|---|
-| `QrCode` / `QR_CODE` | `QrCode` | `Symbology.Qr` |
-| `Ean13` / `EAN_13` | `Ean13` | `Symbology.Ean13Upca` |
-| `Ean8` / `EAN_8` | `Ean8` | `Symbology.Ean8` |
-| `UpcA` / `UPC_A` | `UpcA` | `Symbology.Ean13Upca` (UPC-A is decoded by the Scandit EAN-13/UPC-A symbology) |
-| `UpcE` / `UPC_E` | `UpcE` | `Symbology.Upce` |
-| `Code39` / `CODE_39` | `Code39` | `Symbology.Code39` |
-| `Code93` / `CODE_93` | `Code93` | `Symbology.Code93` |
-| `Code128` / `CODE_128` | `Code128` | `Symbology.Code128` |
-| `Itf` / `ITF` | `Itf` | `Symbology.InterleavedTwoOfFive` |
-| `Codabar` / `CODABAR` | `Codabar` | `Symbology.Codabar` |
-| `DataMatrix` / `DATA_MATRIX` | `DataMatrix` | `Symbology.DataMatrix` |
-| `Aztec` / `AZTEC` | `Aztec` | `Symbology.Aztec` |
-| `Pdf417` / `PDF_417` | `Pdf417` | `Symbology.Pdf417` |
+<!-- BEGIN GENERATED symbology-table sources=zxing-net-maui,zxing-net,barcodescanning-native-maui style=csharp -->
+| ZXing.Net.Maui `BarcodeFormat` | ZXing.Net / ZXing.Net.Mobile `BarcodeFormat` | BarcodeScanning.Native.Maui `BarcodeFormats` | Scandit `Symbology` |
+|---|---|---|---|
+| `QrCode` | `QR_CODE` | `QrCode` | `Symbology.Qr` |
+| `Ean13` | `EAN_13` | `Ean13` | `Symbology.Ean13Upca` |
+| `Ean8` | `EAN_8` | `Ean8` | `Symbology.Ean8` |
+| `UpcA` | `UPC_A` | `UpcA` | `Symbology.Ean13Upca` (UPC-A is read by the EAN-13/UPC-A symbology) |
+| `UpcE` | `UPC_E` | `UpcE` | `Symbology.Upce` |
+| `Code39` | `CODE_39` | `Code39` | `Symbology.Code39` |
+| `Code93` | `CODE_93` | `Code93` | `Symbology.Code93` |
+| `Code128` | `CODE_128` | `Code128` | `Symbology.Code128` |
+| `Itf` | `ITF` | `Itf` | `Symbology.InterleavedTwoOfFive` (no ITF-14 symbology; ITF-14 is a 14-digit Interleaved 2 of 5) |
+| `Codabar` | `CODABAR` | `Codabar` | `Symbology.Codabar` |
+| `DataMatrix` | `DATA_MATRIX` | `DataMatrix` | `Symbology.DataMatrix` |
+| `Aztec` | `AZTEC` | `Aztec` | `Symbology.Aztec` |
+| `Pdf417` | `PDF_417` | `Pdf417` | `Symbology.Pdf417` |
+
+**Recommended default set** when the source scanned every format and nothing in the app narrows it: `Symbology.Qr`, `Symbology.Ean13Upca`, `Symbology.Ean8`, `Symbology.Upce`, `Symbology.Code39`, `Symbology.Code93`, `Symbology.Code128`, `Symbology.InterleavedTwoOfFive`, `Symbology.Codabar`, `Symbology.DataMatrix`, `Symbology.Aztec`, `Symbology.Pdf417`.
+<!-- END GENERATED symbology-table -->
 
 If you encounter a symbology not in this table, check the BarcodeBatch API reference for the correct `Symbology` enum value before writing the code:
 - [.NET Android](https://docs.scandit.com/data-capture-sdk/dotnet.android/barcode-capture/api.html)

@@ -36,22 +36,28 @@ When configuring `BarcodeBatchSettings`, map the ML Kit formats using the table 
 
 ### Symbology mapping
 
-| ML Kit format (`Barcode.*`) | Scandit `Symbology.*` |
+<!-- BEGIN GENERATED symbology-table sources=mlkit style=kotlin -->
+| ML Kit `Barcode.FORMAT_*` | Scandit `Symbology` |
 |---|---|
 | `FORMAT_QR_CODE` | `Symbology.QR` |
 | `FORMAT_EAN_13` | `Symbology.EAN13_UPCA` |
 | `FORMAT_EAN_8` | `Symbology.EAN8` |
-| `FORMAT_UPC_A` | `Symbology.EAN13_UPCA` (UPC-A is a subset of EAN-13/UPC-A) |
+| `FORMAT_UPC_A` | `Symbology.EAN13_UPCA` (UPC-A is read by the EAN-13/UPC-A symbology) |
 | `FORMAT_UPC_E` | `Symbology.UPCE` |
 | `FORMAT_CODE_39` | `Symbology.CODE39` |
 | `FORMAT_CODE_93` | `Symbology.CODE93` |
 | `FORMAT_CODE_128` | `Symbology.CODE128` |
-| `FORMAT_ITF` | `Symbology.INTERLEAVED_TWO_OF_FIVE` |
+| `FORMAT_ITF` | `Symbology.INTERLEAVED_TWO_OF_FIVE` (no ITF-14 symbology; ITF-14 is a 14-digit Interleaved 2 of 5) |
 | `FORMAT_CODABAR` | `Symbology.CODABAR` |
 | `FORMAT_DATA_MATRIX` | `Symbology.DATA_MATRIX` |
 | `FORMAT_AZTEC` | `Symbology.AZTEC` |
 | `FORMAT_PDF417` | `Symbology.PDF417` |
-| `FORMAT_ALL_FORMATS` | enable each symbology the app actually needs (do not blindly enable everything — enabling only what is needed improves tracking accuracy) |
+| `FORMAT_ALL_FORMATS` | No equivalent. Enable what the app really consumes; if nothing narrows it, the recommended default set below. Never enable everything. |
+
+**Recommended default set** when the source scanned every format and nothing in the app narrows it: `Symbology.QR`, `Symbology.EAN13_UPCA`, `Symbology.EAN8`, `Symbology.UPCE`, `Symbology.CODE39`, `Symbology.CODE93`, `Symbology.CODE128`, `Symbology.INTERLEAVED_TWO_OF_FIVE`, `Symbology.CODABAR`, `Symbology.DATA_MATRIX`, `Symbology.AZTEC`, `Symbology.PDF417`.
+<!-- END GENERATED symbology-table -->
+
+Enabling only the symbologies the app needs also improves tracking accuracy.
 
 If you encounter a format not in this table, check the [BarcodeBatch API reference](https://docs.scandit.com/data-capture-sdk/android/barcode-capture/api.html) for the correct `Symbology` value before writing the code.
 

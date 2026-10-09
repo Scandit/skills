@@ -30,21 +30,25 @@ Search the project for the plugin import and its types:
 
 mobile_scanner / ML Kit use a `BarcodeFormat` enum. Scandit uses `Symbology` (lowerCamelCase in Dart). Map only the formats the app actually scanned — enabling fewer symbologies improves performance and accuracy.
 
-| mobile_scanner `BarcodeFormat` | Scandit `Symbology` |
+<!-- BEGIN GENERATED symbology-table sources=mobile_scanner style=dart -->
+| mobile_scanner / ML Kit `BarcodeFormat` | Scandit `Symbology` |
 |---|---|
+| `qrCode` | `Symbology.qr` (**not** `qrCode`) |
 | `ean13` | `Symbology.ean13Upca` |
 | `ean8` | `Symbology.ean8` |
-| `upcA` | `Symbology.ean13Upca` (UPC-A is reported under EAN-13/UPC-A) |
+| `upcA` | `Symbology.ean13Upca` (UPC-A is read by the EAN-13/UPC-A symbology) |
 | `upcE` | `Symbology.upce` |
 | `code39` | `Symbology.code39` |
 | `code93` | `Symbology.code93` |
 | `code128` | `Symbology.code128` |
-| `itf` | `Symbology.interleavedTwoOfFive` |
+| `itf` | `Symbology.interleavedTwoOfFive` (no ITF-14 symbology; ITF-14 is a 14-digit Interleaved 2 of 5) |
 | `codabar` | `Symbology.codabar` |
-| `qrCode` | `Symbology.qr` (note: **`qr`**, not `qrCode`) |
 | `dataMatrix` | `Symbology.dataMatrix` |
 | `aztec` | `Symbology.aztec` |
 | `pdf417` | `Symbology.pdf417` |
+
+**Recommended default set** when the source scanned every format and nothing in the app narrows it: `Symbology.qr`, `Symbology.ean13Upca`, `Symbology.ean8`, `Symbology.upce`, `Symbology.code39`, `Symbology.code93`, `Symbology.code128`, `Symbology.interleavedTwoOfFive`, `Symbology.codabar`, `Symbology.dataMatrix`, `Symbology.aztec`, `Symbology.pdf417`.
+<!-- END GENERATED symbology-table -->
 
 > **Gotcha**: the Scandit QR symbology is `Symbology.qr` — there is no `Symbology.qrCode`. UPC-A barcodes are delivered under `Symbology.ean13Upca`.
 

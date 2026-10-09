@@ -52,21 +52,28 @@ When configuring `BarcodeBatchSettings`, map code types from the old scanner usi
 
 ### Symbology mapping
 
-| react-native-vision-camera `CodeType` | Scandit `Symbology.*` |
+<!-- BEGIN GENERATED symbology-table sources=vision-camera-v4 style=js -->
+| vision-camera v4 `CodeType` | Scandit `Symbology` |
 |---|---|
-| `'qr'` | `Symbology.QR` |
+| `'qr'` | `Symbology.QR` (**not** `QRCode`) |
 | `'ean-13'` | `Symbology.EAN13UPCA` |
 | `'ean-8'` | `Symbology.EAN8` |
-| `'upc-a'` | `Symbology.EAN13UPCA` (UPC-A is read by the EAN-13/UPC-A symbology in Scandit) |
+| `'upc-a'` | `Symbology.EAN13UPCA` (UPC-A is read by the EAN-13/UPC-A symbology) |
 | `'upc-e'` | `Symbology.UPCE` |
 | `'code-39'` | `Symbology.Code39` |
 | `'code-93'` | `Symbology.Code93` |
 | `'code-128'` | `Symbology.Code128` |
-| `'itf'` | `Symbology.InterleavedTwoOfFive` |
+| `'itf'` / `'itf-14'` | `Symbology.InterleavedTwoOfFive` (no ITF-14 symbology; ITF-14 is a 14-digit Interleaved 2 of 5) |
 | `'codabar'` | `Symbology.Codabar` |
 | `'data-matrix'` | `Symbology.DataMatrix` |
 | `'aztec'` | `Symbology.Aztec` |
 | `'pdf-417'` | `Symbology.PDF417` |
+| `'gs1-data-bar'` | `Symbology.GS1Databar` |
+| `'gs1-data-bar-limited'` | `Symbology.GS1DatabarLimited` |
+| `'gs1-data-bar-expanded'` | `Symbology.GS1DatabarExpanded` |
+
+**Recommended default set** when the source scanned every format and nothing in the app narrows it: `Symbology.QR`, `Symbology.EAN13UPCA`, `Symbology.EAN8`, `Symbology.UPCE`, `Symbology.Code39`, `Symbology.Code93`, `Symbology.Code128`, `Symbology.InterleavedTwoOfFive`, `Symbology.Codabar`, `Symbology.DataMatrix`, `Symbology.Aztec`, `Symbology.PDF417`.
+<!-- END GENERATED symbology-table -->
 
 If you encounter a code type not in this table, fetch the [BarcodeBatch API reference](https://docs.scandit.com/data-capture-sdk/react-native/barcode-capture/api.html) for the correct `Symbology` enum value before writing the code.
 
