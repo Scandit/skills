@@ -295,6 +295,87 @@
         }
       ],
       "tags": ["feedback"]
+    },
+    {
+      "id": 10,
+      "prompt": "My MatrixScan Batch page has no bundler: a static index.html loads empty-app.ts compiled to a plain ES module, and I want to load the Scandit SDK from the jsDelivr CDN instead of self-hosting it. Tell me which headers my static server needs. Users switch browser tabs a lot, so the camera must not keep running while the tab is in the background. Also give me a stopScanning() that fully tears scanning down when the user closes the scanner panel, and make sure scanning can be started again afterwards. Scan EAN-13 and Code 128. File: empty-app.ts.",
+      "expected_output": "Integration code that loads @scandit/* from jsDelivr with one exact version pinned in the import map and in libraryLocation, COOP same-origin plus COEP require-corp, no visibilitychange handler (DataCaptureView already stops the camera while the page is hidden), a named listener constant that is added and removed, teardown through DataCaptureContext.sharedInstance.dispose() and view.detachFromElement(), and a restart that calls DataCaptureContext.forLicenseKey again.",
+      "files": [
+        "fixtures/empty-app.ts"
+      ],
+      "assertions": [
+        {
+          "text": "No visibilitychange listener is added to switch the camera Off/On or to disable BarcodeBatch: the answer relies on the SDK's own page-visibility handling (semantic)"
+        },
+        {
+          "text": "Cross-Origin-Embedder-Policy: require-corp is recommended for the CDN setup, and credentialless is not recommended as the CDN value (semantic)"
+        },
+        {
+          "text": "Every jsDelivr URL for an @scandit package (import map and libraryLocation) pins one exact version such as @8.6.1, never a floating @8 major (semantic)"
+        },
+        {
+          "text": "The listener passed to barcodeBatch.addListener( is a named constant, and barcodeBatch.removeListener( is called with that same constant (semantic)"
+        },
+        {
+          "text": "Teardown calls dispose() on the DataCaptureContext and view.detachFromElement()"
+        },
+        {
+          "text": "Starting again after teardown calls DataCaptureContext.forLicenseKey( again (semantic)"
+        },
+        {
+          "text": "BrowserHelper.checkMultithreadingSupport() is awaited before the camera is switched on (semantic)"
+        }
+      ],
+      "tags": ["lifecycle"]
+    },
+    {
+      "id": 11,
+      "prompt": "Add AR bubbles above each tracked barcode in my MatrixScan Batch web app. Each bubble shows the barcode data in bold with the symbology name underneath, and the bubbles must look sharp on Retina screens. File: empty-app.ts.",
+      "expected_output": "A BarcodeBatchAdvancedOverlay whose viewForTrackedBarcode builds a DOM element filled through textContent (never innerHTML with barcode data), styled inline, built at devicePixelRatio times its intended size and passed to TrackedBarcodeView.withHTMLElement with scale 1 / devicePixelRatio.",
+      "files": [
+        "fixtures/empty-app.ts"
+      ],
+      "assertions": [
+        {
+          "text": "BarcodeBatchAdvancedOverlay.withBarcodeBatchForView is awaited"
+        },
+        {
+          "text": "TrackedBarcodeView.withHTMLElement is used to create the bubble view"
+        },
+        {
+          "text": "Barcode data reaches the bubble through textContent (or another non-HTML sink), never interpolated into innerHTML (semantic)"
+        },
+        {
+          "text": "If scale: 1 / window.devicePixelRatio is passed, the element is built at devicePixelRatio times its intended size so the drawn bubble keeps its intended size (semantic)"
+        },
+        {
+          "text": "The bubble is styled with inline styles or a <style> element inside the bubble, not only with page stylesheet classes (semantic)"
+        }
+      ],
+      "tags": ["advanced-overlay"]
+    },
+    {
+      "id": 12,
+      "prompt": "In my MatrixScan Batch web app, attach a label above each barcode as soon as it starts being tracked. Do it from didUpdateSession with setViewForTrackedBarcode, not through the overlay listener. The label shows the barcode data and must look sharp on Retina screens. File: empty-app.ts.",
+      "expected_output": "A BarcodeBatchAdvancedOverlay fed from didUpdateSession: for each session.addedTrackedBarcodes entry it builds a DOM element filled through textContent, with every size (padding, border radius and font-size) multiplied by devicePixelRatio, wraps it with TrackedBarcodeView.withHTMLElement(el, { scale: 1 / devicePixelRatio }) and passes it to setViewForTrackedBarcode.",
+      "files": [
+        "fixtures/empty-app.ts"
+      ],
+      "assertions": [
+        {
+          "text": "setViewForTrackedBarcode( is called from didUpdateSession for barcodes in session.addedTrackedBarcodes (semantic)"
+        },
+        {
+          "text": "TrackedBarcodeView.withHTMLElement is called with scale: 1 / window.devicePixelRatio (or an equivalent variable)"
+        },
+        {
+          "text": "The label sets font-size explicitly and multiplies it by devicePixelRatio, like its other sizes, so the drawn text keeps its intended size; FAIL if font-size is left at the browser default or set without the devicePixelRatio factor (semantic)"
+        },
+        {
+          "text": "Barcode data reaches the label through textContent (or another non-HTML sink), never interpolated into innerHTML (semantic)"
+        }
+      ],
+      "tags": ["advanced-overlay"]
     }
   ]
 }

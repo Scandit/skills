@@ -18,7 +18,7 @@ Read the existing code. Do not ask the user to describe what their scanner does.
 - What result-handling logic exists (dedup on the string value, accumulation, filtering by format/prefix).
 - What data models are defined (interfaces/types holding the scanned info).
 
-> **Key conceptual difference:** ZXing-js decodes **one** barcode per frame and reports it through a callback; "scanning many barcodes" is the app re-invoking the decoder in a loop and accumulating results. MatrixScan Batch genuinely tracks **all** visible barcodes simultaneously every frame, assigning each a **stable per-barcode tracking ID**, and reports additions / updates / removals via `IBarcodeBatchListener.didUpdateSession`. There is no decode loop to re-trigger — the session updates fire on their own.
+> **Key conceptual difference:** ZXing-js decodes **one** barcode per frame and reports it through a callback; "scanning many barcodes" is the app re-invoking the decoder in a loop and accumulating results. MatrixScan Batch genuinely tracks **all** visible barcodes simultaneously every frame, assigning each a **tracking ID** that holds while the barcode stays in view (a barcode that leaves and comes back gets a new one), and reports additions / updates / removals via `IBarcodeBatchListener.didUpdateSession`. There is no decode loop to re-trigger — the session updates fire on their own.
 
 MatrixScan Batch owns the camera and renders through a `DataCaptureView`, so the old `<video>` element, the `getUserMedia` plumbing, and any hand-drawn highlight `<canvas>` are all replaced.
 
@@ -80,7 +80,7 @@ When configuring `BarcodeBatchSettings`, map formats from ZXing using the table 
 | `result.getText()` | `trackedBarcode.barcode.data` |
 | `result.getBarcodeFormat()` | `trackedBarcode.barcode.symbology` (a `Symbology` enum value) |
 | `result.getResultPoints()` (corner points) | `trackedBarcode.location` (`Quadrilateral` in image-space; the basic overlay draws the highlight for you, or use `view.viewQuadrilateralForFrameQuadrilateral(location)` to convert to view space) |
-| "Have I seen this text yet?" (manual `Set<string>` dedupe on `getText()`) | `trackedBarcode.identifier` is the stable per-barcode tracking ID. New barcodes appear in `session.addedTrackedBarcodes`; the same physical code keeps the same identifier across frames until it leaves the view. Keep a `Set<number>` of seen identifiers for an "ever seen" set, or accumulate `barcode.data` from `addedTrackedBarcodes`. |
+| "Have I seen this text yet?" (manual `Set<string>` dedupe on `getText()`) | Keep the `Set<string>`, keyed on `trackedBarcode.barcode.data`. New barcodes appear in `session.addedTrackedBarcodes`. `trackedBarcode.identifier` identifies a track, not a code: the same physical code keeps it across frames while it stays in view, and gets a new one when it leaves and comes back. |
 | "Which barcodes are visible right now?" | `session.trackedBarcodes` — `Record<string, TrackedBarcode>` keyed by tracking ID; iterate with `Object.values(...)`. |
 | Barcodes that left the view | `session.removedTrackedBarcodes` — `string[]` of identifiers; `Number.parseInt(id, 10)` to match `Set<number>` keys. |
 
@@ -89,7 +89,7 @@ When configuring `BarcodeBatchSettings`, map formats from ZXing using the table 
 ## Preserve
 
 - Custom data models — keep as-is (an `interface ScannedBarcode { value: string; format: string; }` moves verbatim).
-- Result accumulation and deduplication logic — move it into `didUpdateSession`. Iterate `session.addedTrackedBarcodes`, dedupe on `trackedBarcode.identifier` (or `barcode.data`), and append to the existing collection.
+- Result accumulation and deduplication logic — move it into `didUpdateSession`. Iterate `session.addedTrackedBarcodes`, dedupe on `trackedBarcode.barcode.data` (the identifier changes when a barcode re-enters the frame), and append to the existing collection.
 - Any downstream business logic triggered on a new barcode (network lookup, UI list append).
 - Validation / reject behavior — if the old scanner had an "is this code valid?" check before accepting a result, port it as a filter when iterating `addedTrackedBarcodes`.
 

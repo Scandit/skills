@@ -4,7 +4,7 @@ description: MatrixScan AR (Barcode AR, BarcodeAr) in web/browser (TypeScript/Ja
 license: Apache-2.0
 metadata:
   author: scandit
-  version: "1.0.3"
+  version: "1.0.4"
 ---
 
 # MatrixScan AR Web Skill
@@ -30,7 +30,10 @@ Web-specific gotchas worth flagging:
 - The module loader is `barcodeCaptureLoader()` (from `@scandit/web-datacapture-barcode`) — there is no separate loader for BarcodeAr.
 - **Custom highlight/annotation elements** must implement `BarcodeArHighlight` / `BarcodeArAnnotation` as Web Components extending `HTMLElement`. They must have `position: absolute`, `will-change: transform`, and implement `updatePosition(point, transformOrigin, rotationAngle)` which the SDK calls every frame. Add `[hidden] { display: none }` for SDK visibility management. Register once with `customElements.define` guarded by `if (!customElements.get(tag))`.
 - `session.addedTrackedBarcodes` returns `Record<string, TrackedBarcode>` (a dictionary), **not** an array — use `Object.values(session.addedTrackedBarcodes)` to iterate. Same for `session.allTrackedBarcodes`.
-- **Multithreading is mandatory.** Set `Cross-Origin-Opener-Policy: same-origin` and `Cross-Origin-Embedder-Policy: require-corp` (self-hosted) or `credentialless` (CDN). Without these headers the SDK falls back to single-threaded mode, which is too slow for AR tracking.
+- **Multithreading is mandatory.** Set `Cross-Origin-Opener-Policy: same-origin` and `Cross-Origin-Embedder-Policy: require-corp`, also when the SDK comes from the jsDelivr CDN; do not recommend `credentialless`, which Safari does not support. Without these headers the SDK falls back to single-threaded mode, which is too slow for AR tracking.
+- When the SDK is loaded from a CDN, pin one exact version (for example `@8.6.1`) in every URL: the import map and `libraryLocation`. A floating `@8` lets the JavaScript and the engine worker resolve to different releases, which breaks start-up.
+- Do not add a `visibilitychange` handler: the view already stops the camera while the page is hidden and resumes it when the page is visible again.
+- `DataCaptureContext.forLicenseKey()` is idempotent, so calling it again is safe. After `context.dispose()`, call `forLicenseKey()` again and set `BarcodeAr` and `BarcodeArView` up again before `start()`: `start()` alone does not restart a disposed context.
 
 ## Intent Routing
 

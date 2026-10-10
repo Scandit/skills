@@ -34,22 +34,57 @@ Only proceed to the manual integration steps below if the user already has an ex
 
 **BarcodeAr requires browser multithreading via `SharedArrayBuffer`.** Without these headers the SDK degrades to single-threaded mode, which is too slow for AR tracking.
 
-Always set:
+Always set both, whether you self-host the SDK files or load them from jsDelivr:
 ```
 Cross-Origin-Opener-Policy: same-origin
+Cross-Origin-Embedder-Policy: require-corp
 ```
 
-For `Cross-Origin-Embedder-Policy`, the value depends on how you host the SDK:
-
-| Hosting | COEP value |
-|---------|-----------|
-| Self-hosted SDK files | `require-corp` |
-| CDN (`cdn.jsdelivr.net`) | `credentialless` (Chrome/Edge 96+) |
+jsDelivr answers with `Cross-Origin-Resource-Policy: cross-origin` and `Access-Control-Allow-Origin: *`, which `require-corp` accepts. Do not recommend `credentialless`: Safari does not support it, so the page would not be cross-origin isolated there.
 
 > **Heads up:** COEP blocks cross-origin resources (images, fonts, iframes, third-party scripts) that do not include `Cross-Origin-Resource-Policy` or `Access-Control-Allow-Origin`. Audit your page's cross-origin dependencies before enabling COEP in production.
 
 For the complete Vite setup — COOP/COEP middleware, `library/engine` self-hosting with `vite-plugin-static-copy`, and license key injection — use the official sample `vite.config.ts` as the source of truth:
 <https://github.com/Scandit/datacapture-web-samples/blob/master/03_Advanced_Batch_Scanning_Samples/01_Batch_Scanning_and_AR_Info_Lookup/MatrixScanARSimpleSample/vite.config.ts>
+
+Without a bundler, any static server that can set headers works. With [`serve`](https://www.npmjs.com/package/serve), put them in a `serve.json` next to `index.html`:
+
+```json
+{
+  "headers": [
+    {
+      "source": "**",
+      "headers": [
+        { "key": "Cross-Origin-Opener-Policy", "value": "same-origin" },
+        { "key": "Cross-Origin-Embedder-Policy", "value": "require-corp" }
+      ]
+    }
+  ]
+}
+```
+
+`serve` matches `source` against the path of the file it serves: `index.html` served at `/` gets the headers, a directory listing does not.
+
+Check multithreading support first, before the camera prompt and the engine download: `BrowserHelper.checkMultithreadingSupport()` (from `@scandit/web-datacapture-core`) needs no engine and no context. It also returns `false` on devices with fewer than 2 CPU cores or without nested workers, so an error message should not always blame the headers.
+
+### Loading the SDK from a CDN
+
+Pin one exact version in every URL. The JavaScript loads `barcode-worker-<its exact version>.js` from `libraryLocation`, while jsDelivr resolves a floating `@8` separately for every file (and browsers cache each for up to 7 days), so a new 8.x release can pair the JavaScript with a worker of another version and break start-up.
+
+```html
+<script type="importmap">
+  {
+    "imports": {
+      "@scandit/web-datacapture-core": "https://cdn.jsdelivr.net/npm/@scandit/web-datacapture-core@8.6.1/build/js/index.js",
+      "@scandit/web-datacapture-core/": "https://cdn.jsdelivr.net/npm/@scandit/web-datacapture-core@8.6.1/",
+      "@scandit/web-datacapture-barcode": "https://cdn.jsdelivr.net/npm/@scandit/web-datacapture-barcode@8.6.1/build/js/index.js",
+      "@scandit/web-datacapture-barcode/": "https://cdn.jsdelivr.net/npm/@scandit/web-datacapture-barcode@8.6.1/"
+    }
+  }
+</script>
+```
+
+Use the same version in `libraryLocation`: `https://cdn.jsdelivr.net/npm/@scandit/web-datacapture-barcode@8.6.1/sdc-lib/`.
 
 ## Integration flow
 
@@ -61,8 +96,8 @@ After providing the code, show this setup checklist:
 
 **Setup checklist:**
 1. Install packages: `npm install @scandit/web-datacapture-core @scandit/web-datacapture-barcode`
-2. Set cross-origin headers (`COOP: same-origin` + `COEP: require-corp` or `credentialless`) on the server
-3. Configure `libraryLocation` to point to the SDK engine files (self-hosted) or set to the CDN path `https://cdn.jsdelivr.net/npm/@scandit/web-datacapture-barcode@8/sdc-lib/`
+2. Set cross-origin headers (`COOP: same-origin` + `COEP: require-corp`) on the server, also when the SDK comes from the CDN
+3. Configure `libraryLocation` to point to the SDK engine files (self-hosted) or set to the CDN path pinned to the exact version you import, for example `https://cdn.jsdelivr.net/npm/@scandit/web-datacapture-barcode@8.6.1/sdc-lib/`
 4. Replace `'-- ENTER YOUR SCANDIT LICENSE KEY HERE --'` with your key (see **Licence key** in `SKILL.md`).
 5. Add a container element to your HTML (e.g. `<div id="barcode-ar-view" style="position:fixed;inset:0">`) with defined dimensions
 
@@ -686,6 +721,10 @@ barcodeArView.remove();         // removes the element from the DOM
 await context.dispose();        // releases all SDK resources
 ```
 
+`dispose()` terminates the engine worker and releases the context. To come back afterwards, call `DataCaptureContext.forLicenseKey()` again and set `BarcodeAr` and `BarcodeArView` up again before `barcodeArView.start()`; the engine is re-initialized. `start()` alone does not restart a disposed context. To leave and come back without that cost, keep the context and use `pause()` / `start()` instead.
+
+Do not add a `visibilitychange` handler for tab switching: the view already stops the camera while the page is hidden and resumes it when the page is visible again.
+
 ## Complete Example
 
 ```typescript
@@ -769,9 +808,10 @@ run();
 3. **`start()` is required** — the view does not start automatically.
 4. **BarcodeArView manages camera** — do NOT set up `Camera`, `setFrameSource`, or `switchToDesiredState` manually.
 5. **No `DataCaptureView`** — `BarcodeArView.create()` replaces it entirely.
-6. **Cleanup order**: `stop()` → `remove()` → `context.dispose()`.
-7. **COOP/COEP headers are mandatory** — without them the SDK runs single-threaded and AR tracking is too slow.
-8. **`barcodeCaptureLoader()`** is the module loader for all barcode modes including BarcodeAr.
+6. **Cleanup order**: `stop()` → `remove()` → `context.dispose()`. After `dispose()`, call `forLicenseKey()` again and recreate `BarcodeAr` and `BarcodeArView` before `start()`.
+7. **COOP/COEP headers are mandatory** — `COEP: require-corp`, also from the CDN. Without them the SDK runs single-threaded and AR tracking is too slow.
+8. **Pin the CDN version** — use one exact version in every CDN URL (import map and `libraryLocation`), never a floating `@8`.
+9. **`barcodeCaptureLoader()`** is the module loader for all barcode modes including BarcodeAr.
 
 ## Common Pitfalls
 

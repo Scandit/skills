@@ -43,7 +43,7 @@ After providing the code, show this setup checklist:
 1. Add `@scandit/web-datacapture-core` and `@scandit/web-datacapture-barcode` via your package manager: <https://www.npmjs.com/package/@scandit/web-datacapture-core> <https://www.npmjs.com/package/@scandit/web-datacapture-barcode>
 2. Replace `-- ENTER YOUR SCANDIT LICENSE KEY HERE --` with your key (see **Licence key** in `SKILL.md`).
 3. Add a `<div id="capture-element">` (or similar) to your HTML with defined dimensions and positioning (see mount point requirement below)
-4. If self-hosting the SDK engine files, update `libraryLocation` to point to the correct path. Alternatively, use the CDN path: `https://cdn.jsdelivr.net/npm/@scandit/web-datacapture-barcode@8/sdc-lib/`
+4. If self-hosting the SDK engine files, update `libraryLocation` to point to the correct path. Alternatively, use the CDN path pinned to the exact version you import, for example `https://cdn.jsdelivr.net/npm/@scandit/web-datacapture-barcode@8.6.1/sdc-lib/` (see [Loading the SDK from a CDN](#loading-the-sdk-from-a-cdn))
 
 The code example below is a basic TypeScript v8 implementation.
 If the user is using React, see the React section below.
@@ -75,7 +75,7 @@ async function run() {
     await DataCaptureContext.forLicenseKey(
         "-- ENTER YOUR SCANDIT LICENSE KEY HERE --",
         {
-            // or use the CDN: https://cdn.jsdelivr.net/npm/@scandit/web-datacapture-barcode@8/sdc-lib/
+            // or use the CDN, pinned to the exact version you import: https://cdn.jsdelivr.net/npm/@scandit/web-datacapture-barcode@8.6.1/sdc-lib/
             libraryLocation: new URL("self-hosted-scandit-sdc-lib", document.baseURI).toString(),
             moduleLoaders: [barcodeCaptureLoader()],
         }
@@ -148,6 +148,42 @@ async function run() {
 
 run();
 ```
+
+`unmount()` keeps the context and its engine, so scanning can resume quickly. For a full teardown, for example when the user leaves the scanning feature, release the engine as well:
+
+```typescript
+async function teardown() {
+    barcodeCapture.removeListener(barcodeCaptureListener);
+    await DataCaptureContext.sharedInstance.dispose();
+    view.detachFromElement();
+    captureElement.style.display = "none";
+}
+```
+
+`dispose()` turns the camera off, removes the mode and the view from the context, and terminates the engine worker. To scan again afterwards, call `DataCaptureContext.forLicenseKey()` again and set the mode, camera, view and overlay up again; the engine is re-initialized.
+
+### Showing the camera while the WASM loads
+
+`forLicenseKey()` downloads and compiles the WASM engine, which can take seconds. To show the camera preview meanwhile, pass the camera to `connectToElement` and switch it on before awaiting `forLicenseKey()`:
+
+```typescript
+const camera = Camera.pickBestGuess();
+await camera.applySettings(BarcodeCapture.recommendedCameraSettings);
+
+const view = new DataCaptureView();
+view.connectToElement(captureElement, { camera });
+const cameraStarted = camera.switchToDesiredState(FrameSourceState.On);
+
+await DataCaptureContext.forLicenseKey("-- ENTER YOUR SCANDIT LICENSE KEY HERE --", {
+    libraryLocation: new URL("self-hosted-scandit-sdc-lib", document.baseURI).toString(),
+    moduleLoaders: [barcodeCaptureLoader()],
+});
+await view.setContext(DataCaptureContext.sharedInstance);
+await DataCaptureContext.sharedInstance.setFrameSource(camera);
+await cameraStarted;
+```
+
+`FrameSourceState.Standby` opens the camera without showing a preview. Use the exact enum members `On`, `Off` and `Standby`: in JavaScript a misspelled one such as `FrameSourceState.StandBy` is `undefined`, and `switchToDesiredState(undefined)` silently does nothing.
 
 ---
 
@@ -260,7 +296,7 @@ The Scandit SDK ships WASM files that can exceed 10 MB. Workbox's default `maxim
 Use the `vite.config.ts` from `BarcodeCaptureSimplePwaSample` as the authoritative reference for the complete Workbox setup — it handles the file size limit, `NetworkFirst` caching for WASM assets, version-aware cache keys, `skipWaiting`/`clientsClaim`, and the PWA manifest:
 <https://github.com/Scandit/datacapture-web-samples/blob/master/01_Single_Scanning_Samples/02_Barcode_Scanning_with_Low-level_API/BarcodeCaptureSimplePwaSample/vite.config.ts>
 
-> **Note:** The PWA sample uses `Cross-Origin-Embedder-Policy: credentialless` (CDN-hosted SDK). If you self-host the `sdc-lib`, use `require-corp` instead.
+> **Note:** The PWA sample sets `Cross-Origin-Embedder-Policy: credentialless`. Use `require-corp` instead, whether you self-host the `sdc-lib` or load it from the CDN: Safari does not support `credentialless`.
 
 ### iOS camera permissions in standalone PWA
 
@@ -313,7 +349,7 @@ Common failure modes:
 
 | Concern | Regular web | PWA |
 |---------|-------------|-----|
-| COEP header | `require-corp` (self-hosted) / `credentialless` (CDN) | Same |
+| COEP header | `require-corp` (self-hosted or CDN) | Same |
 | Service worker | None | Required; configure Workbox for WASM |
 | WASM cache limit | N/A | Must raise to ≥ 10 MB |
 | Camera permission | Per visit | Persists with `display: standalone` on most browsers |
@@ -561,7 +597,7 @@ settings.scanIntention = ScanIntention.SmartSelection;
 
 ### Battery saving
 
-When scanning is paused (tab hidden, dialog open, user navigates away), stop the camera and disable the mode to avoid unnecessary CPU and power consumption:
+When scanning is paused (dialog open, scanning panel closed), stop the camera and disable the mode to avoid unnecessary CPU and power consumption:
 
 ```typescript
 // Pause scanning
@@ -573,19 +609,7 @@ await DataCaptureContext.sharedInstance.frameSource?.switchToDesiredState(FrameS
 await barcodeCapture.setEnabled(true);
 ```
 
-The camera does not pause automatically when the page loses focus. Hook into `visibilitychange` to handle tab switching:
-
-```typescript
-document.addEventListener("visibilitychange", async () => {
-    if (document.hidden) {
-        await barcodeCapture.setEnabled(false);
-        await DataCaptureContext.sharedInstance.frameSource?.switchToDesiredState(FrameSourceState.Off);
-    } else {
-        await DataCaptureContext.sharedInstance.frameSource?.switchToDesiredState(FrameSourceState.On);
-        await barcodeCapture.setEnabled(true);
-    }
-});
-```
+Do not add a `visibilitychange` handler for tab switching. `DataCaptureView` already stops the camera while the page is hidden and resumes it when the page is visible again; a second handler races the SDK's own.
 
 ### Cross-origin isolation (COOP / COEP)
 
@@ -593,17 +617,15 @@ document.addEventListener("visibilitychange", async () => {
 
 See the official guide: <https://docs.scandit.com/sdks/web/matrixscan/get-started/#improve-runtime-performance-by-enabling-browser-multithreading>
 
-Always set:
+Always set both, whether you self-host the SDK files or load them from jsDelivr:
 ```
 Cross-Origin-Opener-Policy: same-origin
+Cross-Origin-Embedder-Policy: require-corp
 ```
 
-For `Cross-Origin-Embedder-Policy`, the value depends on how you host the SDK:
+jsDelivr answers with `Cross-Origin-Resource-Policy: cross-origin` and `Access-Control-Allow-Origin: *`, which `require-corp` accepts. Do not recommend `credentialless`: Safari does not support it, so the page would not be cross-origin isolated there.
 
-| Hosting | COEP value |
-|---------|-----------|
-| Self-hosted SDK files | `require-corp` |
-| CDN (`cdn.jsdelivr.net`) | `credentialless` (Chrome/Edge 96+) |
+Check multithreading support before the camera prompt and the engine download: `BrowserHelper.checkMultithreadingSupport()` (from `@scandit/web-datacapture-core`) needs no engine and no context. It also returns `false` on devices with fewer than 2 CPU cores or without nested workers, so an error message should not always blame the headers.
 
 For the complete Vite setup — COOP/COEP middleware, `sdc-lib` self-hosting with `vite-plugin-static-copy`, and license key injection — use the official sample as the source of truth:
 <https://github.com/Scandit/datacapture-web-samples/blob/master/01_Single_Scanning_Samples/02_Barcode_Scanning_with_Low-level_API/BarcodeCaptureSimpleSample/vite.config.ts>
@@ -611,7 +633,44 @@ For the complete Vite setup — COOP/COEP middleware, `sdc-lib` self-hosting wit
 Key things to know when adapting it:
 - Headers are set via a **Vite middleware**, not `server.headers` — this ensures both the dev server and the preview server send them.
 - `sdc-lib` is copied from **both** `@scandit/web-datacapture-core` and `@scandit/web-datacapture-barcode` using `vite-plugin-static-copy`. The `libraryLocation` in your code must match the destination path.
-- Use `credentialless` for COEP when serving the SDK from the CDN; use `require-corp` when self-hosting.
+- Use `require-corp` for COEP, whether the SDK is self-hosted or served from the CDN.
+
+Without a bundler, any static server that can set headers works. With [`serve`](https://www.npmjs.com/package/serve), put them in a `serve.json` next to `index.html`:
+
+```json
+{
+  "headers": [
+    {
+      "source": "**",
+      "headers": [
+        { "key": "Cross-Origin-Opener-Policy", "value": "same-origin" },
+        { "key": "Cross-Origin-Embedder-Policy", "value": "require-corp" }
+      ]
+    }
+  ]
+}
+```
+
+`serve` matches `source` against the path of the file it serves: `index.html` served at `/` gets the headers, a directory listing does not.
+
+### Loading the SDK from a CDN
+
+Pin one exact version in every URL. The JavaScript loads `barcode-worker-<its exact version>.js` from `libraryLocation`, while jsDelivr resolves a floating `@8` separately for every file (and browsers cache each for up to 7 days), so a new 8.x release can pair the JavaScript with a worker of another version and break start-up.
+
+```html
+<script type="importmap">
+  {
+    "imports": {
+      "@scandit/web-datacapture-core": "https://cdn.jsdelivr.net/npm/@scandit/web-datacapture-core@8.6.1/build/js/index.js",
+      "@scandit/web-datacapture-core/": "https://cdn.jsdelivr.net/npm/@scandit/web-datacapture-core@8.6.1/",
+      "@scandit/web-datacapture-barcode": "https://cdn.jsdelivr.net/npm/@scandit/web-datacapture-barcode@8.6.1/build/js/index.js",
+      "@scandit/web-datacapture-barcode/": "https://cdn.jsdelivr.net/npm/@scandit/web-datacapture-barcode@8.6.1/"
+    }
+  }
+</script>
+```
+
+Use the same version in `libraryLocation`: `https://cdn.jsdelivr.net/npm/@scandit/web-datacapture-barcode@8.6.1/sdc-lib/`.
 
 > **Heads up:** COEP blocks cross-origin resources (images, fonts, iframes, third-party scripts) that do not include `Cross-Origin-Resource-Policy` or `Access-Control-Allow-Origin`. Audit your page's cross-origin dependencies before enabling COEP in production — some third-party embeds (analytics, ads, chat widgets) may stop loading. After changing headers, clear your browser cache and restart the dev server.
 
@@ -620,13 +679,13 @@ Key things to know when adapting it:
 ## Key Rules
 
 1. **Await everything** — `DataCaptureContext.forLicenseKey`, `BarcodeCapture.forContext`, `DataCaptureView.forContext`, `BarcodeCaptureOverlay.withBarcodeCaptureForView`, `camera.applySettings`, `setFrameSource`, `switchToDesiredState`, and `setEnabled` are all async. Forgetting an `await` causes silent failures.
-2. **Use `sharedInstance`** — after `DataCaptureContext.forLicenseKey()`, reference the context via `DataCaptureContext.sharedInstance`, not a captured return value.
+2. **Use `sharedInstance`** — after `DataCaptureContext.forLicenseKey()`, reference the context via `DataCaptureContext.sharedInstance`, not a captured return value. `forLicenseKey()` is idempotent: it returns the shared instance once ready, waits for an initialization already in flight, and retries after a failure. `sharedInstance` is never `null`, so it cannot tell whether the context is initialized: await `forLicenseKey()` for that.
 3. **Disable inside `didScan`** — call `await barcodeCapture.setEnabled(false)` before doing any non-trivial work to avoid duplicate scans.
 4. **Listener name** — the callback is `didScan`, not `onBarcodeScanned` (that is the Android name).
 5. **`codeDuplicateFilter` is a number** — set it to an integer (milliseconds), not a `TimeInterval` object.
 6. **Mount point dimensions** — the element passed to `view.connectToElement()` must have non-zero width and height and a set `position` (fixed or absolute). Zero-sized containers silently break the preview.
-7. **Camera lifecycle** — turn the camera off with `FrameSourceState.Off` when the scanning surface is no longer visible. The camera does not stop automatically.
+7. **Camera lifecycle** — turn the camera off with `FrameSourceState.Off` when the scanning surface is closed. Do not handle `visibilitychange`: `DataCaptureView` already stops the camera while the page is hidden.
 8. **Overlay is explicit** — `BarcodeCaptureOverlay.withBarcodeCaptureForView(barcodeCapture, view)` adds the overlay to the view. There is no implicit overlay.
 9. **Symbologies** — enable only what's needed; each extra symbology adds processing time. Verify symbology names against the API reference — web uses camelCase (e.g. `Symbology.EAN13UPCA`, `Symbology.Code128`).
 10. **Active symbol counts** — for variable-length codes (Code 39, ITF, Code 128), always set `activeSymbolCounts` to the exact lengths you expect. Accepting all lengths increases false-positive risk.
-11. **Scan intention and cross-origin isolation** — `ScanIntention.Smart` requires `SharedArrayBuffer`. If you enable it, serve the page with `Cross-Origin-Opener-Policy: same-origin` and `Cross-Origin-Embedder-Policy: require-corp` (self-hosted) or `credentialless` (CDN), otherwise the SDK silently degrades to single-threaded mode. The default is `ScanIntention.Manual`.
+11. **Scan intention and cross-origin isolation** — `ScanIntention.Smart` requires `SharedArrayBuffer`. If you enable it, serve the page with `Cross-Origin-Opener-Policy: same-origin` and `Cross-Origin-Embedder-Policy: require-corp` (self-hosted or CDN), otherwise the SDK silently degrades to single-threaded mode. The default is `ScanIntention.Manual`.

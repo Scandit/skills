@@ -35,33 +35,66 @@ Only proceed to the manual integration steps below if the user already has an ex
 
 **BarcodeBatch requires browser multithreading via `SharedArrayBuffer`.** Without these headers the SDK degrades to single-threaded mode, which is too slow for batch tracking.
 
-Always set:
+Always set both, whether you self-host the SDK files or load them from jsDelivr:
 ```
 Cross-Origin-Opener-Policy: same-origin
+Cross-Origin-Embedder-Policy: require-corp
 ```
 
-For `Cross-Origin-Embedder-Policy`, the value depends on how you host the SDK:
-
-| Hosting | COEP value |
-|---------|-----------|
-| Self-hosted SDK files | `require-corp` |
-| CDN (`cdn.jsdelivr.net`) | `credentialless` (Chrome/Edge 96+) |
+jsDelivr answers with `Cross-Origin-Resource-Policy: cross-origin` and `Access-Control-Allow-Origin: *`, which `require-corp` accepts. Do not recommend `credentialless`: Safari does not support it, so the page would not be cross-origin isolated there.
 
 > **Heads up:** COEP blocks cross-origin resources (images, fonts, iframes, third-party scripts) that do not include `Cross-Origin-Resource-Policy` or `Access-Control-Allow-Origin`. Audit your page's cross-origin dependencies before enabling COEP in production. After changing headers, clear your browser cache and restart the dev server.
 
 For the complete Vite setup — COOP/COEP middleware, `library/engine` self-hosting with `vite-plugin-static-copy`, and license key injection — use the official sample `vite.config.ts` as the source of truth:
 <https://github.com/Scandit/datacapture-web-samples/blob/master/03_Advanced_Batch_Scanning_Samples/01_Batch_Scanning_and_AR_Info_Lookup/MatrixScanSimpleSample/vite.config.ts>
 
-You can also verify multithreading is active at runtime:
+Without a bundler, any static server that can set headers works. With [`serve`](https://www.npmjs.com/package/serve), put them in a `serve.json` next to `index.html`:
+
+```json
+{
+  "headers": [
+    {
+      "source": "**",
+      "headers": [
+        { "key": "Cross-Origin-Opener-Policy", "value": "same-origin" },
+        { "key": "Cross-Origin-Embedder-Policy", "value": "require-corp" }
+      ]
+    }
+  ]
+}
+```
+
+`serve` matches `source` against the path of the file it serves: `index.html` served at `/` gets the headers, a directory listing does not.
+
+Check multithreading support first, before the camera prompt and the engine download: `BrowserHelper.checkMultithreadingSupport()` needs no engine and no context. It also returns `false` on devices with fewer than 2 CPU cores or without nested workers, so an error message should not always blame the headers.
 
 ```typescript
 import { BrowserHelper } from "@scandit/web-datacapture-core";
 
-const ok = await BrowserHelper.checkMultithreadingSupport();
-if (!ok) {
-  console.warn("Multithreading unavailable. Check COOP/COEP headers.");
+const multithreadingSupported = await BrowserHelper.checkMultithreadingSupport();
+if (!multithreadingSupported) {
+  console.warn("Multithreading unavailable: check the COOP/COEP headers, or the device lacks CPU cores or nested workers.");
 }
 ```
+
+### Loading the SDK from a CDN
+
+Pin one exact version in every URL. The JavaScript loads `barcode-worker-<its exact version>.js` from `libraryLocation`, while jsDelivr resolves a floating `@8` separately for every file (and browsers cache each for up to 7 days), so a new 8.x release can pair the JavaScript with a worker of another version and break start-up.
+
+```html
+<script type="importmap">
+  {
+    "imports": {
+      "@scandit/web-datacapture-core": "https://cdn.jsdelivr.net/npm/@scandit/web-datacapture-core@8.6.1/build/js/index.js",
+      "@scandit/web-datacapture-core/": "https://cdn.jsdelivr.net/npm/@scandit/web-datacapture-core@8.6.1/",
+      "@scandit/web-datacapture-barcode": "https://cdn.jsdelivr.net/npm/@scandit/web-datacapture-barcode@8.6.1/build/js/index.js",
+      "@scandit/web-datacapture-barcode/": "https://cdn.jsdelivr.net/npm/@scandit/web-datacapture-barcode@8.6.1/"
+    }
+  }
+</script>
+```
+
+Use the same version in `libraryLocation`: `https://cdn.jsdelivr.net/npm/@scandit/web-datacapture-barcode@8.6.1/sdc-lib/`.
 
 ## Integration flow
 
@@ -73,8 +106,8 @@ After providing the code, show this setup checklist:
 
 **Setup checklist:**
 1. Install packages: `npm install @scandit/web-datacapture-core @scandit/web-datacapture-barcode`
-2. Set cross-origin headers (`COOP: same-origin` + `COEP: require-corp` or `credentialless`) on the server
-3. If self-hosting the SDK engine, configure `libraryLocation` to point to the correct path; or use the CDN path: `https://cdn.jsdelivr.net/npm/@scandit/web-datacapture-barcode@8/sdc-lib/`
+2. Set cross-origin headers (`COOP: same-origin` + `COEP: require-corp`) on the server, also when the SDK comes from the CDN
+3. If self-hosting the SDK engine, configure `libraryLocation` to point to the correct path; or use the CDN path pinned to the exact version you import, for example `https://cdn.jsdelivr.net/npm/@scandit/web-datacapture-barcode@8.6.1/sdc-lib/`
 4. Replace `'-- ENTER YOUR SCANDIT LICENSE KEY HERE --'` with your key (see **Licence key** in `SKILL.md`).
 5. Add a `<div id="data-capture-view">` (or similar) to your HTML with defined dimensions and `position: fixed` or `absolute`. Revert that styling in your cleanup: the element belongs to the app, so detaching the view does not undo the positioning you applied, and an empty full-viewport `position: fixed` element still blocks every click on the page underneath
 
@@ -108,8 +141,8 @@ async function run(): Promise<void> {
   const context = await DataCaptureContext.forLicenseKey(
     "-- ENTER YOUR SCANDIT LICENSE KEY HERE --",
     {
-      // Self-hosted path. Use CDN if not self-hosting:
-      // https://cdn.jsdelivr.net/npm/@scandit/web-datacapture-barcode@8/sdc-lib/
+      // Self-hosted path. Use CDN if not self-hosting, pinned to the exact version you import:
+      // https://cdn.jsdelivr.net/npm/@scandit/web-datacapture-barcode@8.6.1/sdc-lib/
       libraryLocation: new URL("library/engine/", document.baseURI).toString(),
       moduleLoaders: [barcodeCaptureLoader()],
     }
@@ -121,8 +154,8 @@ async function run(): Promise<void> {
 }
 ```
 
-- `DataCaptureContext.forLicenseKey()` is async — always `await` it.
-- Use `DataCaptureContext.sharedInstance` or the captured `context` variable throughout.
+- `DataCaptureContext.forLicenseKey()` is async — always `await` it. It is idempotent: it returns the shared instance once ready, waits for an initialization already in flight, and retries after a failure, so calling it again is safe.
+- Use `DataCaptureContext.sharedInstance` rather than caching the context. `sharedInstance` is never `null`, so it cannot tell whether the context is initialized, and there is no public API for that: await `forLicenseKey()` instead.
 - The module loader for BarcodeBatch is `barcodeCaptureLoader()` — there is no separate `barcodeBatchLoader`.
 
 ### Building the DataCaptureView and attaching overlays
@@ -228,6 +261,29 @@ await context.frameSource?.switchToDesiredState(FrameSourceState.On);
 await barcodeBatch.setEnabled(true);
 ```
 
+### Showing the camera while the WASM loads
+
+`forLicenseKey()` downloads and compiles the WASM engine, which can take seconds. To show the camera preview meanwhile, pass the camera to `connectToElement` and switch it on before awaiting `forLicenseKey()`:
+
+```typescript
+const camera = Camera.pickBestGuess();
+await camera.applySettings(BarcodeBatch.recommendedCameraSettings);
+
+const view = new DataCaptureView();
+view.connectToElement(document.getElementById("data-capture-view")!, { camera });
+const cameraStarted = camera.switchToDesiredState(FrameSourceState.On);
+
+const context = await DataCaptureContext.forLicenseKey("-- ENTER YOUR SCANDIT LICENSE KEY HERE --", {
+  libraryLocation: new URL("library/engine/", document.baseURI).toString(),
+  moduleLoaders: [barcodeCaptureLoader()],
+});
+await view.setContext(context);
+await context.setFrameSource(camera);
+await cameraStarted;
+```
+
+`FrameSourceState.Standby` opens the camera without showing a preview. Use the exact enum members `On`, `Off` and `Standby`: in JavaScript a misspelled one such as `FrameSourceState.StandBy` is `undefined`, and `switchToDesiredState(undefined)` silently does nothing.
+
 ## Step 4 — Add BarcodeBatchBasicOverlay
 
 `BarcodeBatchBasicOverlay` renders a highlight frame or dot over each tracked barcode. The overlay is added to the view via an async factory — there is no implicit overlay.
@@ -290,7 +346,9 @@ overlay.listener = {
 `IBarcodeBatchListener.didUpdateSession` is called after every frame where the tracked barcode state changes.
 
 ```typescript
-barcodeBatch.addListener({
+import type { BarcodeBatchListener } from "@scandit/web-datacapture-barcode";
+
+const batchListener: BarcodeBatchListener = {
   didUpdateSession: (_barcodeBatch, session) => {
     // All currently tracked barcodes.
     for (const trackedBarcode of Object.values(session.trackedBarcodes)) {
@@ -310,8 +368,11 @@ barcodeBatch.addListener({
       console.log("Removed identifier:", identifier);
     }
   },
-});
+};
+barcodeBatch.addListener(batchListener);
 ```
+
+Keep the listener in a named constant: `removeListener` needs the same object, so an object literal passed straight to `addListener` can never be removed.
 
 ### BarcodeBatchSession properties
 
@@ -327,8 +388,10 @@ barcodeBatch.addListener({
 | Property | Type | Description |
 |----------|------|-------------|
 | `barcode` | `Barcode` | The barcode associated with this track. |
-| `identifier` | `number` | Unique identifier for this track. |
+| `identifier` | `number` | Identifier of this track. A barcode that leaves the frame and comes back gets a new one. |
 | `location` | `Quadrilateral` | Location in image-space (frame coordinates). |
+
+A barcode that leaves the frame and comes back is reported in `addedTrackedBarcodes` again, with a new `identifier`. To process each code once, de-duplicate by `barcode.data`, not by `identifier`.
 
 ### Feedback (beep / vibration)
 
@@ -392,11 +455,13 @@ const advancedOverlay = await BarcodeBatchAdvancedOverlay.withBarcodeBatchForVie
 // TrackedBarcodeView.withHTMLElement() returns a Promise, so returning it directly is correct.
 advancedOverlay.listener = {
   viewForTrackedBarcode: (_overlay, trackedBarcode) => {
+    const pixelRatio = window.devicePixelRatio;
     const el = document.createElement("div");
     el.textContent = trackedBarcode.barcode.data ?? "";
-    el.style.cssText = "background:#2196F3;color:#fff;padding:4px 8px;border-radius:4px;font-size:12px;";
-    // Scale by device pixel ratio for crisp rendering.
-    return TrackedBarcodeView.withHTMLElement(el, { scale: 1 / window.devicePixelRatio });
+    el.style.cssText =
+      `background:#2196F3;color:#fff;padding:${4 * pixelRatio}px ${8 * pixelRatio}px;` +
+      `border-radius:${4 * pixelRatio}px;font-size:${12 * pixelRatio}px;`;
+    return TrackedBarcodeView.withHTMLElement(el, { scale: 1 / pixelRatio });
   },
   anchorForTrackedBarcode: () => Anchor.TopCenter,
   offsetForTrackedBarcode: () =>
@@ -428,11 +493,14 @@ barcodeBatch.addListener({
 
     // Only create views for newly appeared barcodes.
     for (const trackedBarcode of session.addedTrackedBarcodes) {
+      const pixelRatio = window.devicePixelRatio;
       const el = document.createElement("div");
       el.textContent = trackedBarcode.barcode.data ?? "";
-      el.style.cssText = "background:#2196F3;color:#fff;padding:4px 8px;border-radius:4px;";
+      el.style.cssText =
+        `background:#2196F3;color:#fff;padding:${4 * pixelRatio}px ${8 * pixelRatio}px;` +
+        `border-radius:${4 * pixelRatio}px;font-size:${12 * pixelRatio}px;`;
       // withHTMLElement returns Promise<TrackedBarcodeView> — cache and pass directly.
-      const trackedView = TrackedBarcodeView.withHTMLElement(el, { scale: 1 / window.devicePixelRatio });
+      const trackedView = TrackedBarcodeView.withHTMLElement(el, { scale: 1 / pixelRatio });
       viewCache.set(trackedBarcode.identifier, trackedView);
       void advancedOverlay.setViewForTrackedBarcode(trackedView, trackedBarcode);
       // setAnchorForTrackedBarcode and setOffsetForTrackedBarcode are synchronous (return void).
@@ -458,7 +526,16 @@ barcodeBatch.addListener({
 | `TrackedBarcodeView.withHTMLElement(element, options)` | Returns `Promise<TrackedBarcodeView>`. Pass the Promise directly to `setViewForTrackedBarcode` or return it from `viewForTrackedBarcode`. |
 | `TrackedBarcodeView.withBase64EncodedData(data, options)` | Returns `Promise<TrackedBarcodeView>`. Alternative for image-based AR views encoded as base64. |
 
-`TrackedBarcodeViewOptions` fields: `scale?: number` (compensate for device pixel ratio), `size?: Size` (explicit pixel dimensions).
+`TrackedBarcodeViewOptions` fields: `scale?: number` (multiplies the size the view is drawn at; default `1`), `size?: Size` (explicit pixel dimensions).
+
+### How `withHTMLElement` renders
+
+`TrackedBarcodeView.withHTMLElement()` turns a copy of the element into a PNG, once:
+
+- Only inline styles and `<style>` elements inside the element apply. Page stylesheets do not, although they still affect the size the SDK measures, so style the element inline.
+- Later changes to the element do not update the view. To change a view, build a new one and pass it to `setViewForTrackedBarcode`.
+- The image is drawn at the element's CSS size times `scale`, so an element built at its intended size looks soft on high-density screens. For sharp views, build the element at `window.devicePixelRatio` times its intended size and pass `scale: 1 / window.devicePixelRatio`, as in the examples above and in the Bubbles sample's `BubbleComponent.ts`. Multiply every size, `font-size` included: text left at the default font size is drawn at `1 / devicePixelRatio` of it. Passing only the `scale` shrinks the view instead.
+- Never put barcode data into `innerHTML`: a Code 128 barcode can encode markup, which makes this an XSS sink. Use `textContent`.
 
 ### BarcodeBatchAdvancedOverlay members
 
@@ -518,24 +595,13 @@ await barcodeBatch.setEnabled(false);
 await context.frameSource?.switchToDesiredState(FrameSourceState.Off);
 ```
 
-Hook into `visibilitychange` to handle tab switching:
+Do not add a `visibilitychange` handler for tab switching. `DataCaptureView` already stops the camera while the page is hidden and resumes it when the page is visible again; a second handler races the SDK's own.
+
+Cleanup when the scanning surface is unmounted and scanning will resume later, keeping the context and its engine:
 
 ```typescript
-document.addEventListener("visibilitychange", async () => {
-  if (document.hidden) {
-    await barcodeBatch.setEnabled(false);
-    await context.frameSource?.switchToDesiredState(FrameSourceState.Off);
-  } else {
-    await context.frameSource?.switchToDesiredState(FrameSourceState.On);
-    await barcodeBatch.setEnabled(true);
-  }
-});
-```
-
-Cleanup when the scanning surface is unmounted:
-
-```typescript
-barcodeBatch.removeListener(listener);
+barcodeBatch.removeListener(batchListener);
+await barcodeBatch.setEnabled(false);
 await context.frameSource?.switchToDesiredState(FrameSourceState.Off);
 view.detachFromElement();
 // detachFromElement() cannot undo styling the app applied to its own element. Revert it, or
@@ -545,6 +611,16 @@ document.getElementById("data-capture-view")!.style.display = "none";
 ```
 
 In React this last line is unnecessary: the element lives in the component's JSX, so it is removed when the component unmounts.
+
+Full teardown, releasing the engine as well:
+
+```typescript
+await DataCaptureContext.sharedInstance.dispose();
+view.detachFromElement();
+document.getElementById("data-capture-view")!.style.display = "none";
+```
+
+`dispose()` turns the camera off, removes the mode and the view from the context, and terminates the engine worker. To scan again afterwards, call `DataCaptureContext.forLicenseKey()` again and set the mode, camera and overlays up again; the engine is re-initialized.
 
 ## React integration
 
@@ -562,6 +638,7 @@ import {
   BarcodeBatch,
   BarcodeBatchBasicOverlay,
   BarcodeBatchBasicOverlayStyle,
+  type BarcodeBatchListener,
   BarcodeBatchSettings,
   barcodeCaptureLoader,
   Symbology,
@@ -573,6 +650,13 @@ export const MatrixScanComponent: React.FC = () => {
   useEffect(() => {
     let barcodeBatch: BarcodeBatch | null = null;
     let view: DataCaptureView | null = null;
+    const batchListener: BarcodeBatchListener = {
+      didUpdateSession: (_mode, session) => {
+        for (const tracked of Object.values(session.trackedBarcodes)) {
+          console.log("Tracking:", tracked.barcode.data);
+        }
+      },
+    };
 
     const initialize = async () => {
       const context = await DataCaptureContext.forLicenseKey(
@@ -587,13 +671,7 @@ export const MatrixScanComponent: React.FC = () => {
       settings.enableSymbologies([Symbology.EAN13UPCA, Symbology.Code128]);
 
       barcodeBatch = await BarcodeBatch.forContext(context, settings);
-      barcodeBatch.addListener({
-        didUpdateSession: (_mode, session) => {
-          for (const tracked of Object.values(session.trackedBarcodes)) {
-            console.log("Tracking:", tracked.barcode.data);
-          }
-        },
-      });
+      barcodeBatch.addListener(batchListener);
 
       const camera = Camera.pickBestGuess();
       await camera.applySettings(BarcodeBatch.recommendedCameraSettings);
@@ -615,6 +693,7 @@ export const MatrixScanComponent: React.FC = () => {
     initialize().catch(console.error);
 
     return () => {
+      barcodeBatch?.removeListener(batchListener);
       barcodeBatch?.setEnabled(false).catch(console.error);
       DataCaptureContext.sharedInstance.frameSource
         ?.switchToDesiredState(FrameSourceState.Off)
@@ -641,9 +720,10 @@ export const MatrixScanComponent: React.FC = () => {
 5. **AR views return Promises** — `TrackedBarcodeView.withHTMLElement()` returns `Promise<TrackedBarcodeView>`. Pass the Promise directly to `setViewForTrackedBarcode` or return it from `viewForTrackedBarcode`. No subclassing needed.
 6. **removedTrackedBarcodes are strings** — `session.removedTrackedBarcodes` returns `string[]`. Use `Number.parseInt(id, 10)` when comparing to `TrackedBarcode.identifier`.
 7. **Mount point dimensions** — the element passed to `connectToElement()` must have non-zero width/height and a set `position`.
-8. **Camera lifecycle** — turn the camera off with `FrameSourceState.Off` when scanning is not active. Hook `visibilitychange` to handle tab switching.
+8. **Camera lifecycle** — turn the camera off with `FrameSourceState.Off` when scanning is not active. Do not handle `visibilitychange`: `DataCaptureView` already stops the camera while the page is hidden.
 9. **recommendedCameraSettings** — it's a static property, not a method: `BarcodeBatch.recommendedCameraSettings`, not `BarcodeBatch.recommendedCameraSettings()`.
-10. **TrackedBarcodeView scale** — use `{ scale: 1 / window.devicePixelRatio }` as options for crisp AR views on high-DPI screens.
+10. **TrackedBarcodeView scale** — `scale` multiplies the drawn size. For crisp AR views on high-DPI screens, build the element at `window.devicePixelRatio` times its intended size and pass `{ scale: 1 / window.devicePixelRatio }`; the scale alone shrinks the view.
+11. **Pin the CDN version** — use one exact version in every CDN URL (import map and `libraryLocation`), never a floating `@8`.
 
 ## Common pitfalls
 
@@ -652,10 +732,13 @@ export const MatrixScanComponent: React.FC = () => {
 | Nothing tracks / very slow | COOP/COEP headers missing. BarcodeBatch requires multithreading. |
 | Camera preview not visible | Container has zero size or no `position: fixed/absolute`. |
 | `BarcodeBatch.forContext` not awaited | Always `await` — without it, `barcodeBatch` is a Promise, not a mode. |
-| AR views not appearing | Advanced overlay not awaited, or `viewForTrackedBarcode` returns `undefined` instead of `null` (or a non-Promise value). |
+| AR views not appearing | Advanced overlay not awaited, or `viewForTrackedBarcode` returns `undefined` instead of `null` (or a non-Promise value). Or the license key lacks the `AugmentedReality` / `MappingForTracking` features: tracking and decoding still work, but every location and anchor is zero, so all views are drawn at the same off-screen point. The context reports this through `didChangeStatus` of a `DataCaptureContextListener` (status code 1026). |
 | `setAnchorForTrackedBarcode` TypeScript error | Do not `await` it — it is synchronous (`void`). |
-| AR view looks blurry on Retina | Pass `{ scale: 1 / window.devicePixelRatio }` to `TrackedBarcodeView.withHTMLElement`. |
+| AR view looks blurry on Retina | Build the element at `window.devicePixelRatio` times its size and pass `{ scale: 1 / window.devicePixelRatio }` to `TrackedBarcodeView.withHTMLElement`. Passing only the scale halves the view. |
 | `removedTrackedBarcodes` ids don't match | Identifiers come back as `string[]`. Parse with `Number.parseInt(id, 10)`. |
 | Duplicate scan events | Camera not paused. Call `setEnabled(false)` and/or `FrameSourceState.Off` when not scanning. |
+| Same code processed twice | A barcode that leaves the frame and comes back gets a new `identifier`. De-duplicate by `barcode.data`. |
+| `checkMultithreadingSupport()` is `false` although the headers are set | The device has fewer than 2 CPU cores or no nested-worker support. |
+| Start-up breaks after a new SDK release | CDN URLs float on `@8` and mixed two versions. Pin one exact version everywhere. |
 | Overlay not rendering highlights | Basic overlay factory not awaited. |
-| React StrictMode double-init | Wrap init in a guard (e.g. `if (DataCaptureContext.sharedInstance)`) or use a ref flag. |
+| React StrictMode double-init | No guard is needed for the context: `forLicenseKey` is idempotent. Guard only your own set-up (mode, overlays, listeners), for example with a ref or a shared in-flight promise. `DataCaptureContext.sharedInstance` is always truthy, so it cannot be the guard. |

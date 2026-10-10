@@ -582,6 +582,26 @@
           "text": "Existing sparkScanListener and initialization logic are preserved"
         }
       ]
+    },
+    {
+      "id": 20,
+      "prompt": "Add SparkScan to empty-app.ts on a page with no bundler: load the Scandit SDK from the jsDelivr CDN and tell me which headers the server needs. When the user switches to another browser tab, scanning should pause so the camera is not left running. Scan EAN-13 and Code 128.",
+      "expected_output": "SparkScan integration loading @scandit/* from jsDelivr with one exact version pinned in the import map and in libraryLocation, COOP same-origin plus COEP require-corp, and no visibilitychange handler, because SparkScanView already switches to idle when the page is hidden.",
+      "files": [
+        "fixtures/empty-app.ts"
+      ],
+      "assertions": [
+        {
+          "text": "No visibilitychange listener is added to pause SparkScan or switch the camera: the answer relies on SparkScanView's own page-visibility handling (semantic)"
+        },
+        {
+          "text": "Cross-Origin-Embedder-Policy: require-corp is recommended for the CDN setup, and credentialless is not recommended as the CDN value (semantic)"
+        },
+        {
+          "text": "Every jsDelivr URL for an @scandit package (import map and libraryLocation) pins one exact version such as @8.6.1, never a floating @8 major (semantic)"
+        }
+      ],
+      "tags": ["lifecycle-handling"]
     }
   ]
 }
