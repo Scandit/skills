@@ -19,7 +19,7 @@ Read the existing code. Do not ask the user to describe what their scanner does.
 
 All three sources report **several codes per callback** (an array) and BarcodeCapture reports **one**: `session.newlyRecognizedBarcode` is a single `Barcode | null`. Never loop over a `barcodes` array; if the app genuinely needs every visible code per frame, use `matrixscan-batch-rn` instead.
 
-**Which Scandit surface.** On SDK 8.6.x use `DataCaptureView` + `BarcodeCapture` + `BarcodeCaptureOverlay` (this guide's default; `references/integration.md` has the details). From SDK 8.7 the all-in-one `BarcodeCaptureAioView` is an option that owns the camera and its lifecycle (see **SDK 8.7+: BarcodeCaptureAioView**); 8.6.x ships the same component as `BarcodeCaptureView` and 8.7 renamed it, so prefer `DataCaptureView` on 8.6. Do not mix the two.
+**Which Scandit surface.** On SDK 8.6.x use `DataCaptureView` + `BarcodeCapture` + `BarcodeCaptureOverlay` (this guide's default; `references/integration.md` has the details). From SDK 8.7 the all-in-one `BarcodeCaptureAioView` is an option that owns the camera and its lifecycle (see **SDK 8.7+: BarcodeCaptureAioView**); 8.6.x ships the same component as `BarcodeCaptureView` and 8.7 renamed it, so prefer `DataCaptureView` on 8.6. On 8.7+ pick the AIO view unless the screen needs tap-to-focus, pinch zoom or a still-image path; those stay on `DataCaptureView`. Do not mix the two.
 
 ---
 
@@ -86,7 +86,7 @@ Move the body of the old callback into `didScan` unchanged (dedupe, state update
 
 ## Camera, permission, torch, facing, lifecycle
 
-`DataCaptureView` does not request camera permission on Android: replace the library's `useCameraPermission` / `useCameraPermissions` with the `requestCameraPermission()` helper from `references/integration.md` Step 14 (`PermissionsAndroid` on Android; iOS prompts when the camera first starts and needs `NSCameraUsageDescription`). That helper (and core 8.6+'s `useCameraPermission()` hook) returns granted on iOS without checking, so a denial there shows a black view rather than the denied screen. If the original showed a denied screen on iOS, keep it by reading the real iOS status (`react-native-permissions`: `request(PERMISSIONS.IOS.CAMERA)`) and gate on that; otherwise flag the change as a judgment call. The working shape, compiled against 8.6.1 (keep the app's own list UI and styles):
+`DataCaptureView` does not request camera permission on Android: replace the library's `useCameraPermission` / `useCameraPermissions` with the `requestCameraPermission()` helper from `references/integration.md` Step 14 (`PermissionsAndroid` on Android; iOS prompts when the camera first starts and needs `NSCameraUsageDescription`). That helper returns granted on iOS without checking, and so does `requestPermission()` of core 8.6+'s `useCameraPermission()` hook (its `hasPermission` is false on iOS until `requestPermission()` is called), so a denial there shows a black view rather than the denied screen. If the original showed a denied screen on iOS, keep it by reading the real iOS status (`react-native-permissions`: `request(PERMISSIONS.IOS.CAMERA)`) and gate on that; otherwise flag the change as a judgment call. The working shape, compiled against 8.6.1 (keep the app's own list UI and styles):
 
 ```tsx
 import React, { useCallback, useEffect, useRef, useState } from 'react';
@@ -191,28 +191,78 @@ Rules this encodes:
 
 ## SDK 8.7+: BarcodeCaptureAioView
 
-On 8.7 or newer you may replace the whole camera section above with one component. It creates the mode, camera and overlay, and handles app foreground/background itself. It must be rendered inside a root `<ScanditProvider licenseKey="...">` from `scandit-react-native-datacapture-core` (wrap the app or navigator once); the provider initialises the context, so drop the module-level `DataCaptureContext.initialize` on this path. It does **not** request camera permission: keep `requestCameraPermission()` and render the view only once it is granted. Props are from the 8.7 source (`BarcodeCaptureAioView.tsx`); check them against the installed `.d.ts`.
+On 8.7 or newer, a screen that scans one code at a time replaces the whole camera section above with one component. It creates the mode, camera and overlay, and handles app foreground/background itself. A screen that uses many codes from one frame goes to `BarcodeBatchAioView` (`matrixscan-batch-rn` skill) instead; tap-to-focus or a zoom gesture stays on `DataCaptureView` (the AIO view has no focus or pinch-zoom prop, only `zoomSwitchControl`); there, vision-camera `enableZoomGesture` is `view.zoomGestures = [new PinchToZoom()]` (core) on the `DataCaptureView` ref.
+
+- **Provider, once, at the app root.** Render `<ScanditProvider licenseKey="...">` from `scandit-react-native-datacapture-core` around the navigator (in Expo Router, inside `app/_layout.tsx` around the `<Stack />` or `<Slot />`; layouts get no `children` prop). It initialises the context, so drop `DataCaptureContext.initialize`. A view outside any provider throws, and a provider without a parent is a root and needs `licenseKey`. If the migrated file has no app root or layout you can edit, put the root provider in a small `ScanditRoot({ children })` component and say where it must be mounted.
+- **Nested provider = camera props.** Only when the screen controls torch or facing: a `<ScanditProvider>` inside the root, wrapping the view, takes no key; its `torchState`, `cameraPosition` and `cameraSettings` drive the shared camera. They are not reset on unmount, so set them on every screen that cares. `frameSourceState={FrameSourceState.Off}` does nothing; turn the camera off with the view's `disabled`.
+- **Permission.** The view does not request it. Replace the library hook with core's `useCameraPermission()` (`{ hasPermission, permissionStatus, requestPermission }`). Call `requestPermission()` when `permissionStatus` is `'not-determined'`: `hasPermission` stays false until you do. On Android `'denied'` can be asked again and `'restricted'` is "never ask again" (send to Settings). On iOS it resolves `true` without asking (the system prompt appears when the camera starts) and never reports denial; keep a real iOS denied screen only with `react-native-permissions`. There is no loading state and no `canAskAgain`.
+- **No children.** Draw the app's own overlay (frame, buttons, hint text) as an absolutely positioned sibling over the view. vision-camera and expo-camera draw no highlight, so pass `basicOverlay={{ enabled: false }}` unless the user wants Scandit's (then list it as a behaviour change).
 
 | Old | `BarcodeCaptureAioView` |
 |---|---|
 | format list | `symbologies={[Symbology.EAN13UPCA, ...]}` (required, or `barcodeCaptureSettings`) |
-| scan callback | `didScan={(barcodes, session) => ...}`: an array holding at most one barcode |
-| `isActive`, "scanned once" flag | `disabled={...}`, or `ref.current?.disable()` / `enable()` on the `BarcodeCaptureAioViewHandle` |
-| `useIsFocused` / navigation focus | `navigation={navigation}` |
-| torch prop and button | `torchSwitchControl={new TorchSwitchControl()}`, Scandit's on-screen button; there is no torch prop, so flag the UI change |
+| scan callback | `didScan={(barcodes, session, getFrameData) => ...}`: `barcodes[0]` is the whole result (0 or 1 item); its `data` is `string \| null` |
+| `isActive`, "scanned once" flag | `disabled={...}` (stops scanning and releases the camera), or `ref.current?.disable()` / `enable()` on the `BarcodeCaptureAioViewHandle` |
+| `useIsFocused` / navigation focus | `navigation={navigation}` (anything with `addListener('focus' \| 'blur', cb)`); with only a hook, `disabled={!isFocused}` |
+| torch state and the app's own button | nested provider `torchState={on ? TorchState.On : TorchState.Off}`; `torchSwitchControl` only if the original used a built-in button |
+| `device` / `facing` front or back | nested provider `cameraPosition={CameraPosition.UserFacing}` (default `WorldFacing`) |
+| no-camera fallback (`device == null`), `autofocus` | none; drop it and say so |
+| camera `onError` | root provider `onError`; the view has no `onError` |
 | `regionOfInterest`, duplicate filter | `locationSelection`, `codeDuplicateFilter` |
 | corners to view coordinates | `ref.current?.viewQuadrilateralForFrameQuadrilateral(barcode.location)` |
 
+Compiled against 8.8.0-beta.1 (the same props exist on 8.7):
+
 ```tsx
-<BarcodeCaptureAioView
-  style={{ flex: 1 }}
-  symbologies={[Symbology.EAN13UPCA, Symbology.Code128, Symbology.QR]}
-  didScan={barcodes => {
-    const value = barcodes[0]?.data;
-    if (value != null) addCode(value);
-  }}
-  torchSwitchControl={torchControl}
-/>
+import React, { useEffect, useState } from 'react';
+import { Button, StyleSheet, Text, View } from 'react-native';
+import { CameraPosition, ScanditProvider, TorchState, useCameraPermission } from 'scandit-react-native-datacapture-core';
+import { BarcodeCaptureAioView, Symbology } from 'scandit-react-native-datacapture-barcode';
+
+// App root, once:
+// <ScanditProvider licenseKey="-- ENTER YOUR SCANDIT LICENSE KEY HERE --" onError={e => console.warn(e)}>{navigator}</ScanditProvider>
+
+export function ScanScreen({ onCode }: { onCode: (value: string) => void }) {
+  const { hasPermission, permissionStatus, requestPermission } = useCameraPermission();
+  const [torchOn, setTorchOn] = useState(false);
+  const [front, setFront] = useState(false);
+  const [scanned, setScanned] = useState(false);
+
+  useEffect(() => {
+    if (permissionStatus === 'not-determined') void requestPermission();
+  }, [permissionStatus, requestPermission]);
+
+  if (!hasPermission) {
+    return permissionStatus === 'restricted'
+      ? <Text>Enable the camera in Settings.</Text>
+      : <Button title="Allow camera" onPress={() => void requestPermission()} />;
+  }
+
+  return (
+    <ScanditProvider
+      torchState={torchOn ? TorchState.On : TorchState.Off}
+      cameraPosition={front ? CameraPosition.UserFacing : CameraPosition.WorldFacing}>
+      <View style={{ flex: 1 }}>
+        <BarcodeCaptureAioView
+          style={{ flex: 1 }}
+          symbologies={[Symbology.EAN13UPCA, Symbology.Code128, Symbology.QR]}
+          disabled={scanned}
+          basicOverlay={{ enabled: false }}
+          didScan={barcodes => {
+            const value = barcodes[0]?.data;
+            if (value == null) return;
+            setScanned(true);
+            onCode(value);
+          }}
+        />
+        <View style={StyleSheet.absoluteFill} pointerEvents="box-none">
+          <Button title="Torch" onPress={() => setTorchOn(t => !t)} />
+          <Button title="Flip" onPress={() => setFront(f => !f)} />
+        </View>
+      </View>
+    </ScanditProvider>
+  );
+}
 ```
 
 The AIO view owns the frame source, so an app with a scan-from-photo path (see **Still images**) stays on `DataCaptureView`.

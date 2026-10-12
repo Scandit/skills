@@ -215,6 +215,50 @@ const styles = StyleSheet.create({
 });
 ```
 
+## SDK 8.7+: BarcodeBatchAioView
+
+On 8.7 or newer you may replace the context, mode, camera and overlay setup above with `BarcodeBatchAioView` from `scandit-react-native-datacapture-barcode`. It handles focus and app background itself. It must be rendered inside a root `<ScanditProvider licenseKey="...">` from `scandit-react-native-datacapture-core` (once, around the navigator), which initialises the context, so drop `DataCaptureContext.initialize`. Permission, torch, camera facing and provider placement work as in the `barcode-capture-rn` skill's **SDK 8.7+: BarcodeCaptureAioView** section (core `useCameraPermission()`, nested provider `torchState` / `cameraPosition`).
+
+| Old | `BarcodeBatchAioView` |
+|---|---|
+| format list | `symbologies={[...]}` (required, or `barcodeBatchSettings`) |
+| per-frame codes callback | `didScan={(trackedBarcodes, session, getFrameData) => ...}`: only the codes newly tracked in this frame; read `tracked.barcode.data` (`string \| null`). Keep the app's own dedupe |
+| `isActive` | `disabled={...}`, or `ref.current?.disable()` / `enable()` |
+| focus | `navigation={navigation}` |
+| highlight per code, tap on a code | `basicOverlay={{ brushForTrackedBarcode, didTapTrackedBarcode }}` |
+| custom view per code | `advancedOverlay={{ viewForTrackedBarcode, anchorForTrackedBarcode, offsetForTrackedBarcode }}` |
+
+The view renders no children: draw counters and buttons as absolutely positioned siblings. Compiled against 8.8.0-beta.1:
+
+```tsx
+import React, { useRef, useState } from 'react';
+import { Text, View } from 'react-native';
+import { BarcodeBatchAioView, Symbology } from 'scandit-react-native-datacapture-barcode';
+
+export function BatchScreen() {
+  const seen = useRef(new Set<string>());
+  const [count, setCount] = useState(0);
+  return (
+    <View style={{ flex: 1 }}>
+      <BarcodeBatchAioView
+        style={{ flex: 1 }}
+        symbologies={[Symbology.EAN13UPCA, Symbology.Code128, Symbology.QR]}
+        didScan={trackedBarcodes => {
+          for (const tracked of trackedBarcodes) {
+            const value = tracked.barcode.data;
+            if (value != null && !seen.current.has(value)) {
+              seen.current.add(value);
+              setCount(seen.current.size);
+            }
+          }
+        }}
+      />
+      <Text>{count} codes</Text>
+    </View>
+  );
+}
+```
+
 ---
 
 When done, show only what changed. Do not list APIs that were unchanged. Include the setup checklist from `references/integration.md` so the user knows which packages to install (`scandit-react-native-datacapture-core`, `scandit-react-native-datacapture-barcode`), to run `npx pod-install` for iOS, to add `NSCameraUsageDescription` to `ios/<App>/Info.plist`, and to replace the license key placeholder.
