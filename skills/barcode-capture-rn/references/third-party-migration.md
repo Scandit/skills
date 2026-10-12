@@ -194,7 +194,7 @@ Rules this encodes:
 On 8.7 or newer, a screen that scans one code at a time replaces the whole camera section above with one component. It creates the mode, camera and overlay, and handles app foreground/background itself. A screen that uses many codes from one frame goes to `BarcodeBatchAioView` (`matrixscan-batch-rn` skill) instead; tap-to-focus or a zoom gesture stays on `DataCaptureView` (the AIO view has no focus or pinch-zoom prop, only `zoomSwitchControl`); there, vision-camera `enableZoomGesture` is `view.zoomGestures = [new PinchToZoom()]` (core) on the `DataCaptureView` ref.
 
 - **Provider, once, at the app root.** Render `<ScanditProvider licenseKey="...">` from `scandit-react-native-datacapture-core` around the navigator (in Expo Router, inside `app/_layout.tsx` around the `<Stack />` or `<Slot />`; layouts get no `children` prop). It initialises the context, so drop `DataCaptureContext.initialize`. A view outside any provider throws, and a provider without a parent is a root and needs `licenseKey`. If the migrated file has no app root or layout you can edit, put the root provider in a small `ScanditRoot({ children })` component and say where it must be mounted.
-- **Nested provider = camera props.** Only when the screen controls torch or facing: a `<ScanditProvider>` inside the root, wrapping the view, takes no key; its `torchState`, `cameraPosition` and `cameraSettings` drive the shared camera. They are not reset on unmount, so set them on every screen that cares. `frameSourceState={FrameSourceState.Off}` does nothing; turn the camera off with the view's `disabled`.
+- **Nested provider = camera props.** Only when the screen controls torch or facing: a `<ScanditProvider>` inside the root, wrapping the view, takes no key; its `torchState`, `cameraPosition` and `cameraSettings` drive the shared camera. They are not reset on unmount: once any screen sets them, every AIO screen that can follow it needs a nested provider with explicit values (`TorchState.Off`, `CameraPosition.WorldFacing`), even without controls. `frameSourceState={FrameSourceState.Off}` does nothing; turn the camera off with the view's `disabled`.
 - **Permission.** The view does not request it. Replace the library hook with core's `useCameraPermission()` (`{ hasPermission, permissionStatus, requestPermission }`). Call `requestPermission()` when `permissionStatus` is `'not-determined'`: `hasPermission` stays false until you do. On Android `'denied'` can be asked again and `'restricted'` is "never ask again" (send to Settings). On iOS it resolves `true` without asking (the system prompt appears when the camera starts) and never reports denial; keep a real iOS denied screen only with `react-native-permissions`. There is no loading state and no `canAskAgain`.
 - **No children.** Draw the app's own overlay (frame, buttons, hint text) as an absolutely positioned sibling over the view. vision-camera and expo-camera draw no highlight, so pass `basicOverlay={{ enabled: false }}` unless the user wants Scandit's (then list it as a behaviour change).
 
@@ -206,7 +206,7 @@ On 8.7 or newer, a screen that scans one code at a time replaces the whole camer
 | `useIsFocused` / navigation focus | `navigation={navigation}` (anything with `addListener('focus' \| 'blur', cb)`); with only a hook, `disabled={!isFocused}` |
 | torch state and the app's own button | nested provider `torchState={on ? TorchState.On : TorchState.Off}`; `torchSwitchControl` only if the original used a built-in button |
 | `device` / `facing` front or back | nested provider `cameraPosition={CameraPosition.UserFacing}` (default `WorldFacing`) |
-| no-camera fallback (`device == null`), `autofocus` | none; drop it and say so |
+| no-camera fallback (`device == null`), `autofocus` | none; drop it and say so (the `DataCaptureView` path keeps the no-camera screen) |
 | camera `onError` | root provider `onError`; the view has no `onError` |
 | `regionOfInterest`, duplicate filter | `locationSelection`, `codeDuplicateFilter` |
 | corners to view coordinates | `ref.current?.viewQuadrilateralForFrameQuadrilateral(barcode.location)` |
@@ -306,7 +306,7 @@ The source delivers its image once per switch to `On` and then turns itself off.
 
 ## Preserve and verify
 
-Keep the app's data models, list state, dedupe, summary, clear and navigation logic, its permission-denied and no-camera screens, and any validation as a guard at the top of `didScan`. Add nothing the original lacked; flag anything you could not carry over.
+Keep the app's data models, list state, dedupe, summary, clear and navigation logic, its permission-denied screen, its no-camera screen on `DataCaptureView` (the AIO view drops it, see its table), and any validation as a guard at the top of `didScan`. Add nothing the original lacked; flag anything you could not carry over.
 
 Type-check the migrated file (`npx tsc --noEmit`) and fix every error. The usual ones: `Symbology.QRCode` (it is `QR`), `data` used as `string` without the `null` guard, a leftover import of the old library. No `useCodeScanner`, `useBarcodeScannerOutput`, `CameraView`, `codeScanner`, `onBarcodeScanned` or new `TODO` may remain.
 
