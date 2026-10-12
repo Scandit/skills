@@ -228,20 +228,33 @@ On 8.7 or newer you may replace the context, mode, camera and overlay setup abov
 | highlight per code, tap on a code | `basicOverlay={{ brushForTrackedBarcode, didTapTrackedBarcode }}` |
 | custom view per code | `advancedOverlay={{ viewForTrackedBarcode, anchorForTrackedBarcode, offsetForTrackedBarcode }}` |
 
+These props build the same `BarcodeBatchBasicOverlay` / `BarcodeBatchAdvancedOverlay` as the classic path, so the same prerequisites apply: `brushForTrackedBarcode`, `didTapTrackedBarcode` and `advancedOverlay` need the MatrixScan AR add-on, and `advancedOverlay` on iOS with RN ≥ 0.79 needs the `ScanditReactNativeFactoryContainer` `AppDelegate` (see `SKILL.md`).
+
 The view renders no children: draw counters and buttons as absolutely positioned siblings. Compiled against 8.8.0-beta.1:
 
 ```tsx
-import React, { useRef, useState } from 'react';
-import { Text, View } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import { Button, StyleSheet, Text, View } from 'react-native';
+import { useCameraPermission } from 'scandit-react-native-datacapture-core';
 import { BarcodeBatchAioView, Symbology } from 'scandit-react-native-datacapture-barcode';
 
 export function BatchScreen() {
+  const { hasPermission, permissionStatus, requestPermission } = useCameraPermission();
   const seen = useRef(new Set<string>());
   const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    if (permissionStatus === 'not-determined') void requestPermission();
+  }, [permissionStatus, requestPermission]);
+
+  if (!hasPermission) {
+    return <Button title="Allow camera" onPress={() => void requestPermission()} />;
+  }
+
   return (
-    <View style={{ flex: 1 }}>
+    <View style={styles.container}>
       <BarcodeBatchAioView
-        style={{ flex: 1 }}
+        style={styles.container}
         symbologies={[Symbology.EAN13UPCA, Symbology.Code128, Symbology.QR]}
         didScan={trackedBarcodes => {
           for (const tracked of trackedBarcodes) {
@@ -253,10 +266,15 @@ export function BatchScreen() {
           }
         }}
       />
-      <Text>{count} codes</Text>
+      <Text style={styles.counter}>{count} codes</Text>
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: { flex: 1 },
+  counter: { position: 'absolute', top: 48, left: 16, color: '#fff' },
+});
 ```
 
 ---
