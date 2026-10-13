@@ -26,9 +26,12 @@ and only project settings, so installed plugins do not leak in.
 - `compiles`: the suite's gate exits 0. `n/a` when the gate is skipped (flutter absent) or the output file is missing.
 - `resolve-fail`: gate failed with no analyzer error lines (for example `pub get`).
 - `symbologies kept`: expected ids come from the original fixture (a literal `formats:` list mapped through
-  `internal/symbology-map/mapping.json`, else `default_set`); each must appear as an uncommented `Symbology.<name>`
-  anywhere in the migrated files, not only inside `enableSymbologies`. When the original has no format list
+  `internal/symbology-map/mapping.json`, else `default_set`); each must reach an enabling call in the migrated
+  files: `enableSymbologies(…)` (an identifier argument resolves to its collection literal),
+  `enableSymbology(Symbology.<name>, true)` or `settingsForSymbology(Symbology.<name>).isEnabled = true`.
+  Comments and string literals are ignored. When the original has no format list
   (scans everything), a migrated subset counts as kept and shows as `narrowed (enabled: …)`; enabling none is not kept.
+  Known limit: a static heuristic, so sets built at runtime or passed through functions or fields are not traced.
 
 ## Adding a gate
 

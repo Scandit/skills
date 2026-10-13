@@ -72,14 +72,14 @@ class ScoreCase(unittest.TestCase):
                 self.assertEqual(sorted(row["expected"]), sorted(ids))
 
     def test_narrowing_to_qr_is_not_kept(self):
-        row = self.score(1, "final s = {Symbology.qr};", GATE_OK)
+        row = self.score(1, "settings.enableSymbologies({Symbology.qr});", GATE_OK)
         self.assertIs(row["kept"], False)
         self.assertIs(row["narrowed"], False)
         self.assertIn("code128", row["missing"])
         self.assertNotIn("qr", row["missing"])
 
     def test_default_all_original_narrowed_is_kept(self):
-        row = self.score(2, "final s = {Symbology.qr};", GATE_OK)
+        row = self.score(2, "settings.enableSymbologies({Symbology.qr});", GATE_OK)
         self.assertIs(row["kept"], True)
         self.assertIs(row["narrowed"], True)
         self.assertEqual(row["found"], ["qr"])
@@ -93,7 +93,7 @@ class ScoreCase(unittest.TestCase):
     def test_symbologies_enabled_in_migrated_stub_count(self):
         stubs = self.tmp / "lib" / "stubs"
         stubs.mkdir(parents=True)
-        (stubs / Path(ENTRIES[5]["files"][1]).name).write_text("final s = {Symbology.qr};")
+        (stubs / Path(ENTRIES[5]["files"][1]).name).write_text("settings.enableSymbologies({Symbology.qr});")
         row = self.score(5, "// no settings here", GATE_OK)
         self.assertIs(row["kept"], True)
 
@@ -101,6 +101,32 @@ class ScoreCase(unittest.TestCase):
         text = MIGRATED_PAGE.replace("Symbology.code128", "/* Symbology.code128 */ // Symbology.code128\n Symbology.qr")
         row = self.score(1, text, GATE_OK)
         self.assertEqual(row["missing"], ["code128"])
+
+    def found(self, text, eval_id=2):
+        return self.score(eval_id, text, GATE_OK)["found"]
+
+    def test_switch_over_every_symbology_does_not_count(self):
+        cases = "\n".join(f"case Symbology.{n}: break;" for n in ["qr", "code128", "ean8", "aztec"])
+        text = f"s..enableSymbologies({{Symbology.qr}});\nswitch (b.symbology) {{ {cases} }}"
+        self.assertEqual(self.found(text), ["qr"])
+
+    def test_symbology_in_string_literal_does_not_count(self):
+        text = "s.enableSymbologies({Symbology.ean8});\nfinal a = 'Symbology.qr'; final b = \"x(Symbology.qr\";"
+        self.assertEqual(self.found(text), ["ean8"])
+
+    def test_identifier_argument_resolves_to_its_collection(self):
+        text = (
+            "static const _all = <Symbology>{Symbology.qr, Symbology.aztec};\n"
+            "s..enableSymbologies(allowsAll ? _all : config.allowedFormats);"
+        )
+        self.assertEqual(sorted(self.found(text)), ["aztec", "qr"])
+
+    def test_enable_symbology_true_counts_and_false_does_not(self):
+        text = (
+            "s..enableSymbology(Symbology.qr, true)\n..enableSymbology(Symbology.ean8, false);\n"
+            "s.settingsForSymbology(Symbology.aztec).isEnabled = true;"
+        )
+        self.assertEqual(sorted(self.found(text)), ["aztec", "qr"])
 
     def test_exit_one_without_error_lines_is_resolve_fail(self):
         row = self.score(1, MIGRATED_PAGE, (1, "Because x depends on y, version solving failed.\nANALYZE-FAIL: x\n"))

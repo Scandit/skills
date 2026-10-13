@@ -15,6 +15,16 @@ MAPPING = REPO / "internal" / "symbology-map" / "mapping.json"
 FORMATS_LIST = re.compile(r"\bformats\s*:\s*(?:const\s*)?(?:<[^>]*>\s*)?\[(.*?)\]", re.DOTALL)
 FORMAT_NAME = re.compile(r"BarcodeFormat\.(\w+)")
 COMMENTS = re.compile(r"//[^\n]*|/\*.*?\*/", re.DOTALL)
+COMMENTS_AND_STRINGS = re.compile(
+    r"""'''.*?'''|\"\"\".*?\"\"\"|'(?:\\.|[^'\\\n])*'|"(?:\\.|[^"\\\n])*"|//[^\n]*|/\*.*?\*/""", re.DOTALL
+)
+SYMBOLOGY = re.compile(r"\bSymbology\.(\w+)")
+ENABLE_ONE = re.compile(
+    r"\benableSymbology\(\s*Symbology\.(\w+)\s*,\s*true\s*\)"
+    r"|\bsettingsForSymbology\(\s*Symbology\.(\w+)\s*\)\s*\.isEnabled\s*=\s*true\b"
+)
+ENABLE_MANY = re.compile(r"\benableSymbologies\s*\(")
+IDENTIFIER = re.compile(r"(?<![.\w])([A-Za-z_]\w*)\b(?!\s*\()")
 GATE_SKIPPED = 3
 
 
@@ -82,12 +92,33 @@ def expected_symbologies(source_text, suite, mapping):
     return ids or default
 
 
+def balanced(text, start):
+    """Text between the bracket at text[start] and its matching close."""
+    depth = 0
+    for i in range(start, len(text)):
+        depth += text[i] in "([{"
+        depth -= text[i] in ")]}"
+        if depth == 0:
+            return text[start + 1:i]
+    return text[start + 1:]
+
+
+def enabled_names(code):
+    """Symbology names reaching an enabling call; identifier args resolve to their collection literal."""
+    names = {a or b for a, b in ENABLE_ONE.findall(code)}
+    for call in ENABLE_MANY.finditer(code):
+        arg = balanced(code, call.end() - 1)
+        names.update(SYMBOLOGY.findall(arg))
+        for ident in set(IDENTIFIER.findall(arg)):
+            definition = re.search(rf"\b{re.escape(ident)}\s*=\s*(?:const\s*)?(?:<[^>]*>\s*)?[{{\[]", code)
+            if definition:
+                names.update(SYMBOLOGY.findall(balanced(code, definition.end() - 1)))
+    return names
+
+
 def symbologies_found(output_text, ids, suite, mapping):
-    code = strip_comments(output_text)
-    return [
-        sid for sid in ids
-        if re.search(rf"\bSymbology\.{re.escape(mapping['symbologies'][sid][suite.lang])}\b", code)
-    ]
+    enabled = enabled_names(COMMENTS_AND_STRINGS.sub("", output_text))
+    return [sid for sid in ids if mapping["symbologies"][sid][suite.lang] in enabled]
 
 
 def gate_status(exit_code, errors_left):
