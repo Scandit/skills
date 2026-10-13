@@ -106,13 +106,15 @@ def score_eval(suite, eval_entry, output_dir, evals_dir, gate_runner=None):
     row = {"id": eval_entry["id"], "fixture": original.name, "expected": expected}
     if not main.is_file():
         return {**row, "status": "missing", "compiles": None, "errors_left": 0,
-                "found": [], "missing": expected, "kept": False}
+                "found": [], "missing": expected, "kept": False, "narrowed": False}
     stubs = [s for s in stubs if s.is_file()]
     code, output = (gate_runner or run_gate)(["bash", str(suite.gate), str(main), *map(str, stubs)])
     errors_left = len(suite.error_line.findall(output))
     status = gate_status(code, errors_left)
     found = symbologies_found("\n".join(p.read_text() for p in [main, *stubs]), expected, suite, mapping)
     missing = [s for s in expected if s not in found]
+    # An original with no format list scans everything, so a migrated subset is a deliberate narrowing.
+    narrowed = bool(missing and found) and expected == list(mapping["default_set"])
     return {
         **row,
         "status": status,
@@ -120,6 +122,7 @@ def score_eval(suite, eval_entry, output_dir, evals_dir, gate_runner=None):
         "errors_left": errors_left,
         "found": found,
         "missing": missing,
-        "kept": not missing,
+        "kept": not missing or narrowed,
+        "narrowed": narrowed,
         "gate_output": output,
     }

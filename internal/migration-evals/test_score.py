@@ -6,6 +6,7 @@ import unittest
 from pathlib import Path
 
 import report
+import run
 import score
 
 EVALS_DIR = score.eval_dir("barcode-capture-flutter")
@@ -71,10 +72,23 @@ class ScoreCase(unittest.TestCase):
                 self.assertEqual(sorted(row["expected"]), sorted(ids))
 
     def test_narrowing_to_qr_is_not_kept(self):
-        row = self.score(2, "final s = {Symbology.qr};", GATE_OK)
+        row = self.score(1, "final s = {Symbology.qr};", GATE_OK)
         self.assertIs(row["kept"], False)
+        self.assertIs(row["narrowed"], False)
         self.assertIn("code128", row["missing"])
         self.assertNotIn("qr", row["missing"])
+
+    def test_default_all_original_narrowed_is_kept(self):
+        row = self.score(2, "final s = {Symbology.qr};", GATE_OK)
+        self.assertIs(row["kept"], True)
+        self.assertIs(row["narrowed"], True)
+        self.assertEqual(row["found"], ["qr"])
+        self.assertEqual(report.kept_cell(row), "1/12 narrowed (enabled: qr)")
+
+    def test_default_all_original_with_nothing_enabled_is_not_kept(self):
+        row = self.score(2, "// no symbologies", GATE_OK)
+        self.assertIs(row["kept"], False)
+        self.assertIs(row["narrowed"], False)
 
     def test_symbologies_enabled_in_migrated_stub_count(self):
         stubs = self.tmp / "lib" / "stubs"
@@ -150,6 +164,15 @@ class ReportCase(unittest.TestCase):
         self.assertEqual(report.claude_cell(full), "exit 1, timeout, 3 turns, $0.46")
         self.assertEqual(report.claude_cell({"claude": {"num_turns": 3, "cost_usd": 0.5}}), "3 turns, $0.50")
         self.assertEqual(report.claude_cell({}), "")
+
+    def test_score_only_reloads_run_metadata(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            out = Path(tmp)
+            (out / "run.json").write_text('{"exit_code": null, "timed_out": true}')
+            (out / "claude.json").write_text('{"num_turns": 4')
+            info = run.read_claude_info(out)
+        self.assertEqual(info, {"exit_code": None, "timed_out": True})
+        self.assertEqual(report.claude_cell({"claude": info}), "timeout")
 
 
 @unittest.skipUnless(os.environ.get("MIGRATION_EVALS_FLUTTER"), "set MIGRATION_EVALS_FLUTTER=1 to run the real gate")

@@ -18,7 +18,8 @@ and only project settings, so installed plugins do not leak in.
 `eval-runs/migration/<UTC stamp>/` (gitignored):
 
 - `report.md`, `report.json`: per-fixture compiles, errors left, symbologies kept, claude exit/turns/cost; skills sha plus dirty flag.
-- `<skill>/<id>/lib/<Main>.dart` and `lib/stubs/*`: the migrated files; `claude.json`, `claude.stderr`: raw claude output.
+- `<skill>/<id>/lib/<Main>.dart` and `lib/stubs/*`: the migrated files; `claude.json`, `claude.stderr`: raw claude output; `run.json`: exit code and timeout, reloaded by `--score-only`.
+  Each `<id>/` is cleared before its run, so reusing `--out` never scores stale files.
 
 ## Scoring
 
@@ -26,7 +27,8 @@ and only project settings, so installed plugins do not leak in.
 - `resolve-fail`: gate failed with no analyzer error lines (for example `pub get`).
 - `symbologies kept`: expected ids come from the original fixture (a literal `formats:` list mapped through
   `internal/symbology-map/mapping.json`, else `default_set`); each must appear as an uncommented `Symbology.<name>`
-  anywhere in the migrated files, not only inside `enableSymbologies`.
+  anywhere in the migrated files, not only inside `enableSymbologies`. When the original has no format list
+  (scans everything), a migrated subset counts as kept and shows as `narrowed (enabled: …)`; enabling none is not kept.
 
 ## Adding a gate
 

@@ -57,7 +57,8 @@ def save_outputs(entry, work, out):
 
 
 def run_claude(suite, evals_dir, entry, out, model, timeout):
-    out.mkdir(parents=True, exist_ok=True)
+    shutil.rmtree(out, ignore_errors=True)
+    out.mkdir(parents=True)
     info = {"exit_code": None, "timed_out": False}
     with tempfile.TemporaryDirectory(prefix="migration-eval-") as tmp:
         work = Path(tmp)
@@ -75,11 +76,15 @@ def run_claude(suite, evals_dir, entry, out, model, timeout):
         (out / "claude.json").write_text(stdout)
         (out / "claude.stderr").write_text(stderr)
         save_outputs(entry, work, out)
-    return info
+    (out / "run.json").write_text(json.dumps(info) + "\n")
 
 
-def read_claude_info(out, run_info):
-    info = dict(run_info or {})
+def read_claude_info(out):
+    info = {}
+    try:
+        info.update(json.loads((out / "run.json").read_text()))
+    except (OSError, ValueError, TypeError):
+        pass
     try:
         result = json.loads((out / "claude.json").read_text())
         info["num_turns"] = result.get("num_turns")
@@ -112,20 +117,20 @@ def main(argv=None):
     skill_out = out_root / args.skill
     suite = SUITES[args.skill]
 
-    run_infos = {}
     if not args.score_only:
         with ThreadPoolExecutor(max_workers=args.jobs) as pool:
-            futures = {
-                e["id"]: pool.submit(run_claude, suite, evals_dir, e, skill_out / str(e["id"]), args.model, args.timeout)
+            futures = [
+                pool.submit(run_claude, suite, evals_dir, e, skill_out / str(e["id"]), args.model, args.timeout)
                 for e in entries
-            }
-            run_infos = {i: f.result() for i, f in futures.items()}
+            ]
+            for future in futures:
+                future.result()
 
     rows = []
     for entry in entries:
         out = skill_out / str(entry["id"])
         row = score_eval(suite, entry, out, evals_dir)
-        row["claude"] = read_claude_info(out, run_infos.get(entry["id"]))
+        row["claude"] = read_claude_info(out)
         rows.append(row)
     write_report({args.skill: rows}, out_root, model=args.model)
     print((out_root / "report.md").read_text())

@@ -31,6 +31,8 @@ def compiles_cell(row):
 def kept_cell(row):
     total = len(row["expected"])
     cell = f"{total - len(row['missing'])}/{total}"
+    if row.get("narrowed"):
+        return cell + f" narrowed (enabled: {', '.join(row['found'])})"
     return cell + (f" (missing: {', '.join(row['missing'])})" if row["missing"] else "")
 
 
