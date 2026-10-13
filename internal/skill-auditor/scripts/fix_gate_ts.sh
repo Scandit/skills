@@ -13,7 +13,9 @@ PLAT=${1:?usage: fix_gate_ts.sh <web|rn|capacitor> <ts-tsx-or-js-file> [version]
 FILE=${2:?usage: fix_gate_ts.sh <web|rn|capacitor> <ts-tsx-or-js-file> [version]}
 VER=${3:-8.4.0}
 TS_VERSION=7.0.2
-command -v npm >/dev/null 2>&1 || { echo "GATE-SKIP: npm not found"; exit 3; }
+for tool in node npm; do
+  command -v "$tool" >/dev/null 2>&1 || { echo "GATE-SKIP: $tool not found"; exit 3; }
+done
 case "$PLAT" in
   web)       CORE="@scandit/web-datacapture-core"; BC="@scandit/web-datacapture-barcode";;
   rn)        CORE="scandit-react-native-datacapture-core"; BC="scandit-react-native-datacapture-barcode";;

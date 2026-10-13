@@ -1,7 +1,7 @@
-"""End-to-end tests for fix_gate_ts.sh.
+"""Tests for fix_gate_ts.sh.
 
-Every case runs the gate, which npm-installs the real Scandit packages, so the
-suite needs npm and network access. It runs only with FIX_GATE_E2E=1:
+The end-to-end cases npm-install the real Scandit packages, so they need npm and
+network access. They run only with FIX_GATE_E2E=1:
 
     FIX_GATE_E2E=1 python3 -m unittest internal/skill-auditor/scripts/test_fix_gate_ts.py
 """
@@ -41,6 +41,36 @@ export const pixelRatio: number = window.devicePixelRatio;
 }
 
 MISSPELLED_API = "export const misspelled = FrameSourceState.StandBy;\n"
+DOM_ONLY_GLOBAL = "export const title: string = document.title;\n"
+TOOLS_THE_GATE_NEEDS_BESIDES_NODE_AND_NPM = ("mktemp", "mkdir", "cp", "cat", "rm")
+
+
+class FixGateTsToolchainTest(unittest.TestCase):
+    def setUp(self):
+        self.tmp = Path(tempfile.mkdtemp())
+        self.addCleanup(shutil.rmtree, self.tmp)
+
+    def test_npm_without_node_skips(self):
+        bin_dir = self.tmp / "bin"
+        bin_dir.mkdir()
+        for tool in TOOLS_THE_GATE_NEEDS_BESIDES_NODE_AND_NPM:
+            (bin_dir / tool).symlink_to(shutil.which(tool))
+        npm_shim = bin_dir / "npm"
+        npm_shim.write_text("#!/bin/sh\nexit 0\n")
+        npm_shim.chmod(0o755)
+        snippet = self.tmp / "web.ts"
+        snippet.write_text(VALID["web"])
+
+        result = subprocess.run(
+            [shutil.which("bash"), str(GATE), "web", str(snippet), VERSION],
+            capture_output=True,
+            text=True,
+            env={"PATH": str(bin_dir)},
+            timeout=60,
+        )
+
+        self.assertEqual(result.returncode, 3, result.stdout + result.stderr)
+        self.assertIn("GATE-SKIP", result.stdout)
 
 
 @unittest.skipUnless(os.environ.get("FIX_GATE_E2E") == "1", "set FIX_GATE_E2E=1 (needs npm and network)")
@@ -75,6 +105,12 @@ class FixGateTsTest(unittest.TestCase):
                 self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
                 self.assertIn("GATE-FAIL", result.stdout)
                 self.assertIn("StandBy", result.stdout)
+
+    def test_react_native_rejects_dom_globals(self):
+        result = self.run_gate("rn", VALID["rn"] + DOM_ONLY_GLOBAL)
+        self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+        self.assertIn("GATE-FAIL", result.stdout)
+        self.assertIn("document", result.stdout)
 
 
 if __name__ == "__main__":
