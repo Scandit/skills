@@ -21,6 +21,7 @@
         {"text": "Symbology.QRCode does NOT appear as a Symbology enum value (the correct case is Symbology.QR)"},
         {"text": "BarcodeCaptureAioView gets a didScan prop that reads barcodes[0] and does NOT loop over the barcodes array"},
         {"text": "DataCaptureView, BarcodeCaptureOverlay and barcodeCapture.addListener( are NOT used (do not mix the two surfaces)"},
+        {"text": "Objects are not constructed directly where a prop API is available through the AIO component (e.g. no new BarcodeCaptureSettings, Camera or TorchState wiring in place of symbologies / provider props)"},
         {"text": "useCameraPermission is imported from scandit-react-native-datacapture-core and requestPermission() is called when permission is not yet determined"},
         {"text": "basicOverlay={{ enabled: false }} is passed, or enabling Scandit's highlight is listed as a behaviour change"},
         {"text": "The summary says the no-camera (device == null) fallback was dropped because BarcodeCaptureAioView has no equivalent"},
