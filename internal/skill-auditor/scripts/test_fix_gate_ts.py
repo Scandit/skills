@@ -16,7 +16,7 @@ GATE = Path(__file__).resolve().parent / "fix_gate_ts.sh"
 VERSION = "8.6.1"
 
 VALID = {
-    "web": """
+    "web.ts": """
 import { DataCaptureView, FrameSourceState } from "@scandit/web-datacapture-core";
 import { Symbology } from "@scandit/web-datacapture-barcode";
 const view = new DataCaptureView();
@@ -25,18 +25,46 @@ export const state: FrameSourceState = FrameSourceState.On;
 export const symbology: Symbology = Symbology.EAN13UPCA;
 export const pixelRatio: number = window.devicePixelRatio;
 """,
-    "rn": """
+    "rn.ts": """
 import { FrameSourceState } from "scandit-react-native-datacapture-core";
 import { Symbology } from "scandit-react-native-datacapture-barcode";
 export const state: FrameSourceState = FrameSourceState.On;
 export const symbology: Symbology = Symbology.EAN13UPCA;
 """,
-    "capacitor": """
+    "capacitor.ts": """
 import { FrameSourceState } from "scandit-capacitor-datacapture-core";
 import { Symbology } from "scandit-capacitor-datacapture-barcode";
 export const state: FrameSourceState = FrameSourceState.On;
 export const symbology: Symbology = Symbology.EAN13UPCA;
 export const pixelRatio: number = window.devicePixelRatio;
+""",
+    "web.tsx": """
+import { useEffect, useRef } from "react";
+import { DataCaptureView, FrameSourceState } from "@scandit/web-datacapture-core";
+export function Scanner() {
+  const host = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    new DataCaptureView().connectToElement(host.current!);
+  }, []);
+  return <div ref={host} data-state={FrameSourceState.On} />;
+}
+""",
+    "rn.tsx": """
+import { View } from "react-native";
+import { FrameSourceState } from "scandit-react-native-datacapture-core";
+export function Scanner() {
+  const state: FrameSourceState = FrameSourceState.On;
+  return <View testID={state} />;
+}
+""",
+    "capacitor.js": """
+import { Capacitor } from "@capacitor/core";
+import { FrameSourceState } from "scandit-capacitor-datacapture-core";
+import { Symbology } from "scandit-capacitor-datacapture-barcode";
+export const isWeb = Capacitor.getPlatform() === "web";
+export const state = FrameSourceState.On;
+export const symbology = Symbology.EAN13UPCA;
+export const pixelRatio = window.devicePixelRatio;
 """,
 }
 
@@ -59,7 +87,7 @@ class FixGateTsToolchainTest(unittest.TestCase):
         npm_shim.write_text("#!/bin/sh\nexit 0\n")
         npm_shim.chmod(0o755)
         snippet = self.tmp / "web.ts"
-        snippet.write_text(VALID["web"])
+        snippet.write_text(VALID["web.ts"])
 
         result = subprocess.run(
             [shutil.which("bash"), str(GATE), "web", str(snippet), VERSION],
@@ -81,9 +109,10 @@ class FixGateTsTest(unittest.TestCase):
         self.tmp = Path(tempfile.mkdtemp())
         self.addCleanup(shutil.rmtree, self.tmp)
 
-    def run_gate(self, platform, source):
-        snippet = self.tmp / f"{platform}.ts"
+    def run_gate(self, snippet_name, source):
+        snippet = self.tmp / snippet_name
         snippet.write_text(source)
+        platform = snippet.stem
         return subprocess.run(
             ["bash", str(GATE), platform, str(snippet), VERSION],
             capture_output=True,
@@ -92,22 +121,22 @@ class FixGateTsTest(unittest.TestCase):
         )
 
     def test_valid_snippet_passes(self):
-        for platform, source in VALID.items():
-            with self.subTest(platform=platform):
-                result = self.run_gate(platform, source)
+        for snippet_name, source in VALID.items():
+            with self.subTest(snippet=snippet_name):
+                result = self.run_gate(snippet_name, source)
                 self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
                 self.assertIn("GATE-PASS", result.stdout)
 
     def test_misspelled_api_fails(self):
-        for platform, source in VALID.items():
-            with self.subTest(platform=platform):
-                result = self.run_gate(platform, source + MISSPELLED_API)
+        for snippet_name, source in VALID.items():
+            with self.subTest(snippet=snippet_name):
+                result = self.run_gate(snippet_name, source + MISSPELLED_API)
                 self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
                 self.assertIn("GATE-FAIL", result.stdout)
                 self.assertIn("StandBy", result.stdout)
 
     def test_react_native_rejects_dom_globals(self):
-        result = self.run_gate("rn", VALID["rn"] + DOM_ONLY_GLOBAL)
+        result = self.run_gate("rn.ts", VALID["rn.ts"] + DOM_ONLY_GLOBAL)
         self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
         self.assertIn("GATE-FAIL", result.stdout)
         self.assertIn("document", result.stdout)
