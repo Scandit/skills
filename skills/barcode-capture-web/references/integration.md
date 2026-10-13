@@ -149,18 +149,18 @@ async function run() {
 run();
 ```
 
-`unmount()` keeps the context and its engine, so scanning can resume quickly. For a full teardown, for example when the user leaves the scanning feature, release the engine as well:
+`unmount()` keeps the context and its engine, so scanning can resume quickly. For a full teardown, for example when the user leaves the scanning feature, release the engine as well. Add `teardown()` inside `run()`, next to `unmount()`, so it uses the same `barcodeCapture`, `barcodeCaptureListener`, `view` and `captureElement`:
 
 ```typescript
-async function teardown() {
-    barcodeCapture.removeListener(barcodeCaptureListener);
-    await DataCaptureContext.sharedInstance.dispose();
-    view.detachFromElement();
-    captureElement.style.display = "none";
-}
+    async function teardown() {
+        barcodeCapture.removeListener(barcodeCaptureListener);
+        await DataCaptureContext.sharedInstance.dispose();
+        view.detachFromElement();
+        captureElement.style.display = "none";
+    }
 ```
 
-`dispose()` turns the camera off, removes the mode and the view from the context, and terminates the engine worker. To scan again afterwards, call `DataCaptureContext.forLicenseKey()` again and set the mode, camera, view and overlay up again; the engine is re-initialized.
+`dispose()` turns the camera off and removes the mode and the view from the context. To scan again afterwards, call `DataCaptureContext.forLicenseKey()` again and set the mode, camera, view and overlay up again.
 
 ### Showing the camera while the WASM loads
 
@@ -655,7 +655,7 @@ Without a bundler, any static server that can set headers works. With [`serve`](
 
 ### Loading the SDK from a CDN
 
-Pin one exact version in every URL. The JavaScript loads `barcode-worker-<its exact version>.js` from `libraryLocation`, while jsDelivr resolves a floating `@8` separately for every file (and browsers cache each for up to 7 days), so a new 8.x release can pair the JavaScript with a worker of another version and break start-up.
+Pin one exact version in every URL. A floating `@8` is resolved separately for each file, so after a new 8.x release the JavaScript and the engine can come from different releases, which breaks start-up.
 
 ```html
 <script type="importmap">

@@ -78,7 +78,7 @@ When configuring `BarcodeBatchSettings`, map formats from ZXing using the table 
 | `result.getResultPoints()` (corner points) | `trackedBarcode.location` (`Quadrilateral` in image-space; the basic overlay draws the highlight for you, or use `view.viewQuadrilateralForFrameQuadrilateral(location)` to convert to view space) |
 | "Have I seen this text yet?" (manual `Set<string>` dedupe on `getText()`) | Keep the `Set<string>`, keyed on `trackedBarcode.barcode.data`. New barcodes appear in `session.addedTrackedBarcodes`. `trackedBarcode.identifier` identifies a track, not a code: the same physical code keeps it across frames while it stays in view, and gets a new one when it leaves and comes back. |
 | "Which barcodes are visible right now?" | `session.trackedBarcodes` — `Record<string, TrackedBarcode>` keyed by tracking ID; iterate with `Object.values(...)`. |
-| Barcodes that left the view | `session.removedTrackedBarcodes` — `string[]` of identifiers; `Number.parseInt(id, 10)` to match `Set<number>` keys. |
+| Barcodes that left the view | `session.removedTrackedBarcodes` — `string[]` of identifiers; `Number.parseInt(id, 10)` to compare with `trackedBarcode.identifier`. |
 
 ---
 
@@ -118,7 +118,7 @@ interface ScannedBarcode {
 }
 
 const scannedBarcodes: ScannedBarcode[] = [];
-const seenIdentifiers = new Set<number>(); // replaces the old Set<string> on getText()
+const seenValues = new Set<string>(); // the same Set<string> the ZXing version kept on getText()
 
 async function run(): Promise<void> {
   const context = await DataCaptureContext.forLicenseKey(
@@ -143,13 +143,14 @@ async function run(): Promise<void> {
   barcodeBatch.addListener({
     didUpdateSession: (_mode, session) => {
       for (const trackedBarcode of session.addedTrackedBarcodes) {
-        // Dedupe on the stable tracking ID instead of a Set<string> on the text.
-        if (seenIdentifiers.has(trackedBarcode.identifier)) {
+        // Dedupe on the data, not the identifier: a code that leaves and re-enters the view gets a new identifier.
+        const value = trackedBarcode.barcode.data ?? "";
+        if (seenValues.has(value)) {
           continue;
         }
-        seenIdentifiers.add(trackedBarcode.identifier);
+        seenValues.add(value);
         scannedBarcodes.push({
-          value: trackedBarcode.barcode.data ?? "",
+          value,
           format: String(trackedBarcode.barcode.symbology),
         });
       }

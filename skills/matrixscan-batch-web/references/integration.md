@@ -79,7 +79,7 @@ if (!multithreadingSupported) {
 
 ### Loading the SDK from a CDN
 
-Pin one exact version in every URL. The JavaScript loads `barcode-worker-<its exact version>.js` from `libraryLocation`, while jsDelivr resolves a floating `@8` separately for every file (and browsers cache each for up to 7 days), so a new 8.x release can pair the JavaScript with a worker of another version and break start-up.
+Pin one exact version in every URL. A floating `@8` is resolved separately for each file, so after a new 8.x release the JavaScript and the engine can come from different releases, which breaks start-up.
 
 ```html
 <script type="importmap">
@@ -620,7 +620,7 @@ view.detachFromElement();
 document.getElementById("data-capture-view")!.style.display = "none";
 ```
 
-`dispose()` turns the camera off, removes the mode and the view from the context, and terminates the engine worker. To scan again afterwards, call `DataCaptureContext.forLicenseKey()` again and set the mode, camera and overlays up again; the engine is re-initialized.
+`dispose()` turns the camera off and removes the mode and the view from the context. To scan again afterwards, call `DataCaptureContext.forLicenseKey()` again and set the mode, camera and overlays up again.
 
 ## React integration
 

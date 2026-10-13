@@ -69,7 +69,7 @@ Check multithreading support first, before the camera prompt and the engine down
 
 ### Loading the SDK from a CDN
 
-Pin one exact version in every URL. The JavaScript loads `barcode-worker-<its exact version>.js` from `libraryLocation`, while jsDelivr resolves a floating `@8` separately for every file (and browsers cache each for up to 7 days), so a new 8.x release can pair the JavaScript with a worker of another version and break start-up.
+Pin one exact version in every URL. A floating `@8` is resolved separately for each file, so after a new 8.x release the JavaScript and the engine can come from different releases, which breaks start-up.
 
 ```html
 <script type="importmap">
@@ -721,7 +721,7 @@ barcodeArView.remove();         // removes the element from the DOM
 await context.dispose();        // releases all SDK resources
 ```
 
-`dispose()` terminates the engine worker and releases the context. To come back afterwards, call `DataCaptureContext.forLicenseKey()` again and set `BarcodeAr` and `BarcodeArView` up again before `barcodeArView.start()`; the engine is re-initialized. `start()` alone does not restart a disposed context. To leave and come back without that cost, keep the context and use `pause()` / `start()` instead.
+`dispose()` releases the context. To come back afterwards, call `DataCaptureContext.forLicenseKey()` again and set `BarcodeAr` and `BarcodeArView` up again before `barcodeArView.start()`; `start()` alone does not restart a disposed context. To leave and come back without setting everything up again, keep the context and use `pause()` / `start()` instead.
 
 Do not add a `visibilitychange` handler for tab switching: the view already stops the camera while the page is hidden and resumes it when the page is visible again.
 

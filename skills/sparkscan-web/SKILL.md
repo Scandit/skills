@@ -18,7 +18,7 @@ Your training data may contain outdated or incorrect Scandit SDK APIs. The Spark
 Web-specific gotchas worth flagging:
 
 - Do not add a `visibilitychange` handler to pause scanning: `SparkScanView` already switches to its idle state when the page is hidden.
-- When the SDK is loaded from a CDN, pin one exact version (for example `@8.6.1`) in every URL: the import map and `libraryLocation`. A floating `@8` lets the JavaScript and the engine worker resolve to different releases, which breaks start-up.
+- When the SDK is loaded from a CDN, pin one exact version (for example `@8.6.1`) in every URL: the import map and `libraryLocation`. A floating `@8` lets the JavaScript and the engine resolve to different releases, which breaks start-up.
 - Cross-origin isolation needs `Cross-Origin-Opener-Policy: same-origin` and `Cross-Origin-Embedder-Policy: require-corp`, also when the SDK comes from the jsDelivr CDN. Do not recommend `credentialless` for the SDK: Safari does not support it.
 
 ## Intent Routing

@@ -31,7 +31,7 @@ Web-specific gotchas worth flagging:
 - The `DataCaptureView` can be created before context init: `new DataCaptureView()` → `connectToElement(element)` → `await view.setContext(context)`. This allows a progress bar to be shown during SDK loading. The alternative `await DataCaptureView.forContext(context)` is equally valid.
 - The DOM element passed to `view.connectToElement()` must have defined dimensions and a set `position` (e.g. `fixed` or `absolute`) — zero-sized or unpositioned containers will not render the camera preview.
 - Turn the camera on with `await context.frameSource?.switchToDesiredState(FrameSourceState.On)` and off with `FrameSourceState.Off`. Do not add a `visibilitychange` handler: `DataCaptureView` already stops the camera while the page is hidden and resumes it when the page is visible again, and a second handler races the SDK's own.
-- When the SDK is loaded from a CDN, pin one exact version (for example `@8.6.1`) in every URL: the import map and `libraryLocation`. A floating `@8` lets the JavaScript and the engine worker resolve to different releases, which breaks start-up.
+- When the SDK is loaded from a CDN, pin one exact version (for example `@8.6.1`) in every URL: the import map and `libraryLocation`. A floating `@8` lets the JavaScript and the engine resolve to different releases, which breaks start-up.
 - `DataCaptureContext.forLicenseKey()` is idempotent, so calling it again is safe. Use `DataCaptureContext.sharedInstance` instead of caching the context. `dispose()` releases the context, its engine and the camera: call `forLicenseKey()` again before scanning after it.
 
 ## Intent Routing
