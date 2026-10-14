@@ -12,7 +12,7 @@ python3 internal/migration-evals/run.py --skill barcode-capture-flutter --score-
 ```
 
 Env: `CLAUDE` overrides the claude binary, `FLUTTER` the flutter binary used by the gate. RN and Capacitor suites type-check with
-`internal/skill-auditor/scripts/fix_gate_ts.sh` (node + npm) against the SDK from `--sdk-version` (default 8.6.1).
+`internal/skill-auditor/scripts/fix_gate_ts.sh` (node + npm) against the SDK from `--sdk-version` (default 8.6.1); the prompt names that version, since the fixtures have no `package.json`.
 Each eval runs in its own temp project with this checkout loaded via `--plugin-dir`
 and only project settings, so installed plugins do not leak in.
 
@@ -36,7 +36,7 @@ and only project settings, so installed plugins do not leak in.
   (scans everything), a migrated subset counts as kept and shows as `narrowed (enabled: …)`; enabling none is not kept.
   RN and Capacitor also trace the `symbologies={…}` prop of `BarcodeCaptureAioView`; format lists are `codeTypes` /
   `barcodeFormats` / `barcodeTypes` (RN) and `formats` (Capacitor), unioned across every list in the file.
-  An identifier argument that is a function parameter counts every named list literal of symbologies in the files.
+  An identifier argument that is a function parameter counts the lists passed to that function's call sites.
   Known limit: a static heuristic, so sets built at runtime or held in fields are not traced.
 - RN and Capacitor gate with `FIX_GATE_TS_ANY_MODULE=1`: app modules the gate cannot install (rxjs, Angular, Vue,
   `react-native-fs`, app-local paths) are typed `any`, while Scandit, React and React Native resolve for real. So a

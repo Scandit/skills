@@ -59,14 +59,20 @@ def save_outputs(suite, entry, work, out):
             shutil.copy(work / name, out / name)
 
 
-def run_claude(suite, evals_dir, entry, out, model, timeout):
+def build_prompt(suite, entry, sdk_version):
+    prompt = entry["prompt"] + suite.prompt_suffix.format(main=Path(fixture_paths(suite, entry)[0]).name)
+    # The fixtures carry no package.json, so name the SDK the gate type-checks against.
+    return prompt + f" The app uses Scandit SDK {sdk_version}." if suite.platform else prompt
+
+
+def run_claude(suite, evals_dir, entry, out, model, timeout, sdk_version=DEFAULT_SDK_VERSION):
     shutil.rmtree(out, ignore_errors=True)
     out.mkdir(parents=True)
     info = {"exit_code": None, "timed_out": False, "model": model}
     with tempfile.TemporaryDirectory(prefix="migration-eval-") as tmp:
         work = Path(tmp)
         prepare_workdir(suite, evals_dir, entry, work)
-        prompt = entry["prompt"] + suite.prompt_suffix.format(main=Path(fixture_paths(suite, entry)[0]).name)
+        prompt = build_prompt(suite, entry, sdk_version)
         try:
             proc = subprocess.run(
                 claude_command(prompt, suite, model), cwd=work, capture_output=True, text=True, timeout=timeout
@@ -127,7 +133,8 @@ def main(argv=None):
     if not args.score_only:
         with ThreadPoolExecutor(max_workers=args.jobs) as pool:
             futures = [
-                pool.submit(run_claude, suite, evals_dir, e, skill_out / str(e["id"]), args.model, args.timeout)
+                pool.submit(run_claude, suite, evals_dir, e, skill_out / str(e["id"]), args.model, args.timeout,
+                            args.sdk_version)
                 for e in entries
             ]
             for future in futures:

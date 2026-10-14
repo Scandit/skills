@@ -25,7 +25,9 @@ ENABLE_ONE = re.compile(
 )
 ENABLE_MANY = re.compile(r"\benableSymbologies\s*\(")
 ENABLE_PROP = re.compile(r"\bsymbologies\s*=\s*\{")
-NAMED_LIST = re.compile(r"\b\w+\s*(?::[^=;{}]+)?=\s*\[")
+CALLABLE = re.compile(r"\b(\w+)\s*(?:=\s*(?:async\s*)?(?:function\b\s*)?)?\(")
+DECLARATION_TAIL = re.compile(r"\s*(?::[^;{}()=]*)?(?:async\s*)?(?:\{|=>)")
+KEYWORDS = {"if", "for", "while", "switch", "catch", "return", "function"}
 IDENTIFIER = re.compile(r"(?<![.\w])([A-Za-z_]\w*)\b(?!\s*\()")
 GATE_SKIPPED = 3
 TS_ERROR = re.compile(r"\berror TS\d+")
@@ -151,17 +153,34 @@ def enabled_names(code, lang="dart"):
     patterns = [ENABLE_MANY] + ([ENABLE_PROP] if lang == "js" else [])
     for call in (m for pattern in patterns for m in pattern.finditer(code)):
         arg = balanced(code, call.end() - 1)
-        names.update(SYMBOLOGY.findall(arg))
-        for ident in set(IDENTIFIER.findall(arg)):
-            definition = re.search(
-                rf"\b{re.escape(ident)}\s*(?::[^=;{{}}]+)?=\s*(?:const\s*)?(?:<[^>]*>\s*)?[{{\[]", code
-            )
-            if definition:
-                names.update(SYMBOLOGY.findall(balanced(code, definition.end() - 1)))
-            elif re.search(rf"[(,]\s*{re.escape(ident)}\s*[:,)]", code):
-                # A function parameter: count every named list literal of symbologies the file defines.
-                for named in NAMED_LIST.finditer(code):
-                    names.update(SYMBOLOGY.findall(balanced(code, named.end() - 1)))
+        names.update(resolve_args(code, arg, set()))
+    return names
+
+
+def callables(code):
+    """(name, args, is_declaration) for every `name(...)` call or function declaration."""
+    for m in CALLABLE.finditer(code):
+        if m.group(1) not in KEYWORDS:
+            args = balanced(code, m.end() - 1)
+            yield m.group(1), args, bool(DECLARATION_TAIL.match(code, m.end() + len(args) + 1))
+
+
+def resolve_args(code, arg, seen):
+    """Symbology names in an argument; an identifier resolves to its literal, a parameter to its call sites."""
+    names = set(SYMBOLOGY.findall(arg))
+    for ident in set(IDENTIFIER.findall(arg)) - seen:
+        seen.add(ident)
+        definition = re.search(
+            rf"\b{re.escape(ident)}\s*(?::[^=;{{}}]+)?=\s*(?:const\s*)?(?:<[^>]*>\s*)?[{{\[]", code
+        )
+        if definition:
+            names.update(SYMBOLOGY.findall(balanced(code, definition.end() - 1)))
+            continue
+        declared = rf"(?<![\w.]){re.escape(ident)}\b"
+        owners = {name for name, args, decl in callables(code) if decl and re.search(declared, args)}
+        for name, args, decl in callables(code):
+            if name in owners and not decl:
+                names.update(resolve_args(code, args, seen))
     return names
 
 

@@ -151,6 +151,8 @@ class FixGateTsTest(unittest.TestCase):
         result = self.run_files("capacitor", {"Scan.ts": main, "Scan.types.ts": types})
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         self.assertEqual(self.run_files("capacitor", {"Scan.ts": main}).returncode, 1)
+        wrong = {"Scan.ts": main.replace('"qr"', '"upc"'), "Scan.types.ts": types}
+        self.assertEqual(self.run_files("capacitor", wrong, {"FIX_GATE_TS_ANY_MODULE": "1"}).returncode, 1)
 
     def test_vue_script_block_is_gated(self):
         vue = (
@@ -195,6 +197,19 @@ class FixGateTsTest(unittest.TestCase):
         result = self.run_files("capacitor", {"Scan.ts": misspelled}, shim)
         self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
         self.assertIn("StandBy", result.stdout)
+
+    def test_any_module_shim_never_covers_scandit(self):
+        shim = {"FIX_GATE_TS_ANY_MODULE": "1"}
+        cases = {
+            "TS2307": 'import { Symbology } from "scandit-capacitor-datacapture-barcod";\nexport const s = Symbology.X;\n',
+            "TS2694": 'import * as SDC from "scandit-capacitor-datacapture-barcode";\nexport let x: SDC.NotAType;\n',
+            "TS2709": 'import * as SDC from "scandit-capacitor-datacapture-barcode";\nexport let x: SDC;\n',
+        }
+        for code, source in cases.items():
+            with self.subTest(code=code):
+                result = self.run_files("capacitor", {"Scan.ts": source}, shim)
+                self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+                self.assertIn(f"error {code}", result.stdout)
 
     def test_react_native_rejects_dom_globals(self):
         result = self.run_gate("rn.ts", VALID["rn.ts"] + DOM_ONLY_GLOBAL)

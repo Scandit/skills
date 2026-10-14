@@ -289,6 +289,25 @@ class TsScoreCase(unittest.TestCase):
         row = self.score(RN, RN_DIR, RN_ENTRIES[1], [text])
         self.assertEqual(sorted(row["found"]), ["code128", "ean13upca", "qr"])
 
+    def test_parameter_counts_only_lists_passed_to_its_function(self):
+        text = (
+            "const REQUIRED = [Symbology.EAN13UPCA, Symbology.QR];\nconst UI_OPTIONS = [Symbology.Code128];\n"
+            "function apply(symbologies: Symbology[]): void { s.enableSymbologies(symbologies); }\n"
+            "apply(REQUIRED);"
+        )
+        row = self.score(RN, RN_DIR, RN_ENTRIES[1], [text])
+        self.assertEqual(sorted(row["found"]), ["ean13upca", "qr"])
+
+    def test_parameter_traced_through_a_caller_parameter(self):
+        text = (
+            "const ONE = [Symbology.EAN13UPCA];\nconst TWO = [Symbology.Code128, Symbology.QR];\n"
+            "function createSettings(symbologies: Symbology[]) { s.enableSymbologies(symbologies); }\n"
+            "async function begin(syms: Symbology[], done: () => void): Promise<void> { createSettings(syms); }\n"
+            "begin(ONE, () => {}); const go = async () => begin(TWO, () => {});"
+        )
+        row = self.score(RN, RN_DIR, RN_ENTRIES[1], [text])
+        self.assertEqual(sorted(row["found"]), ["code128", "ean13upca", "qr"])
+
     def test_leftover_import_keeps_a_skipped_gate_skipped(self):
         text = "import { BarcodeScanner } from '@capacitor-mlkit/barcode-scanning';"
         row = self.score(CAP, CAP_DIR, CAP_ENTRIES[1], [text], (3, "GATE-SKIP: node not found\n"))
@@ -339,6 +358,19 @@ class RunTsCase(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             run.prepare_workdir(CAP, CAP_DIR, CAP_ENTRIES[3], Path(tmp))
             self.assertEqual(sorted(p.name for p in Path(tmp).iterdir()), ["Scan.tsx", "Scan.types.ts"])
+
+    def test_prompt_names_the_gate_sdk_version(self):
+        self.assertTrue(run.build_prompt(RN, RN_ENTRIES[1], "8.6.1").endswith(
+            "Edit them in place. The app uses Scandit SDK 8.6.1."))
+        self.assertNotIn("Scandit SDK", run.build_prompt(SUITE, ENTRIES[1], "8.6.1").split("\n\n")[-1])
+
+    def test_sdk_version_flag_reaches_claude(self):
+        seen = []
+        with tempfile.TemporaryDirectory() as tmp, \
+                mock.patch.object(run.subprocess, "run", lambda cmd, **k: seen.append(cmd[2]) or mock.Mock(
+                    returncode=0, stdout="{}", stderr="")):
+            run.run_claude(RN, RN_DIR, RN_ENTRIES[1], Path(tmp) / "1", None, 5, sdk_version="8.7.0")
+        self.assertTrue(seen[0].endswith("The app uses Scandit SDK 8.7.0."))
 
     def test_sdk_version_flag_reaches_scoring_and_report(self):
         seen = []

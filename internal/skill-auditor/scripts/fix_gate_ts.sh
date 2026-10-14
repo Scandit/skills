@@ -4,7 +4,7 @@
 # `tsc --noEmit` (anti-hallucination: every Scandit symbol must resolve; NOT runtime).
 #
 # Usage: fix_gate_ts.sh <platform: web|rn|capacitor> <ts-tsx-js-or-vue-file> [version] [extra-file...]
-#   version default 8.4.0; .vue = its script block; FIX_GATE_TS_ANY_MODULE=1 types unresolved app imports as any.
+#   version default 8.4.0; .vue = its script block; FIX_GATE_TS_ANY_MODULE=1 types non-Scandit imports as any.
 # Note: cordova re-exports the shared frameworks package, so its signatures are covered by
 #   the rn/capacitor check; cordova plain-JS syntax is checked separately with `node --check`.
 # Toolchain: node + npm on PATH. Exit 3 = toolchain absent.
@@ -51,12 +51,27 @@ for f in "${FILES[@]}"; do
     *) cp "$f" "$DIR/src/$base";;
   esac
 done
-# App modules typed as any cannot carry types or implicit-any context, so those side effects are not findings.
-SHIM_ERRORS='error TS(2347|2694|2709):'
-if [ -n "${FIX_GATE_TS_ANY_MODULE:-}" ]; then
-  printf 'declare module "*";\ninterface ImportMeta { readonly env: any }\n' > "$DIR/src/any-module.d.ts"
-  NOIMPLICITANY=false
-fi
+# Shim: an import that resolves to nothing installed or copied (never a Scandit one) becomes an any-module.
+# Prints the errors only those any-modules cause: an untyped generic call, or one of their names used as a type.
+read -r -d '' SHIM_JS <<'JS' || true
+const fs = require("fs"), path = require("path"), dir = process.argv[1], specs = new Set(), names = new Set();
+const esc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), pkg = (s) => s.split("/").slice(0, s[0] === "@" ? 2 : 1);
+const real = (s) => /^@?scandit/i.test(s) || (s.startsWith(".")
+  ? [".ts", ".tsx", ".js"].some((e) => fs.existsSync(path.join(dir, s + e)))
+  : fs.existsSync(path.join(dir, "../node_modules", ...pkg(s))));
+for (const f of fs.readdirSync(dir)) {
+  const src = fs.readFileSync(path.join(dir, f), "utf8");
+  for (const [, s] of src.matchAll(/\b(?:from|import|require)\s*\(?\s*["']([^"'\n]+)["']/g))
+    if (!real(s) && !s.startsWith(".")) specs.add(s);
+  for (const [, c, s] of src.matchAll(/\bimport\s+(?:type\s+)?([^"';]+?)\s+from\s*["']([^"'\n]+)["']/g))
+    if (!real(s)) for (const n of c.split(/[{},]/)) { const m = n.match(/([\w$]+)\s*$/); if (m) names.add(m[1]); }
+}
+const mods = [...specs, "./*", "../*"], id = [...names].map(esc).join("|") || "$^";
+fs.writeFileSync(path.join(dir, "any-module.d.ts"),
+  mods.map((s) => `declare module "${s}";\n`).join("") + "interface ImportMeta { readonly env: any }\n");
+console.log(`error TS2347:|error TS2694: Namespace '"(${mods.map(esc).join("|")})"'|error TS2709: Cannot use namespace '(${id})'`);
+JS
+[ -n "${FIX_GATE_TS_ANY_MODULE:-}" ] && NOIMPLICITANY=false
 cat > "$DIR/package.json" <<EOF
 { "name":"fix-gate-ts","private":true,
   "dependencies": { "$CORE":"$VER", "$BC":"$VER", "typescript":"$TS_VERSION"$EXTRA_DEPS } }
@@ -69,6 +84,7 @@ cat > "$DIR/tsconfig.json" <<EOF
 EOF
 ( cd "$DIR" && npm install --ignore-scripts --no-audit --no-fund >/dev/null 2>&1 ) \
   || { echo "GATE-FAIL: npm install of $BC $VER ($PLAT)"; exit 1; }
+if [ -n "${FIX_GATE_TS_ANY_MODULE:-}" ]; then SHIM_ERRORS=$(node -e "$SHIM_JS" "$DIR/src"); fi
 OUT=$(cd "$DIR" && node_modules/.bin/tsc --noEmit 2>&1) && RC=0 || RC=$?
 if [ -n "${FIX_GATE_TS_ANY_MODULE:-}" ] && printf '%s\n' "$OUT" | grep -q 'error TS'; then
   OUT=$(printf '%s\n' "$OUT" | grep -Ev "$SHIM_ERRORS" || true)
