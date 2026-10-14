@@ -14,7 +14,6 @@ from common import AUDITOR_ROOT, eval_dir  # noqa: E402
 MAPPING = REPO / "internal" / "symbology-map" / "mapping.json"
 DEFAULT_SDK_VERSION = "8.6.1"
 TS_GATE = AUDITOR_ROOT / "scripts" / "fix_gate_ts.sh"
-COMMENTS = re.compile(r"//[^\n]*|/\*.*?\*/", re.DOTALL)
 COMMENTS_AND_STRINGS = re.compile(
     r"""'''.*?'''|\"\"\".*?\"\"\"|'(?:\\.|[^'\\\n])*'|"(?:\\.|[^"\\\n])*"|//[^\n]*|/\*.*?\*/""", re.DOTALL
 )
@@ -24,7 +23,7 @@ ENABLE_ONE = re.compile(
     r"|\bsettingsForSymbology\(\s*Symbology\.(\w+)\s*\)\s*\.isEnabled\s*=\s*true\b"
 )
 ENABLE_MANY = re.compile(r"\benableSymbologies\s*\(")
-ENABLE_PROP = re.compile(r"\bsymbologies\s*=\s*\{")
+ENABLE_PROP = re.compile(r"(?<![\w.])symbologies=\{")
 CALLABLE = re.compile(r"\b(\w+)\s*(?:=\s*(?:async\s*)?(?:function\b\s*)?)?\(")
 DECLARATION_TAIL = re.compile(r"\s*(?::[^;{}()=]*)?(?:async\s*)?(?:\{|=>)")
 KEYWORDS = {"if", "for", "while", "switch", "catch", "return", "function"}
@@ -92,9 +91,13 @@ def fixture_paths(suite, eval_entry):
     """Workdir-relative paths of the files a migration run produces."""
     files = eval_entry["files"]
     if suite.platform:
-        return [Path(f).name for f in files]
-    main, *stubs = files
-    return [str(Path("lib") / Path(main).name), *(str(Path("lib/stubs") / Path(f).name) for f in stubs)]
+        paths = [Path(f).name for f in files]
+    else:
+        main, *stubs = files
+        paths = [str(Path("lib") / Path(main).name), *(str(Path("lib/stubs") / Path(f).name) for f in stubs)]
+    if len(set(paths)) < len(paths):
+        raise ValueError(f"eval files must have distinct names, got {files}")
+    return paths
 
 
 def run_gate(command):
@@ -103,7 +106,7 @@ def run_gate(command):
 
 
 def strip_comments(text):
-    return COMMENTS.sub("", text)
+    return COMMENTS_AND_STRINGS.sub(lambda m: m.group() if m.group()[0] in "'\"" else "", text)
 
 
 def list_items(text, key):
@@ -130,7 +133,9 @@ def expected_symbologies(source_text, suite, mapping):
             row = by_name.get(item) or by_name.get(tail)
             if row == "all-formats" or tail == "all":
                 return default
-            symbology = mapping["formats"][row]["symbology"] if row else None
+            if not row:
+                raise ValueError(f"unreadable {key} item {item!r}: map it in {MAPPING.name} or simplify the fixture")
+            symbology = mapping["formats"][row]["symbology"]
             if symbology and symbology not in ids:
                 ids.append(symbology)
     return ids or default
@@ -153,34 +158,53 @@ def enabled_names(code, lang="dart"):
     patterns = [ENABLE_MANY] + ([ENABLE_PROP] if lang == "js" else [])
     for call in (m for pattern in patterns for m in pattern.finditer(code)):
         arg = balanced(code, call.end() - 1)
-        names.update(resolve_args(code, arg, set()))
+        names.update(resolve_args(code, arg, set(), call.start()))
     return names
 
 
 def callables(code):
-    """(name, args, is_declaration) for every `name(...)` call or function declaration."""
+    """(name, args, body, start) for every `name(...)`; body is the (start, end) span of a declaration, else None."""
     for m in CALLABLE.finditer(code):
         if m.group(1) not in KEYWORDS:
             args = balanced(code, m.end() - 1)
-            yield m.group(1), args, bool(DECLARATION_TAIL.match(code, m.end() + len(args) + 1))
+            tail = DECLARATION_TAIL.match(code, m.end() + len(args) + 1)
+            yield m.group(1), args, tail and (tail.end(), body_end(code, tail)), m.start()
 
 
-def resolve_args(code, arg, seen):
-    """Symbology names in an argument; an identifier resolves to its literal, a parameter to its call sites."""
+def body_end(code, tail):
+    """End offset of a declaration body: a bracketed block, else an arrow expression up to the line end."""
+    i = tail.end() - 1 if tail.group().endswith("{") else len(code) - len(code[tail.end():].lstrip())
+    if i < len(code) and code[i] in "({[":
+        return i + len(balanced(code, i)) + 2
+    newline = code.find("\n", i)
+    return len(code) if newline < 0 else newline
+
+
+def enclosing_function(code, ident, at):
+    """Name of the innermost function that declares parameter `ident` and whose body contains offset `at`."""
+    declared = rf"(?<![\w.]){re.escape(ident)}\b"
+    owners = [(body[0], name) for name, args, body, _ in callables(code)
+              if body and body[0] <= at < body[1] and re.search(declared, args)]
+    return max(owners)[1] if owners else None
+
+
+def resolve_args(code, arg, seen, at):
+    """Symbology names in the argument at offset `at`: a parameter of the enclosing function resolves to that
+    function's call sites, any other identifier to its collection literals."""
     names = set(SYMBOLOGY.findall(arg))
-    for ident in set(IDENTIFIER.findall(arg)) - seen:
-        seen.add(ident)
-        definition = re.search(
-            rf"\b{re.escape(ident)}\s*(?::[^=;{{}}]+)?=\s*(?:const\s*)?(?:<[^>]*>\s*)?[{{\[]", code
-        )
-        if definition:
-            names.update(SYMBOLOGY.findall(balanced(code, definition.end() - 1)))
+    for ident in set(IDENTIFIER.findall(arg)):
+        owner = enclosing_function(code, ident, at)
+        if (ident, owner) in seen:
             continue
-        declared = rf"(?<![\w.]){re.escape(ident)}\b"
-        owners = {name for name, args, decl in callables(code) if decl and re.search(declared, args)}
-        for name, args, decl in callables(code):
-            if name in owners and not decl:
-                names.update(resolve_args(code, args, seen))
+        seen.add((ident, owner))
+        if owner:
+            for name, args, body, start in callables(code):
+                if name == owner and not body:
+                    names.update(resolve_args(code, args, seen, start))
+            continue
+        definitions = rf"\b{re.escape(ident)}\s*(?::[^=;{{}}]+)?=\s*(?:const\s*)?(?:<[^>]*>\s*)?[{{\[]"
+        for definition in re.finditer(definitions, code):
+            names.update(SYMBOLOGY.findall(balanced(code, definition.end() - 1)))
     return names
 
 
@@ -194,7 +218,7 @@ def leftover_imports(text, modules):
     text = strip_comments(text)
     count = 0
     for module in modules:
-        specifier = rf"""["']{re.escape(module)}["']"""
+        specifier = rf"""["']{re.escape(module)}(?:/[^"'\n]*)?["']"""
         count += len(re.findall(rf"\bfrom\s*{specifier}|\bimport\s*\(?\s*{specifier}|\brequire\s*\(\s*{specifier}", text))
     return count
 
@@ -233,9 +257,9 @@ def score_eval(suite, eval_entry, output_dir, evals_dir, gate_runner=None, sdk_v
     # An original with no format list scans everything, so a migrated subset is a deliberate narrowing.
     narrowed = bool(missing and found) and expected == list(mapping["default_set"])
     leftover = leftover_imports(migrated, suite.banned_imports)
-    if leftover:
+    if leftover and status in ("pass", "fail"):
         errors_left += leftover
-        status = "skip" if status == "skip" else "fail"
+        status = "fail"
     return {
         **row,
         "status": status,

@@ -148,13 +148,25 @@ class ScoreCase(unittest.TestCase):
             "formats: [BarcodeFormat.all]": default,
             "formats: const <BarcodeFormat>[BarcodeFormat.ean13, BarcodeFormat.upcA, BarcodeFormat.aztec]":
                 ["ean13upca", "aztec"],
-            "formats: [BarcodeFormat.unknown, BarcodeFormat.qrCode]": ["qr"],
-            "formats: [BarcodeFormat.unknown]": default,
             "// formats: [BarcodeFormat.qrCode]\nMobileScanner()": default,
+            "final u = 'https://x'; final c = MobileScannerController(formats: [BarcodeFormat.qrCode]);": ["qr"],
         }
         for source, ids in cases.items():
             with self.subTest(source=source):
                 self.assertEqual(score.expected_symbologies(source, SUITE, score.load_mapping()), ids)
+
+    def test_unreadable_format_list_item_raises(self):
+        for source in ["formats: [BarcodeFormat.unknown]", "formats: [TYPES[0], BarcodeFormat.qrCode]",
+                       "formats: [...BASE, BarcodeFormat.qrCode]", "formats: [`qrCode`]"]:
+            with self.subTest(source=source), self.assertRaises(ValueError):
+                score.expected_symbologies(source, SUITE, score.load_mapping())
+
+    def test_every_fixture_format_list_is_readable(self):
+        for skill, suite in score.SUITES.items():
+            evals_dir = score.eval_dir(skill)
+            for entry in json.loads((evals_dir / "third-party-migration-evals.json").read_text())["evals"]:
+                with self.subTest(skill=skill, id=entry["id"]):
+                    score.expected_symbologies((evals_dir / entry["files"][0]).read_text(), suite, score.load_mapping())
 
     def test_missing_stub_is_not_passed_to_gate(self):
         commands = []
@@ -183,10 +195,9 @@ export const Screen = () => (
 );
 """
 TS_GATE_OK = (0, "GATE-PASS: x\n")
-TS_GATE_TWO_ERRORS = (
-    1,
-    "src/A.tsx(14,8): error TS2307: Cannot find module 'react-native-vision-camera'.\n"
-    "src/A.tsx(30,3): error TS2304: Cannot find name 'useCodeScanner'.\nGATE-FAIL: x\n",
+# Real gate output for the unmigrated RN fixture 1: the shim types the old scanner as `any`.
+TS_GATE_UNMIGRATED_RN = (
+    0, "GATE-PASS: VisionCameraScanner.tsx vs scandit-react-native-datacapture-barcode 8.6.1 (rn)\n"
 )
 
 
@@ -212,10 +223,11 @@ class TsScoreCase(unittest.TestCase):
 
     def test_rn_unmigrated_output_counts_ts_errors(self):
         original = (RN_DIR / RN_ENTRIES[1]["files"][0]).read_text()
-        row = self.score(RN, RN_DIR, RN_ENTRIES[1], [original], TS_GATE_TWO_ERRORS)
+        row = self.score(RN, RN_DIR, RN_ENTRIES[1], [original], TS_GATE_UNMIGRATED_RN)
+        self.assertEqual(row["status"], "fail")
         self.assertIs(row["compiles"], False)
         self.assertEqual(row["leftover_imports"], 1)
-        self.assertEqual(row["errors_left"], 3)
+        self.assertEqual(row["errors_left"], 1)
         self.assertIs(row["kept"], False)
 
     def test_rn_expected_symbologies(self):
@@ -313,6 +325,14 @@ class TsScoreCase(unittest.TestCase):
         row = self.score(CAP, CAP_DIR, CAP_ENTRIES[1], [text], (3, "GATE-SKIP: node not found\n"))
         self.assertEqual(row["status"], "skip")
         self.assertIsNone(row["compiles"])
+        self.assertEqual(row["errors_left"], 0)
+        self.assertEqual(row["leftover_imports"], 1)
+
+    def test_leftover_import_keeps_a_resolve_fail(self):
+        text = "import { BarcodeScanner } from '@capacitor-mlkit/barcode-scanning';"
+        row = self.score(CAP, CAP_DIR, CAP_ENTRIES[1], [text], (1, "GATE-FAIL: npm install\n"))
+        self.assertEqual(row["status"], "resolve-fail")
+        self.assertEqual(row["errors_left"], 0)
         self.assertEqual(row["leftover_imports"], 1)
 
     def test_leftover_import_forms(self):
@@ -324,6 +344,8 @@ class TsScoreCase(unittest.TestCase):
             "import '@capacitor-mlkit/barcode-scanning';": 1,
             "// import x from '@capacitor-mlkit/barcode-scanning'": 0,
             "import a from '@capacitor-mlkit/barcode-scanning-extra';": 0,
+            "import a from '@capacitor-mlkit/barcode-scanning/web';": 1,
+            "const u = 'https://x'; import a from '@capacitor-mlkit/barcode-scanning';": 1,
         }
         for text, n in cases.items():
             with self.subTest(text=text):
@@ -337,8 +359,25 @@ class TsScoreCase(unittest.TestCase):
         self.assertEqual(self.score(RN, RN_DIR, RN_ENTRIES[1], [leftovers + RN_AIO_SCREEN])["leftover_imports"], 3)
 
     def test_symbologies_prop_traced_for_js_only(self):
-        self.assertEqual(score.enabled_names("x.symbologies = {Symbology.QR}", "js"), {"QR"})
-        self.assertEqual(score.enabled_names("x.symbologies = {Symbology.qr}", "dart"), set())
+        self.assertEqual(score.enabled_names("<V symbologies={[Symbology.QR]} />", "js"), {"QR"})
+        self.assertEqual(score.enabled_names("<V symbologies={[Symbology.qr]} />", "dart"), set())
+
+    def test_symbologies_object_assignment_is_not_the_prop(self):
+        self.assertEqual(score.enabled_names("const symbologies = { [Symbology.QR]: 'QR' };", "js"), set())
+
+    def test_parameter_shadows_a_same_named_literal(self):
+        text = ("const symbologies = [Symbology.QR];\n"
+                "function apply(symbologies) { s.enableSymbologies(symbologies); }\napply([Symbology.EAN8]);")
+        self.assertEqual(score.enabled_names(text, "js"), {"EAN8"})
+
+    def test_jsx_prop_before_its_const_resolves(self):
+        text = "<V symbologies={symbologies} />;\nconst symbologies = [Symbology.QR];"
+        self.assertEqual(score.enabled_names(text, "js"), {"QR"})
+
+    def test_parameter_traced_only_into_the_enabling_function(self):
+        text = ("function log(syms) {}\nfunction apply(syms) { s.enableSymbologies(syms); }\n"
+                "log([Symbology.QR]); apply([Symbology.EAN8]);")
+        self.assertEqual(score.enabled_names(text, "js"), {"EAN8"})
 
     def test_fixture_paths_and_gate_command_per_suite(self):
         entry = {"files": ["a/x.dart", "b/stub.dart"]}
@@ -354,6 +393,13 @@ class TsScoreCase(unittest.TestCase):
 
 
 class RunTsCase(unittest.TestCase):
+    def test_colliding_basenames_are_refused(self):
+        entry = {"files": ["a/index.ts", "b/index.ts"]}
+        with self.assertRaises(ValueError):
+            score.fixture_paths(CAP, entry)
+        with tempfile.TemporaryDirectory() as tmp, self.assertRaises(ValueError):
+            run.prepare_workdir(CAP, CAP_DIR, entry, Path(tmp))
+
     def test_flat_prepare_workdir_copies_both_files(self):
         with tempfile.TemporaryDirectory() as tmp:
             run.prepare_workdir(CAP, CAP_DIR, CAP_ENTRIES[3], Path(tmp))
@@ -370,7 +416,28 @@ class RunTsCase(unittest.TestCase):
                 mock.patch.object(run.subprocess, "run", lambda cmd, **k: seen.append(cmd[2]) or mock.Mock(
                     returncode=0, stdout="{}", stderr="")):
             run.run_claude(RN, RN_DIR, RN_ENTRIES[1], Path(tmp) / "1", None, 5, sdk_version="8.7.0")
+            saved = json.loads((Path(tmp) / "1" / "run.json").read_text())
         self.assertTrue(seen[0].endswith("The app uses Scandit SDK 8.7.0."))
+        self.assertEqual(saved["sdk_version"], "8.7.0")
+
+    def score_only_sdk(self, saved_run_json, *flags):
+        seen = []
+        with tempfile.TemporaryDirectory() as tmp:
+            saved = Path(tmp) / "barcode-capture-rn" / "1"
+            saved.mkdir(parents=True)
+            (saved / "run.json").write_text(saved_run_json)
+            with mock.patch.object(run, "score_eval", lambda *a, **k: seen.append(k["sdk_version"]) or {
+                "id": 1, "fixture": "x.tsx", "status": "pass", "compiles": True, "errors_left": 0,
+                "expected": [], "missing": [], "kept": True}), redirect_stdout(io.StringIO()):
+                run.main(["--skill", "barcode-capture-rn", "--score-only", tmp, *flags])
+            written = json.loads((Path(tmp) / "report.json").read_text())
+        return seen[0], written["sdk_version"]
+
+    def test_score_only_uses_the_saved_sdk_version(self):
+        self.assertEqual(self.score_only_sdk('{"exit_code": 0, "sdk_version": "8.7.0"}'), ("8.7.0", "8.7.0"))
+        self.assertEqual(self.score_only_sdk('{"exit_code": 0}'), ("8.6.1", "8.6.1"))
+        flag = ("--sdk-version", "9.0.0")
+        self.assertEqual(self.score_only_sdk('{"sdk_version": "8.7.0"}', *flag), ("9.0.0", "9.0.0"))
 
     def test_sdk_version_flag_reaches_scoring_and_report(self):
         seen = []

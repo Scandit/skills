@@ -28,8 +28,8 @@ def load_evals(skill, ids):
 
 def prepare_workdir(suite, evals_dir, entry, work):
     if suite.platform:
-        for name in entry["files"]:
-            shutil.copy(evals_dir / name, work / Path(name).name)
+        for name, dest in zip(entry["files"], fixture_paths(suite, entry)):
+            shutil.copy(evals_dir / name, work / dest)
         return
     fixtures = evals_dir / "fixtures"
     shutil.copy(fixtures / "pubspec.yaml", work / "pubspec.yaml")
@@ -68,7 +68,7 @@ def build_prompt(suite, entry, sdk_version):
 def run_claude(suite, evals_dir, entry, out, model, timeout, sdk_version=DEFAULT_SDK_VERSION):
     shutil.rmtree(out, ignore_errors=True)
     out.mkdir(parents=True)
-    info = {"exit_code": None, "timed_out": False, "model": model}
+    info = {"exit_code": None, "timed_out": False, "model": model, "sdk_version": sdk_version}
     with tempfile.TemporaryDirectory(prefix="migration-eval-") as tmp:
         work = Path(tmp)
         prepare_workdir(suite, evals_dir, entry, work)
@@ -111,7 +111,7 @@ def main(argv=None):
     ap.add_argument("--jobs", type=int, default=4)
     ap.add_argument("--model")
     ap.add_argument("--timeout", type=int, default=1200)
-    ap.add_argument("--sdk-version", default=DEFAULT_SDK_VERSION)
+    ap.add_argument("--sdk-version", help=f"default: the saved run's on --score-only, else {DEFAULT_SDK_VERSION}")
     ap.add_argument("--score-only", metavar="DIR")
     args = ap.parse_args(argv)
 
@@ -134,21 +134,24 @@ def main(argv=None):
         with ThreadPoolExecutor(max_workers=args.jobs) as pool:
             futures = [
                 pool.submit(run_claude, suite, evals_dir, e, skill_out / str(e["id"]), args.model, args.timeout,
-                            args.sdk_version)
+                            args.sdk_version or DEFAULT_SDK_VERSION)
                 for e in entries
             ]
             for future in futures:
                 future.result()
 
+    infos = [read_claude_info(skill_out / str(e["id"])) for e in entries]
+
+    def saved(key):
+        return next((i[key] for i in infos if i.get(key)), None)
+    sdk_version = args.sdk_version or saved("sdk_version") or DEFAULT_SDK_VERSION
     rows = []
-    for entry in entries:
-        out = skill_out / str(entry["id"])
-        row = score_eval(suite, entry, out, evals_dir, sdk_version=args.sdk_version)
-        row["claude"] = read_claude_info(out)
+    for entry, info in zip(entries, infos):
+        row = score_eval(suite, entry, skill_out / str(entry["id"]), evals_dir, sdk_version=sdk_version)
+        row["claude"] = info
         rows.append(row)
-    model = args.model or next((r["claude"].get("model") for r in rows if r["claude"].get("model")), None)
-    sdk_version = args.sdk_version if suite.platform else None
-    write_report({args.skill: rows}, out_root, model=model, sdk_version=sdk_version)
+    model = args.model or saved("model")
+    write_report({args.skill: rows}, out_root, model=model, sdk_version=sdk_version if suite.platform else None)
     print((out_root / "report.md").read_text())
     return 0
 

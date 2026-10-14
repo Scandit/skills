@@ -101,6 +101,29 @@ class FixGateTsToolchainTest(unittest.TestCase):
         self.assertIn("GATE-SKIP", result.stdout)
 
 
+@unittest.skipUnless(shutil.which("node") and shutil.which("npm"), "needs node and npm on PATH")
+class FixGateTsInputTest(unittest.TestCase):
+    def setUp(self):
+        self.tmp = Path(tempfile.mkdtemp())
+        self.addCleanup(shutil.rmtree, self.tmp)
+
+    def test_two_files_with_one_basename_are_refused(self):
+        for first, second in (("a/index.ts", "b/index.ts"), ("Scan.vue", "Scan.ts")):
+            with self.subTest(files=(first, second)):
+                paths = []
+                for name in (first, second):
+                    path = self.tmp / name
+                    path.parent.mkdir(parents=True, exist_ok=True)
+                    path.write_text("export {};\n")
+                    paths.append(str(path))
+                result = subprocess.run(
+                    ["bash", str(GATE), "capacitor", paths[0], VERSION, paths[1]],
+                    capture_output=True, text=True, timeout=60,
+                )
+                self.assertEqual(result.returncode, 2, result.stdout + result.stderr)
+                self.assertIn("rename one", result.stdout)
+
+
 @unittest.skipUnless(os.environ.get("FIX_GATE_E2E") == "1", "set FIX_GATE_E2E=1 (needs npm and network)")
 class FixGateTsTest(unittest.TestCase):
     def setUp(self):
@@ -177,21 +200,74 @@ class FixGateTsTest(unittest.TestCase):
         self.assertEqual(result.returncode, 1, result.stdout)
         self.assertIn("Scan.ts(4,", result.stdout)
 
+    def test_vue_one_line_script_gates_its_code_and_not_the_template(self):
+        vue = (
+            '<script setup lang="ts">import { FrameSourceState } from "scandit-capacitor-datacapture-core"; '
+            "const state = FrameSourceState.StandBy;</script>\n"
+            '<template><div :class="{ on: state < 1 }" /></template>\n'
+        )
+        result = self.run_files("capacitor", {"Scan.vue": vue})
+        self.assertEqual(result.returncode, 1, result.stdout)
+        self.assertIn("Scan.ts(1,", result.stdout)
+        self.assertNotIn("Scan.ts(2,", result.stdout)
+        good = self.run_files("capacitor", {"Scan.vue": vue.replace("State.StandBy", "State.On")})
+        self.assertEqual(good.returncode, 0, good.stdout)
+
+    def test_vue_script_setup_macros_resolve(self):
+        vue = (
+            '<script setup lang="ts">\n'
+            'import { FrameSourceState } from "scandit-capacitor-datacapture-core";\n'
+            'const props = withDefaults(defineProps<{ title?: string }>(), { title: "Scan" });\n'
+            'const emit = defineEmits<{ (e: "scanned", data: string): void }>();\n'
+            "const state: FrameSourceState = FrameSourceState.On;\n"
+            "defineExpose({ state });\n"
+            'emit("scanned", props.title ?? "");\n'
+            "</script>\n"
+        )
+        result = self.run_files("capacitor", {"Scan.vue": vue})
+        self.assertEqual(result.returncode, 0, result.stdout)
+
     def test_any_module_shim_lets_app_types_and_env_through(self):
         app = (
             'import { Subject, Observable } from "rxjs";\n'
             "export const s: Subject<string> = new Subject<string>();\n"
             "export function f(o: Observable): void { o.subscribe((event) => event); }\n"
             "export const url: string = import.meta.env.VITE_URL;\n"
+            'import { defineComponent } from "vue";\n'
+            'import type { Render } from "@app/types";\n'
+            "export const c = defineComponent({ setup(props) { return props; } });\n"
+            "export const r: Render = props => props;\n"
+            "export async function q(): Promise<void> {\n"
+            '  const { default: Q } = await import("qr-scanner");\n'
+            "  new Q(1, async ({ data }) => data);\n}\n"
         )
         result = self.run_files("capacitor", {"Scan.ts": app}, {"FIX_GATE_TS_ANY_MODULE": "1"})
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         self.assertNotIn("error TS", result.stdout)
 
+    def test_any_module_shim_keeps_implicit_any_on_untyped_scandit_listeners(self):
+        head = (
+            'import { Subject } from "rxjs";\n'
+            'import { BarcodeCapture } from "scandit-capacitor-datacapture-barcode";\n'
+        )
+        cases = {
+            "object": "export function wire(bc: BarcodeCapture, out: Subject<string>): void {\n"
+            "  const listener = { didScan: async (_m, session) => out.next(session.newlyRecognizedBarcodes[0].data) };\n"
+            "  bc.addListener(listener);\n}\n",
+            "class": "export class Listener { didScan(_m, session) { return session.newlyRecognizedBarcodes; } }\n"
+            "export const bc: BarcodeCapture | null = null;\n",
+        }
+        for name, body in cases.items():
+            with self.subTest(case=name):
+                result = self.run_files("capacitor", {"Scan.ts": head + body}, {"FIX_GATE_TS_ANY_MODULE": "1"})
+                self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+                self.assertIn("error TS7006: Parameter 'session'", result.stdout)
+
     def test_any_module_shim_is_opt_in_and_keeps_scandit_checks(self):
         app_import = 'import { thing } from "../../app/store";\nexport const t: number = thing;\n'
         shim = {"FIX_GATE_TS_ANY_MODULE": "1"}
         self.assertEqual(self.run_files("capacitor", {"Scan.ts": app_import}).returncode, 1)
+        self.assertEqual(self.run_files("capacitor", {"Scan.ts": app_import}, {"FIX_GATE_TS_ANY_MODULE": "0"}).returncode, 1)
         self.assertEqual(self.run_files("capacitor", {"Scan.ts": app_import}, shim).returncode, 0)
         misspelled = VALID["capacitor.ts"] + MISSPELLED_API
         result = self.run_files("capacitor", {"Scan.ts": misspelled}, shim)

@@ -5,6 +5,7 @@
 #
 # Usage: fix_gate_ts.sh <platform: web|rn|capacitor> <ts-tsx-js-or-vue-file> [version] [extra-file...]
 #   version default 8.4.0; .vue = its script block; FIX_GATE_TS_ANY_MODULE=1 types non-Scandit imports as any.
+#   Files are gated flat under their basenames (.vue as .ts); two files with one basename = exit 2.
 # Note: cordova re-exports the shared frameworks package, so its signatures are covered by
 #   the rn/capacitor check; cordova plain-JS syntax is checked separately with `node --check`.
 # Toolchain: node + npm on PATH. Exit 3 = toolchain absent.
@@ -42,15 +43,22 @@ NOIMPLICITANY=true; [ "$EXT" = js ] && NOIMPLICITANY=false
 # web and capacitor code (.ts and .js) runs in a WebView/browser: give it the DOM globals.
 LIB='"es2019"'; [ "$PLAT" != rn ] && LIB='"es2019", "dom"'
 mkdir -p "$DIR/src"
-VUE_SCRIPT='/<script[ >]/ {on=1; print ""; next} /<\/script>/ {on=0; print ""; next} on {print; next} {print ""}'
+VUE_SCRIPT='/<script[ >]/ && /<\/script>/ {sub(/^.*<script[^>]*>/, ""); sub(/<\/script>.*$/, ""); print; next}
+  /<script[ >]/ {on=1; print ""; next} /<\/script>/ {on=0; print ""; next} on {print; next} {print ""}'
+VUE=0
 for f in "${FILES[@]}"; do
-  base=$(basename "$f")
+  base=$(basename "$f"); case "$base" in *.vue) base="${base%.vue}.ts";; esac
+  [ ! -e "$DIR/src/$base" ] || { echo "fix_gate_ts: two files map to src/$base; rename one"; exit 2; }
   case "$f" in
     # Blank every line outside the script block so error line numbers still match the .vue file.
-    *.vue) awk "$VUE_SCRIPT" "$f" > "$DIR/src/${base%.vue}.ts";;
+    *.vue) awk "$VUE_SCRIPT" "$f" > "$DIR/src/$base"; VUE=1;;
     *) cp "$f" "$DIR/src/$base";;
   esac
 done
+# <script setup> compiler macros: globals the Vue compiler provides.
+[ "$VUE" = 0 ] || printf '%s\n' 'declare function defineProps<T = any>(props?: any): T;' \
+  'declare function defineEmits<T = any>(emits?: any): T;' 'declare function defineExpose(exposed?: any): void;' \
+  'declare function withDefaults<T>(props: T, defaults?: any): T;' > "$DIR/src/vue-macros.d.ts"
 # Shim: an import that resolves to nothing installed or copied (never a Scandit one) becomes an any-module.
 # Prints the errors only those any-modules cause: an untyped generic call, or one of their names used as a type.
 read -r -d '' SHIM_JS <<'JS' || true
@@ -71,7 +79,36 @@ fs.writeFileSync(path.join(dir, "any-module.d.ts"),
   mods.map((s) => `declare module "${s}";\n`).join("") + "interface ImportMeta { readonly env: any }\n");
 console.log(`error TS2347:|error TS2694: Namespace '"(${mods.map(esc).join("|")})"'|error TS2709: Cannot use namespace '(${id})'`);
 JS
-[ -n "${FIX_GATE_TS_ANY_MODULE:-}" ] && NOIMPLICITANY=false
+# Drops implicit-any params (TS7006/TS7031) only on a callback passed to a call or a type-annotated initializer,
+# which only a shimmed callee or type leaves untyped; an unannotated Scandit listener object keeps its error.
+read -r -d '' CALLBACK_JS <<'JS' || true
+const fs = require("fs"), path = require("path"), dir = process.argv[1], cache = {};
+const code = (f) => cache[f] ??= fs.readFileSync(path.join(dir, f), "utf8").replace(
+  /\/\*[\s\S]*?\*\/|\/\/[^\n]*|`(?:\\[\s\S]|[^\\`])*`|(["'])(?:\\.|(?!\1)[^\\\n])*\1/g, (m) => m.replace(/[^\n]/g, " "));
+const outer = (s, i) => { for (let d = 0; --i >= 0; ) if (")]}".includes(s[i])) d++; else if ("([{".includes(s[i]) && d-- === 0) return i; return -1; };
+const prev = (s, i) => { while (--i >= 0 && /\s/.test(s[i])); return i; };
+function shimmedCallback(s, at, binding) {
+  let j = /^[\w$]+\s*=>/.test(s.slice(at)) ? at : outer(s, at);
+  while (binding && j >= 0 && s[j] !== "(") j = outer(s, j);
+  while (--j >= 0 && /[\w$*\s]/.test(s[j]));
+  for (;;) {
+    if (s[j] === "=") return /\b(?:const|let|var)\s+[\w$]+\s*:[^=]*$/.test(s.slice(s.lastIndexOf("\n", j) + 1, j));
+    if (j < 0 || !"([{,:".includes(s[j])) return false;
+    const o = "([{".includes(s[j]) ? j : outer(s, j), k = o < 0 ? -1 : prev(s, o);
+    if (o < 0) return false;
+    const call = /[\w$)\]>]/.test(s[k] ?? "") && !/\b(?:if|for|while|switch|catch|return|await|typeof)$/.test(s.slice(Math.max(0, k - 8), k + 1));
+    if (s[o] === "(" && call) return true;
+    if (s[o] !== "(" && !/[(,:=[?]/.test(s[k] ?? "")) return false;
+    j = k;
+  }
+}
+const at = (s, line, col) => { let o = 0; while (--line > 0) o = s.indexOf("\n", o) + 1; return o + col - 1; };
+console.log(fs.readFileSync(0, "utf8").split("\n").filter((l) => {
+  const m = l.match(/^(.+?)\((\d+),(\d+)\): error TS70(06|31):/);
+  return !m || !shimmedCallback(code(m[1]), at(code(m[1]), +m[2], +m[3]), m[4] === "31");
+}).join("\n"));
+JS
+SHIM=0; [ "${FIX_GATE_TS_ANY_MODULE:-0}" = 1 ] && SHIM=1
 cat > "$DIR/package.json" <<EOF
 { "name":"fix-gate-ts","private":true,
   "dependencies": { "$CORE":"$VER", "$BC":"$VER", "typescript":"$TS_VERSION"$EXTRA_DEPS } }
@@ -84,10 +121,10 @@ cat > "$DIR/tsconfig.json" <<EOF
 EOF
 ( cd "$DIR" && npm install --ignore-scripts --no-audit --no-fund >/dev/null 2>&1 ) \
   || { echo "GATE-FAIL: npm install of $BC $VER ($PLAT)"; exit 1; }
-if [ -n "${FIX_GATE_TS_ANY_MODULE:-}" ]; then SHIM_ERRORS=$(node -e "$SHIM_JS" "$DIR/src"); fi
+if [ "$SHIM" = 1 ]; then SHIM_ERRORS=$(node -e "$SHIM_JS" "$DIR/src"); fi
 OUT=$(cd "$DIR" && node_modules/.bin/tsc --noEmit 2>&1) && RC=0 || RC=$?
-if [ -n "${FIX_GATE_TS_ANY_MODULE:-}" ] && printf '%s\n' "$OUT" | grep -q 'error TS'; then
-  OUT=$(printf '%s\n' "$OUT" | grep -Ev "$SHIM_ERRORS" || true)
+if [ "$SHIM" = 1 ] && printf '%s\n' "$OUT" | grep -q 'error TS'; then
+  OUT=$(printf '%s\n' "$OUT" | grep -Ev "$SHIM_ERRORS" | node -e "$CALLBACK_JS" "$DIR" || true)
   printf '%s\n' "$OUT" | grep -q 'error TS' || RC=0
 fi
 [ -z "$OUT" ] || printf '%s\n' "$OUT"
