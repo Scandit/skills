@@ -11,3 +11,4 @@ python3 -m unittest discover -s internal/symbology-map -p 'test_*.py' -q
 python3 internal/symbology-map/generate.py --check
 python3 -m unittest discover -s internal/release -p 'test_*.py' -q
 python3 internal/release/versions.py check
+python3 -m unittest discover -s internal/migration-evals -p 'test_*.py' -q
