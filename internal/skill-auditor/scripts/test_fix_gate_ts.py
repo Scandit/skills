@@ -135,6 +135,67 @@ class FixGateTsTest(unittest.TestCase):
                 self.assertIn("GATE-FAIL", result.stdout)
                 self.assertIn("StandBy", result.stdout)
 
+    def run_files(self, platform, files, env=None):
+        paths = []
+        for name, source in files.items():
+            (self.tmp / name).write_text(source)
+            paths.append(str(self.tmp / name))
+        return subprocess.run(
+            ["bash", str(GATE), platform, paths[0], VERSION, *paths[1:]],
+            capture_output=True, text=True, timeout=600, env={**os.environ, **(env or {})},
+        )
+
+    def test_extra_file_resolves_relative_import(self):
+        main = 'import { Kind } from "./Scan.types";\nexport const kind: Kind = "qr";\n'
+        types = 'export type Kind = "qr" | "ean13";\n'
+        result = self.run_files("capacitor", {"Scan.ts": main, "Scan.types.ts": types})
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertEqual(self.run_files("capacitor", {"Scan.ts": main}).returncode, 1)
+
+    def test_vue_script_block_is_gated(self):
+        vue = (
+            "<template><div /></template>\n"
+            '<script setup lang="ts">\n'
+            'import { FrameSourceState } from "scandit-capacitor-datacapture-core";\n'
+            "export const state: FrameSourceState = FrameSourceState.On;\n"
+            "</script>\n"
+        )
+        self.assertEqual(self.run_files("capacitor", {"Scan.vue": vue}).returncode, 0)
+        bad = self.run_files("capacitor", {"Scan.vue": vue.replace("State.On;", "State.StandBy;")})
+        self.assertEqual(bad.returncode, 1, bad.stdout)
+        self.assertIn("StandBy", bad.stdout)
+
+    def test_vue_script_without_lang_is_gated(self):
+        vue = (
+            "<template><div /></template>\n<script setup>\n"
+            'import { FrameSourceState } from "scandit-capacitor-datacapture-core";\n'
+            "export const state = FrameSourceState.StandBy;\n</script>\n"
+        )
+        result = self.run_files("capacitor", {"Scan.vue": vue})
+        self.assertEqual(result.returncode, 1, result.stdout)
+        self.assertIn("Scan.ts(4,", result.stdout)
+
+    def test_any_module_shim_lets_app_types_and_env_through(self):
+        app = (
+            'import { Subject, Observable } from "rxjs";\n'
+            "export const s: Subject<string> = new Subject<string>();\n"
+            "export function f(o: Observable): void { o.subscribe((event) => event); }\n"
+            "export const url: string = import.meta.env.VITE_URL;\n"
+        )
+        result = self.run_files("capacitor", {"Scan.ts": app}, {"FIX_GATE_TS_ANY_MODULE": "1"})
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertNotIn("error TS", result.stdout)
+
+    def test_any_module_shim_is_opt_in_and_keeps_scandit_checks(self):
+        app_import = 'import { thing } from "../../app/store";\nexport const t: number = thing;\n'
+        shim = {"FIX_GATE_TS_ANY_MODULE": "1"}
+        self.assertEqual(self.run_files("capacitor", {"Scan.ts": app_import}).returncode, 1)
+        self.assertEqual(self.run_files("capacitor", {"Scan.ts": app_import}, shim).returncode, 0)
+        misspelled = VALID["capacitor.ts"] + MISSPELLED_API
+        result = self.run_files("capacitor", {"Scan.ts": misspelled}, shim)
+        self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+        self.assertIn("StandBy", result.stdout)
+
     def test_react_native_rejects_dom_globals(self):
         result = self.run_gate("rn.ts", VALID["rn.ts"] + DOM_ONLY_GLOBAL)
         self.assertEqual(result.returncode, 1, result.stdout + result.stderr)

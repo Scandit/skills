@@ -168,6 +168,191 @@ class ScoreCase(unittest.TestCase):
         self.assertIsNone(row["compiles"])
 
 
+def ts_entries(skill):
+    evals_dir = score.eval_dir(skill)
+    entries = json.loads((evals_dir / "third-party-migration-evals.json").read_text())["evals"]
+    return evals_dir, score.SUITES[skill], {e["id"]: e for e in entries}
+
+
+RN_DIR, RN, RN_ENTRIES = ts_entries("barcode-capture-rn")
+CAP_DIR, CAP, CAP_ENTRIES = ts_entries("barcode-capture-capacitor")
+RN_AIO_SCREEN = """
+import { Symbology } from 'scandit-react-native-datacapture-barcode';
+export const Screen = () => (
+  <BarcodeCaptureAioView symbologies={[Symbology.EAN13UPCA, Symbology.Code128, Symbology.QR]} didScan={onScan} />
+);
+"""
+TS_GATE_OK = (0, "GATE-PASS: x\n")
+TS_GATE_TWO_ERRORS = (
+    1,
+    "src/A.tsx(14,8): error TS2307: Cannot find module 'react-native-vision-camera'.\n"
+    "src/A.tsx(30,3): error TS2304: Cannot find name 'useCodeScanner'.\nGATE-FAIL: x\n",
+)
+
+
+class TsScoreCase(unittest.TestCase):
+    def setUp(self):
+        self.tmp = Path(tempfile.mkdtemp())
+        self.addCleanup(shutil.rmtree, self.tmp)
+
+    def score(self, suite, evals_dir, entry, texts, gate_result=TS_GATE_OK, commands=None, **kwargs):
+        for name, text in zip(score.fixture_paths(suite, entry), texts):
+            (self.tmp / name).write_text(text)
+
+        def gate(command):
+            if commands is not None:
+                commands.append(command)
+            return gate_result
+        return score.score_eval(suite, entry, self.tmp, evals_dir, gate, **kwargs)
+
+    def test_rn_good_output_compiles_and_keeps(self):
+        row = self.score(RN, RN_DIR, RN_ENTRIES[1], [RN_AIO_SCREEN])
+        self.assertIs(row["compiles"], True)
+        self.assertIs(row["kept"], True)
+
+    def test_rn_unmigrated_output_counts_ts_errors(self):
+        original = (RN_DIR / RN_ENTRIES[1]["files"][0]).read_text()
+        row = self.score(RN, RN_DIR, RN_ENTRIES[1], [original], TS_GATE_TWO_ERRORS)
+        self.assertIs(row["compiles"], False)
+        self.assertEqual(row["leftover_imports"], 1)
+        self.assertEqual(row["errors_left"], 3)
+        self.assertIs(row["kept"], False)
+
+    def test_rn_expected_symbologies(self):
+        default = score.load_mapping()["default_set"]
+        expected = {1: ["ean13upca", "code128", "qr"], 2: default, 3: ["ean13upca", "code128", "qr"]}
+        for eval_id, ids in expected.items():
+            with self.subTest(eval_id=eval_id):
+                self.assertEqual(self.score(RN, RN_DIR, RN_ENTRIES[eval_id], [""])["expected"], ids)
+
+    def test_capacitor_mlkit_ean13_maps_to_ean13upca(self):
+        ids = score.expected_symbologies("formats: [BarcodeFormat.Ean13]", CAP, score.load_mapping())
+        self.assertEqual(ids, ["ean13upca"])
+
+    def test_capacitor_id1_unions_both_lists(self):
+        row = self.score(CAP, CAP_DIR, CAP_ENTRIES[1], [""])
+        self.assertEqual(row["expected"], ["ean13upca", "ean8", "code128", "qr"])
+
+    def test_leftover_mlkit_import_fails_even_when_gate_passes(self):
+        text = (
+            "import { BarcodeScanner } from '@capacitor-mlkit/barcode-scanning';\n"
+            "settings.enableSymbologies([Symbology.EAN13UPCA, Symbology.EAN8, Symbology.Code128, Symbology.QR]);"
+        )
+        row = self.score(CAP, CAP_DIR, CAP_ENTRIES[1], [text])
+        self.assertEqual(row["status"], "fail")
+        self.assertIs(row["compiles"], False)
+        self.assertEqual(row["errors_left"], 1)
+        self.assertEqual(row["leftover_imports"], 1)
+
+    def test_capacitor_two_file_gate_command(self):
+        commands = []
+        self.score(CAP, CAP_DIR, CAP_ENTRIES[3], ["", ""], commands=commands)
+        self.assertEqual(
+            commands[0],
+            ["env", "FIX_GATE_TS_ANY_MODULE=1", "bash", str(CAP.gate), "capacitor",
+             str(self.tmp / "Scan.tsx"), score.DEFAULT_SDK_VERSION, str(self.tmp / "Scan.types.ts")],
+        )
+
+    def test_missing_extra_file_is_not_passed_to_gate(self):
+        commands = []
+        self.score(CAP, CAP_DIR, CAP_ENTRIES[3], [""], commands=commands)
+        self.assertEqual(commands[0][-2:], [str(self.tmp / "Scan.tsx"), score.DEFAULT_SDK_VERSION])
+
+    def test_sdk_version_reaches_gate(self):
+        commands = []
+        self.score(RN, RN_DIR, RN_ENTRIES[1], [RN_AIO_SCREEN], commands=commands, sdk_version="9.9.9")
+        self.assertEqual(commands[0], ["env", "FIX_GATE_TS_ANY_MODULE=1", "bash", str(RN.gate), "rn",
+                                       str(self.tmp / "VisionCameraScanner.tsx"), "9.9.9"])
+
+    def test_capacitor_default_all_narrowed_to_qr_is_kept(self):
+        row = self.score(CAP, CAP_DIR, CAP_ENTRIES[2], ["barcodeCapture = new BarcodeCapture(s);\n"
+                                                       "s.enableSymbologies([Symbology.QR]);"])
+        self.assertIs(row["narrowed"], True)
+        self.assertIs(row["kept"], True)
+        self.assertEqual(report.kept_cell(row), "1/12 narrowed (enabled: qr)")
+
+    def test_typed_identifier_and_jsx_identifier_resolve(self):
+        text = (
+            "const syms: Symbology[] = [Symbology.EAN13UPCA, Symbology.QR];\n"
+            "const more = [Symbology.Code128];\n"
+            "settings.enableSymbologies(syms);\n<BarcodeCaptureAioView symbologies={more} />"
+        )
+        row = self.score(RN, RN_DIR, RN_ENTRIES[1], [text])
+        self.assertEqual(sorted(row["found"]), ["code128", "ean13upca", "qr"])
+
+    def test_symbologies_passed_through_a_function_parameter_count(self):
+        text = (
+            "const SINGLE = [Symbology.EAN13UPCA, Symbology.QR];\nconst LOOP = [Symbology.Code128];\n"
+            "function createSettings(symbologies: Symbology[]) { s.enableSymbologies(symbologies); }\n"
+            "createSettings(SINGLE); createSettings(LOOP);"
+        )
+        row = self.score(RN, RN_DIR, RN_ENTRIES[1], [text])
+        self.assertEqual(sorted(row["found"]), ["code128", "ean13upca", "qr"])
+
+    def test_leftover_import_keeps_a_skipped_gate_skipped(self):
+        text = "import { BarcodeScanner } from '@capacitor-mlkit/barcode-scanning';"
+        row = self.score(CAP, CAP_DIR, CAP_ENTRIES[1], [text], (3, "GATE-SKIP: node not found\n"))
+        self.assertEqual(row["status"], "skip")
+        self.assertIsNone(row["compiles"])
+        self.assertEqual(row["leftover_imports"], 1)
+
+    def test_leftover_import_forms(self):
+        banned = ("@capacitor-mlkit/barcode-scanning",)
+        cases = {
+            "export { X } from '@capacitor-mlkit/barcode-scanning';": 1,
+            "const m = await import('@capacitor-mlkit/barcode-scanning');": 1,
+            'const m = require("@capacitor-mlkit/barcode-scanning");': 1,
+            "import '@capacitor-mlkit/barcode-scanning';": 1,
+            "// import x from '@capacitor-mlkit/barcode-scanning'": 0,
+            "import a from '@capacitor-mlkit/barcode-scanning-extra';": 0,
+        }
+        for text, n in cases.items():
+            with self.subTest(text=text):
+                self.assertEqual(score.leftover_imports(text, banned), n)
+
+    def test_rn_bans_only_the_old_scanner_packages(self):
+        helpers = "import RNFS from 'react-native-fs';\nimport { File } from 'expo-file-system';\n"
+        self.assertEqual(self.score(RN, RN_DIR, RN_ENTRIES[1], [helpers + RN_AIO_SCREEN])["status"], "pass")
+        leftovers = "".join(f"import x from '{m}';\n" for m in
+                            ["react-native-vision-camera", "react-native-vision-camera-barcode-scanner", "expo-camera"])
+        self.assertEqual(self.score(RN, RN_DIR, RN_ENTRIES[1], [leftovers + RN_AIO_SCREEN])["leftover_imports"], 3)
+
+    def test_symbologies_prop_traced_for_js_only(self):
+        self.assertEqual(score.enabled_names("x.symbologies = {Symbology.QR}", "js"), {"QR"})
+        self.assertEqual(score.enabled_names("x.symbologies = {Symbology.qr}", "dart"), set())
+
+    def test_fixture_paths_and_gate_command_per_suite(self):
+        entry = {"files": ["a/x.dart", "b/stub.dart"]}
+        self.assertEqual(score.fixture_paths(SUITE, entry), ["lib/x.dart", "lib/stubs/stub.dart"])
+        self.assertEqual(score.fixture_paths(CAP, {"files": ["a/Scan.tsx", "c/T.ts"]}), ["Scan.tsx", "T.ts"])
+        self.assertEqual(score.gate_command(SUITE, Path("m.dart"), [Path("s.dart")], "9.9.9"),
+                         ["bash", str(SUITE.gate), "m.dart", "s.dart"])
+
+    def test_vue_output_symbologies_are_found(self):
+        text = '<template><div/></template>\n<script lang="ts">\ns.enableSymbology(Symbology.QR, true);\n</script>'
+        row = self.score(CAP, CAP_DIR, CAP_ENTRIES[5], [text])
+        self.assertEqual(row["found"], ["qr"])
+
+
+class RunTsCase(unittest.TestCase):
+    def test_flat_prepare_workdir_copies_both_files(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            run.prepare_workdir(CAP, CAP_DIR, CAP_ENTRIES[3], Path(tmp))
+            self.assertEqual(sorted(p.name for p in Path(tmp).iterdir()), ["Scan.tsx", "Scan.types.ts"])
+
+    def test_sdk_version_flag_reaches_scoring_and_report(self):
+        seen = []
+        with tempfile.TemporaryDirectory() as tmp:
+            (Path(tmp) / "barcode-capture-rn" / "1").mkdir(parents=True)
+            with mock.patch.object(run, "score_eval", lambda *a, **k: seen.append(k["sdk_version"]) or {
+                "id": 1, "fixture": "x.tsx", "status": "pass", "compiles": True, "errors_left": 0,
+                "expected": [], "missing": [], "kept": True}), redirect_stdout(io.StringIO()):
+                run.main(["--skill", "barcode-capture-rn", "--score-only", tmp, "--sdk-version", "8.7.0"])
+            written = json.loads((Path(tmp) / "report.json").read_text())
+        self.assertEqual(seen, ["8.7.0"])
+        self.assertEqual(written["sdk_version"], "8.7.0")
+
+
 class ReportCase(unittest.TestCase):
     def test_report_totals_and_markdown(self):
         good = {"id": 1, "fixture": "A.dart", "status": "pass", "compiles": True, "errors_left": 0,
@@ -210,7 +395,7 @@ class ReportCase(unittest.TestCase):
             saved.mkdir(parents=True)
             (saved / "run.json").write_text('{"exit_code": 0, "timed_out": false, "model": "sonnet"}')
             scored = []
-            with mock.patch.object(run, "score_eval", lambda _s, e, *_a: scored.append(e["id"]) or {
+            with mock.patch.object(run, "score_eval", lambda _s, e, *_a, **_k: scored.append(e["id"]) or {
                 "id": e["id"], "fixture": "x.dart", "status": "pass", "compiles": True, "errors_left": 0,
                 "expected": [], "missing": [], "kept": True}), redirect_stdout(io.StringIO()):
                 run.main(["--skill", SKILL, "--score-only", tmp])

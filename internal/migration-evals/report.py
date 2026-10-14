@@ -59,6 +59,9 @@ def render_markdown(report):
         f"Generated: {report['generated_at']}  ",
         f"Model: {report['model'] or 'default'}",
     ]
+    if report.get("sdk_version"):
+        lines[-1] += "  "
+        lines.append(f"SDK version: {report['sdk_version']}")
     for skill, data in report["skills"].items():
         t = data["totals"]
         lines += [
@@ -78,7 +81,7 @@ def render_markdown(report):
     return "\n".join(lines) + "\n"
 
 
-def write_report(rows_by_skill, out_dir, skills_sha=None, dirty=False, model=None):
+def write_report(rows_by_skill, out_dir, skills_sha=None, dirty=False, model=None, sdk_version=None):
     if skills_sha is None:
         skills_sha, dirty = skills_revision()
     report = {
@@ -86,6 +89,7 @@ def write_report(rows_by_skill, out_dir, skills_sha=None, dirty=False, model=Non
         "dirty": dirty,
         "generated_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "model": model,
+        **({"sdk_version": sdk_version} if sdk_version else {}),
         "skills": {s: {"rows": rows, "totals": totals(rows)} for s, rows in rows_by_skill.items()},
     }
     out_dir = Path(out_dir)

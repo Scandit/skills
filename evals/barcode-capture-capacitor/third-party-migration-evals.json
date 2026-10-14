@@ -34,7 +34,8 @@
         {"text": "Setup checklist mentions scandit-capacitor-datacapture-core and scandit-capacitor-datacapture-barcode packages"},
         {"text": "Setup checklist mentions npx cap sync"},
         {"text": "Setup checklist mentions iOS Info.plist NSCameraUsageDescription"},
-        {"text": "A summary of changes is shown describing what ML Kit APIs were removed and what Scandit APIs replaced them"}
+        {"text": "A summary of changes is shown describing what ML Kit APIs were removed and what Scandit APIs replaced them"},
+        {"text": "For each enabled variable-length symbology (Interleaved 2 of 5, Code 39, Code 128, Codabar) the output either sets activeSymbolCounts for a length outside the default range or lists the barcode lengths as unconfirmed in its summary (semantic)"}
       ],
       "tags": ["third-party-migration"]
     },
@@ -80,7 +81,10 @@
           "text": "stopScanning turns the camera Off, sets barcodeCapture.isEnabled = false and removes the listener"
         },
         {
-          "text": "Symbology.QR is enabled and the enabled set is NOT narrowed below what the original scanned (the original passed no formats, so the recommended default set (QR, EAN-13/UPC-A, EAN-8, UPC-E, Code 39, Code 93, Code 128, ITF, Codabar, Data Matrix, Aztec, PDF417) is enabled)"
+          "text": "Symbology.QR is enabled. The original passed no formats, so the output enables the recommended default set (QR, EAN-13/UPC-A, EAN-8, UPC-E, Code 39, Code 93, Code 128, ITF, Codabar, Data Matrix, Aztec, PDF417), or a narrower set that its summary names as narrowed for the user to confirm"
+        },
+        {
+          "text": "For each enabled variable-length symbology (Interleaved 2 of 5, Code 39, Code 128, Codabar) the output either sets activeSymbolCounts for a length outside the default range or lists the barcode lengths as unconfirmed in its summary (semantic)"
         }
       ],
       "tags": [
@@ -179,7 +183,10 @@
           "text": "Capacitor.getPlatform() === 'web' is checked before ScanditCaptureCorePlugin.initializePlugins()"
         },
         {
-          "text": "Symbology.QR is enabled and the enabled set is NOT narrowed below what the original scanned (the original passed no formats, so the recommended default set is enabled, not QR only)"
+          "text": "Symbology.QR is enabled. The original passed no formats, so the output enables the recommended default set (QR, EAN-13/UPC-A, EAN-8, UPC-E, Code 39, Code 93, Code 128, ITF, Codabar, Data Matrix, Aztec, PDF417), or a narrower set that its summary names as narrowed for the user to confirm"
+        },
+        {
+          "text": "For each enabled variable-length symbology (Interleaved 2 of 5, Code 39, Code 128, Codabar) the output either sets activeSymbolCounts for a length outside the default range or lists the barcode lengths as unconfirmed in its summary (semantic)"
         }
       ],
       "tags": [
@@ -228,7 +235,10 @@
           "text": "onBeforeUnmount / stopReading disables the mode, removes the listener, turns the camera Off and detaches the view"
         },
         {
-          "text": "Symbology.QR is enabled and the enabled set is NOT narrowed below what the original scanned (the original passed no formats, so the recommended default set is enabled, not QR only)"
+          "text": "Symbology.QR is enabled. The original passed no formats, so the output enables the recommended default set (QR, EAN-13/UPC-A, EAN-8, UPC-E, Code 39, Code 93, Code 128, ITF, Codabar, Data Matrix, Aztec, PDF417), or a narrower set that its summary names as narrowed for the user to confirm"
+        },
+        {
+          "text": "For each enabled variable-length symbology (Interleaved 2 of 5, Code 39, Code 128, Codabar) the output either sets activeSymbolCounts for a length outside the default range or lists the barcode lengths as unconfirmed in its summary (semantic)"
         }
       ],
       "tags": [
@@ -278,7 +288,10 @@
           "text": "The web platform branch (isWeb, disabled button with 'QR scanning requires a mobile device') is kept and no Scandit API runs on web"
         },
         {
-          "text": "Symbology.QR is enabled and the enabled set is NOT narrowed below what the original scanned (the original passed no formats, so the recommended default set is enabled, not QR only)"
+          "text": "Symbology.QR is enabled. The original passed no formats, so the output enables the recommended default set (QR, EAN-13/UPC-A, EAN-8, UPC-E, Code 39, Code 93, Code 128, ITF, Codabar, Data Matrix, Aztec, PDF417), or a narrower set that its summary names as narrowed for the user to confirm"
+        },
+        {
+          "text": "For each enabled variable-length symbology (Interleaved 2 of 5, Code 39, Code 128, Codabar) the output either sets activeSymbolCounts for a length outside the default range or lists the barcode lengths as unconfirmed in its summary (semantic)"
         }
       ],
       "tags": [

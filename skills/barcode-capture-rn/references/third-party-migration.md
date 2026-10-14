@@ -71,6 +71,8 @@ One column per source library; — means that library has no name for the format
 
 **"All formats"** (v5 `'all-formats'`, or no `barcodeTypes` / `codeTypes` filter). Never leave it to a guess: an agent that picks one symbology silently drops the rest. Search the project for what the app really consumes and enable exactly that. If nothing narrows it, enable the recommended default set under the table and add a summary line "symbologies were not narrowed by the original; confirm this list". If a symbology is not in the table, look it up in the API reference before writing it.
 
+**Barcode lengths.** vision-camera and expo-camera read a variable-length 1D code (ITF, Code 39, Code 128, Codabar, …) at any length; Scandit reads it only inside the symbology's default length range (ITF: 6–40 digits, even only — full table at [Symbology Properties](https://docs.scandit.com/symbology-properties)). For each one you enable, check the lengths the app really reads (payload parsers, validation, domain formats such as the 44-digit ITF on Brazilian boletos). A length outside the default ⇒ add it to that symbology's `activeSymbolCounts` (`settings.settingsForSymbology(Symbology.InterleavedTwoOfFive).activeSymbolCounts = [44];`, see `references/integration.md`; on `BarcodeCaptureAioView`, pass those settings as `barcodeCaptureSettings` instead of `symbologies`) and list it in the summary; unknown ⇒ keep the default and add a summary line "confirm barcode lengths fit the default range".
+
 ## Result mapping
 
 | Old | BarcodeCapture |
@@ -319,7 +321,7 @@ Type-check the migrated file (`npx tsc --noEmit`) and fix every error. The usual
 4. Replace `'-- ENTER YOUR SCANDIT LICENSE KEY HERE --'` with your key (see **Licence key** in `SKILL.md`).
 5. Restart Metro with `--reset-cache`.
 
-**Summary:** list what was removed and added, the format → symbology mapping, and every judgment call (duplicate filter, region semantics, removed throttles, symbologies not narrowed, still-image path moved to `ImageFrameSource`). Do not list code that was already correct.
+**Summary:** list what was removed and added, the format → symbology mapping, and every judgment call (duplicate filter, region semantics, removed throttles, symbologies not narrowed, symbol counts added or left at default, still-image path moved to `ImageFrameSource`). Do not list code that was already correct.
 
 ## API reference
 

@@ -30,7 +30,8 @@
         {"text": "Setup checklist mentions scandit-react-native-datacapture-core and scandit-react-native-datacapture-barcode"},
         {"text": "Setup checklist mentions npx pod-install for iOS"},
         {"text": "Setup checklist mentions NSCameraUsageDescription in the iOS Info.plist"},
-        {"text": "A summary of changes is shown listing what vision-camera code was removed and what Scandit code was added"}
+        {"text": "A summary of changes is shown listing what vision-camera code was removed and what Scandit code was added"},
+        {"text": "For each enabled variable-length symbology (Interleaved 2 of 5, Code 39, Code 128, Codabar) the output either sets activeSymbolCounts for a length outside the default range or lists the barcode lengths as unconfirmed in its summary (semantic)"}
       ],
       "tags": ["third-party-migration"]
     },
@@ -69,7 +70,8 @@
         {"text": "Setup checklist mentions scandit-react-native-datacapture-core and scandit-react-native-datacapture-barcode"},
         {"text": "Setup checklist mentions npx pod-install for iOS"},
         {"text": "Setup checklist mentions NSCameraUsageDescription in the iOS Info.plist"},
-        {"text": "A summary of changes is shown listing what was removed and what Scandit code was added"}
+        {"text": "A summary of changes is shown listing what was removed and what Scandit code was added"},
+        {"text": "For each enabled variable-length symbology (Interleaved 2 of 5, Code 39, Code 128, Codabar) the output either sets activeSymbolCounts for a length outside the default range or lists the barcode lengths as unconfirmed in its summary (semantic)"}
       ],
       "tags": ["third-party-migration"]
     },
@@ -107,7 +109,8 @@
         {"text": "Setup checklist mentions scandit-react-native-datacapture-core and scandit-react-native-datacapture-barcode"},
         {"text": "Setup checklist mentions npx pod-install for iOS"},
         {"text": "Setup checklist mentions NSCameraUsageDescription in the iOS Info.plist"},
-        {"text": "A summary of changes is shown listing what was removed and what Scandit code was added"}
+        {"text": "A summary of changes is shown listing what was removed and what Scandit code was added"},
+        {"text": "For each enabled variable-length symbology (Interleaved 2 of 5, Code 39, Code 128, Codabar) the output either sets activeSymbolCounts for a length outside the default range or lists the barcode lengths as unconfirmed in its summary (semantic)"}
       ],
       "tags": ["third-party-migration"]
     }
