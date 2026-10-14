@@ -1,16 +1,20 @@
+import io
 import json
 import os
 import shutil
 import tempfile
 import unittest
+from contextlib import redirect_stdout
 from pathlib import Path
+from unittest import mock
 
 import report
 import run
 import score
 
 EVALS_DIR = score.eval_dir("barcode-capture-flutter")
-SUITE = score.SUITES["barcode-capture-flutter"]
+SKILL = "barcode-capture-flutter"
+SUITE = score.SUITES[SKILL]
 ENTRIES = {e["id"]: e for e in json.loads((EVALS_DIR / "third-party-migration-evals.json").read_text())["evals"]}
 
 MIGRATED_PAGE = """
@@ -199,6 +203,20 @@ class ReportCase(unittest.TestCase):
             info = run.read_claude_info(out)
         self.assertEqual(info, {"exit_code": None, "timed_out": True})
         self.assertEqual(report.claude_cell({"claude": info}), "timeout")
+
+    def test_score_only_keeps_saved_fixtures_and_model(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            saved = Path(tmp) / SKILL / "3"
+            saved.mkdir(parents=True)
+            (saved / "run.json").write_text('{"exit_code": 0, "timed_out": false, "model": "sonnet"}')
+            scored = []
+            with mock.patch.object(run, "score_eval", lambda _s, e, *_a: scored.append(e["id"]) or {
+                "id": e["id"], "fixture": "x.dart", "status": "pass", "compiles": True, "errors_left": 0,
+                "expected": [], "missing": [], "kept": True}), redirect_stdout(io.StringIO()):
+                run.main(["--skill", SKILL, "--score-only", tmp])
+            written = json.loads((Path(tmp) / "report.json").read_text())
+        self.assertEqual(scored, [3])
+        self.assertEqual(written["model"], "sonnet")
 
 
 @unittest.skipUnless(os.environ.get("MIGRATION_EVALS_FLUTTER"), "set MIGRATION_EVALS_FLUTTER=1 to run the real gate")

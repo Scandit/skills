@@ -59,7 +59,7 @@ def save_outputs(entry, work, out):
 def run_claude(suite, evals_dir, entry, out, model, timeout):
     shutil.rmtree(out, ignore_errors=True)
     out.mkdir(parents=True)
-    info = {"exit_code": None, "timed_out": False}
+    info = {"exit_code": None, "timed_out": False, "model": model}
     with tempfile.TemporaryDirectory(prefix="migration-eval-") as tmp:
         work = Path(tmp)
         prepare_workdir(evals_dir, entry, work)
@@ -116,6 +116,9 @@ def main(argv=None):
     out_root = Path(args.score_only or args.out or REPO / "eval-runs" / "migration" / stamp)
     skill_out = out_root / args.skill
     suite = SUITES[args.skill]
+    if args.score_only and not ids:
+        # Rescore only the fixtures the saved run has, so a partial run keeps its totals.
+        entries = [e for e in entries if (skill_out / str(e["id"])).is_dir()]
 
     if not args.score_only:
         with ThreadPoolExecutor(max_workers=args.jobs) as pool:
@@ -132,7 +135,8 @@ def main(argv=None):
         row = score_eval(suite, entry, out, evals_dir)
         row["claude"] = read_claude_info(out)
         rows.append(row)
-    write_report({args.skill: rows}, out_root, model=args.model)
+    model = args.model or next((r["claude"].get("model") for r in rows if r["claude"].get("model")), None)
+    write_report({args.skill: rows}, out_root, model=model)
     print((out_root / "report.md").read_text())
     return 0
 
