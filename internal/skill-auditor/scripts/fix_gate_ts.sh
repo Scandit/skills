@@ -4,7 +4,8 @@
 # `tsc --noEmit` (anti-hallucination: every Scandit symbol must resolve; NOT runtime).
 #
 # Usage: fix_gate_ts.sh <platform: web|rn|capacitor> <ts-tsx-js-or-vue-file> [version] [extra-file...]
-#   version default 8.4.0; .vue = its script block; FIX_GATE_TS_ANY_MODULE=1 types non-Scandit imports as any.
+#   version default 8.4.0; .vue = its script block; FIX_GATE_TS_ANY_MODULE=1 types non-Scandit imports as any
+#   and drops implicit-any errors only on callbacks handed straight to them (a bare Scandit listener keeps its).
 #   Files are gated flat under their basenames (.vue as .ts); two files with one basename = exit 2.
 # Note: cordova re-exports the shared frameworks package, so its signatures are covered by
 #   the rn/capacitor check; cordova plain-JS syntax is checked separately with `node --check`.
@@ -58,7 +59,9 @@ done
 # <script setup> compiler macros: globals the Vue compiler provides.
 [ "$VUE" = 0 ] || printf '%s\n' 'declare function defineProps<T = any>(props?: any): T;' \
   'declare function defineEmits<T = any>(emits?: any): T;' 'declare function defineExpose(exposed?: any): void;' \
-  'declare function withDefaults<T>(props: T, defaults?: any): T;' > "$DIR/src/vue-macros.d.ts"
+  'declare function withDefaults<T>(props: T, defaults?: any): T;' 'declare function defineOptions(options?: any): void;' \
+  'declare function defineModel<T = any>(...args: any[]): { value: T };' 'declare function defineSlots<T = any>(): T;' \
+  > "$DIR/src/vue-macros.d.ts"
 # Shim: an import that resolves to nothing installed or copied (never a Scandit one) becomes an any-module.
 # Prints the errors only those any-modules cause: an untyped generic call, or one of their names used as a type.
 read -r -d '' SHIM_JS <<'JS' || true
@@ -71,33 +74,48 @@ for (const f of fs.readdirSync(dir)) {
   const src = fs.readFileSync(path.join(dir, f), "utf8");
   for (const [, s] of src.matchAll(/\b(?:from|import|require)\s*\(?\s*["']([^"'\n]+)["']/g))
     if (!real(s) && !s.startsWith(".")) specs.add(s);
-  for (const [, c, s] of src.matchAll(/\bimport\s+(?:type\s+)?([^"';]+?)\s+from\s*["']([^"'\n]+)["']/g))
-    if (!real(s)) for (const n of c.split(/[{},]/)) { const m = n.match(/([\w$]+)\s*$/); if (m) names.add(m[1]); }
+  for (const [, a, b, s] of src.matchAll(/\b(?:import\s+(?:type\s+)?([^"';]+?)\s+from|(?:const|let|var)\s+([^=;]+?)\s*=\s*(?:await\s+)?(?:import|require)\s*\()\s*["']([^"'\n]+)["']/g))
+    if (!real(s)) for (const n of (a ?? b).split(/[{},]/)) { const m = n.match(/([\w$]+)\s*$/); if (m) names.add(m[1]); }
 }
 const mods = [...specs, "./*", "../*"], id = [...names].map(esc).join("|") || "$^";
+fs.writeFileSync(path.join(dir, "../shim-names.json"), JSON.stringify([...names]));
 fs.writeFileSync(path.join(dir, "any-module.d.ts"),
   mods.map((s) => `declare module "${s}";\n`).join("") + "interface ImportMeta { readonly env: any }\n");
 console.log(`error TS2347:|error TS2694: Namespace '"(${mods.map(esc).join("|")})"'|error TS2709: Cannot use namespace '(${id})'`);
 JS
-# Drops implicit-any params (TS7006/TS7031) only on a callback passed to a call or a type-annotated initializer,
-# which only a shimmed callee or type leaves untyped; an unannotated Scandit listener object keeps its error.
+# Drops implicit-any params (TS7006/TS7031) only on a callback passed to a call rooted at a shimmed import or
+# initialized under a shimmed type; react, Object, app-local callees and bare listener objects keep the error.
 read -r -d '' CALLBACK_JS <<'JS' || true
 const fs = require("fs"), path = require("path"), dir = process.argv[1], cache = {};
+const shimmed = new Set(JSON.parse(fs.readFileSync(path.join(dir, "shim-names.json"), "utf8")));
 const code = (f) => cache[f] ??= fs.readFileSync(path.join(dir, f), "utf8").replace(
   /\/\*[\s\S]*?\*\/|\/\/[^\n]*|`(?:\\[\s\S]|[^\\`])*`|(["'])(?:\\.|(?!\1)[^\\\n])*\1/g, (m) => m.replace(/[^\n]/g, " "));
 const outer = (s, i) => { for (let d = 0; --i >= 0; ) if (")]}".includes(s[i])) d++; else if ("([{".includes(s[i]) && d-- === 0) return i; return -1; };
 const prev = (s, i) => { while (--i >= 0 && /\s/.test(s[i])); return i; };
+function root(s, k) {
+  for (let name = ""; ; ) {
+    if (s[k] === ">" && s[k - 1] !== "=") {
+      for (let d = 0; k >= 0; k--) if (s[k] === ">" && s[k - 1] !== "=") d++; else if (s[k] === "<" && --d === 0) break;
+      k = prev(s, k); continue;
+    }
+    if (s[k] === ")" || s[k] === "]") { k = prev(s, outer(s, k)); continue; }
+    let i = k + 1; while (i > 0 && /[\w$]/.test(s[i - 1])) i--;
+    if (i > k) return name;
+    name = s.slice(i, k + 1); k = prev(s, i);
+    if (s[k] !== ".") return name;
+    k = prev(s, s[k - 1] === "?" ? k - 1 : k);
+  }
+}
 function shimmedCallback(s, at, binding) {
   let j = /^[\w$]+\s*=>/.test(s.slice(at)) ? at : outer(s, at);
   while (binding && j >= 0 && s[j] !== "(") j = outer(s, j);
   while (--j >= 0 && /[\w$*\s]/.test(s[j]));
   for (;;) {
-    if (s[j] === "=") return /\b(?:const|let|var)\s+[\w$]+\s*:[^=]*$/.test(s.slice(s.lastIndexOf("\n", j) + 1, j));
+    if (s[j] === "=") return shimmed.has(s.slice(s.lastIndexOf("\n", j) + 1, j).match(/\b(?:const|let|var)\s+[\w$]+\s*:\s*([\w$]+)[^=]*$/)?.[1]);
     if (j < 0 || !"([{,:".includes(s[j])) return false;
     const o = "([{".includes(s[j]) ? j : outer(s, j), k = o < 0 ? -1 : prev(s, o);
     if (o < 0) return false;
-    const call = /[\w$)\]>]/.test(s[k] ?? "") && !/\b(?:if|for|while|switch|catch|return|await|typeof)$/.test(s.slice(Math.max(0, k - 8), k + 1));
-    if (s[o] === "(" && call) return true;
+    if (s[o] === "(" && /[\w$)\]>]/.test(s[k] ?? "")) return shimmed.has(root(s, k));
     if (s[o] !== "(" && !/[(,:=[?]/.test(s[k] ?? "")) return false;
     j = k;
   }
@@ -124,7 +142,8 @@ EOF
 if [ "$SHIM" = 1 ]; then SHIM_ERRORS=$(node -e "$SHIM_JS" "$DIR/src"); fi
 OUT=$(cd "$DIR" && node_modules/.bin/tsc --noEmit 2>&1) && RC=0 || RC=$?
 if [ "$SHIM" = 1 ] && printf '%s\n' "$OUT" | grep -q 'error TS'; then
-  OUT=$(printf '%s\n' "$OUT" | grep -Ev "$SHIM_ERRORS" | node -e "$CALLBACK_JS" "$DIR" || true)
+  OUT=$(printf '%s\n' "$OUT" | { grep -Ev "$SHIM_ERRORS" || [ $? = 1 ]; } | node -e "$CALLBACK_JS" "$DIR") \
+    || { echo "GATE-FAIL: implicit-any filter failed on $FILE ($PLAT)"; exit 1; }
   printf '%s\n' "$OUT" | grep -q 'error TS' || RC=0
 fi
 [ -z "$OUT" ] || printf '%s\n' "$OUT"

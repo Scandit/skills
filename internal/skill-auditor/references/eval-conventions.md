@@ -83,7 +83,9 @@ drafted; each resolves the real Scandit packages, compiles, and prints `GATE-PAS
     scripts/fix_gate_dotnet.sh  <cs-file> [version] [extra-pkg ...]   # covers net-android/net-ios/net-maui
     scripts/fix_gate_kmp.sh     <kotlin-file>   # KMP; needs SDK checkout + $GITLAB_PRIVATE_TOKEN
 
-Notes: default version 8.4.0. `dotnet` builds a plain net8.0 project against the package's
+Notes: default version 8.4.0. `FIX_GATE_TS_ANY_MODULE=1` types non-Scandit imports as `any` and
+drops implicit-any errors only on callbacks passed straight to those imports; an untyped Scandit
+listener still fails. `dotnet` builds a plain net8.0 project against the package's
 net8.0 managed slice — no android/ios workloads needed (keep platform-UI-only types like
 `Android.Views.*`/`UIKit.*` out of the gated snippet). Swift needs the xcframeworks resolved
 once (an SPM sample build) or `$SCANDIT_XCFRAMEWORKS`. Toolchain overrides: `$FLUTTER`,

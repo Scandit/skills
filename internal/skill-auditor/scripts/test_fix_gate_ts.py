@@ -221,6 +221,9 @@ class FixGateTsTest(unittest.TestCase):
             'const emit = defineEmits<{ (e: "scanned", data: string): void }>();\n'
             "const state: FrameSourceState = FrameSourceState.On;\n"
             "defineExpose({ state });\n"
+            'defineOptions({ name: "Scan" });\n'
+            "const code = defineModel<FrameSourceState>();\n"
+            "code.value = state;\n"
             'emit("scanned", props.title ?? "");\n'
             "</script>\n"
         )
@@ -231,7 +234,7 @@ class FixGateTsTest(unittest.TestCase):
         app = (
             'import { Subject, Observable } from "rxjs";\n'
             "export const s: Subject<string> = new Subject<string>();\n"
-            "export function f(o: Observable): void { o.subscribe((event) => event); }\n"
+            "export function f(o: Observable): Observable { return o; }\n"
             "export const url: string = import.meta.env.VITE_URL;\n"
             'import { defineComponent } from "vue";\n'
             'import type { Render } from "@app/types";\n'
@@ -240,28 +243,53 @@ class FixGateTsTest(unittest.TestCase):
             "export async function q(): Promise<void> {\n"
             '  const { default: Q } = await import("qr-scanner");\n'
             "  new Q(1, async ({ data }) => data);\n}\n"
+            'import { useBarcodeScannerOutput } from "react-native-vision-camera-barcode-scanner";\n'
+            "export const o = useBarcodeScannerOutput({ onError: error => error.message });\n"
         )
         result = self.run_files("capacitor", {"Scan.ts": app}, {"FIX_GATE_TS_ANY_MODULE": "1"})
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         self.assertNotIn("error TS", result.stdout)
 
     def test_any_module_shim_keeps_implicit_any_on_untyped_scandit_listeners(self):
-        head = (
+        cap = (
             'import { Subject } from "rxjs";\n'
             'import { BarcodeCapture } from "scandit-capacitor-datacapture-barcode";\n'
         )
+        rn = (
+            'import { useMemo, useRef } from "react";\n'
+            'import { BarcodeCapture } from "scandit-react-native-datacapture-barcode";\n'
+            "export function useListener(bc: BarcodeCapture | null) {\n"
+        )
+        did_scan = "{ didScan: async (_m, session) => session.newlyRecognizedBarcodes }"
         cases = {
-            "object": "export function wire(bc: BarcodeCapture, out: Subject<string>): void {\n"
-            "  const listener = { didScan: async (_m, session) => out.next(session.newlyRecognizedBarcodes[0].data) };\n"
-            "  bc.addListener(listener);\n}\n",
-            "class": "export class Listener { didScan(_m, session) { return session.newlyRecognizedBarcodes; } }\n"
-            "export const bc: BarcodeCapture | null = null;\n",
+            "object": ("capacitor", "Scan.ts", cap + "export function wire(bc: BarcodeCapture, out: Subject<string>): void {\n"
+                       "  const listener = { didScan: async (_m, session) => out.next(session.newlyRecognizedBarcodes[0].data) };\n"
+                       "  bc.addListener(listener);\n}\n"),
+            "class": ("capacitor", "Scan.ts", cap + "export class Listener { didScan(_m, session) { return session.newlyRecognizedBarcodes; } }\n"
+                      "export const bc: BarcodeCapture | null = null;\n"),
+            "freeze": ("capacitor", "Scan.ts", cap + f"export const listener = Object.freeze({did_scan});\n"),
+            "factory": ("capacitor", "Scan.ts", cap + f"export const make = (out: Subject<string>) => ({did_scan});\n"),
+            "useRef": ("rn", "Scan.tsx", rn + f"  return useRef({did_scan});\n}}\n"),
+            "useMemo": ("rn", "Scan.tsx", rn + f"  return useMemo(() => ({did_scan}), []);\n}}\n"),
         }
-        for name, body in cases.items():
+        for name, (platform, file_name, source) in cases.items():
             with self.subTest(case=name):
-                result = self.run_files("capacitor", {"Scan.ts": head + body}, {"FIX_GATE_TS_ANY_MODULE": "1"})
+                result = self.run_files(platform, {file_name: source}, {"FIX_GATE_TS_ANY_MODULE": "1"})
                 self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
                 self.assertIn("error TS7006: Parameter 'session'", result.stdout)
+
+    def test_any_module_shim_fails_closed_when_the_callback_filter_crashes(self):
+        bin_dir = self.tmp / "bin"
+        bin_dir.mkdir()
+        node = bin_dir / "node"
+        node.write_text(f'#!/bin/sh\ncase "$2" in *shimmedCallback*) exit 1;; esac\nexec {shutil.which("node")} "$@"\n')
+        node.chmod(0o755)
+        app = 'import Q from "qr-scanner";\nexport const q = new Q(1, async ({ data }) => data);\n'
+        shim = {"FIX_GATE_TS_ANY_MODULE": "1"}
+        self.assertEqual(self.run_files("capacitor", {"Scan.ts": app}, shim).returncode, 0)
+        result = self.run_files("capacitor", {"Scan.ts": app}, {**shim, "PATH": f"{bin_dir}{os.pathsep}{os.environ['PATH']}"})
+        self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+        self.assertIn("GATE-FAIL", result.stdout)
 
     def test_any_module_shim_is_opt_in_and_keeps_scandit_checks(self):
         app_import = 'import { thing } from "../../app/store";\nexport const t: number = thing;\n'

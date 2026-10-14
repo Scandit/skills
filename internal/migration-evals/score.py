@@ -181,19 +181,20 @@ def body_end(code, tail):
 
 
 def enclosing_function(code, ident, at):
-    """Name of the innermost function that declares parameter `ident` and whose body contains offset `at`."""
+    """(name, span) of the innermost function that declares parameter `ident` and whose body contains offset `at`;
+    span covers its parameter list and body. (None, None) when there is none."""
     declared = rf"(?<![\w.]){re.escape(ident)}\b"
-    owners = [(body[0], name) for name, args, body, _ in callables(code)
+    owners = [(body[0], name, (start, body[1])) for name, args, body, start in callables(code)
               if body and body[0] <= at < body[1] and re.search(declared, args)]
-    return max(owners)[1] if owners else None
+    return max(owners)[1:] if owners else (None, None)
 
 
 def resolve_args(code, arg, seen, at):
-    """Symbology names in the argument at offset `at`: a parameter of the enclosing function resolves to that
-    function's call sites, any other identifier to its collection literals."""
+    """Symbology names in the argument at offset `at`: a parameter of the enclosing function resolves to its
+    literals inside that function plus the function's call sites, any other identifier to its file literals."""
     names = set(SYMBOLOGY.findall(arg))
     for ident in set(IDENTIFIER.findall(arg)):
-        owner = enclosing_function(code, ident, at)
+        owner, span = enclosing_function(code, ident, at)
         if (ident, owner) in seen:
             continue
         seen.add((ident, owner))
@@ -201,9 +202,8 @@ def resolve_args(code, arg, seen, at):
             for name, args, body, start in callables(code):
                 if name == owner and not body:
                     names.update(resolve_args(code, args, seen, start))
-            continue
-        definitions = rf"\b{re.escape(ident)}\s*(?::[^=;{{}}]+)?=\s*(?:const\s*)?(?:<[^>]*>\s*)?[{{\[]"
-        for definition in re.finditer(definitions, code):
+        definitions = re.compile(rf"\b{re.escape(ident)}\s*(?::[^=;{{}}]+)?=\s*(?:const\s*)?(?:<[^>]*>\s*)?[{{\[]")
+        for definition in definitions.finditer(code, *(span or (0, len(code)))):
             names.update(SYMBOLOGY.findall(balanced(code, definition.end() - 1)))
     return names
 

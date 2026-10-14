@@ -379,6 +379,19 @@ class TsScoreCase(unittest.TestCase):
                 "log([Symbology.QR]); apply([Symbology.EAN8]);")
         self.assertEqual(score.enabled_names(text, "js"), {"EAN8"})
 
+    def test_parameter_defined_inside_its_function_counts(self):
+        cases = {
+            "function apply(syms = [Symbology.QR]) { s.enableSymbologies(syms) } apply()": {"QR"},
+            "function apply(syms: Symbology[] = [Symbology.QR]) { s.enableSymbologies(syms) } apply()": {"QR"},
+            "class A { setup(syms = [Symbology.UPCE]) { s.enableSymbologies(syms) } }": {"UPCE"},
+            "function apply(syms){ syms = [Symbology.QR]; s.enableSymbologies(syms) }": {"QR"},
+            "const symbologies = [Symbology.QR];\nfunction apply(symbologies = [Symbology.EAN8]) "
+            "{ s.enableSymbologies(symbologies); }\napply([Symbology.UPCE]);": {"EAN8", "UPCE"},
+        }
+        for text, expected in cases.items():
+            with self.subTest(text=text):
+                self.assertEqual(score.enabled_names(text, "js"), expected)
+
     def test_fixture_paths_and_gate_command_per_suite(self):
         entry = {"files": ["a/x.dart", "b/stub.dart"]}
         self.assertEqual(score.fixture_paths(SUITE, entry), ["lib/x.dart", "lib/stubs/stub.dart"])
