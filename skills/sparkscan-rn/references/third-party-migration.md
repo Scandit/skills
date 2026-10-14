@@ -169,7 +169,7 @@ expo-camera `scanFromURLAsync` and vision-camera v5 `scanCodesInImageAsync` have
 On 8.7 or newer you may use the all-in-one `SparkScanAioView` instead. It creates the context-attached mode and view, wires the listener, and handles focus and app background. Props are from the 8.7 source (`SparkScanAioView.tsx`); check them against the installed `.d.ts`.
 
 - It must be rendered inside a root **`<ScanditProvider licenseKey="...">`** from `scandit-react-native-datacapture-core` (wrap the app or the navigator once). The provider calls `DataCaptureContext.initialize` itself, so drop the module-level `initialize` / `sharedInstance` lines on this path. Without the provider the view throws "must be rendered inside a `<ScanditProvider>`".
-- It does **not** request camera permission: keep the permission request and render the view only once it is granted.
+- It does **not** request camera permission: keep the permission request and render the view only once it is granted. Core's `useCameraPermission()` hook, where to mount the root provider (Expo Router: `app/_layout.tsx`), and how a nested provider sets `cameraPosition` are in the `barcode-capture-rn` skill's **SDK 8.7+: BarcodeCaptureAioView** section.
 
 | Old | `SparkScanAioView` |
 |---|---|
