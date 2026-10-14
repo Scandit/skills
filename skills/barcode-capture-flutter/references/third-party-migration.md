@@ -5,7 +5,7 @@
 - **Authority.** When this guide and the API reference disagree, trust the API reference — and a runtime check in the user's project — over this guide. Say which source you followed and why in the summary.
 - **Behaviour changes.** Never present a visual or behaviour change (new default, different overlay look, changed feedback, changed scan timing) as a 1:1 rename. List each one in the summary as a judgment call the user must confirm.
 - **Compatibility layer.** When the scanning code sits behind a shared scanner library or wrapper that other code calls, keep that library's public API frozen (same types, method names, callbacks) and replace only the third-party scanner calls underneath with Scandit ones.
-- **Preserve, never invent.** Keep the app's own model, list, dedupe, clear and navigation logic. Do not add symbologies, symbol counts or filters the original did not have; do not silently drop a feature (flag it instead).
+- **Preserve, never invent.** Keep the app's own model, list, dedupe, clear and navigation logic. Do not add symbologies or filters the original did not have; do not silently drop a feature (flag it instead). Symbol counts are the one exception: see "Barcode lengths" below.
 
 This guide covers replacing a third-party scanner — most commonly **`mobile_scanner`** (ML Kit), or **`google_mlkit_barcode_scanning`** fed by the **`camera`** plugin — with Scandit **`BarcodeCapture`** in a Flutter app. Use it when the app scans one barcode at a time and owns its camera UI. If the app is a "scan, add to a list, keep scanning" screen with no custom camera UI, `sparkscan-flutter` is usually a better fit.
 
@@ -52,7 +52,9 @@ Map **only** the formats the app actually scanned; fewer symbologies means bette
 **Recommended default set** when the source scanned every format and nothing in the app narrows it: `Symbology.qr`, `Symbology.ean13Upca`, `Symbology.ean8`, `Symbology.upce`, `Symbology.code39`, `Symbology.code93`, `Symbology.code128`, `Symbology.interleavedTwoOfFive`, `Symbology.codabar`, `Symbology.dataMatrix`, `Symbology.aztec`, `Symbology.pdf417`.
 <!-- END GENERATED symbology-table -->
 
-**"All formats" (no `formats:` argument, `BarcodeFormat.all`, `allowsAll` config).** Do not guess a list and do not invent `activeSymbolCounts`. Search the project for what the app really consumes (product codes, QR payload parsers, backend validation) and enable exactly those. If nothing narrows it, enable the recommended default set under the table and add a summary line "symbologies were not narrowed by the original; confirm this list". A config-driven app keeps its config; convert the config values to `Symbology` at one place.
+**"All formats" (no `formats:` argument, `BarcodeFormat.all`, `allowsAll` config).** Do not guess a list. Search the project for what the app really consumes (product codes, QR payload parsers, backend validation) and enable exactly those. If nothing narrows it, enable the recommended default set under the table and add a summary line "symbologies were not narrowed by the original; confirm this list". A config-driven app keeps its config; convert the config values to `Symbology` at one place.
+
+**Barcode lengths.** ML Kit reads a variable-length 1D code (ITF, Code 39, Code 128, Codabar, …) at any length; Scandit reads it only inside the symbology's default length range (ITF: 6–40 digits, even only — full table at [Symbology Properties](https://docs.scandit.com/symbology-properties)). For each one you enable, check the lengths the app really reads (payload parsers, validation, domain formats such as the 44-digit ITF on Brazilian boletos). A length outside the default ⇒ add it to that symbology's `activeSymbolCounts` (see `references/integration.md`) and list it in the summary; unknown ⇒ keep the default and add a summary line "confirm barcode lengths fit the default range".
 
 `DetectionSpeed` maps to `settings.codeDuplicateFilter` (a `Duration`): `noDuplicates` → `const Duration(seconds: -1)` (report each code once), `normal` → about `Duration(milliseconds: 500)`, `unrestricted` → `Duration.zero`. Mention the chosen value as a judgment call.
 
@@ -222,7 +224,7 @@ Run `dart analyze` on the migrated file (or `flutter analyze`) and fix every err
 3. Replace `'-- ENTER YOUR SCANDIT LICENSE KEY HERE --'` with your key (see **Licence key** in `SKILL.md`).
 4. Ensure `main()` calls `WidgetsFlutterBinding.ensureInitialized()` then `await ScanditFlutterDataCaptureBarcode.initialize()` before `runApp(...)`.
 
-**Summary**: list what was removed and added, the format→symbology mapping, and every judgment call (duplicate filter, region semantics, dropped quality gates, gallery path moved to `ImageFrameSource`, symbologies not narrowed). Do not list code that was already correct.
+**Summary**: list what was removed and added, the format→symbology mapping, and every judgment call (duplicate filter, region semantics, dropped quality gates, gallery path moved to `ImageFrameSource`, symbologies not narrowed, symbol counts added or left at default). Do not list code that was already correct.
 
 ## API reference
 
