@@ -104,6 +104,7 @@
         { "text": "Explains that COEP: require-corp blocks cross-origin subresources (the CDN images) that don't opt in via CORP/CORS" },
         { "text": "Frames cross-origin isolation / the multithreaded engine as the higher-performance path worth keeping, and encourages configuring COOP/COEP correctly rather than dropping them by default" },
         { "text": "Recommends keeping isolation and fixing the images while preserving it — CORP (Cross-Origin-Resource-Policy: cross-origin) / CORS + crossorigin attribute, or switching to COEP: credentialless" },
+        { "text": "If COEP: credentialless is suggested, the answer notes that Safari does not support it (semantic)" },
         { "text": "Mentions the single-threaded fallback (self-host same-origin + drop COOP/COEP) only as a last resort when isolation cannot be configured, noting reduced performance" },
         { "text": "Does not suggest removing or relocating the product images as the fix" }
       ]

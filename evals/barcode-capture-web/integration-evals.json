@@ -521,6 +521,34 @@
       "tags": [
         "composite-codes"
       ]
+    },
+    {
+      "id": 15,
+      "prompt": "I'm adding BarcodeCapture to a page that has no bundler, so I want to load the Scandit SDK from the jsDelivr CDN. Users switch browser tabs a lot, so the camera must not keep running while the tab is in the background. I also need a stopScanning() that fully tears the scanner down when the user closes the scanner panel, and scanning must be able to start again afterwards. Scan EAN-13 and Code 128. File: empty-app.ts.",
+      "expected_output": "Integration code that loads @scandit/* from jsDelivr with one exact version pinned in the import map and in libraryLocation, no visibilitychange handler (DataCaptureView already stops the camera while the page is hidden), a named listener constant that is added and removed, teardown through DataCaptureContext.sharedInstance.dispose() and view.detachFromElement(), and a restart that calls DataCaptureContext.forLicenseKey again.",
+      "files": [
+        "fixtures/empty-app.ts"
+      ],
+      "assertions": [
+        {
+          "text": "No visibilitychange listener is added to switch the camera Off/On or to disable BarcodeCapture: the answer relies on the SDK's own page-visibility handling (semantic)"
+        },
+        {
+          "text": "Every jsDelivr URL for an @scandit package (import map and libraryLocation) pins one exact version such as @8.6.1, never a floating @8 major (semantic)"
+        },
+        {
+          "text": "The listener passed to barcodeCapture.addListener( is a named constant, and barcodeCapture.removeListener( is called with that same constant (semantic)"
+        },
+        {
+          "text": "Teardown calls dispose() on the DataCaptureContext and view.detachFromElement()"
+        },
+        {
+          "text": "Starting again after teardown calls DataCaptureContext.forLicenseKey( again (semantic)"
+        }
+      ],
+      "tags": [
+        "lifecycle"
+      ]
     }
   ]
 }

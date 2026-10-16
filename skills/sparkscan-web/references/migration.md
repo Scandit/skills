@@ -126,7 +126,7 @@ The default scan intention is now `ScanIntention.Smart`. If the project explicit
 > If the user wants to use `ScanIntention.Smart` or `ScanIntention.SmartSelection`, browser multithreading must be enabled. This requires the server to set the following HTTP headers on the HTML page and serving the sdc-lib files:
 >
 > - `Cross-Origin-Opener-Policy: same-origin`
-> - `Cross-Origin-Embedder-Policy: require-corp` (self-hosted SDK) or `credentialless` (CDN-hosted SDK)
+> - `Cross-Origin-Embedder-Policy: require-corp` (self-hosted or CDN-hosted SDK; Safari does not support `credentialless`)
 >
 > See the [multithreading guide](https://docs.scandit.com/sdks/web/matrixscan/get-started/#improve-runtime-performance-by-enabling-browser-multithreading) and [cross-origin headers guide](https://docs.scandit.com/sdks/web/matrixscan/get-started/#configure-cross-origin-headers).
 

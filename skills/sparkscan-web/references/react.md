@@ -87,7 +87,7 @@ Where disposing is appropriate:
   ```tsx
   useEffect(() => {
       const disposeOnTeardown = () => {
-          void DataCaptureContext.sharedInstance?.dispose();
+          void DataCaptureContext.sharedInstance.dispose();
       };
       window.addEventListener("pagehide", disposeOnTeardown);
       return () => window.removeEventListener("pagehide", disposeOnTeardown);

@@ -2,7 +2,7 @@
 // 1. Install packages: npm install @scandit/web-datacapture-core @scandit/web-datacapture-barcode
 // 2. Set cross-origin headers on the server:
 //      Cross-Origin-Opener-Policy: same-origin
-//      Cross-Origin-Embedder-Policy: require-corp  (self-hosted) or  credentialless  (CDN)
+//      Cross-Origin-Embedder-Policy: require-corp
 // 3. Configure libraryLocation to point to the SDK engine files
 // 4. Replace '-- ENTER YOUR SCANDIT LICENSE KEY HERE --' with your key from https://ssl.scandit.com
 // 5. Add a container element to your HTML:

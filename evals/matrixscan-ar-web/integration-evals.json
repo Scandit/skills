@@ -50,7 +50,7 @@
     {
       "id": 3,
       "prompt": "I need proper lifecycle management for my MatrixScan AR page — when leaving the page, scanning should stop and the view should be removed from the DOM. When returning, it should restart.",
-      "expected_output": "The skill adds stop() + remove() + context.dispose() for cleanup, and shows how to call start() to restart. Documents that remove() takes BarcodeArView off the DOM, and stop()/start() are for pause/resume without removing.",
+      "expected_output": "The skill adds stop() + remove() + context.dispose() for cleanup, and on return calls DataCaptureContext.forLicenseKey again and sets BarcodeAr and BarcodeArView up again before start(), because dispose() releases the context. Documents that remove() takes BarcodeArView off the DOM, and stop()/start() are for pause/resume without removing.",
       "files": [
         "fixtures/integrated-app.ts"
       ],
@@ -58,7 +58,7 @@
         {"text": "barcodeArView.stop() is shown for stopping"},
         {"text": "barcodeArView.remove() is shown for removing the DOM element"},
         {"text": "context.dispose() is shown for full cleanup"},
-        {"text": "barcodeArView.start() is shown for restarting"},
+        {"text": "Returning after context.dispose() calls DataCaptureContext.forLicenseKey( again and sets BarcodeAr and BarcodeArView up again before barcodeArView.start(); start() alone is not presented as enough after dispose() (semantic)"},
         {"text": "Camera or FrameSourceState is NOT used (semantic — BarcodeArView manages camera)"},
         {"text": "Existing barcodeArView.start() call for initial startup is preserved"}
       ]
@@ -179,6 +179,21 @@
         {"text": "barcodeArView.start() is preserved"}
       ],
       "tags": ["view-controls"]
+    },
+    {
+      "id": 11,
+      "prompt": "Add MatrixScan AR to empty-app.ts, but my site has no build step: load the Scandit SDK from the jsDelivr CDN and tell me exactly which response headers the server must send. It has to work in Safari on iPhone too. Track EAN-13 and Code 128.",
+      "expected_output": "Integration code loading @scandit/* from jsDelivr with one exact version pinned in the import map and in libraryLocation, plus Cross-Origin-Opener-Policy: same-origin and Cross-Origin-Embedder-Policy: require-corp, which jsDelivr satisfies and which Safari supports.",
+      "files": [
+        "fixtures/empty-app.ts"
+      ],
+      "assertions": [
+        {"text": "Cross-Origin-Opener-Policy: same-origin is required"},
+        {"text": "Cross-Origin-Embedder-Policy: require-corp is recommended for the CDN setup, and credentialless is not recommended as the CDN value (semantic)"},
+        {"text": "Every jsDelivr URL for an @scandit package (import map and libraryLocation) pins one exact version such as @8.6.1, never a floating @8 major (semantic)"},
+        {"text": "BarcodeArView.create( is used and barcodeArView.start() is called"}
+      ],
+      "tags": ["view-lifecycle"]
     }
   ]
 }
