@@ -845,6 +845,12 @@ SymbologySettings code128Settings = settings.GetSymbologySettings(Symbology.Code
 code128Settings.ActiveSymbolCounts = new HashSet<short>(new short[] { 7, 8, 9, 10 });
 ```
 
+Assigning a new set replaces the symbology's default lengths. To add a length and keep the defaults, copy the current set first:
+
+```csharp
+code128Settings.ActiveSymbolCounts = new HashSet<short>(code128Settings.ActiveSymbolCounts) { 44 };
+```
+
 #### Color-inverted codes
 
 Enable scanning of light-on-dark (color-inverted) codes via `ColorInvertedEnabled` — **not** `IsColorInvertedEnabled`:
