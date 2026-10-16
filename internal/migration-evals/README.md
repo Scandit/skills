@@ -8,11 +8,17 @@ python3 internal/migration-evals/run.py --skill barcode-capture-flutter
 python3 internal/migration-evals/run.py --skill barcode-capture-flutter --ids 1,3 --jobs 2 --model sonnet
 python3 internal/migration-evals/run.py --skill barcode-capture-rn --ids 1,2,3 --sdk-version 8.6.1
 python3 internal/migration-evals/run.py --skill barcode-capture-capacitor
+python3 internal/migration-evals/run.py --skill barcode-capture-net-maui
 python3 internal/migration-evals/run.py --skill barcode-capture-flutter --score-only eval-runs/migration/<stamp>
 ```
 
 Env: `CLAUDE` overrides the claude binary, `FLUTTER` the flutter binary used by the gate. RN and Capacitor suites type-check with
 `internal/skill-auditor/scripts/fix_gate_ts.sh` (node + npm) against the SDK from `--sdk-version` (default 8.6.1; `--score-only` reuses the run's); the prompt names that version, since the fixtures have no `package.json`.
+The .NET MAUI suite builds each page with `internal/skill-auditor/scripts/fix_gate_dotnet.sh --maui` (dotnet 8, no MAUI workload):
+the `.xaml.cs` plus its `.xaml` against `Microsoft.Maui.Controls` and the Scandit Core/Barcode (+ `.Maui`) packages, so
+XAML element types and `x:Name` fields are checked too. Format lists are ZXing `Formats = BarcodeFormat.A | BarcodeFormat.B`;
+`ZXing.Net.Maui` is banned (`using` and `clr-namespace:`). Eval `files[0]` must be the `.xaml.cs`; the gate builds that one page, so an output that adds
+other source files fails with `CS0246`.
 Each eval runs in its own temp project with this checkout loaded via `--plugin-dir`
 and only project settings, so installed plugins do not leak in.
 
@@ -31,7 +37,8 @@ and only project settings, so installed plugins do not leak in.
 - `symbologies kept`: expected ids come from the original fixture (a literal `formats:` list mapped through
   `internal/symbology-map/mapping.json`, else `default_set`; an item the map cannot read stops the run); each must reach an enabling call in the migrated
   files: `enableSymbologies(…)` (an identifier argument resolves to its collection literal),
-  `enableSymbology(Symbology.<name>, true)` or `settingsForSymbology(Symbology.<name>).isEnabled = true`.
+  `enableSymbology(Symbology.<name>, true)` or `settingsForSymbology(Symbology.<name>).isEnabled = true`
+  (C#: `EnableSymbologies(…)`, `EnableSymbology(Symbology.<Name>, true)`, `GetSymbologySettings(Symbology.<Name>).Enabled = true`).
   Comments and string literals are ignored. When the original has no format list
   (scans everything), a migrated subset counts as kept and shows as `narrowed (enabled: …)`; enabling none is not kept.
   RN and Capacitor also trace the JSX `symbologies={…}` prop of `BarcodeCaptureAioView`; format lists are `codeTypes` /
@@ -50,7 +57,9 @@ and only project settings, so installed plugins do not leak in.
 
 Add a `Suite` entry to `SUITES` in `score.py` with its gate, format lists (list key to mapping source), lang,
 error-line regex, allowed tools and prompt suffix. A suite with a `platform` runs
-`bash <gate> <platform> <main> <sdk version> <extra files...>`, otherwise `bash <gate> <main> <stub files...>`;
+`bash <gate> <platform> <main> <sdk version> <extra files...>` (the `maui` suite runs
+`bash <gate> --maui <Page.xaml.cs> <sdk version>`; the gate finds the `.xaml` beside it), otherwise
+`bash <gate> <main> <stub files...>`;
 the gate reports through its exit code (0 pass, 1 fail, 3 skip). A `platform` suite copies every eval file by name
 into the workdir root, so names must be distinct; the Flutter suite uses `lib/`, `lib/stubs/` and `pubspec.yaml`.
 

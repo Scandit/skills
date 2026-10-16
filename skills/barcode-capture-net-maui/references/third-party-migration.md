@@ -61,6 +61,13 @@ Follow `references/integration.md`. When configuring `BarcodeCaptureSettings`, m
 **Recommended default set** when the source scanned every format and nothing in the app narrows it: `Symbology.Qr`, `Symbology.Ean13Upca`, `Symbology.Ean8`, `Symbology.Upce`, `Symbology.Code39`, `Symbology.Code93`, `Symbology.Code128`, `Symbology.InterleavedTwoOfFive`, `Symbology.Codabar`, `Symbology.DataMatrix`, `Symbology.Aztec`, `Symbology.Pdf417`.
 <!-- END GENERATED symbology-table -->
 
+**Barcode lengths.** ZXing.Net.Maui reads a variable-length 1D code (ITF, Code 39, Code 128, Codabar, …) at any length; Scandit reads it only inside the symbology's default length range (ITF: 6–40 digits, even only — full table at [Symbology Properties](https://docs.scandit.com/symbology-properties)). For each one you enable, check the lengths the app really reads (payload parsers, validation, domain formats such as the 44-digit ITF on Brazilian boletos). A length outside the default ⇒ add it to that symbology's `ActiveSymbolCounts` (see `references/integration.md`) and list it in the summary; unknown ⇒ keep the default and add a summary line "confirm barcode lengths fit the default range".
+
+```csharp
+SymbologySettings itf = settings.GetSymbologySettings(Symbology.InterleavedTwoOfFive);
+itf.ActiveSymbolCounts = new HashSet<short>(itf.ActiveSymbolCounts) { 44 };
+```
+
 If you encounter a symbology not in this table, check the BarcodeCapture API reference for the correct `Symbology` enum value before writing the code:
 - [.NET Android](https://docs.scandit.com/data-capture-sdk/dotnet.android/barcode-capture/api.html)
 - [.NET iOS](https://docs.scandit.com/data-capture-sdk/dotnet.ios/barcode-capture/api.html)

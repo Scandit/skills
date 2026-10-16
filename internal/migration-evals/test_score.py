@@ -201,7 +201,9 @@ TS_GATE_UNMIGRATED_RN = (
 )
 
 
-class TsScoreCase(unittest.TestCase):
+class FlatSuiteScoring(unittest.TestCase):
+    """Writes migrated texts into a temp workdir and scores them with a recorded, canned gate."""
+
     def setUp(self):
         self.tmp = Path(tempfile.mkdtemp())
         self.addCleanup(shutil.rmtree, self.tmp)
@@ -216,6 +218,8 @@ class TsScoreCase(unittest.TestCase):
             return gate_result
         return score.score_eval(suite, entry, self.tmp, evals_dir, gate, **kwargs)
 
+
+class TsScoreCase(FlatSuiteScoring):
     def test_rn_good_output_compiles_and_keeps(self):
         row = self.score(RN, RN_DIR, RN_ENTRIES[1], [RN_AIO_SCREEN])
         self.assertIs(row["compiles"], True)
@@ -405,6 +409,158 @@ class TsScoreCase(unittest.TestCase):
         self.assertEqual(row["found"], ["qr"])
 
 
+MAUI_DIR, MAUI, MAUI_ENTRIES = ts_entries("barcode-capture-net-maui")
+MAUI_PAGE = """
+using Scandit.DataCapture.Barcode.Capture;
+using Scandit.DataCapture.Barcode.Data;
+public partial class ScannerPage : ContentPage
+{
+    void Setup()
+    {
+        var settings = BarcodeCaptureSettings.Create();
+        settings.EnableSymbology(Symbology.Ean13Upca, true);
+        settings.EnableSymbology(Symbology.Code128, true);
+        settings.EnableSymbology(Symbology.Qr, true);
+    }
+}
+"""
+MAUI_GATE_FAIL = (
+    1,
+    "/tmp/x/ZxingMauiPage.xaml.cs(9,22): error CS0246: The type or namespace name 'ZXing' could not be found [/tmp/x/gate.csproj]\n"
+    "/tmp/x/ZxingMauiPage.xaml.cs(15,9): error CS0103: The name 'cameraView' does not exist [/tmp/x/gate.csproj]\n"
+    "GATE-FAIL: x vs Scandit.DataCapture.* 8.6.1\n",
+)
+
+
+class MauiScoreCase(FlatSuiteScoring):
+    def maui(self, eval_id, code, xaml="", gate_result=TS_GATE_OK, **kwargs):
+        return self.score(MAUI, MAUI_DIR, MAUI_ENTRIES[eval_id], [code, xaml], gate_result, **kwargs)
+
+    def test_good_output_compiles_and_keeps_symbologies(self):
+        row = self.maui(1, MAUI_PAGE)
+        self.assertIs(row["compiles"], True)
+        self.assertIs(row["kept"], True)
+
+    def test_expected_symbologies_come_from_the_zxing_flags(self):
+        self.assertEqual(self.maui(1, "")["expected"], ["ean13upca", "code128", "qr"])
+        self.assertEqual(self.maui(2, "")["expected"], ["ean13upca", "datamatrix"])
+
+    def test_gate_command_runs_the_maui_gate_on_the_code_behind(self):
+        commands = []
+        self.maui(1, MAUI_PAGE, commands=commands)
+        self.assertEqual(
+            commands[0],
+            ["bash", str(MAUI.gate), "--maui", str(self.tmp / "ZxingMauiPage.xaml.cs"), score.DEFAULT_SDK_VERSION],
+        )
+
+    def test_sdk_version_reaches_the_maui_gate(self):
+        commands = []
+        self.maui(1, MAUI_PAGE, commands=commands, sdk_version="9.9.9")
+        self.assertEqual(commands[0][-1], "9.9.9")
+
+    def test_csharp_enable_forms_are_traced(self):
+        text = (
+            "settings.EnableSymbology(Symbology.Qr, true);\n"
+            "settings.EnableSymbology(Symbology.Ean8, false);\n"
+            "settings.GetSymbologySettings(Symbology.Aztec).Enabled = true;\n"
+        )
+        self.assertEqual(sorted(self.maui(1, text)["found"]), ["qr"])
+        self.assertEqual(sorted(self.maui(2, "settings.GetSymbologySettings(Symbology.DataMatrix).Enabled = true;")["found"]),
+                         ["datamatrix"])
+
+    def test_csharp_collections_resolve_through_enable_symbologies(self):
+        cases = {
+            "var s = new HashSet<Symbology> { Symbology.Ean13Upca, Symbology.Code128 };": ["code128", "ean13upca"],
+            "Symbology[] s = { Symbology.Ean13Upca, Symbology.Code128 };": ["code128", "ean13upca"],
+            "var s = new[] { Symbology.Ean13Upca, Symbology.Code128 };": ["code128", "ean13upca"],
+            "var s = new List<Symbology> { Symbology.Ean13Upca, Symbology.Code128 };": ["code128", "ean13upca"],
+            "HashSet<Symbology> s = [Symbology.Ean13Upca, Symbology.Code128];": ["code128", "ean13upca"],
+        }
+        for definition, ids in cases.items():
+            with self.subTest(definition=definition):
+                text = f"{definition}\nsettings.EnableSymbologies(s);"
+                self.assertEqual(sorted(self.maui(1, text)["found"]), ids)
+
+    def test_csharp_inline_enable_symbologies_literal(self):
+        text = "settings.EnableSymbologies(new HashSet<Symbology> { Symbology.Qr, Symbology.Code128 });"
+        self.assertEqual(sorted(self.maui(1, text)["found"]), ["code128", "qr"])
+
+    def test_default_all_original_narrowed_to_one_is_kept(self):
+        original = MAUI_DIR / "fixtures" / "ZxingMauiPage.xaml.cs"
+        entry = {"id": 9, "files": ["fixtures/AllFormats.xaml.cs", "fixtures/AllFormats.xaml"]}
+        (self.tmp / "orig").mkdir()
+        (self.tmp / "orig" / "fixtures").mkdir()
+        all_formats = original.read_text().replace(
+            "Formats = BarcodeFormat.Ean13 | BarcodeFormat.Code128 | BarcodeFormat.QrCode,", "")
+        self.assertNotIn("Formats =", all_formats)
+        (self.tmp / "orig" / "fixtures" / "AllFormats.xaml.cs").write_text(all_formats)
+        row = self.score(MAUI, self.tmp / "orig", entry, ["settings.EnableSymbology(Symbology.Qr, true);", ""])
+        self.assertIs(row["narrowed"], True)
+        self.assertIs(row["kept"], True)
+        self.assertEqual(report.kept_cell(row), "1/12 narrowed (enabled: qr)")
+
+    def test_leftover_zxing_using_fails_even_when_the_gate_passes(self):
+        row = self.maui(1, "using ZXing.Net.Maui;\n" + MAUI_PAGE)
+        self.assertEqual(row["status"], "fail")
+        self.assertIs(row["compiles"], False)
+        self.assertEqual(row["leftover_imports"], 1)
+        self.assertEqual(row["errors_left"], 1)
+
+    def test_leftover_zxing_xaml_namespace_fails(self):
+        xaml = '<ContentPage xmlns:zxing="clr-namespace:ZXing.Net.Maui.Controls;assembly=ZXing.Net.MAUI.Controls" />'
+        row = self.maui(1, MAUI_PAGE, xaml)
+        self.assertEqual(row["status"], "fail")
+        self.assertEqual(row["leftover_imports"], 1)
+
+    def test_clean_migrated_xaml_namespace_is_not_a_leftover(self):
+        xaml = '<ContentPage xmlns:scandit="clr-namespace:Scandit.DataCapture.Core.UI.Maui;assembly=ScanditCaptureCoreMaui" />'
+        self.assertEqual(self.maui(1, MAUI_PAGE, xaml)["status"], "pass")
+
+    def test_csharp_leftover_using_forms(self):
+        banned = ("ZXing.Net.Maui",)
+        cases = {
+            "using ZXing.Net.Maui;": 1,
+            "using ZXing.Net.Maui.Controls;": 1,
+            "using static ZXing.Net.Maui.BarcodeFormat;": 1,
+            "using Zx = ZXing.Net.Maui;": 1,
+            "// using ZXing.Net.Maui;": 0,
+            "using ZXing.Net.MauiExtra;": 0,
+            "using Scandit.DataCapture.Barcode.Data;": 0,
+        }
+        for text, n in cases.items():
+            with self.subTest(text=text):
+                self.assertEqual(score.leftover_imports(text, banned), n)
+
+    def test_zxing_all_flag_expands_to_the_default_set(self):
+        mapping = score.load_mapping()
+        for source in ("Formats = BarcodeFormat.All,", "Formats = BarcodeFormat.Ean13 | BarcodeFormats.All,"):
+            with self.subTest(source=source):
+                self.assertEqual(score.expected_symbologies(source, MAUI, mapping), mapping["default_set"])
+
+    def test_unmapped_zxing_flag_is_refused(self):
+        with self.assertRaisesRegex(ValueError, "unreadable Formats item"):
+            score.expected_symbologies("Formats = BarcodeFormat.NoSuchFormat,", MAUI, score.load_mapping())
+
+    def test_flags_split_across_lines_are_all_read(self):
+        source = "Formats = BarcodeFormat.Ean13 |\n    BarcodeFormat.QrCode\n    | BarcodeFormat.Code128,"
+        self.assertEqual(score.expected_symbologies(source, MAUI, score.load_mapping()),
+                         ["ean13upca", "qr", "code128"])
+
+    def test_csharp_typed_array_literal_resolves(self):
+        text = "var s = new Symbology[] { Symbology.Qr, Symbology.Code128 };\nsettings.EnableSymbologies(s);"
+        self.assertEqual(sorted(self.maui(1, text)["found"]), ["code128", "qr"])
+
+    def test_xaml_namespace_prefix_match_is_not_a_leftover(self):
+        for ns in ("ZXing.Net.MauiExtra", "ZXing.Net.Maui2"):
+            with self.subTest(ns=ns):
+                self.assertEqual(score.leftover_imports(f'xmlns:z="clr-namespace:{ns}"', ("ZXing.Net.Maui",)), 0)
+
+    def test_error_cs_lines_are_counted(self):
+        row = self.maui(1, MAUI_PAGE, gate_result=MAUI_GATE_FAIL)
+        self.assertEqual(row["status"], "fail")
+        self.assertEqual(row["errors_left"], 2)
+
+
 class RunTsCase(unittest.TestCase):
     def test_colliding_basenames_are_refused(self):
         entry = {"files": ["a/index.ts", "b/index.ts"]}
@@ -524,6 +680,17 @@ class RealGateCase(unittest.TestCase):
             lib.mkdir()
             shutil.copy(EVALS_DIR / ENTRIES[1]["files"][0], lib)
             row = score.score_eval(SUITE, ENTRIES[1], tmp, EVALS_DIR)
+        self.assertEqual(row["status"], "fail")
+        self.assertGreaterEqual(row["errors_left"], 1)
+
+
+@unittest.skipUnless(os.environ.get("FIX_GATE_E2E") == "1", "set FIX_GATE_E2E=1 to run the real .NET gate")
+class RealMauiGateCase(unittest.TestCase):
+    def test_unmigrated_fixture_fails_real_gate(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            for name in score.fixture_paths(MAUI, MAUI_ENTRIES[1]):
+                shutil.copy(MAUI_DIR / "fixtures" / name, tmp)
+            row = score.score_eval(MAUI, MAUI_ENTRIES[1], tmp, MAUI_DIR)
         self.assertEqual(row["status"], "fail")
         self.assertGreaterEqual(row["errors_left"], 1)
 

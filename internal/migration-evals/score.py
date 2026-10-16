@@ -14,15 +14,16 @@ from common import AUDITOR_ROOT, eval_dir  # noqa: E402
 MAPPING = REPO / "internal" / "symbology-map" / "mapping.json"
 DEFAULT_SDK_VERSION = "8.6.1"
 TS_GATE = AUDITOR_ROOT / "scripts" / "fix_gate_ts.sh"
+DOTNET_GATE = AUDITOR_ROOT / "scripts" / "fix_gate_dotnet.sh"
 COMMENTS_AND_STRINGS = re.compile(
     r"""'''.*?'''|\"\"\".*?\"\"\"|'(?:\\.|[^'\\\n])*'|"(?:\\.|[^"\\\n])*"|//[^\n]*|/\*.*?\*/""", re.DOTALL
 )
 SYMBOLOGY = re.compile(r"\bSymbology\.(\w+)")
 ENABLE_ONE = re.compile(
-    r"\benableSymbology\(\s*Symbology\.(\w+)\s*,\s*true\s*\)"
-    r"|\bsettingsForSymbology\(\s*Symbology\.(\w+)\s*\)\s*\.isEnabled\s*=\s*true\b"
+    r"\b[eE]nableSymbology\(\s*Symbology\.(\w+)\s*,\s*true\s*\)"
+    r"|\b(?:settingsForSymbology|GetSymbologySettings)\(\s*Symbology\.(\w+)\s*\)\s*\.(?:isEnabled|Enabled)\s*=\s*true\b"
 )
-ENABLE_MANY = re.compile(r"\benableSymbologies\s*\(")
+ENABLE_MANY = re.compile(r"\b[eE]nableSymbologies\s*\(")
 ENABLE_PROP = re.compile(r"(?<![\w.])symbologies=\{")
 CALLABLE = re.compile(r"\b(\w+)\s*(?:=\s*(?:async\s*)?(?:function\b\s*)?)?\(")
 DECLARATION_TAIL = re.compile(r"\s*(?::[^;{}()=]*)?(?:async\s*)?(?:\{|=>)")
@@ -30,6 +31,7 @@ KEYWORDS = {"if", "for", "while", "switch", "catch", "return", "function"}
 IDENTIFIER = re.compile(r"(?<![.\w])([A-Za-z_]\w*)\b(?!\s*\()")
 GATE_SKIPPED = 3
 TS_ERROR = re.compile(r"\berror TS\d+")
+CS_ERROR = re.compile(r"\berror CS\d+")
 TS_TOOLS = "Read Edit Write Glob Grep Skill"
 TS_SUFFIX = "\n\nThe files are in the current directory. Edit them in place."
 
@@ -79,6 +81,16 @@ SUITES = {
         platform="capacitor",
         banned_imports=("@capacitor-mlkit/barcode-scanning",),
     ),
+    "barcode-capture-net-maui": Suite(
+        gate=DOTNET_GATE,
+        format_lists={"Formats": "zxing-net-maui"},
+        lang="csharp",
+        error_line=CS_ERROR,
+        allowed_tools=TS_TOOLS,
+        prompt_suffix=TS_SUFFIX,
+        platform="maui",
+        banned_imports=("ZXing.Net.Maui",),
+    ),
 }
 
 
@@ -119,6 +131,14 @@ def list_items(text, key):
                 yield re.sub(r'^"(.*)"$', r"'\1'", item)
 
 
+def flag_items(text, key):
+    """Members of every `<key> = A.X | A.Y` flags assignment in text."""
+    for expression in re.findall(rf"\b{key}\s*=\s*((?:[^,;}}|\n]+\s*\|\s*)*[^,;}}|\n]+)", text):
+        for item in expression.split("|"):
+            if item.strip():
+                yield item.strip()
+
+
 def expected_symbologies(source_text, suite, mapping):
     default = list(mapping["default_set"])
     text = strip_comments(source_text)
@@ -128,10 +148,11 @@ def expected_symbologies(source_text, suite, mapping):
         for row, native in mapping["sources"][source]["rows"].items():
             for name in native["names"] if isinstance(native, dict) else native:
                 by_name[name] = row
-        for item in list_items(text, key):
+        items = flag_items(text, key) if suite.lang == "csharp" else list_items(text, key)
+        for item in items:
             tail = item.rsplit(".", 1)[-1]
             row = by_name.get(item) or by_name.get(tail)
-            if row == "all-formats" or tail == "all":
+            if row == "all-formats" or tail.lower() == "all":
                 return default
             if not row:
                 raise ValueError(f"unreadable {key} item {item!r}: map it in {MAPPING.name} or simplify the fixture")
@@ -202,7 +223,7 @@ def resolve_args(code, arg, seen, at):
             for name, args, body, start in callables(code):
                 if name == owner and not body:
                     names.update(resolve_args(code, args, seen, start))
-        definitions = re.compile(rf"\b{re.escape(ident)}\s*(?::[^=;{{}}]+)?=\s*(?:const\s*)?(?:<[^>]*>\s*)?[{{\[]")
+        definitions = re.compile(rf"\b{re.escape(ident)}\s*(?::[^=;{{}}]+)?=\s*(?:const\s*)?(?:new\s*\w*\s*(?:<[^>]*>\s*)?(?:\[\]\s*)?)?(?:<[^>]*>\s*)?[{{\[]")
         for definition in definitions.finditer(code, *(span or (0, len(code)))):
             names.update(SYMBOLOGY.findall(balanced(code, definition.end() - 1)))
     return names
@@ -214,12 +235,14 @@ def symbologies_found(output_text, ids, suite, mapping):
 
 
 def leftover_imports(text, modules):
-    """Import, re-export, dynamic import and require specifiers naming a banned module."""
+    """Import, re-export, dynamic import, require, C# using and XAML clr-namespace naming a banned module."""
     text = strip_comments(text)
     count = 0
     for module in modules:
         specifier = rf"""["']{re.escape(module)}(?:/[^"'\n]*)?["']"""
         count += len(re.findall(rf"\bfrom\s*{specifier}|\bimport\s*\(?\s*{specifier}|\brequire\s*\(\s*{specifier}", text))
+        namespace = rf"{re.escape(module)}(?:\.\w+)*"
+        count += len(re.findall(rf"\busing\s+(?:static\s+)?(?:\w+\s*=\s*)?{namespace}\s*;|\bclr-namespace:{namespace}(?![\w.])", text))
     return count
 
 
@@ -234,6 +257,8 @@ def gate_status(exit_code, errors_left):
 def gate_command(suite, main, extras, sdk_version):
     if not suite.platform:
         return ["bash", str(suite.gate), str(main), *map(str, extras)]
+    if suite.platform == "maui":
+        return ["bash", str(suite.gate), "--maui", str(main), sdk_version]
     shim = ["env", "FIX_GATE_TS_ANY_MODULE=1"] if suite.banned_imports else []
     return [*shim, "bash", str(suite.gate), suite.platform, str(main), sdk_version, *map(str, extras)]
 

@@ -6,8 +6,8 @@
       "prompt": "I have a .NET MAUI app using ZXing.Net.Maui for barcode scanning. I want to replace it with BarcodeCapture. Here is my page: ZxingMauiPage.xaml + ZxingMauiPage.xaml.cs",
       "expected_output": "Removes the ZXing.Net.Maui XAML control, namespace, options, and event handler. Replaces with <scandit:DataCaptureView> + BarcodeCapture mode + HandlerChanged overlay creation. Maps the ZXing formats (Ean13, Code128, QrCode) to Scandit symbologies (Ean13Upca, Code128, Qr). Preserves the ScannedBarcode record and deduplication logic.",
       "files": [
-        "fixtures/ZxingMauiPage.xaml",
-        "fixtures/ZxingMauiPage.xaml.cs"
+        "fixtures/ZxingMauiPage.xaml.cs",
+        "fixtures/ZxingMauiPage.xaml"
       ],
       "assertions": [
         {"text": "ZXing.Net.Maui using directives are NOT present in the new code"},
@@ -42,8 +42,8 @@
       "prompt": "My .NET MAUI app decodes barcodes from photos the user picks, using ZXing.Net.Maui's BarcodeReader.DecodeAsync. I want to replace it with Scandit BarcodeCapture. Here is my page: ZxingMauiPhotoPage.xaml + ZxingMauiPhotoPage.xaml.cs",
       "expected_output": "Replaces BarcodeReader.DecodeAsync with a Scandit ImageFrameSource created from the picked photo via CreateImageFrameSourceAsync, set as the DataCaptureContext frame source and switched on, with BarcodeCapture (Ean13Upca and DataMatrix enabled) reporting the result through BarcodeScanned. Keeps DecodeAsync's Task<ScannedBarcode?> contract by bridging the event with a TaskCompletionSource and a timeout for photos with no barcode. Preserves the ScannedBarcode record, the deduplicated history, the photo picker and the label text.",
       "files": [
-        "fixtures/ZxingMauiPhotoPage.xaml",
-        "fixtures/ZxingMauiPhotoPage.xaml.cs"
+        "fixtures/ZxingMauiPhotoPage.xaml.cs",
+        "fixtures/ZxingMauiPhotoPage.xaml"
       ],
       "assertions": [
         {"text": "using ZXing.Net.Maui and BarcodeReader.DecodeAsync / BarcodeReaderOptions are NOT present in the migrated code (may appear in a before/after summary)"},
