@@ -2,7 +2,7 @@
 """Runs claude over each third-party migration eval, then scores and reports.
 
 Usage: run.py --skill barcode-capture-flutter [--ids 1,3] [--out DIR] [--jobs 4]
-              [--model M] [--timeout 1200] [--score-only DIR]
+              [--model M] [--timeout 1200] [--sdk-version 8.6.1] [--score-only DIR]
 """
 import argparse
 import json
@@ -17,7 +17,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from report import write_report  # noqa: E402
-from score import REPO, SUITES, eval_dir, fixture_paths, score_eval  # noqa: E402
+from score import DEFAULT_SDK_VERSION, REPO, SUITES, eval_dir, fixture_paths, score_eval  # noqa: E402
 
 
 def load_evals(skill, ids):
@@ -26,7 +26,11 @@ def load_evals(skill, ids):
     return evals_dir, [e for e in data["evals"] if not ids or e["id"] in ids]
 
 
-def prepare_workdir(evals_dir, entry, work):
+def prepare_workdir(suite, evals_dir, entry, work):
+    if suite.platform:
+        for name, dest in zip(entry["files"], fixture_paths(suite, entry)):
+            shutil.copy(evals_dir / name, work / dest)
+        return
     fixtures = evals_dir / "fixtures"
     shutil.copy(fixtures / "pubspec.yaml", work / "pubspec.yaml")
     (work / "lib").mkdir()
@@ -48,22 +52,27 @@ def as_text(value):
     return value.decode() if isinstance(value, bytes) else (value or "")
 
 
-def save_outputs(entry, work, out):
-    lib = work / "lib"
-    for name in fixture_paths(entry):
-        if (lib / name).is_file():
-            (out / "lib" / name).parent.mkdir(parents=True, exist_ok=True)
-            shutil.copy(lib / name, out / "lib" / name)
+def save_outputs(suite, entry, work, out):
+    for name in fixture_paths(suite, entry):
+        if (work / name).is_file():
+            (out / name).parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy(work / name, out / name)
 
 
-def run_claude(suite, evals_dir, entry, out, model, timeout):
+def build_prompt(suite, entry, sdk_version):
+    prompt = entry["prompt"] + suite.prompt_suffix.format(main=Path(fixture_paths(suite, entry)[0]).name)
+    # The fixtures carry no package.json, so name the SDK the gate type-checks against.
+    return prompt + f" The app uses Scandit SDK {sdk_version}." if suite.platform else prompt
+
+
+def run_claude(suite, evals_dir, entry, out, model, timeout, sdk_version=DEFAULT_SDK_VERSION):
     shutil.rmtree(out, ignore_errors=True)
     out.mkdir(parents=True)
-    info = {"exit_code": None, "timed_out": False, "model": model}
+    info = {"exit_code": None, "timed_out": False, "model": model, "sdk_version": sdk_version}
     with tempfile.TemporaryDirectory(prefix="migration-eval-") as tmp:
         work = Path(tmp)
-        prepare_workdir(evals_dir, entry, work)
-        prompt = entry["prompt"] + suite.prompt_suffix.format(main=fixture_paths(entry)[0])
+        prepare_workdir(suite, evals_dir, entry, work)
+        prompt = build_prompt(suite, entry, sdk_version)
         try:
             proc = subprocess.run(
                 claude_command(prompt, suite, model), cwd=work, capture_output=True, text=True, timeout=timeout
@@ -75,7 +84,7 @@ def run_claude(suite, evals_dir, entry, out, model, timeout):
             stdout, stderr = as_text(exc.stdout), as_text(exc.stderr)
         (out / "claude.json").write_text(stdout)
         (out / "claude.stderr").write_text(stderr)
-        save_outputs(entry, work, out)
+        save_outputs(suite, entry, work, out)
     (out / "run.json").write_text(json.dumps(info) + "\n")
 
 
@@ -102,6 +111,7 @@ def main(argv=None):
     ap.add_argument("--jobs", type=int, default=4)
     ap.add_argument("--model")
     ap.add_argument("--timeout", type=int, default=1200)
+    ap.add_argument("--sdk-version", help=f"default: the saved run's on --score-only, else {DEFAULT_SDK_VERSION}")
     ap.add_argument("--score-only", metavar="DIR")
     args = ap.parse_args(argv)
 
@@ -123,20 +133,25 @@ def main(argv=None):
     if not args.score_only:
         with ThreadPoolExecutor(max_workers=args.jobs) as pool:
             futures = [
-                pool.submit(run_claude, suite, evals_dir, e, skill_out / str(e["id"]), args.model, args.timeout)
+                pool.submit(run_claude, suite, evals_dir, e, skill_out / str(e["id"]), args.model, args.timeout,
+                            args.sdk_version or DEFAULT_SDK_VERSION)
                 for e in entries
             ]
             for future in futures:
                 future.result()
 
+    infos = [read_claude_info(skill_out / str(e["id"])) for e in entries]
+
+    def saved(key):
+        return next((i[key] for i in infos if i.get(key)), None)
+    sdk_version = args.sdk_version or saved("sdk_version") or DEFAULT_SDK_VERSION
     rows = []
-    for entry in entries:
-        out = skill_out / str(entry["id"])
-        row = score_eval(suite, entry, out, evals_dir)
-        row["claude"] = read_claude_info(out)
+    for entry, info in zip(entries, infos):
+        row = score_eval(suite, entry, skill_out / str(entry["id"]), evals_dir, sdk_version=sdk_version)
+        row["claude"] = info
         rows.append(row)
-    model = args.model or next((r["claude"].get("model") for r in rows if r["claude"].get("model")), None)
-    write_report({args.skill: rows}, out_root, model=model)
+    model = args.model or saved("model")
+    write_report({args.skill: rows}, out_root, model=model, sdk_version=sdk_version if suite.platform else None)
     print((out_root / "report.md").read_text())
     return 0
 

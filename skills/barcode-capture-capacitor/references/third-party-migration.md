@@ -87,7 +87,9 @@ ML Kit runs its camera behind a transparent WebView, so the app's close button, 
 **Recommended default set** when the source scanned every format and nothing in the app narrows it: `Symbology.QR`, `Symbology.EAN13UPCA`, `Symbology.EAN8`, `Symbology.UPCE`, `Symbology.Code39`, `Symbology.Code93`, `Symbology.Code128`, `Symbology.InterleavedTwoOfFive`, `Symbology.Codabar`, `Symbology.DataMatrix`, `Symbology.Aztec`, `Symbology.PDF417`.
 <!-- END GENERATED symbology-table -->
 
-> Never narrow below what the original scanned: no `formats` ⇒ the recommended default set above, not QR only. Code that compared `barcode.format` against ML Kit strings must compare `barcode.symbology` against `Symbology` values. For a format not in this table, fetch the [BarcodeCapture API reference](https://docs.scandit.com/data-capture-sdk/capacitor/barcode-capture/api.html) before writing code.
+> Never narrow below what the original scanned unless app code narrows it: no `formats` ⇒ the recommended default set above, not QR only. Code that compared `barcode.format` against ML Kit strings must compare `barcode.symbology` against `Symbology` values. For a format not in this table, fetch the [BarcodeCapture API reference](https://docs.scandit.com/data-capture-sdk/capacitor/barcode-capture/api.html) before writing code.
+
+**Barcode lengths.** ML Kit reads a variable-length 1D code (ITF, Code 39, Code 128, Codabar, …) at any length; Scandit reads it only inside the symbology's default length range (ITF: 6–40 digits, even only — full table at [Symbology Properties](https://docs.scandit.com/symbology-properties)). For each one you enable, check the lengths the app really reads (payload parsers, validation, domain formats such as the 44-digit ITF on Brazilian boletos). A length outside the default ⇒ add it to that symbology's `activeSymbolCounts`, keeping the default lengths (assigning replaces the list: `const itf = settings.settingsForSymbology(Symbology.InterleavedTwoOfFive); itf.activeSymbolCounts = [...itf.activeSymbolCounts, 44];`, capacitor=6.8+, see `references/integration.md`) and list it in the summary; unknown ⇒ keep the default and add a summary line "confirm barcode lengths fit the default range".
 
 ### Result mapping
 
@@ -327,4 +329,4 @@ export function ScanButton({ onResult }: { onResult: (value: string) => void }) 
 2. Type-check (`npx tsc --noEmit`) and fix every error before finishing; an ML Kit `rawValue` is `string | undefined` while `barcode.data` is `string | null`, so adjust types that carried it.
 3. iOS: keep (or add) `NSCameraUsageDescription` in `Info.plist`. Android: nothing to add.
 4. Set the license key, and confirm the connected element has a negative `z-index`.
-5. Show only what changed: what was removed from the ML Kit flow, what was added for BarcodeCapture, and each judgment call (enabled symbologies, duplicate filter, overlay, dropped typed fields).
+5. Show only what changed: what was removed from the ML Kit flow, what was added for BarcodeCapture, and each judgment call (enabled symbologies, symbol counts added or left at default, duplicate filter, overlay, dropped typed fields).
