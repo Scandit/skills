@@ -9,9 +9,12 @@ carries one version, and every release bumps it. Installed copies on all channel
 changes, so a merge without a bump reaches nobody who already installed.
 
 1. `internal/release/versions.py set 1.2.0`, commit, merge.
-2. Tag the merge commit: `git tag v1.2.0 && git push origin v1.2.0`.
+2. In data-capture-sdk, press Run on the migration evals pipeline schedule. It
+   evaluates `main`, which is the merge commit. Tag only if its digest lists no
+   NEW items.
+3. Tag the merge commit: `git tag v1.2.0 && git push origin v1.2.0`.
    `versions.py check --tag v1.2.0` confirms the tag matches the manifests.
-3. Publish to the directories that pin a reviewed snapshot:
+4. Publish to the directories that pin a reviewed snapshot:
    [Claude Code](#claude-code-official-directory) and
    [OpenAI](#openai-plugin-directory).
 
