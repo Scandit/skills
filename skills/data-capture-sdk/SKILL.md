@@ -82,7 +82,7 @@ If nothing matches or the workspace is empty, then ask. Either way, **always con
 
 Once product + platform are confirmed, find the matching row in the table below. If a skill exists, **propose the integration as the immediate next action**. Use this shape:
 
-> "I'll use the `label-capture-rn` skill to integrate Smart Label Capture into your app. If you don't have it installed yet, add it with `npx skills add scandit/skills` (pick `label-capture-rn`) — or, in Claude Code, `/plugin marketplace add scandit/skills` then `/plugin install scandit-sdk@scandit-plugins`. Ready to start?"
+> "I'll use the `label-capture-rn` skill to integrate Smart Label Capture into your app. If you don't have it installed yet, add it with `npx skills@1.7.1 add scandit/skills` (pick `label-capture-rn`) — or, in Claude Code, `/plugin marketplace add scandit/skills` then `/plugin install scandit-sdk@scandit-plugins`. Ready to start?"
 
 Rules for the handoff:
 

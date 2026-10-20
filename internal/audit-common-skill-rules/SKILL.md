@@ -52,10 +52,10 @@ _Exempt: `data-capture-sdk`._
 Must exist and convey, in this order of preference:
 
 - The licence product and licence platforms this skill's framework needs — the values in [../skill-auditor/references/licence-platforms.md](../skill-auditor/references/licence-platforms.md), which is the only place that mapping lives.
-- **MCP connected:** call `ensure_scanner_setup` for that product and those platforms, then show the user the command `get_license_env_command` returns and run it only once they approve. A full key is never printed in chat.
-- **Not connected:** tell the user once that they can connect the server (`https://ssl.scandit.com/mcp`) in their MCP client; the agent never edits MCP client configuration itself (the OpenAI skill scan flags that, and running the returned command unasked). Browser authentication — never claimed to work headless or in CI. Trial keys only; production licences are never created, revoked or modified.
+- **MCP connected:** call `ensure_scanner_setup` for that product and those platforms, then `get_license_key` with the key ID from its result, and write the key into `.env` with the file-editing tool. Never run a shell command the server returns (the Claude directory scan flags that as download-and-run). A full key is never printed in chat.
+- **Not connected:** tell the user once that they can connect the server (`https://ssl.scandit.com/mcp`) in their MCP client; the agent never edits MCP client configuration itself (the OpenAI skill scan flags that). Browser authentication — never claimed to work headless or in CI. Trial keys only; production licences are never created, revoked or modified.
 - **Declined, or no MCP client:** fall back to generating a key in the dashboard, and never block on MCP.
-- **Then into the code:** how the key gets from `.env` into the app in place of the placeholder, as that framework's `## Key wiring` sentence in the same reference file, with the direct-paste route as the fallback.
+- **Then into the code:** how the key gets from `.env` into the app in place of the placeholder, as that framework's `## Key wiring` sentence in the same reference file, with the direct-paste route as the fallback. The agent never reads `.env`, environment variables or other local files to find a key (the Claude directory scan flags that as using a credential from the user's machine).
 - The dashboard provisioning flow appears here and nowhere else in the skill, so a reader gets one instruction rather than two.
 
 _Exempt: `data-capture-sdk` (advisory skill — it recommends a product rather than integrating one), `scandit-xamarin-to-net-migration`, `matrixscan-ar-highlight-ios`, `matrixscan-ar-annotation-ios`._

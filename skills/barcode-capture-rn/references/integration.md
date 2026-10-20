@@ -9,7 +9,7 @@ BarcodeCapture is the single-scan capture mode in the Scandit Data Capture SDK. 
 - Scandit React Native packages installed:
   - `scandit-react-native-datacapture-core`
   - `scandit-react-native-datacapture-barcode`
-- After installing, run `npx pod-install` (or `cd ios && pod install`) for iOS. Android auto-links via Gradle — no manual step.
+- After installing, run `npx pod-install@1.2.1` (or `cd ios && pod install`) for iOS. Android auto-links via Gradle — no manual step.
 - React Native `>=0.70`. The New Architecture (Fabric / TurboModules) is supported — no additional setup required beyond the standard RN template.
 - A valid Scandit license key — see **Licence key** in this skill's `SKILL.md`.
 - Camera permissions configured by the app:
@@ -26,7 +26,7 @@ After providing the code, show this setup checklist:
 
 **Setup checklist:**
 1. Install packages: `npm install scandit-react-native-datacapture-core scandit-react-native-datacapture-barcode`
-2. Run `npx pod-install` (iOS). Android auto-links.
+2. Run `npx pod-install@1.2.1` (iOS). Android auto-links.
 3. Add `NSCameraUsageDescription` to `ios/<App>/Info.plist`.
 4. Replace `-- ENTER YOUR SCANDIT LICENSE KEY HERE --` with your key (see **Licence key** in `SKILL.md`).
 5. If Metro was running, restart it with `--reset-cache` so the new package is picked up.
@@ -637,7 +637,7 @@ const styles = StyleSheet.create({
 5. **Cleanup on unmount** — Stop the camera, remove the overlay, remove the listener, and call `dataCaptureContext.removeMode(barcodeCapture)`. Do not call `dataCaptureContext.dispose()`.
 6. **Construction in v8** — Use `new BarcodeCapture(settings)` + `context.addMode(...)`. The `BarcodeCapture.forContext(context, settings)` factory is removed in v8.
 7. **Imports** — Core types (`DataCaptureContext`, `DataCaptureView`, `Camera`, `FrameSourceState`, `Color`, `Brush`, viewfinders) from `scandit-react-native-datacapture-core`; barcode types (`BarcodeCapture`, `BarcodeCaptureSettings`, `BarcodeCaptureOverlay`, `Symbology`, `SymbologyDescription`, `BarcodeCaptureFeedback`) from `scandit-react-native-datacapture-barcode`.
-8. **Pod install** — Run `npx pod-install` (or `cd ios && pod install`) after installing or updating Scandit packages. Android auto-links.
+8. **Pod install** — Run `npx pod-install@1.2.1` (or `cd ios && pod install`) after installing or updating Scandit packages. Android auto-links.
 9. **Camera permissions** — iOS: `NSCameraUsageDescription` in `Info.plist`. Android: runtime request via `PermissionsAndroid` before navigating to the scan screen.
 10. **Metro cache** — If a package upgrade appears to have no effect at runtime, restart Metro with `npm start -- --reset-cache`.
 

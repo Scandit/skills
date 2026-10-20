@@ -316,7 +316,7 @@ Type-check the migrated file (`npx tsc --noEmit`) and fix every error. The usual
 
 **Setup checklist:**
 1. Remove the old scanner packages from `package.json`; install `npm install scandit-react-native-datacapture-core scandit-react-native-datacapture-barcode` (plus `react-native-fs` only if the still-image path needs it).
-2. Run `npx pod-install` (iOS). Android auto-links. **Expo app:** Scandit's packages are native modules and do not run in Expo Go, so build a development client instead (`npx expo prebuild`, then `npx expo run:ios` / `npx expo run:android`), and set `NSCameraUsageDescription` under `expo.ios.infoPlist` in `app.json`, since a managed project has no `ios/` directory until prebuild.
+2. Run `npx pod-install@1.2.1` (iOS). Android auto-links. **Expo app:** Scandit's packages are native modules and do not run in Expo Go, so build a development client instead (`npx expo prebuild`, then `npx expo run:ios` / `npx expo run:android`), and set `NSCameraUsageDescription` under `expo.ios.infoPlist` in `app.json`, since a managed project has no `ios/` directory until prebuild.
 3. Keep or add `NSCameraUsageDescription` in `ios/<App>/Info.plist`. On Android the plugin declares the manifest permission; the screen requests it at runtime.
 4. Replace `'-- ENTER YOUR SCANDIT LICENSE KEY HERE --'` with your key (see **Licence key** in `SKILL.md`).
 5. Restart Metro with `--reset-cache`.

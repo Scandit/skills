@@ -55,9 +55,13 @@ Describe what you want in plain language. Your agent loads the right skill on it
 
 ## Licence keys
 
-These skills write the integration; they don't provision the licence key by themselves. The [Scandit MCP server](https://ssl.scandit.com/mcp) does that part — connect it (`claude mcp add --transport http scandit https://ssl.scandit.com/mcp`) alongside the skills (`npx plugins add scandit/skills`) and each implementation skill's `## Licence key` section will use it to fetch a trial key straight into your project's `.env`.
+These skills write the integration; they don't provision the licence key by themselves. The [Scandit MCP server](https://ssl.scandit.com/mcp) does that part — connect it (`claude mcp add --transport http scandit https://ssl.scandit.com/mcp`) alongside the skills (`npx plugins add scandit/skills`) and each implementation skill's `## Licence key` section will use it to fetch a trial key, which your agent writes into your project's `.env`. The skills never look for a key on your machine: it comes from the MCP server or from you.
 
 Keys provisioned this way are **trials only**, and the MCP server's auth is browser-based, so it does not work headless or in CI. Without it, the dashboard flow at <https://ssl.scandit.com> still works — every skill falls back to that.
+
+## Privacy
+
+The skills themselves send nothing anywhere. The bundled Scandit MCP server (`https://ssl.scandit.com/mcp`) talks to your Scandit account to provision trial licence keys; Scandit's privacy policy is at <https://www.scandit.com/privacy/>.
 
 ## Available skills
 

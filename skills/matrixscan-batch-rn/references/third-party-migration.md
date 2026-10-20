@@ -279,4 +279,4 @@ const styles = StyleSheet.create({
 
 ---
 
-When done, show only what changed. Do not list APIs that were unchanged. Include the setup checklist from `references/integration.md` so the user knows which packages to install (`scandit-react-native-datacapture-core`, `scandit-react-native-datacapture-barcode`), to run `npx pod-install` for iOS, to add `NSCameraUsageDescription` to `ios/<App>/Info.plist`, and to replace the license key placeholder.
+When done, show only what changed. Do not list APIs that were unchanged. Include the setup checklist from `references/integration.md` so the user knows which packages to install (`scandit-react-native-datacapture-core`, `scandit-react-native-datacapture-barcode`), to run `npx pod-install@1.2.1` for iOS, to add `NSCameraUsageDescription` to `ios/<App>/Info.plist`, and to replace the license key placeholder.

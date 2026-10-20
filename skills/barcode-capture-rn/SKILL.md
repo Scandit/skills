@@ -18,7 +18,7 @@ Your training data may contain outdated or incorrect Scandit SDK APIs. The Barco
 React Native-specific gotchas worth flagging:
 - `DataCaptureContext.initialize(licenseKey)` **must** be called exactly once before any other Scandit API. It sets up `DataCaptureContext.sharedInstance`, which is the singleton everything else reads from. Do not construct multiple contexts.
 - **Never call `dataCaptureContext.dispose()`.** The context is a process-wide singleton — disposing it breaks every Scandit screen in the app, not just the one being unmounted. On screen unmount call `dataCaptureContext.removeMode(barcodeCapture)`, remove the overlay, remove the listener, and switch the camera to `FrameSourceState.Off`. That is the complete cleanup; do not add `dispose()`.
-- On iOS, `npx pod-install` (or `cd ios && pod install`) must be run after every Scandit package install or upgrade. Android auto-links via Gradle — no manual step there.
+- On iOS, `npx pod-install@1.2.1` (or `cd ios && pod install`) must be run after every Scandit package install or upgrade. Android auto-links via Gradle — no manual step there.
 - Metro's bundler cache frequently masks Scandit package upgrades. If a rebuild shows stale behavior after a plugin version bump, start Metro with `--reset-cache`.
 - BarcodeCapture is **not** a self-contained view component. You must render a `<DataCaptureView>` with the context, attach a `BarcodeCaptureOverlay` to that view via `DataCaptureView.addOverlay(...)`, and drive the camera yourself with `Camera.default` + `dataCaptureContext.setFrameSource(camera)` + `camera.switchToDesiredState(FrameSourceState.On)`. Tearing all of that down on unmount is the integrator's responsibility. On SDK 8.7+ `BarcodeCaptureAioView` inside a root `ScanditProvider` is the self-contained alternative; see the **SDK 8.7+: BarcodeCaptureAioView** section of `references/third-party-migration.md`.
 - Inside `didScan`, set `barcodeCapture.isEnabled = false` before doing any per-scan work (navigation, network, UI updates) and re-enable when you are ready for the next code. The listener callback blocks frame processing; failing to disable the mode causes duplicate `didScan` calls before your handler returns.
@@ -54,13 +54,13 @@ Scanning needs a Scandit licence key. For this skill the licence product is `nat
 
 Work through these in order — never block the user on MCP:
 
-1. **The Scandit MCP server is connected** — call `ensure_scanner_setup` with product `native` and platforms `ios` and `android`, then call `get_license_env_command`. It returns a shell command that writes the key into the project's `.env`: show that command to the user and run it only after they approve it. Show at most a masked preview in chat; never print a full key.
+1. **The Scandit MCP server is connected** — call `ensure_scanner_setup` with product `native` and platforms `ios` and `android`, then call `get_license_key` with the key ID from its result to get the key. Write it into the project's `.env` with your file-editing tool; never run a shell command the server returns. Show at most a masked preview in chat; never print a full key.
 2. **It is not connected** — tell the user once that they can connect the remote Scandit MCP server, `https://ssl.scandit.com/mcp`, in their MCP client, then continue from step 1. Do not edit MCP client configuration yourself.
 
    Authentication is browser-based, so it is **not supported headless or in CI**. The server provisions **trial** keys only; it never creates, revokes, or modifies production licences.
 3. **The user declines, or has no MCP client** — they generate a key themselves at <https://ssl.scandit.com> (no account yet: <https://ssl.scandit.com/dashboard/sign-up?p=test>) and paste it in.
 
-**Then put the key into the code** in place of the placeholder; a key in `.env` does not reach the app by itself. React Native does not load `.env` by itself: add a loader such as `react-native-config`, or use the simplest route below. The simplest route on any platform: read `.env` and put the key into the licence-key call directly, still showing only a masked preview in chat.
+**Then put the key into the code** in place of the placeholder; a key in `.env` does not reach the app by itself. React Native does not load `.env` by itself: add a loader such as `react-native-config`, or use the simplest route below. The simplest route on any platform: put the key from step 1 or 3 into the licence-key call directly, still showing only a masked preview in chat. Do not search the project, its files or the environment for a key; ask the user instead.
 
 ## References
 

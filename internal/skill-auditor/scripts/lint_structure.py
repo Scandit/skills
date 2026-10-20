@@ -15,6 +15,8 @@ Checks (per skill, and across siblings sharing a product prefix):
   licence       every non-exempt skill carries a `## Licence key` section naming the product
                 and licence platforms from references/licence-platforms.md plus its
                 key-wiring sentence, and carries the dashboard provisioning link nowhere else
+  policy        no skill text the Claude plugin-directory scan flags: a server-returned
+                command, a pipe into an interpreter, an unpinned registry npx, a `.env` read
   routing       every skills/<dir> is referenced in the router skill's SKILL.md and vice versa
 
 Product prefixes and parity exemptions live in ../manifest.json, not in code.
@@ -43,6 +45,19 @@ MIGRATION_PRINCIPLES = {
 }
 
 LICENCE_REFERENCE_REL = "internal/skill-auditor/references/licence-platforms.md"
+
+# Launchers that fetch from the registry rather than run a project-local bin.
+REGISTRY_LAUNCHERS = ("pod-install", "skills", "plugins")
+DIRECTORY_POLICY = (
+    (r"get_license_env_command",
+     "runs a command the MCP server returns; use `get_license_key` and write `.env` yourself"),
+    (r"(?i)\bread `\.env`",
+     "reads a credential from the user's machine; take the key from step 1 or 3"),
+    (r"\b(?:curl|wget)\s[^\n|]*https?://[^\n|]*(?:\\\n[^\n|]*)*\|\s*(?:sudo\s+)?(?:(?:ba|z)?sh|python3?|node)\b",
+     "pipes a download into an interpreter"),
+    (rf"\bnpx (?:{'|'.join(REGISTRY_LAUNCHERS)})(?!@\d)\b",
+     "unpinned npx launcher; pin an exact version (`npx <pkg>@x.y.z`)"),
+)
 
 
 def _scope(entry: list[str] | dict, platforms: set[str]) -> tuple[list[str], set[str]]:
@@ -166,6 +181,17 @@ def lint(repo_root: Path, manifest: dict, prefix: str | None = None) -> tuple[li
             if "ssl.scandit.com" in text:
                 findings.append(f"{rel}: licence provisioning link outside the "
                                 "`## Licence key` section — point readers at that section instead")
+
+    # --- plugin-directory policy: the Claude directory scan flags skill text that
+    # runs a server-returned command, pipes a download into an interpreter, launches
+    # an unpinned registry package, or reads a credential from the user's machine.
+    for d in list_skill_dirs(skills_dir, prefix):  # the router ships too
+        for f in sorted(d.rglob("*.md")):
+            rel = str(f.relative_to(skills_dir))
+            text = f.read_text()
+            for pattern, why in DIRECTORY_POLICY:
+                if re.search(pattern, text):
+                    findings.append(f"{rel}: directory policy — {why}")
 
     # --- sibling layout parity per product
     by_product: dict[str, list[Path]] = defaultdict(list)
