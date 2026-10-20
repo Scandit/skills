@@ -11,7 +11,7 @@ MatrixScan Batch (API name: `BarcodeBatch*`) is a multi-barcode tracking mode th
 - Scandit React Native packages installed:
   - `scandit-react-native-datacapture-core`
   - `scandit-react-native-datacapture-barcode`
-- After installing, run `npx pod-install` (or `cd ios && pod install`) for iOS. Android auto-links via Gradle — no manual step.
+- After installing, run `npx pod-install@1.2.1` (or `cd ios && pod install`) for iOS. Android auto-links via Gradle — no manual step.
 - Minimum SDK version for BarcodeBatch on React Native: **6.5**. The modern constructors (`new BarcodeBatch(settings)`, `new BarcodeBatchBasicOverlay(mode, style)`, `new BarcodeBatchAdvancedOverlay(mode)`, `BarcodeBatch.createRecommendedCameraSettings()`) require **7.6+**.
 - React Native `>=0.70`. The New Architecture (Fabric / TurboModules) is supported.
 - **New Architecture caveat (iOS, RN ≥ 0.79)**: When using `BarcodeBatchAdvancedOverlay` with the new React Native architecture on iOS, your `AppDelegate` must implement the `ScanditReactNativeFactoryContainer` protocol (available in the `scandit-react-native-datacapture-core` module). If you followed the [React Native 0.79 upgrade guide](https://raw.githubusercontent.com/react-native-community/rn-diff-purge/release/0.79.2/RnDiffApp/ios/RnDiffApp/AppDelegate.swift) you should already have the required property.
@@ -30,7 +30,7 @@ After providing the code, show this setup checklist:
 
 **Setup checklist:**
 1. Install packages: `npm install scandit-react-native-datacapture-core scandit-react-native-datacapture-barcode`
-2. Run `npx pod-install` (iOS). Android auto-links.
+2. Run `npx pod-install@1.2.1` (iOS). Android auto-links.
 3. Add `NSCameraUsageDescription` to `ios/<App>/Info.plist`.
 4. Replace `'-- ENTER YOUR SCANDIT LICENSE KEY HERE --'` with your key (see **Licence key** in `SKILL.md`).
 5. If Metro was running, restart it with `--reset-cache` so the new package is picked up.
@@ -823,7 +823,7 @@ export const ScanPage = () => {
 | Brushes not showing | `brushForTrackedBarcode` requires the MatrixScan AR add-on. Verify the license. |
 | AR bubbles not rendering | `AppRegistry.registerComponent(ARBubble.moduleName, () => ARBubble)` was not called in `index.js`. |
 | AR overlay crashes on iOS (new architecture) | `AppDelegate` does not implement `ScanditReactNativeFactoryContainer`. See prerequisites. |
-| App crashes on iOS after install | Run `npx pod-install` and rebuild. |
+| App crashes on iOS after install | Run `npx pod-install@1.2.1` and rebuild. |
 | `new BarcodeBatch(settings)` not found | Requires react-native=7.6. Use `BarcodeBatch.forDataCaptureContext(context, settings)` on older versions. |
 | `BarcodeBatch.createRecommendedCameraSettings()` not found | Requires react-native=7.6. |
 | Session data accessed outside callback | Copy `addedTrackedBarcodes`, `updatedTrackedBarcodes`, etc. before the callback returns. |

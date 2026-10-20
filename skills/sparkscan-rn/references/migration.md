@@ -45,10 +45,10 @@ Then install and re-link native projects:
 
 ```bash
 npm install
-npx pod-install     # iOS — required after every plugin version change
+npx pod-install@1.2.1     # iOS — required after every plugin version change
 ```
 
-`npx pod-install` is **required** on iOS after every plugin version change — it resolves the new CocoaPods artifacts into `ios/Podfile.lock`. Android auto-links via Gradle; a regular `npx react-native run-android` picks up the new version.
+`npx pod-install@1.2.1` is **required** on iOS after every plugin version change — it resolves the new CocoaPods artifacts into `ios/Podfile.lock`. Android auto-links via Gradle; a regular `npx react-native run-android` picks up the new version.
 
 If Metro is running, restart it with `--reset-cache` so the JavaScript bundle reflects the new package.
 
@@ -215,7 +215,7 @@ Available in v8 on `SparkScanView` — mention only if the user asks:
 
 ## After applying changes
 
-1. Run `npm install && npx pod-install` again after any additional package changes triggered by the migration (e.g. if TypeScript type errors surface additional version mismatches).
+1. Run `npm install && npx pod-install@1.2.1` again after any additional package changes triggered by the migration (e.g. if TypeScript type errors surface additional version mismatches).
 2. Restart Metro with `npm start -- --reset-cache` so the bundle picks up the new package code.
 3. Build the iOS and Android apps and fix any remaining compile / runtime errors using the API reference (linked in `SKILL.md`).
 4. Let the user know they can check the full list of SDK changes in the official migration guides:

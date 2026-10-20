@@ -1,12 +1,13 @@
 {
   "name": "scandit-sdk",
-  "version": "1.1.5",
+  "version": "1.1.6",
   "description": "AI agent skills for integrating the Scandit Data Capture SDK — product selection, documentation, and implementation guides for barcode scanning, ID capture, and smart label capture.",
   "author": {
     "name": "Scandit",
     "url": "https://www.scandit.com/"
   },
   "homepage": "https://docs.scandit.com",
+  "privacyPolicyUrl": "https://www.scandit.com/privacy/",
   "repository": "https://github.com/scandit/skills",
   "license": "Apache-2.0",
   "mcpServers": "./.mcp.json",

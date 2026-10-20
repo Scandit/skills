@@ -59,15 +59,15 @@ placeholder, and most platforms have no built-in `.env` loading. Each skill's
 
 | Skill | Wiring |
 | --- | --- |
-| `-web` | Read it through the bundler's env support, for example `import.meta.env` in Vite (which only exposes `VITE_`-prefixed names unless `envPrefix` says otherwise). |
-| `-android` | Read it in Gradle and expose it as a `BuildConfig` field (this needs `buildFeatures { buildConfig = true }`). |
-| `-ios` | Map the value through an `.xcconfig` file into `Info.plist`, then read it with `Bundle.main.object(forInfoDictionaryKey:)`. |
+| `-web` | Read it through the bundler's env support: in Vite, `import.meta.env.VITE_SCANDIT_LICENSE_KEY`, because Vite only exposes `VITE_`-prefixed names. |
+| `-android` | Parse the `.env` file itself in the app module's `build.gradle.kts` (`rootProject.file(".env")`, loaded with `java.util.Properties`), expose the key with `buildConfigField("String", "SCANDIT_LICENSE_KEY", "\"$key\"")` (this needs `buildFeatures { buildConfig = true }`), and pass `BuildConfig.SCANDIT_LICENSE_KEY` to the licence-key call. Read `.env` first, because builds from Android Studio do not see shell environment variables; fall back to the environment variable of the same name only for CI. When neither has the key, log a Gradle warning instead of failing, so `clean`, CI and the Studio sync still work. |
+| `-ios` | An `.xcconfig` cannot read `.env`, so generate a gitignored `License.xcconfig` from it in a scheme pre-action (build phases run after `Info.plist` is expanded, too late). Write `SLASH = /` and the key with every `/` replaced by `$(SLASH)`: `//` starts an xcconfig comment and silently cuts the key short. `#include? "License.xcconfig"` from the target's base `.xcconfig`, add `ScanditLicenseKey` = `$(SCANDIT_LICENSE_KEY)` to `Info.plist`, and read it with `Bundle.main.object(forInfoDictionaryKey: "ScanditLicenseKey")`. |
 | `-net-android` | .NET does not load `.env` by itself, so use the simplest route below. |
 | `-net-ios` | .NET does not load `.env` by itself, so use the simplest route below. |
 | `-net-maui` | .NET does not load `.env` by itself, so use the simplest route below. |
 | `-rn` | React Native does not load `.env` by itself: add a loader such as `react-native-config`, or use the simplest route below. |
 | `-flutter` | Pass it at build time with `--dart-define-from-file=.env` and read it with `String.fromEnvironment`. |
-| `-capacitor` | Read it through the web bundler's env support, for example `import.meta.env` in Vite (which only exposes `VITE_`-prefixed names unless `envPrefix` says otherwise). |
+| `-capacitor` | Read it through the web bundler's env support: in Vite, `import.meta.env.VITE_SCANDIT_LICENSE_KEY`, because Vite only exposes `VITE_`-prefixed names. |
 | `-cordova` | Cordova does not load `.env` by itself, so use the simplest route below. |
 | `-kmp` | Kotlin Multiplatform does not load `.env` by itself, so use the simplest route below. |
-| `id-bolt` | Read it through the bundler's env support, for example `import.meta.env` in Vite (which only exposes `VITE_`-prefixed names unless `envPrefix` says otherwise). |
+| `id-bolt` | Read it through the bundler's env support: in Vite, `import.meta.env.VITE_SCANDIT_LICENSE_KEY`, because Vite only exposes `VITE_`-prefixed names. |

@@ -9,7 +9,7 @@ MatrixScan Count (API name: `BarcodeCount*`) is a multi-barcode scan-and-count m
 - Scandit React Native packages installed:
   - `scandit-react-native-datacapture-core`
   - `scandit-react-native-datacapture-barcode`
-- After installing, run `npx pod-install` (or `cd ios && pod install`) for iOS. Android auto-links via Gradle — no manual step.
+- After installing, run `npx pod-install@1.2.1` (or `cd ios && pod install`) for iOS. Android auto-links via Gradle — no manual step.
 - Minimum SDK version: **6.17** for core BarcodeCount classes on React Native. `new BarcodeCount(settings)` constructor requires 7.6+. `tapToUncountEnabled` requires 7.0+. `BarcodeCountNotInListActionSettings` requires 7.1+. `BarcodeCountStatusProvider` and status-mode APIs require 8.3+.
 - React Native `>=0.70`. The New Architecture (Fabric / TurboModules) is supported — no additional setup required beyond the standard RN template.
 - A valid Scandit license key — see **Licence key** in this skill's `SKILL.md`.
@@ -27,7 +27,7 @@ After providing the code, show this setup checklist:
 
 **Setup checklist:**
 1. Install packages: `npm install scandit-react-native-datacapture-core scandit-react-native-datacapture-barcode`
-2. Run `npx pod-install` (iOS). Android auto-links.
+2. Run `npx pod-install@1.2.1` (iOS). Android auto-links.
 3. Add `NSCameraUsageDescription` to `ios/<App>/Info.plist`.
 4. Replace `'-- ENTER YOUR SCANDIT LICENSE KEY HERE --'` with your key (see **Licence key** in `SKILL.md`).
 5. If Metro was running, restart it with `--reset-cache` so the new package is picked up.
@@ -1626,7 +1626,7 @@ export const ScanPage = ({ navigation }: any) => {
 8. **Status provider requires RN 8.3+** — `setStatusProvider`, `shouldShowStatusModeButton`, `shouldShowStatusIconsOnScan` all require react-native=8.3+.
 9. **Status provider callback pattern** — Call `callback.onStatusReady(result)` synchronously or after an async lookup. Do NOT use `await callback.onStatusReady(...)`.
 10. **Imports** — Core types from `scandit-react-native-datacapture-core`; BarcodeCount types from `scandit-react-native-datacapture-barcode`.
-11. **Pod install** — Run `npx pod-install` after installing or updating Scandit packages. Android auto-links.
+11. **Pod install** — Run `npx pod-install@1.2.1` after installing or updating Scandit packages. Android auto-links.
 12. **Camera permissions** — iOS: `NSCameraUsageDescription` in `Info.plist`. Android: runtime request via `PermissionsAndroid`.
 13. **Metro cache** — If a package upgrade appears to have no effect at runtime, restart Metro with `npm start -- --reset-cache`.
 
@@ -1637,7 +1637,7 @@ export const ScanPage = ({ navigation }: any) => {
 | Nothing scans when the view mounts | Camera not started. Call `camera.switchToDesiredState(FrameSourceState.On)` in `useEffect`. |
 | `view.listener` / `view.uiListener` not firing | They must be set in the `ref` callback, not as JSX props. |
 | Brushes have no effect | Brushes only work with `viewStyle={BarcodeCountViewStyle.Dot}`. |
-| App crashes on iOS after install | Run `npx pod-install` and rebuild. |
+| App crashes on iOS after install | Run `npx pod-install@1.2.1` and rebuild. |
 | `session.recognizedBarcodes` undefined | Requires react-native=7.0+. Check your installed package version. |
 | `setStatusProvider` / status APIs not found | Requires react-native=8.3+. |
 | `BarcodeCount.createRecommendedCameraSettings()` not found | Requires react-native=7.6+. Use `Camera.default` on older versions. |
