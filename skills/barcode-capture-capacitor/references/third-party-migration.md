@@ -116,7 +116,7 @@ ML Kit runs its camera behind a transparent WebView, so the app's close button, 
 | `isTorchAvailable()` | `await camera.getIsTorchAvailable()` |
 | `setZoomRatio({ zoomRatio })` | `cameraSettings.zoomFactor = zoomRatio; await camera.applySettings(cameraSettings)` |
 | `startScan({ lensFacing })` | `Camera.atPosition(CameraPosition.UserFacing)` for `LensFacing.Front`, `CameraPosition.WorldFacing` for `LensFacing.Back`; to keep the recommended settings use `Camera.asPositionWithSettings(position, cameraSettings)`. Keep the app's camera-direction prop and map its type at the edge so callers do not change. A direction change needs a new camera: stop, then start again. |
-| `openSettings()` | No Scandit equivalent — keep the app's own mechanism (a settings plugin or the existing handler) |
+| `openSettings()` | No Scandit equivalent — remove the call (and the UI that triggers it) together with the ML Kit import; name the gap in the migration summary so the developer can add a settings plugin if they need one |
 | `isSupported()` / `installGoogleBarcodeScannerModule()` | Remove; not needed |
 
 ### Permissions
