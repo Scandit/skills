@@ -196,7 +196,7 @@
     {
       "id": 5,
       "prompt": "My Vue 3 + Capacitor wallet scans multi-part (animated UR) QR codes with @capacitor-mlkit/barcode-scanning in QrCodeScanner.vue. Migrate the mobile scanning path to Scandit BarcodeCapture. The close button and progress bar must keep working.",
-      "expected_output": "Migrates scanMobile to BarcodeCapture: z-index -1 element so #camera-close-btn and the progress UI stay visible and clickable, connectToElement in onMounted/after the mobile scanner element is shown, codeDuplicateFilter = 0 so every UR fragment reaches didScan, stopReading disables the mode, removes the listener and turns the camera Off, openSettings is kept via the app's own mechanism.",
+      "expected_output": "Migrates scanMobile to BarcodeCapture: z-index -1 element so #camera-close-btn and the progress UI stay visible and clickable, connectToElement in onMounted/after the mobile scanner element is shown, codeDuplicateFilter = 0 so every UR fragment reaches didScan, stopReading disables the mode, removes the listener and turns the camera Off, openSettings is removed with the ML Kit import and the gap is named in the summary.",
       "files": [
         "fixtures/07-superhero-wallet/QrCodeScanner.vue"
       ],
@@ -229,7 +229,7 @@
           "text": "The #camera-close-btn handler and the multi-fragment progress handling (decoder.receivePart, scanProgress) are preserved"
         },
         {
-          "text": "openSettings is not mapped to a nonexistent Scandit API; the app's own settings mechanism is kept or the gap is stated"
+          "text": "openSettings is not mapped to a nonexistent Scandit API; the ML Kit call is removed and the gap is named in the summary"
         },
         {
           "text": "onBeforeUnmount / stopReading disables the mode, removes the listener, turns the camera Off and detaches the view"
