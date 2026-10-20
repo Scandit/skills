@@ -41,13 +41,13 @@ Scanning needs a Scandit licence key. For this skill the licence product is `sdk
 
 Work through these in order — never block the user on MCP:
 
-1. **The Scandit MCP server is connected** — call `ensure_scanner_setup` with product `sdk` and platforms `webassembly`, then call `get_license_env_command`. It returns a one-line command that writes the key into the project's `.env` without showing it in chat. Do not run it yourself: give it to the user to run (in Claude Code, `! <command>`), and note the variable name it writes, because the wiring below reads that name. Show at most a masked preview in chat; never print a full key.
+1. **The Scandit MCP server is connected** — call `ensure_scanner_setup` with product `sdk` and platforms `webassembly`, `app_identifier` (the app's bundle or application id; for web, its production domain, never `localhost`) and `env_var` `VITE_SCANDIT_LICENSE_KEY` in a Vite project, otherwise `SCANDIT_LICENSE_KEY`. It returns a one-line command that writes the key into the project's `.env` without showing it in chat; for a key that already exists, `get_license_env_command` with the key's id returns the same kind of command. Do not run it yourself: give it to the user to run (in Claude Code, `! <command>`). Show at most a masked preview in chat; never print a full key.
 2. **It is not connected** — tell the user once that they can connect the remote Scandit MCP server, `https://ssl.scandit.com/mcp`, in their MCP client, then continue from step 1. Do not edit MCP client configuration yourself.
 
    Authentication is browser-based, so it is **not supported headless or in CI**. The server provisions **trial** keys only; it never creates, revokes, or modifies production licences.
 3. **The user declines, or has no MCP client** — they generate a key themselves at <https://ssl.scandit.com> (no account yet: <https://ssl.scandit.com/dashboard/sign-up?p=test>) and paste it in.
 
-**Then put the key into the code** in place of the placeholder; a key in `.env` does not reach the app by itself. Read it through the bundler's env support, for example `import.meta.env` in Vite, which only exposes `VITE_`-prefixed names: add the written variable's prefix to `envPrefix` in the Vite config rather than renaming the variable. The simplest route on any platform: the user pastes the key into the licence-key call, or gives it to you to put there, still showing only a masked preview in chat. Do not search the project, its files or the environment for a key.
+**Then put the key into the code** in place of the placeholder; a key in `.env` does not reach the app by itself. Read it through the bundler's env support: in Vite, `import.meta.env.VITE_SCANDIT_LICENSE_KEY`, because Vite only exposes `VITE_`-prefixed names. The simplest route on any platform: the user pastes the key into the licence-key call, or gives it to you to put there, still showing only a masked preview in chat. Do not search the project, its files or the environment for a key.
 
 ## References
 
