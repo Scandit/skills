@@ -51,7 +51,7 @@ and only project settings, so installed plugins do not leak in.
   migrated file that still imports the old scanner fails with one error per import (subpaths included) whenever the gate type-checked, even when it passes:
   `react-native-vision-camera`, `react-native-vision-camera-barcode-scanner`, `expo-camera` (RN) and
   `@capacitor-mlkit/barcode-scanning` (Capacitor). Strict-mode errors the unmigrated original already has
-  are subtracted (`FIX_GATE_TS_BASELINE`, keyed by code, source line and message), so only errors the migration adds count.
+  are subtracted (`FIX_GATE_TS_BASELINE`, keyed by file, code, source line and message), so only errors the migration adds count.
 
 ## Adding a gate
 

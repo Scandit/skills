@@ -225,6 +225,38 @@ class FixGateTsTest(unittest.TestCase):
         self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
         self.assertIn("GATE-FAIL: baseline subtraction failed", result.stdout)
 
+    def test_baseline_fails_closed_when_the_original_is_missing(self):
+        env = {"FIX_GATE_TS_BASELINE": str(self.tmp / "missing.ts")}
+        result = self.run_files("capacitor", {"Page.ts": UNINITIALIZED}, env)
+        self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+        self.assertIn("GATE-FAIL: baseline subtraction failed", result.stdout)
+
+    def test_baseline_never_subtracts_an_error_in_another_file(self):
+        (self.tmp / "orig").mkdir()
+        (self.tmp / "orig" / "Page.ts").write_text(UNINITIALIZED)
+        env = {"FIX_GATE_TS_BASELINE": str(self.tmp / "orig" / "Page.ts")}
+        result = self.run_files("capacitor", {"Page.ts": "export const k = 1;\n", "Types.ts": UNINITIALIZED}, env)
+        self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+        self.assertIn("Types.ts", result.stdout)
+
+    def test_baseline_pool_is_filtered_like_the_migrated_output(self):
+        original = (
+            'import { BarcodeScanner } from "@capacitor-mlkit/barcode-scanning";\n'
+            'BarcodeScanner.addListener("barcodesScanned",\n  async (result) => {\n  });\n'
+        )
+        migrated = "export const handler =\n  async (result) => {\n  };\n"
+        (self.tmp / "orig").mkdir()
+        (self.tmp / "orig" / "Page.ts").write_text(original)
+        env = {"FIX_GATE_TS_ANY_MODULE": "1", "FIX_GATE_TS_BASELINE": str(self.tmp / "orig" / "Page.ts")}
+        result = self.run_files("capacitor", {"Page.ts": migrated}, env)
+        self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+        self.assertIn("error TS7006: Parameter 'result'", result.stdout)
+
+    def test_baseline_vue_original_gets_the_script_setup_macros(self):
+        sfc = '<script setup lang="ts">\nconst props = defineProps<{ n: number }>();\nexport const s: string = props.n;\n</script>\n'
+        result = self.run_with_baseline("Page.vue", sfc, "Page.vue", sfc.replace("<script", "<template><div/></template>\n<script"))
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
     def test_extra_file_resolves_relative_import(self):
         main = 'import { Kind } from "./Scan.types";\nexport const kind: Kind = "qr";\n'
         types = 'export type Kind = "qr" | "ean13";\n'
@@ -354,6 +386,27 @@ class FixGateTsTest(unittest.TestCase):
             "export function wire(): void {\n"
             "  const stream = getStream();\n"
             "  stream.subscribe((v) => v);\n}\n"
+        )
+        result = self.run_files("capacitor", {"Scan.ts": app}, {"FIX_GATE_TS_ANY_MODULE": "1"})
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+    def test_any_module_shim_covers_a_dollar_suffixed_local(self):
+        app = (
+            'import type { Observable } from "rxjs";\n'
+            "declare function getScanningStream(): Promise<Observable<{ data: string }>>;\n"
+            "export async function wire(): Promise<void> {\n"
+            "  const scans$ = await getScanningStream();\n"
+            "  scans$.subscribe((b) => b.data);\n}\n"
+        )
+        result = self.run_files("capacitor", {"Scan.ts": app}, {"FIX_GATE_TS_ANY_MODULE": "1"})
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+    def test_any_module_shim_covers_a_local_from_a_shimmed_call(self):
+        app = (
+            'import { fromEvent } from "rxjs";\n'
+            "export function wire(el: unknown): void {\n"
+            '  const clicks = fromEvent(el, "click");\n'
+            "  clicks.subscribe((e) => e);\n}\n"
         )
         result = self.run_files("capacitor", {"Scan.ts": app}, {"FIX_GATE_TS_ANY_MODULE": "1"})
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)

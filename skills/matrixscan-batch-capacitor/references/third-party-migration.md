@@ -109,7 +109,7 @@ ML Kit runs its camera behind a transparent WebView, so the app's buttons and li
 | `isTorchAvailable()` | `await camera.getIsTorchAvailable()` |
 | `setZoomRatio({ zoomRatio })` | `cameraSettings.zoomFactor = zoomRatio; await camera.applySettings(cameraSettings)` |
 | `startScan({ lensFacing: LensFacing.Front })` | `Camera.atPosition(CameraPosition.UserFacing)` |
-| `openSettings()` | No Scandit equivalent — remove the call (and the UI that triggers it) together with the ML Kit import; name the gap in the migration summary so the developer can add a settings plugin if they need one |
+| `openSettings()` | No Scandit equivalent — remove the call and the ML Kit import, keep the button or screen that offered it with a TODO handler, and name the gap in the migration summary so the developer can add a settings plugin if they need one |
 
 ### Permissions
 

@@ -96,7 +96,7 @@ Scandit has no permission API. The OS prompts for camera access when the camera 
 
 - Keep the app's own permission check and its denied message or screen exactly as they are, backed by the app's existing mechanism (for example `@capacitor/camera` `checkPermissions()` / `requestPermissions()`). If ML Kit's `requestPermissions()` was the only source, replace it with such a plugin (`npm install @capacitor/camera`; `Camera.requestPermissions({ permissions: ['camera'] })` resolves `{ camera: 'granted' | 'denied' | … }`) — never stub it to always return `granted`, which silently kills the denied path.
 - Run the check before calling the wrapper, as the original did, so a denial never reaches SparkScan.
-- `openSettings()` has no Scandit equivalent — remove the call (and the UI that triggers it) together with the ML Kit import; name the gap in the migration summary so the developer can add a settings plugin if they need one.
+- `openSettings()` has no Scandit equivalent — remove the call and the ML Kit import, keep the button or screen that offered it with a TODO handler, and name the gap in the migration summary so the developer can add a settings plugin if they need one.
 
 ### Behaviour changes to list
 
