@@ -56,7 +56,7 @@ Work through these in order — never block the user on MCP:
    Authentication is browser-based, so it is **not supported headless or in CI**. The server provisions **trial** keys only; it never creates, revokes, or modifies production licences.
 3. **The user declines, or has no MCP client** — they generate a key themselves at <https://ssl.scandit.com> (no account yet: <https://ssl.scandit.com/dashboard/sign-up?p=test>) and paste it in.
 
-**Then put the key into the code** in place of the placeholder; a key in `.env` does not reach the app by itself. Read it in Gradle and expose it as a `BuildConfig` field (this needs `buildFeatures { buildConfig = true }`). The simplest route on any platform: put the key from step 1 or 3 into the licence-key call directly, still showing only a masked preview in chat. Do not search the project, its files or the environment for a key; ask the user instead.
+**Then put the key into the code** in place of the placeholder; a key in `.env` does not reach the app by itself. Parse the `.env` file itself in `build.gradle.kts`, for example `rootProject.file(".env").readLines()`, and expose the key as a `BuildConfig` field (this needs `buildFeatures { buildConfig = true }`). Never read it with `System.getenv`: builds from Android Studio do not see shell environment variables, so the app gets an empty key. Fail the build with a clear message when the key is missing. The simplest route on any platform: put the key from step 1 or 3 into the licence-key call directly, still showing only a masked preview in chat. Do not search the project, its files or the environment for a key; ask the user instead.
 
 ## References
 
