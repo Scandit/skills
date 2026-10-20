@@ -22,7 +22,8 @@ The full published set is small (27 IDs), so you can also list everything Scandi
 
 ```bash
 curl -s 'https://azuresearch-usnc.nuget.org/query?q=Scandit&take=100&prerelease=false' \
-  | grep -o '"id":"Scandit[^"]*"' | sort
+  | grep -o '"id":"Scandit[^"]*","version":"[^"]*"' \
+  | sed -E 's/"id":"([^"]*)","version":"([^"]*)"/\1 \2/' | sort
 ```
 
 ## Package name mapping (Xamarin → .NET)

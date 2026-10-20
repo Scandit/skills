@@ -59,15 +59,15 @@ placeholder, and most platforms have no built-in `.env` loading. Each skill's
 
 | Skill | Wiring |
 | --- | --- |
-| `-web` | Read it through the bundler's env support, for example `import.meta.env` in Vite (which only exposes `VITE_`-prefixed names unless `envPrefix` says otherwise). |
-| `-android` | Parse the `.env` file itself in `build.gradle.kts`, for example `rootProject.file(".env").readLines()`, and expose the key as a `BuildConfig` field (this needs `buildFeatures { buildConfig = true }`). Never read it with `System.getenv`: builds from Android Studio do not see shell environment variables, so the app gets an empty key. Fail the build with a clear message when the key is missing. |
+| `-web` | Read it through the bundler's env support, for example `import.meta.env` in Vite, which only exposes `VITE_`-prefixed names: add the written variable's prefix to `envPrefix` in the Vite config rather than renaming the variable. |
+| `-android` | Parse the `.env` file itself in `build.gradle.kts`, for example `rootProject.file(".env")`, and expose the key as a `BuildConfig` field (this needs `buildFeatures { buildConfig = true }`). Read `.env` first, because builds from Android Studio do not see shell environment variables; fall back to the environment variable of the same name only for CI. When neither has the key, log a Gradle warning instead of failing, so `clean`, CI and the Studio sync still work. |
 | `-ios` | Map the value through an `.xcconfig` file into `Info.plist`, then read it with `Bundle.main.object(forInfoDictionaryKey:)`. |
 | `-net-android` | .NET does not load `.env` by itself, so use the simplest route below. |
 | `-net-ios` | .NET does not load `.env` by itself, so use the simplest route below. |
 | `-net-maui` | .NET does not load `.env` by itself, so use the simplest route below. |
 | `-rn` | React Native does not load `.env` by itself: add a loader such as `react-native-config`, or use the simplest route below. |
 | `-flutter` | Pass it at build time with `--dart-define-from-file=.env` and read it with `String.fromEnvironment`. |
-| `-capacitor` | Read it through the web bundler's env support, for example `import.meta.env` in Vite (which only exposes `VITE_`-prefixed names unless `envPrefix` says otherwise). |
+| `-capacitor` | Read it through the web bundler's env support, for example `import.meta.env` in Vite, which only exposes `VITE_`-prefixed names: add the written variable's prefix to `envPrefix` in the Vite config rather than renaming the variable. |
 | `-cordova` | Cordova does not load `.env` by itself, so use the simplest route below. |
 | `-kmp` | Kotlin Multiplatform does not load `.env` by itself, so use the simplest route below. |
-| `id-bolt` | Read it through the bundler's env support, for example `import.meta.env` in Vite (which only exposes `VITE_`-prefixed names unless `envPrefix` says otherwise). |
+| `id-bolt` | Read it through the bundler's env support, for example `import.meta.env` in Vite, which only exposes `VITE_`-prefixed names: add the written variable's prefix to `envPrefix` in the Vite config rather than renaming the variable. |

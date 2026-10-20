@@ -15,8 +15,9 @@ Checks (per skill, and across siblings sharing a product prefix):
   licence       every non-exempt skill carries a `## Licence key` section naming the product
                 and licence platforms from references/licence-platforms.md plus its
                 key-wiring sentence, and carries the dashboard provisioning link nowhere else
-  policy        no skill text the Claude plugin-directory scan flags: a server-returned
-                command, a pipe into an interpreter, an unpinned registry npx, a `.env` read
+  policy        no skill or README.md text the Claude plugin-directory scan flags: a
+                download run through an interpreter, an unpinned registry launcher, an
+                agent-directed `.env` read (the skill's own key-wiring sentence aside)
   routing       every skills/<dir> is referenced in the router skill's SKILL.md and vice versa
 
 Product prefixes and parity exemptions live in ../manifest.json, not in code.
@@ -48,16 +49,38 @@ LICENCE_REFERENCE_REL = "internal/skill-auditor/references/licence-platforms.md"
 
 # Launchers that fetch from the registry rather than run a project-local bin.
 REGISTRY_LAUNCHERS = ("pod-install", "skills", "plugins")
+_LAUNCHER = r"\b(?:npx|bunx|pnpm\s+dlx|yarn\s+dlx)"
+_INTERPRETER = r"(?:(?:ba|z|da|k)?sh|python3?|node|perl|ruby|pwsh|powershell|iex|Invoke-Expression)"
+_DOWNLOADER = r"\b(?:curl|wget|iwr|irm|Invoke-WebRequest|Invoke-RestMethod)\b"
+# The `.env` file itself, not `import.meta.env` or `process.env`.
+_ENV_FILE = r"(?<![\w.])(?:\./)?\.env(?![\w-])"
 DIRECTORY_POLICY = (
-    (r"get_license_env_command",
-     "runs a command the MCP server returns; use `get_license_key` and write `.env` yourself"),
-    (r"(?i)\bread `\.env`",
-     "reads a credential from the user's machine; take the key from step 1 or 3"),
-    (r"\b(?:curl|wget)\s[^\n|]*https?://[^\n|]*(?:\\\n[^\n|]*)*\|\s*(?:sudo\s+)?(?:(?:ba|z)?sh|python3?|node)\b",
+    # A read verb with the file within ~40 chars of the same sentence; a negated
+    # verb ("do not search", "never read") is a prohibition, not a read.
+    (rf"(?is)(?<!not )(?<!never )\b(?:read|open|cat|load|look\s+in|search|grep|source)s?\b"
+     rf"(?:(?![.!?]\s|\n\s*\n).){{0,40}}?{_ENV_FILE}",
+     "reads a credential from the user's machine; take the key from the MCP server or the user"),
+    (rf"(?i){_DOWNLOADER}[^\n|]*https?://[^\n|]*(?:\\\n[^\n|]*)*"
+     rf"\|\s*(?:sudo(?:\s+-\S+)*\s+)?{_INTERPRETER}\b",
      "pipes a download into an interpreter"),
-    (rf"\bnpx (?:{'|'.join(REGISTRY_LAUNCHERS)})(?!@\d)\b",
-     "unpinned npx launcher; pin an exact version (`npx <pkg>@x.y.z`)"),
+    (rf"(?i)\b(?:{_INTERPRETER}|source|eval)\s+(?:-\S+\s+)*(?:<\(|[\"']?\$\()\s*"
+     rf"{_DOWNLOADER}[^\n)]*https?://",
+     "runs a download through an interpreter"),
+    (rf"{_LAUNCHER}(?:\s+--?[\w-]+(?:=\S+)?)*\s+(?:{'|'.join(REGISTRY_LAUNCHERS)})(?![\w-])(?!@\d)",
+     "unpinned registry launcher; pin an exact version (`npx <pkg>@x.y.z`)"),
 )
+
+
+def policy_findings(rel: str, text: str) -> list[str]:
+    """`rel:line` findings for every directory-policy match in ``text``."""
+    return [f"{rel}:{text.count(chr(10), 0, m.start()) + 1}: directory policy — {why}"
+            for pattern, why in DIRECTORY_POLICY for m in re.finditer(pattern, text)]
+
+
+def blank_out(text: str, sentence: str) -> str:
+    """``text`` with ``sentence`` (matched across any wrapping) blanked, offsets kept."""
+    pattern = r"\s+".join(map(re.escape, sentence.split()))
+    return re.sub(pattern, lambda m: re.sub(r"[^\n]", " ", m.group()), text)
 
 
 def _scope(entry: list[str] | dict, platforms: set[str]) -> tuple[list[str], set[str]]:
@@ -81,6 +104,13 @@ def lint(repo_root: Path, manifest: dict, prefix: str | None = None) -> tuple[li
     skills_dir = repo_root / "skills"
     evals_root = repo_root / "evals"
     findings: list[str] = []
+    texts: dict[Path, str] = {}
+
+    def read(f: Path) -> str:
+        if f not in texts:
+            texts[f] = f.read_text()
+        return texts[f]
+
     skill_dirs = list_skill_dirs(skills_dir, prefix, exclude={router})
 
     # --- per-skill frontmatter checks
@@ -146,7 +176,7 @@ def lint(repo_root: Path, manifest: dict, prefix: str | None = None) -> tuple[li
         sk = d / "SKILL.md"
         if not sk.exists():
             continue  # already reported above
-        body = sk.read_text()
+        body = read(sk)
         section = re.search(r"^## Licence key\n(.*?)(?=^## |\Z)", body, re.S | re.M)
         if not section:
             findings.append(f"{d.name}: SKILL.md missing `## Licence key` section")
@@ -175,7 +205,7 @@ def lint(repo_root: Path, manifest: dict, prefix: str | None = None) -> tuple[li
             rel = str(f.relative_to(skills_dir))
             if rel in licence_link_allow:
                 continue
-            text = f.read_text()
+            text = read(f)
             if f == sk and section:
                 text = text.replace(section.group(0), "")
             if "ssl.scandit.com" in text:
@@ -183,15 +213,19 @@ def lint(repo_root: Path, manifest: dict, prefix: str | None = None) -> tuple[li
                                 "`## Licence key` section — point readers at that section instead")
 
     # --- plugin-directory policy: the Claude directory scan flags skill text that
-    # runs a server-returned command, pipes a download into an interpreter, launches
-    # an unpinned registry package, or reads a credential from the user's machine.
+    # runs a download through an interpreter, launches an unpinned registry package,
+    # or reads a credential from the user's machine. The skill's own key-wiring
+    # sentence describes the app's build reading `.env`, so it is blanked first.
     for d in list_skill_dirs(skills_dir, prefix):  # the router ships too
+        wiring = resolve_licence(d.name, wiring_map)
         for f in sorted(d.rglob("*.md")):
-            rel = str(f.relative_to(skills_dir))
-            text = f.read_text()
-            for pattern, why in DIRECTORY_POLICY:
-                if re.search(pattern, text):
-                    findings.append(f"{rel}: directory policy — {why}")
+            text = read(f)
+            if wiring and f == d / "SKILL.md":
+                text = blank_out(text, wiring)
+            findings += policy_findings(str(f.relative_to(skills_dir)), text)
+    readme = repo_root / "README.md"
+    if readme.exists():  # ships in the plugin too
+        findings += policy_findings("README.md", read(readme))
 
     # --- sibling layout parity per product
     by_product: dict[str, list[Path]] = defaultdict(list)
