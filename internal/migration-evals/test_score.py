@@ -265,7 +265,8 @@ class TsScoreCase(FlatSuiteScoring):
         self.score(CAP, CAP_DIR, CAP_ENTRIES[3], ["", ""], commands=commands)
         self.assertEqual(
             commands[0],
-            ["env", "FIX_GATE_TS_ANY_MODULE=1", "bash", str(CAP.gate), "capacitor",
+            ["env", "FIX_GATE_TS_ANY_MODULE=1", f"FIX_GATE_TS_BASELINE={CAP_DIR / CAP_ENTRIES[3]['files'][0]}",
+             "bash", str(CAP.gate), "capacitor",
              str(self.tmp / "Scan.tsx"), score.DEFAULT_SDK_VERSION, str(self.tmp / "Scan.types.ts")],
         )
 
@@ -277,7 +278,8 @@ class TsScoreCase(FlatSuiteScoring):
     def test_sdk_version_reaches_gate(self):
         commands = []
         self.score(RN, RN_DIR, RN_ENTRIES[1], [RN_AIO_SCREEN], commands=commands, sdk_version="9.9.9")
-        self.assertEqual(commands[0], ["env", "FIX_GATE_TS_ANY_MODULE=1", "bash", str(RN.gate), "rn",
+        baseline = f"FIX_GATE_TS_BASELINE={RN_DIR / RN_ENTRIES[1]['files'][0]}"
+        self.assertEqual(commands[0], ["env", "FIX_GATE_TS_ANY_MODULE=1", baseline, "bash", str(RN.gate), "rn",
                                        str(self.tmp / "VisionCameraScanner.tsx"), "9.9.9"])
 
     def test_capacitor_default_all_narrowed_to_qr_is_kept(self):
@@ -400,7 +402,7 @@ class TsScoreCase(FlatSuiteScoring):
         entry = {"files": ["a/x.dart", "b/stub.dart"]}
         self.assertEqual(score.fixture_paths(SUITE, entry), ["lib/x.dart", "lib/stubs/stub.dart"])
         self.assertEqual(score.fixture_paths(CAP, {"files": ["a/Scan.tsx", "c/T.ts"]}), ["Scan.tsx", "T.ts"])
-        self.assertEqual(score.gate_command(SUITE, Path("m.dart"), [Path("s.dart")], "9.9.9"),
+        self.assertEqual(score.gate_command(SUITE, Path("m.dart"), [Path("s.dart")], "9.9.9", Path("o.dart")),
                          ["bash", str(SUITE.gate), "m.dart", "s.dart"])
 
     def test_vue_output_symbologies_are_found(self):

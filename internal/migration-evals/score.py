@@ -254,13 +254,13 @@ def gate_status(exit_code, errors_left):
     return "fail" if errors_left else "resolve-fail"
 
 
-def gate_command(suite, main, extras, sdk_version):
+def gate_command(suite, main, extras, sdk_version, original):
     if not suite.platform:
         return ["bash", str(suite.gate), str(main), *map(str, extras)]
     if suite.platform == "maui":
         return ["bash", str(suite.gate), "--maui", str(main), sdk_version]
-    shim = ["env", "FIX_GATE_TS_ANY_MODULE=1"] if suite.banned_imports else []
-    return [*shim, "bash", str(suite.gate), suite.platform, str(main), sdk_version, *map(str, extras)]
+    shim = ["FIX_GATE_TS_ANY_MODULE=1"] if suite.banned_imports else []
+    return ["env", *shim, f"FIX_GATE_TS_BASELINE={original}", "bash", str(suite.gate), suite.platform, str(main), sdk_version, *map(str, extras)]
 
 
 def score_eval(suite, eval_entry, output_dir, evals_dir, gate_runner=None, sdk_version=DEFAULT_SDK_VERSION):
@@ -273,7 +273,7 @@ def score_eval(suite, eval_entry, output_dir, evals_dir, gate_runner=None, sdk_v
         return {**row, "status": "missing", "compiles": None, "errors_left": 0,
                 "found": [], "missing": expected, "kept": False, "narrowed": False}
     extras = [s for s in extras if s.is_file()]
-    code, output = (gate_runner or run_gate)(gate_command(suite, main, extras, sdk_version))
+    code, output = (gate_runner or run_gate)(gate_command(suite, main, extras, sdk_version, original))
     errors_left = len(suite.error_line.findall(output))
     status = gate_status(code, errors_left)
     migrated = "\n".join(p.read_text() for p in [main, *extras])

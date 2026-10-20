@@ -50,8 +50,8 @@ and only project settings, so installed plugins do not leak in.
   `react-native-fs`, app-local paths) are typed `any`, while Scandit, React and React Native resolve for real. So a
   migrated file that still imports the old scanner fails with one error per import (subpaths included) whenever the gate type-checked, even when it passes:
   `react-native-vision-camera`, `react-native-vision-camera-barcode-scanner`, `expo-camera` (RN) and
-  `@capacitor-mlkit/barcode-scanning` (Capacitor). Known limit: strict-mode errors in the app's own code stay counted
-  (Capacitor id 4 keeps the ones its unmigrated original has too).
+  `@capacitor-mlkit/barcode-scanning` (Capacitor). Strict-mode errors the unmigrated original already has
+  are subtracted (`FIX_GATE_TS_BASELINE`, keyed by code, source line and message), so only errors the migration adds count.
 
 ## Adding a gate
 

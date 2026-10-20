@@ -6,6 +6,8 @@
 # Usage: fix_gate_ts.sh <platform: web|rn|capacitor> <ts-tsx-js-or-vue-file> [version] [extra-file...]
 #   version default 8.4.0; .vue = its script block; FIX_GATE_TS_ANY_MODULE=1 types non-Scandit imports as any
 #   and drops implicit-any errors only on callbacks handed straight to them (a bare Scandit listener keeps its).
+#   FIX_GATE_TS_BASELINE=<original file> drops errors the original already had (same code, source line, message);
+#   the original is checked alone, without the extra files.
 #   Files are gated flat under their basenames (.vue as .ts); two files with one basename = exit 2.
 # Note: cordova re-exports the shared frameworks package, so its signatures are covered by
 #   the rn/capacitor check; cordova plain-JS syntax is checked separately with `node --check`.
@@ -106,6 +108,17 @@ function root(s, k) {
     k = prev(s, s[k - 1] === "?" ? k - 1 : k);
   }
 }
+function returnType(s, fn) {
+  const m = new RegExp(`\\bfunction\\s+${fn}\\s*(?:<[^(]*>)?\\s*\\(|\\b(?:const|let|var)\\s+${fn}\\s*=\\s*(?:async\\s*)?\\(`).exec(s);
+  if (!m) return "";
+  let i = m.index + m[0].length, d = 1;
+  for (; i < s.length && d > 0; i++) d += s[i] === "(" ? 1 : s[i] === ")" ? -1 : 0;
+  return s.slice(i).match(/^\s*:\s*([^{;]*?)\s*(?:=>|\{|;|\n)/)?.[1] ?? "";
+}
+function shimmedRoot(s, name) {
+  const fn = new RegExp(`\\b(?:const|let|var)\\s+${name}\\s*=\\s*(?:await\\s+)?([\\w$]+)\\s*\\(`).exec(s)?.[1];
+  return shimmed.has(name) || (!!fn && (returnType(s, fn).match(/[\w$]+/g) ?? []).some((t) => shimmed.has(t)));
+}
 function shimmedCallback(s, at, binding) {
   let j = /^[\w$]+\s*=>/.test(s.slice(at)) ? at : outer(s, at);
   while (binding && j >= 0 && s[j] !== "(") j = outer(s, j);
@@ -115,7 +128,7 @@ function shimmedCallback(s, at, binding) {
     if (j < 0 || !"([{,:".includes(s[j])) return false;
     const o = "([{".includes(s[j]) ? j : outer(s, j), k = o < 0 ? -1 : prev(s, o);
     if (o < 0) return false;
-    if (s[o] === "(" && /[\w$)\]>]/.test(s[k] ?? "")) return shimmed.has(root(s, k));
+    if (s[o] === "(" && /[\w$)\]>]/.test(s[k] ?? "")) return shimmedRoot(s, root(s, k));
     if (s[o] !== "(" && !/[(,:=[?]/.test(s[k] ?? "")) return false;
     j = k;
   }
@@ -124,6 +137,23 @@ const at = (s, line, col) => { let o = 0; while (--line > 0) o = s.indexOf("\n",
 console.log(fs.readFileSync(0, "utf8").split("\n").filter((l) => {
   const m = l.match(/^(.+?)\((\d+),(\d+)\): error TS70(06|31):/);
   return !m || !shimmedCallback(code(m[1]), at(code(m[1]), +m[2], +m[3]), m[4] === "31");
+}).join("\n"));
+JS
+# Drops each error whose (code, source line, message) the baseline still holds; a line shift keeps the match.
+read -r -d '' BASELINE_JS <<'JS' || true
+const fs = require("fs"), [dir, baseDir, baseOut] = process.argv.slice(1);
+const files = new Map(), src = (f) => files.get(f) ?? files.set(f, fs.readFileSync(f, "utf8").split("\n")).get(f);
+const key = (root, l) => {
+  const m = l.match(/^(.+?)\((\d+),\d+\): error (TS\d+): (.*)$/);
+  return m && `${m[3]}\0${src(`${root}/${m[1]}`)[+m[2] - 1].trim()}\0${m[4]}`;
+};
+const pool = new Map();
+for (const l of fs.readFileSync(baseOut, "utf8").split("\n")) { const k = key(baseDir, l); if (k) pool.set(k, (pool.get(k) ?? 0) + 1); }
+let drop = false;
+console.log(fs.readFileSync(0, "utf8").split("\n").filter((l) => {
+  const k = key(dir, l);
+  if (k) { drop = pool.get(k) > 0; if (drop) pool.set(k, pool.get(k) - 1); return !drop; }
+  return !(drop && /^\s/.test(l));
 }).join("\n"));
 JS
 SHIM=0; [ "${FIX_GATE_TS_ANY_MODULE:-0}" = 1 ] && SHIM=1
@@ -139,11 +169,27 @@ cat > "$DIR/tsconfig.json" <<EOF
 EOF
 ( cd "$DIR" && npm install --ignore-scripts --no-audit --no-fund >/dev/null 2>&1 ) \
   || { echo "GATE-FAIL: npm install of $BC $VER ($PLAT)"; exit 1; }
+BASELINE=${FIX_GATE_TS_BASELINE:-}
+if [ -n "$BASELINE" ]; then
+  mkdir -p "$DIR/baseline/src"; ln -s "$DIR/node_modules" "$DIR/baseline/node_modules"
+  case "$BASELINE" in
+    *.vue) awk "$VUE_SCRIPT" "$BASELINE" > "$DIR/baseline/src/baseline.ts";;
+    *) cp "$BASELINE" "$DIR/baseline/src/baseline.${BASELINE##*.}";;
+  esac
+  printf '%s\n' '{ "extends": "../tsconfig.json", "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.js"] }' > "$DIR/baseline/tsconfig.json"
+fi
 if [ "$SHIM" = 1 ]; then SHIM_ERRORS=$(node -e "$SHIM_JS" "$DIR/src"); fi
 OUT=$(cd "$DIR" && node_modules/.bin/tsc --noEmit 2>&1) && RC=0 || RC=$?
 if [ "$SHIM" = 1 ] && printf '%s\n' "$OUT" | grep -q 'error TS'; then
   OUT=$(printf '%s\n' "$OUT" | { grep -Ev "$SHIM_ERRORS" || [ $? = 1 ]; } | node -e "$CALLBACK_JS" "$DIR") \
     || { echo "GATE-FAIL: implicit-any filter failed on $FILE ($PLAT)"; exit 1; }
+  printf '%s\n' "$OUT" | grep -q 'error TS' || RC=0
+fi
+if [ -n "$BASELINE" ] && printf '%s\n' "$OUT" | grep -q 'error TS'; then
+  [ "$SHIM" = 0 ] || node -e "$SHIM_JS" "$DIR/baseline/src" >/dev/null
+  (cd "$DIR/baseline" && node_modules/.bin/tsc --noEmit 2>&1) > "$DIR/baseline.out" || true
+  OUT=$(printf '%s\n' "$OUT" | node -e "$BASELINE_JS" "$DIR" "$DIR/baseline" "$DIR/baseline.out") \
+    || { echo "GATE-FAIL: baseline subtraction failed on $FILE ($PLAT)"; exit 1; }
   printf '%s\n' "$OUT" | grep -q 'error TS' || RC=0
 fi
 [ -z "$OUT" ] || printf '%s\n' "$OUT"

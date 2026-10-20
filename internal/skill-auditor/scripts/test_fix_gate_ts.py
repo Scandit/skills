@@ -14,6 +14,7 @@ from pathlib import Path
 
 GATE = Path(__file__).resolve().parent / "fix_gate_ts.sh"
 VERSION = "8.6.1"
+UNINITIALIZED = "export class Page {\n  loading: boolean;\n}\n"
 
 VALID = {
     "web.ts": """
@@ -168,6 +169,62 @@ class FixGateTsTest(unittest.TestCase):
             capture_output=True, text=True, timeout=600, env={**os.environ, **(env or {})},
         )
 
+    def run_with_baseline(self, original_name, original, migrated_name, migrated):
+        (self.tmp / "orig").mkdir(exist_ok=True)
+        (self.tmp / "orig" / original_name).write_text(original)
+        return self.run_files("capacitor", {migrated_name: migrated},
+                              {"FIX_GATE_TS_BASELINE": str(self.tmp / "orig" / original_name)})
+
+    def test_baseline_drops_errors_the_original_already_had(self):
+        original = UNINITIALIZED
+        migrated = 'import { Symbology } from "scandit-capacitor-datacapture-barcode";\nexport const s = Symbology.QR;\n\n' + original
+        self.assertEqual(self.run_files("capacitor", {"Page.ts": migrated}).returncode, 1)
+        result = self.run_with_baseline("Page.ts", original, "Page.ts", migrated)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn("GATE-PASS", result.stdout)
+
+    def test_baseline_keeps_errors_the_original_did_not_have(self):
+        original = UNINITIALIZED
+        migrated = original + "export class Other {\n  ready: boolean;\n}\n"
+        result = self.run_with_baseline("Page.ts", original, "Page.ts", migrated)
+        self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+        self.assertIn("'ready'", result.stdout)
+        self.assertNotIn("'loading'", result.stdout)
+
+    def test_baseline_subtracts_each_original_error_once(self):
+        original = UNINITIALIZED
+        migrated = original + original.replace("Page", "Twin")
+        result = self.run_with_baseline("Page.ts", original, "Page.ts", migrated)
+        self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+        self.assertEqual(result.stdout.count("error TS2564"), 1)
+
+    def test_baseline_reads_the_script_block_of_a_vue_original(self):
+        original = '<template><div/></template>\n<script lang="ts">\nexport class Page {\n  loading: boolean;\n}\n</script>\n'
+        migrated = UNINITIALIZED
+        result = self.run_with_baseline("Page.vue", original, "Page.ts", migrated)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+    def test_baseline_drops_the_related_lines_of_a_dropped_error(self):
+        original = "declare const y: { a: string };\nexport const x: { a: number } = y;\n"
+        migrated = "export const k = 1;\n" + original
+        self.assertIn("Types of property", self.run_files("capacitor", {"Page.ts": migrated}).stdout)
+        result = self.run_with_baseline("Page.ts", original, "Page.ts", migrated)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertNotIn("Types of property", result.stdout)
+
+    def test_baseline_fails_closed_when_the_subtraction_crashes(self):
+        bin_dir = self.tmp / "bin"
+        bin_dir.mkdir()
+        node = bin_dir / "node"
+        node.write_text(f'#!/bin/sh\ncase "$2" in *baseOut*) exit 1;; esac\nexec {shutil.which("node")} "$@"\n')
+        node.chmod(0o755)
+        (self.tmp / "orig").mkdir()
+        (self.tmp / "orig" / "Page.ts").write_text(UNINITIALIZED)
+        env = {"FIX_GATE_TS_BASELINE": str(self.tmp / "orig" / "Page.ts"), "PATH": f"{bin_dir}{os.pathsep}{os.environ['PATH']}"}
+        result = self.run_files("capacitor", {"Page.ts": UNINITIALIZED}, env)
+        self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+        self.assertIn("GATE-FAIL: baseline subtraction failed", result.stdout)
+
     def test_extra_file_resolves_relative_import(self):
         main = 'import { Kind } from "./Scan.types";\nexport const kind: Kind = "qr";\n'
         types = 'export type Kind = "qr" | "ean13";\n'
@@ -277,6 +334,40 @@ class FixGateTsTest(unittest.TestCase):
                 result = self.run_files(platform, {file_name: source}, {"FIX_GATE_TS_ANY_MODULE": "1"})
                 self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
                 self.assertIn("error TS7006: Parameter 'session'", result.stdout)
+
+    def test_any_module_shim_covers_a_local_whose_function_returns_a_shimmed_type(self):
+        app = (
+            'import type { Observable } from "rxjs";\n'
+            "type Barcode = { data: string };\n"
+            "declare function getScanningStream(): Promise<Observable<Barcode>>;\n"
+            "export async function wire(): Promise<void> {\n"
+            "  const stream = await getScanningStream();\n"
+            "  stream.subscribe((b) => b.data);\n}\n"
+        )
+        result = self.run_files("capacitor", {"Scan.ts": app}, {"FIX_GATE_TS_ANY_MODULE": "1"})
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+    def test_any_module_shim_covers_a_local_from_an_arrow_with_a_shimmed_return_type(self):
+        app = (
+            'import type { Observable } from "rxjs";\n'
+            "const getStream = (): Observable<number> => null as any;\n"
+            "export function wire(): void {\n"
+            "  const stream = getStream();\n"
+            "  stream.subscribe((v) => v);\n}\n"
+        )
+        result = self.run_files("capacitor", {"Scan.ts": app}, {"FIX_GATE_TS_ANY_MODULE": "1"})
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+    def test_any_module_shim_keeps_implicit_any_on_a_local_from_an_unshimmed_return_type(self):
+        app = (
+            "declare function getPlain(): Promise<{ on(cb: any): void }>;\n"
+            "export async function wire(): Promise<void> {\n"
+            "  const plain = await getPlain();\n"
+            "  plain.on((b) => b);\n}\n"
+        )
+        result = self.run_files("capacitor", {"Scan.ts": app}, {"FIX_GATE_TS_ANY_MODULE": "1"})
+        self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+        self.assertIn("error TS7006: Parameter 'b'", result.stdout)
 
     def test_any_module_shim_fails_closed_when_the_callback_filter_crashes(self):
         bin_dir = self.tmp / "bin"
