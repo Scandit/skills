@@ -9,7 +9,7 @@ SparkScan is a pre-built scanning UI for high-volume single-scanning workflows. 
 - Scandit React Native packages installed:
   - `scandit-react-native-datacapture-core`
   - `scandit-react-native-datacapture-barcode`
-- After installing, run `npx pod-install` (or `cd ios && pod install`) for iOS. Android auto-links via Gradle — no manual step.
+- After installing, run `npx pod-install@1.2.1` (or `cd ios && pod install`) for iOS. Android auto-links via Gradle — no manual step.
 - React Native `>=0.70`. The New Architecture (Fabric / TurboModules) is supported — no additional setup required beyond the standard RN template.
 - A valid Scandit license key — see **Licence key** in this skill's `SKILL.md`.
 - Camera permissions configured by the app:
@@ -26,7 +26,7 @@ After providing the code, show this setup checklist:
 
 **Setup checklist:**
 1. Install packages: `npm install scandit-react-native-datacapture-core scandit-react-native-datacapture-barcode`
-2. Run `npx pod-install` (iOS). Android auto-links.
+2. Run `npx pod-install@1.2.1` (iOS). Android auto-links.
 3. Add `NSCameraUsageDescription` to `ios/<App>/Info.plist`.
 4. Replace `-- ENTER YOUR SCANDIT LICENSE KEY HERE --` with your key (see **Licence key** in `SKILL.md`).
 5. If Metro was running, restart it with `--reset-cache` so the new package is picked up.
@@ -554,7 +554,7 @@ const styles = StyleSheet.create({
 4. **Cleanup on unmount** — In the `useEffect` cleanup function, call `dataCaptureContext.removeMode(sparkScanMode.current)`. React unmount handles the native view tear-down automatically.
 5. **Children render under the overlay** — Everything inside `<SparkScanView>` renders below the native scanning controls. Use this to show results lists, forms, or any other content.
 6. **Imports** — Core types from `scandit-react-native-datacapture-core`; barcode types from `scandit-react-native-datacapture-barcode`.
-7. **Pod install** — Run `npx pod-install` (or `cd ios && pod install`) after installing or updating Scandit packages. Android auto-links.
+7. **Pod install** — Run `npx pod-install@1.2.1` (or `cd ios && pod install`) after installing or updating Scandit packages. Android auto-links.
 8. **Camera permissions** — iOS: `NSCameraUsageDescription` in `Info.plist`. Android: runtime request via `PermissionsAndroid` before navigating to the scan screen.
 9. **Metro cache** — If a package upgrade appears to have no effect at runtime, restart Metro with `npm start -- --reset-cache`.
 10. **Feedback delegate goes on the view** — set `sparkScanView.feedbackDelegate`, not on the SparkScan mode.

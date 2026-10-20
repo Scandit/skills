@@ -9,7 +9,7 @@ MatrixScan AR (API name: `BarcodeAr*`) is a multi-barcode AR mode that tracks al
 - Scandit React Native packages installed:
   - `scandit-react-native-datacapture-core`
   - `scandit-react-native-datacapture-barcode`
-- After installing, run `npx pod-install` (or `cd ios && pod install`) for iOS. Android auto-links via Gradle — no manual step.
+- After installing, run `npx pod-install@1.2.1` (or `cd ios && pod install`) for iOS. Android auto-links via Gradle — no manual step.
 - Minimum SDK version: **7.1** for core BarcodeAr classes. `BarcodeArCustomHighlight` requires 8.0+. `BarcodeArCustomAnnotation` requires 8.1+. `BarcodeArResponsiveAnnotation` requires 8.2+.
 - React Native `>=0.70`. The New Architecture (Fabric / TurboModules) is supported — no additional setup required beyond the standard RN template.
 - A valid Scandit license key — see **Licence key** in this skill's `SKILL.md`.
@@ -27,7 +27,7 @@ After providing the code, show this setup checklist:
 
 **Setup checklist:**
 1. Install packages: `npm install scandit-react-native-datacapture-core scandit-react-native-datacapture-barcode`
-2. Run `npx pod-install` (iOS). Android auto-links.
+2. Run `npx pod-install@1.2.1` (iOS). Android auto-links.
 3. Add `NSCameraUsageDescription` to `ios/<App>/Info.plist`.
 4. Replace `'-- ENTER YOUR SCANDIT LICENSE KEY HERE --'` with your key (see **Licence key** in `SKILL.md`).
 5. If Metro was running, restart it with `--reset-cache` so the new package is picked up.
@@ -980,7 +980,7 @@ const styles = StyleSheet.create({
 6. **Cleanup on unmount** — In the `useEffect` cleanup function, call `dataCaptureContext.removeMode(barcodeArRef.current)`. React unmount handles the native view tear-down automatically.
 7. **Children render under the overlay** — Everything inside `<BarcodeArView>` renders below the native AR layer. Use absolute positioning or safe-area insets to layer UI on top of the AR content.
 8. **Imports** — Core types (`DataCaptureContext`, `Color`, `Brush`, `Feedback`, etc.) from `scandit-react-native-datacapture-core`; BarcodeAr types from `scandit-react-native-datacapture-barcode`.
-9. **Pod install** — Run `npx pod-install` (or `cd ios && pod install`) after installing or updating Scandit packages. Android auto-links.
+9. **Pod install** — Run `npx pod-install@1.2.1` (or `cd ios && pod install`) after installing or updating Scandit packages. Android auto-links.
 10. **Camera permissions** — iOS: `NSCameraUsageDescription` in `Info.plist`. Android: runtime request via `PermissionsAndroid` before navigating to the AR screen.
 11. **Metro cache** — If a package upgrade appears to have no effect at runtime, restart Metro with `npm start -- --reset-cache`.
 12. **`addMode` is required** — Call `dataCaptureContext.addMode(barcodeAr)` after constructing `BarcodeAr` and before rendering `<BarcodeArView>`. Without this, the view has no mode to drive scanning.
@@ -990,7 +990,7 @@ const styles = StyleSheet.create({
 | Pitfall | Fix |
 |---------|-----|
 | Barcodes are never tracked / nothing appears | Forgot `view.start()` in the `ref` callback, or forgot `dataCaptureContext.addMode(barcodeAr)`. Both are required. |
-| App crashes on iOS after install | Run `npx pod-install` and rebuild. |
+| App crashes on iOS after install | Run `npx pod-install@1.2.1` and rebuild. |
 | Highlights/annotations reset on every render | The provider objects are recreated each render — this is expected. The view caches results per barcode; it does not re-call the provider on re-render. If you see flickering, check that you are not calling `viewRef.current.reset()` inside a render cycle. |
 | `BarcodeArCustomHighlight` not found | Requires SDK 8.0+. Check your installed package version. |
 | `BarcodeArCustomAnnotation` not found | Requires SDK 8.1+. |

@@ -80,7 +80,7 @@ Then:
 
 ```bash
 npm install
-npx pod-install
+npx pod-install@1.2.1
 # Restart Metro with cache reset:
 npx react-native start --reset-cache
 ```
