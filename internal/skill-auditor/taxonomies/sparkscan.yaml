@@ -34,7 +34,7 @@ features:
     required: false
     excluded_platforms: [kmp]
     evidence: [docs]
-    match: ["target mode", "targetmode", "aim", "selection mode"]
+    match: ["target mode", "targetmode", "aim", "selection mode", "selectionmode"]
   - id: ui-customization
     required: true
     evidence: [docs]

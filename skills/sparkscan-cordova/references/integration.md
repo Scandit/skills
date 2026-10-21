@@ -216,6 +216,24 @@ Use `Scandit.Color.fromHex('#RRGGBB')` or `Scandit.Color.fromHex('#AARRGGBB')`.
 | `feedbackDelegate` | `SparkScanFeedbackDelegate \| null` | Custom per-barcode feedback (Step 8). |
 | `defaultBrush` (static) | `Brush` | Default highlight brush. `Scandit.SparkScanView.defaultBrush`. |
 
+### Scanning mode and preview
+
+`SparkScanViewSettings.defaultScanningMode` picks target mode (aim-to-scan) and the preview behavior. `SparkScanPreviewBehavior.Persistent` keeps the camera preview visible when not scanning. Pass the settings as the third argument of `forContext`:
+
+```javascript
+const sparkScanViewSettings = new Scandit.SparkScanViewSettings();
+sparkScanViewSettings.defaultScanningMode = new Scandit.SparkScanScanningModeTarget(
+  Scandit.SparkScanScanningBehavior.Single,
+  Scandit.SparkScanPreviewBehavior.Persistent
+);
+
+const sparkScanView = Scandit.SparkScanView.forContext(context, sparkScan, sparkScanViewSettings);
+```
+
+For the regular (non-target) mode with a persistent preview, use `new Scandit.SparkScanScanningModeDefault(Scandit.SparkScanScanningBehavior.Single, Scandit.SparkScanPreviewBehavior.Persistent)` instead.
+
+> `SparkScanScanningModeTarget` and `SparkScanScanningModeDefault` are deprecated since 8.6 in favor of `SparkScanSettings.selectionMode` (`Scandit.SelectionMode.On` for target mode, `Scandit.SelectionMode.Off` for the default mode). At 8.6 `defaultScanningMode` is still the only way to set the preview behavior. From 8.7 the view settings expose `previewBehavior` and `scanningBehavior` directly; they are 8.7+ only, so do not use them against 8.6.x.
+
 ## Step 8 — Custom feedback
 
 By default SparkScan provides visual + haptic feedback on each scan. To customize feedback per barcode, set `feedbackDelegate`:
