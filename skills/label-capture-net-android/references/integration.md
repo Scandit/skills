@@ -553,17 +553,25 @@ LabelCaptureSettings settings =
 
 Receipt Scanning extracts structured data from a whole receipt **in the cloud** (store info, payment totals, individual line items) and uses a **different integration pattern** from standard label capture. It is a separate path from Step 11: Step 11's cloud fallback runs inside the Validation Flow, while receipts run through their own overlay.
 
-- A `LabelCaptureAdaptiveRecognitionOverlay` (not the basic overlay from Step 5), created with `LabelCaptureAdaptiveRecognitionOverlay.Create(labelCapture, dataCaptureView)`, which adds it to the view.
+- A `LabelCaptureAdaptiveRecognitionOverlay` **instead of** Step 5's `LabelCaptureBasicOverlay` (do not add both), created with `LabelCaptureAdaptiveRecognitionOverlay.Create(labelCapture, dataCaptureView)`, which adds it to the view.
+- A `LabelCapture` built from the **receipt** label settings in the docs (below), not the custom barcode + expiry definition from Steps 2–3.
 - An `ILabelCaptureAdaptiveRecognitionListener` set as the overlay's `Listener`. Its `OnRecognized` callback delivers an `AdaptiveRecognitionResult`; for receipts it is a `ReceiptScanningResult` — store name/address/city, transaction date/time, pre-tax total, tax, total, loyalty number, and `LineItems` of `ReceiptScanningLineItem` (each with `Name`, `UnitPrice`, `Discount`, `Quantity`, `TotalPrice`). `OnFailure` fires on a connection error.
+
+In the activity, keep the overlay in a field (like `this.overlay` in Step 5) so it, and the listener it holds, outlive `OnCreate`:
 
 ```csharp
 using Scandit.DataCapture.Label.Data;
 using Scandit.DataCapture.Label.UI.Overlay.AdaptiveRecognition;
 
-// In OnCreate, after labelCapture and dataCaptureView exist:
-var receiptOverlay = LabelCaptureAdaptiveRecognitionOverlay.Create(labelCapture, dataCaptureView);
-receiptOverlay.Listener = new ReceiptListener();
+// Field: private LabelCaptureAdaptiveRecognitionOverlay receiptOverlay;
+// In OnCreate, in place of Step 5's basic overlay:
+this.receiptOverlay = LabelCaptureAdaptiveRecognitionOverlay.Create(this.labelCapture, this.dataCaptureView);
+this.receiptOverlay.Listener = new ReceiptListener();
+```
 
+The listener is its own class. Unlike the other listeners in this guide, `ILabelCaptureAdaptiveRecognitionListener` is a plain managed interface, so it needs no `Java.Lang.Object` base. Treat `OnRecognized` like `OnSessionUpdated` (Key rule 9): do not assume the UI thread, and marshal UI updates with `RunOnUiThread`.
+
+```csharp
 public class ReceiptListener : ILabelCaptureAdaptiveRecognitionListener
 {
     public void OnRecognized(AdaptiveRecognitionResult result)
@@ -576,6 +584,7 @@ public class ReceiptListener : ILabelCaptureAdaptiveRecognitionListener
         {
             // item.Name, item.Quantity, item.UnitPrice, item.Discount, item.TotalPrice
         }
+        // Showing the receipt? Marshal to the UI thread (Activity.RunOnUiThread).
     }
 
     public void OnFailure()

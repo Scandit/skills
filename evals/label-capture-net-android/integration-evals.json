@@ -180,7 +180,8 @@
         {"text": "It states Receipt Scanning uses LabelCaptureAdaptiveRecognitionOverlay instead of the standard/basic overlay"},
         {"text": "It uses ILabelCaptureAdaptiveRecognitionListener to receive results"},
         {"text": "The result type is ReceiptScanningResult, containing line items (ReceiptScanningLineItem) and store/payment fields"},
-        {"text": "The API names it uses are the ones in the guide (e.g. LabelCaptureAdaptiveRecognitionOverlay.Create, OnRecognized(AdaptiveRecognitionResult), PascalCase result properties), with none invented"}
+        {"text": "The API names it uses are the ones in the guide (e.g. LabelCaptureAdaptiveRecognitionOverlay.Create, OnRecognized(AdaptiveRecognitionResult), PascalCase result properties), with none invented"},
+        {"text": "It points to the Advanced Configurations documentation for the receipt label settings rather than reusing a custom barcode/text label definition"}
       ],
       "tags": ["receipt-scanning", "beta"]
     }
