@@ -566,14 +566,23 @@ using Scandit.DataCapture.Label.UI.Overlay.AdaptiveRecognition;
 // Field: private LabelCaptureAdaptiveRecognitionOverlay receiptOverlay;
 // In OnCreate, in place of Step 5's basic overlay:
 this.receiptOverlay = LabelCaptureAdaptiveRecognitionOverlay.Create(this.labelCapture, this.dataCaptureView);
-this.receiptOverlay.Listener = new ReceiptListener();
+this.receiptOverlay.Listener = new ReceiptListener(
+    receipt => this.RunOnUiThread(() => { /* show receipt.StoreName, receipt.PaymentTotal, ... */ }));
 ```
 
-The listener is its own class. Unlike the other listeners in this guide, `ILabelCaptureAdaptiveRecognitionListener` is a plain managed interface, so it needs no `Java.Lang.Object` base. Treat `OnRecognized` like `OnSessionUpdated` (Key rule 9): do not assume the UI thread, and marshal UI updates with `RunOnUiThread`.
+In Step 7's `OnDestroy`, dispose `this.receiptOverlay` instead of `this.overlay` (which this path never sets).
+
+The listener is its own class, like the other listeners in this guide (it can derive from `Java.Lang.Object` as theirs do; the interface does not require it). Treat `OnRecognized` like `OnSessionUpdated` (Key rule 9): do not assume the UI thread, which is why the activity passes in a callback that marshals with `RunOnUiThread`.
 
 ```csharp
+using System;
+
 public class ReceiptListener : ILabelCaptureAdaptiveRecognitionListener
 {
+    private readonly Action<ReceiptScanningResult> onReceipt;
+
+    public ReceiptListener(Action<ReceiptScanningResult> onReceipt) => this.onReceipt = onReceipt;
+
     public void OnRecognized(AdaptiveRecognitionResult result)
     {
         if (result is not ReceiptScanningResult receipt) return;
@@ -584,7 +593,7 @@ public class ReceiptListener : ILabelCaptureAdaptiveRecognitionListener
         {
             // item.Name, item.Quantity, item.UnitPrice, item.Discount, item.TotalPrice
         }
-        // Showing the receipt? Marshal to the UI thread (Activity.RunOnUiThread).
+        this.onReceipt(receipt);
     }
 
     public void OnFailure()
