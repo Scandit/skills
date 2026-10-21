@@ -296,7 +296,7 @@
     {
       "id": 10,
       "prompt": "I need an 'Aim-to-Scan' workflow for precise barcode scanning in crowded environments. My app already has SparkScan integrated: IntegratedApp.js. The preview should always be visible (even when not scanning), target mode should always be enabled, and single scan behavior should be used.",
-      "expected_output": "The skill configures SparkScanViewSettings with defaultScanningMode set to new SparkScanScanningModeTarget(SparkScanScanningBehavior.Single, SparkScanPreviewBehavior.Persistent) (target mode may instead come from SparkScanSettings.selectionMode = SelectionMode.On, but the persistent preview still needs the two-argument scanning mode constructor at 8.6), and the settings are passed as the third argument of SparkScanView.forContext.",
+      "expected_output": "The skill configures SparkScanViewSettings with defaultScanningMode set to new SparkScanScanningModeTarget(SparkScanScanningBehavior.Single, SparkScanPreviewBehavior.Persistent), and the settings are passed as the third argument of SparkScanView.forContext.",
       "files": [
         "fixtures/IntegratedApp.js"
       ],
@@ -306,10 +306,10 @@
       ],
       "assertions": [
         {
-          "text": "SparkScanViewSettings is created (new SparkScanViewSettings())"
+          "text": "A SparkScanViewSettings instance is configured (the existing one or a new one)"
         },
         {
-          "text": "Target mode is enabled, either with defaultScanningMode = new SparkScanScanningModeTarget( on the view settings or with SparkScanSettings.selectionMode set to SelectionMode.On"
+          "text": "Target mode is enabled with defaultScanningMode = new SparkScanScanningModeTarget(SparkScanScanningBehavior.Single, SparkScanPreviewBehavior.Persistent) on the view settings (SparkScanSettings.selectionMode is not a substitute at 8.6)"
         },
         {
           "text": "SparkScanScanningBehavior.Single is used (not Continuous)"

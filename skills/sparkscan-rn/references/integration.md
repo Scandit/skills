@@ -277,9 +277,10 @@ All colors use `Color.fromHex('#RRGGBB')` from `scandit-react-native-datacapture
 
 ### Scanning mode and preview
 
-`SparkScanViewSettings.defaultScanningMode` picks target mode (aim-to-scan) and the preview behavior. `SparkScanPreviewBehavior.Persistent` keeps the camera preview visible when not scanning. Pass the settings through the `sparkScanViewSettings` prop:
+`SparkScanViewSettings.defaultScanningMode` picks target mode (aim-to-scan) and the preview behavior. `SparkScanPreviewBehavior.Persistent` keeps the camera preview visible when not scanning. Build the settings in `useMemo` (the view reads them only on mount) and pass them through the `sparkScanViewSettings` prop:
 
 ```tsx
+import { useMemo } from 'react';
 import {
   SparkScanScanningBehavior,
   SparkScanPreviewBehavior,
@@ -288,11 +289,14 @@ import {
   SparkScanViewSettings,
 } from 'scandit-react-native-datacapture-barcode';
 
-const viewSettings = new SparkScanViewSettings();
-viewSettings.defaultScanningMode = new SparkScanScanningModeTarget(
-  SparkScanScanningBehavior.Single,
-  SparkScanPreviewBehavior.Persistent
-);
+const viewSettings = useMemo(() => {
+  const settings = new SparkScanViewSettings();
+  settings.defaultScanningMode = new SparkScanScanningModeTarget(
+    SparkScanScanningBehavior.Single,
+    SparkScanPreviewBehavior.Persistent
+  );
+  return settings;
+}, []);
 
 <SparkScanView
   context={context}

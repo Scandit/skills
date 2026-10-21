@@ -29,12 +29,13 @@ features:
   - id: continuous-scanning
     required: true
     evidence: [docs, sample]
-    match: ["continuous", "scanningmode", "scanning mode"]
+    # "scanningmode"/bare "continuous" matched single-scan target-mode evals ("(not continuous)")
+    match: ["scanningbehavior\\.continuous", "continuous(ly)? (barcode )?scan"]
   - id: target-selection-mode
     required: false
     excluded_platforms: [kmp]
     evidence: [docs]
-    match: ["target mode", "targetmode", "aim", "selection mode", "selectionmode"]
+    match: ["target mode", "targetmode", "aim", "selection mode"]
   - id: ui-customization
     required: true
     evidence: [docs]
