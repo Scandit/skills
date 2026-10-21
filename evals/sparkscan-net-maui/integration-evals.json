@@ -124,6 +124,25 @@
         {"text": "MainThread.BeginInvokeOnMainThread is used to dispatch UI work after the async lookup (not RunOnUiThread, not DispatchQueue.MainQueue.DispatchAsync)"},
         {"text": "Existing integration code (DataCaptureContext, SparkScan, SparkScanView bindings, OnAppearing/OnDisappearing) is preserved"}
       ]
+    },
+    {
+      "id": 7,
+      "prompt": "I need an 'Aim-to-Scan' workflow for precise barcode scanning in crowded environments. My .NET SparkScan app is IntegratedMainPage.xaml and IntegratedMainPage.xaml.cs. The preview should always be visible (even when not scanning), target mode should always be enabled, and single scan behavior should be used.",
+      "expected_output": "The skill sets DefaultScanningMode to new SparkScanScanningModeTarget(SparkScanScanningBehavior.Single, SparkScanPreviewBehavior.Persistent) on the ViewSettings instance the XAML already binds to the SparkScanView.",
+      "files": [
+        "fixtures/IntegratedMainPage.xaml",
+        "fixtures/IntegratedMainPage.xaml.cs"
+      ],
+      "tags": ["target-selection-mode", "preview-behavior"],
+      "assertions": [
+        {"text": "A SparkScanViewSettings instance is configured (the existing ViewSettings property or a new one)"},
+        {"text": "Target mode is enabled with DefaultScanningMode = new SparkScanScanningModeTarget(SparkScanScanningBehavior.Single, SparkScanPreviewBehavior.Persistent) on the view settings (SparkScanSettings.SelectionMode is not a substitute at 8.6)"},
+        {"text": "SparkScanScanningBehavior.Single is used (not Continuous)"},
+        {"text": "SparkScanPreviewBehavior.Persistent is used (not Default), passed as the previewBehavior argument of the scanning mode constructor"},
+        {"text": "The configured SparkScanViewSettings instance is the one bound to the SparkScanView (the existing {Binding ViewSettings} in the XAML counts; no second hookup is needed)"},
+        {"text": "Code does not use viewSettings.PreviewBehavior, which exists only from 8.7"},
+        {"text": "Existing integration code (context, sparkScan mode, listener, lifecycle) is preserved"}
+      ]
     }
   ]
 }

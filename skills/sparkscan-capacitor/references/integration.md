@@ -203,6 +203,32 @@ All colors use `Color.fromHex('#RRGGBB')` from `scandit-capacitor-datacapture-co
 | `triggerButtonImage` | `string \| null` | Custom image for the trigger button. |
 | `SparkScanView.defaultBrush` | `Brush` (static) | Default highlight brush. |
 
+### Scanning mode and preview
+
+`SparkScanViewSettings.defaultScanningMode` picks target mode (aim-to-scan) and the preview behavior. `SparkScanPreviewBehavior.Persistent` keeps the camera preview visible when not scanning. Pass the settings as the third argument of `SparkScanView.forContext`:
+
+```javascript
+import {
+  SparkScanScanningBehavior,
+  SparkScanPreviewBehavior,
+  SparkScanScanningModeTarget,
+  SparkScanView,
+  SparkScanViewSettings,
+} from 'scandit-capacitor-datacapture-barcode';
+
+const viewSettings = new SparkScanViewSettings();
+viewSettings.defaultScanningMode = new SparkScanScanningModeTarget(
+  SparkScanScanningBehavior.Single,
+  SparkScanPreviewBehavior.Persistent
+);
+
+const sparkScanView = SparkScanView.forContext(context, sparkScan, viewSettings);
+```
+
+For the regular (non-target) mode with a persistent preview, use `new SparkScanScanningModeDefault(SparkScanScanningBehavior.Single, SparkScanPreviewBehavior.Persistent)` instead.
+
+> `SparkScanScanningModeTarget` and `SparkScanScanningModeDefault` are deprecated since 8.6 in favor of `SparkScanSettings.selectionMode` (`SelectionMode.On` for target mode, `SelectionMode.Off` for the default mode, from `scandit-capacitor-datacapture-core`). At 8.6 `defaultScanningMode` is still the only way to set the preview behavior. From 8.7 the view settings expose `previewBehavior` and `scanningBehavior` directly; they are 8.7+ only, so do not use them against 8.6.x.
+
 ## Step 7 — Custom Feedback
 
 By default SparkScan provides visual and haptic feedback on each scan. To customize feedback per-barcode (e.g., reject invalid codes), set a `feedbackDelegate` on the view.

@@ -156,7 +156,7 @@
       "assertions": [
         {"text": "SparkScanViewSettings is created"},
         {"text": "defaultScanningMode is set on SparkScanViewSettings"},
-        {"text": "SDCSparkScanScanningModeTarget is used for the scanning mode"},
+        {"text": "SparkScanScanningModeTarget is used for the scanning mode"},
         {"text": "SparkScanScanningBehavior.single is used"},
         {"text": "SparkScanPreviewBehavior.persistent is used"},
         {"text": "The configured SparkScanViewSettings is passed to SparkScanView initialization"},

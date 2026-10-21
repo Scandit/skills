@@ -129,6 +129,24 @@
         {"text": "RunOnUiThread is used to dispatch UI work after the async lookup"},
         {"text": "Existing integration code (DataCaptureContext, SparkScan, SparkScanView, lifecycle) is preserved"}
       ]
+    },
+    {
+      "id": 8,
+      "prompt": "I need an 'Aim-to-Scan' workflow for precise barcode scanning in crowded environments. My .NET SparkScan app is IntegratedActivity.cs. The preview should always be visible (even when not scanning), target mode should always be enabled, and single scan behavior should be used.",
+      "expected_output": "The skill sets viewSettings.DefaultScanningMode to new SparkScanScanningModeTarget(SparkScanScanningBehavior.Single, SparkScanPreviewBehavior.Persistent), and uses the configured SparkScanViewSettings when creating the SparkScanView.",
+      "files": [
+        "fixtures/IntegratedActivity.cs"
+      ],
+      "tags": ["target-selection-mode", "preview-behavior"],
+      "assertions": [
+        {"text": "A SparkScanViewSettings instance is configured (the existing viewSettings or a new one)"},
+        {"text": "Target mode is enabled with DefaultScanningMode = new SparkScanScanningModeTarget(SparkScanScanningBehavior.Single, SparkScanPreviewBehavior.Persistent) on the view settings (SparkScanSettings.SelectionMode is not a substitute at 8.6)"},
+        {"text": "SparkScanScanningBehavior.Single is used (not Continuous)"},
+        {"text": "SparkScanPreviewBehavior.Persistent is used (not Default), passed as the previewBehavior argument of the scanning mode constructor"},
+        {"text": "The configured SparkScanViewSettings is passed to SparkScanView.Create"},
+        {"text": "Code does not use viewSettings.PreviewBehavior, which exists only from 8.7"},
+        {"text": "Existing integration code (context, sparkScan mode, listener, lifecycle) is preserved"}
+      ]
     }
   ]
 }
