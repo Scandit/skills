@@ -264,7 +264,7 @@ All colors use Flutter's `Color` type (e.g. `Color(0xFFFF5500)` or `Colors.red`)
 
 ### Scanning mode and preview
 
-`SparkScanViewSettings.defaultScanningMode` picks target mode (aim-to-scan) and the preview behavior. `SparkScanPreviewBehavior.persistent` keeps the camera preview visible when not scanning. Set it on the settings you pass to `SparkScanView.forContext`:
+`SparkScanViewSettings.defaultScanningMode` picks target mode (aim-to-scan) and the preview behavior. `SparkScanPreviewBehavior.persistent` keeps the camera preview visible when not scanning. Replace the `sparkScanViewSettings = SparkScanViewSettings();` line in the BLoC constructor with (the field is `late final`, so assign it once):
 
 ```dart
 sparkScanViewSettings = SparkScanViewSettings()

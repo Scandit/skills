@@ -296,7 +296,7 @@
     {
       "id": 10,
       "prompt": "I need an 'Aim-to-Scan' workflow for precise barcode scanning in crowded environments. My app already has SparkScan integrated: IntegratedApp.js. The preview should always be visible (even when not scanning), target mode should always be enabled, and single scan behavior should be used.",
-      "expected_output": "The skill configures SparkScanViewSettings with defaultScanningMode set to new SparkScanScanningModeTarget(SparkScanScanningBehavior.Single, SparkScanPreviewBehavior.Persistent), or enables target mode with SparkScanSettings.selectionMode = SelectionMode.On, and the settings are passed as the third argument of Scandit.SparkScanView.forContext.",
+      "expected_output": "The skill configures SparkScanViewSettings with defaultScanningMode set to new SparkScanScanningModeTarget(SparkScanScanningBehavior.Single, SparkScanPreviewBehavior.Persistent) (target mode may instead come from SparkScanSettings.selectionMode = SelectionMode.On, but the persistent preview still needs the two-argument scanning mode constructor at 8.6), and the settings are passed as the third argument of Scandit.SparkScanView.forContext.",
       "files": [
         "fixtures/IntegratedApp.js"
       ],

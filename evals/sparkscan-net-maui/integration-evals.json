@@ -128,7 +128,7 @@
     {
       "id": 7,
       "prompt": "I need an 'Aim-to-Scan' workflow for precise barcode scanning in crowded environments. My .NET SparkScan app is IntegratedMainPage.xaml.cs. The preview should always be visible (even when not scanning), target mode should always be enabled, and single scan behavior should be used.",
-      "expected_output": "The skill sets viewSettings.DefaultScanningMode to new SparkScanScanningModeTarget(SparkScanScanningBehavior.Single, SparkScanPreviewBehavior.Persistent), or enables target mode with SparkScanSettings.SelectionMode = SelectionMode.On, and uses the configured SparkScanViewSettings when creating the SparkScanView.",
+      "expected_output": "The skill sets viewSettings.DefaultScanningMode to new SparkScanScanningModeTarget(SparkScanScanningBehavior.Single, SparkScanPreviewBehavior.Persistent) (target mode may instead come from SparkScanSettings.SelectionMode = SelectionMode.On, but the persistent preview still needs the two-argument scanning mode constructor at 8.6), and uses the configured SparkScanViewSettings when creating the SparkScanView.",
       "files": [
         "fixtures/IntegratedMainPage.xaml.cs"
       ],
