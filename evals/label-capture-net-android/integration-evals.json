@@ -169,6 +169,20 @@
         {"text": "Kotlin/iOS-style forms (.adaptiveRecognition(.auto), setAdaptiveRecognitionMode underscore enums) are NOT used"}
       ],
       "tags": ["adaptive-recognition-cloud", "beta"]
+    },
+    {
+      "id": 10,
+      "prompt": "Can I scan store receipts and pull out the line items, totals, and store name in my .NET Android app using Label Capture? How would I integrate it?",
+      "expected_output": "The skill confirms Receipt Scanning is available on .NET Android but is BETA (requires the Adaptive Recognition Engine, subscription-gated, contact support) and uses a DIFFERENT integration pattern from standard label capture: a LabelCaptureAdaptiveRecognitionOverlay created with LabelCaptureAdaptiveRecognitionOverlay.Create(labelCapture, dataCaptureView) instead of the basic overlay, and an ILabelCaptureAdaptiveRecognitionListener set as its Listener whose OnRecognized(AdaptiveRecognitionResult) receives a ReceiptScanningResult (store fields, payment totals, and LineItems of ReceiptScanningLineItem with Name/UnitPrice/Discount/Quantity/TotalPrice).",
+      "files": [],
+      "assertions": [
+        {"text": "The response flags that Receipt Scanning is BETA and requires the Adaptive Recognition Engine enabled on the subscription (contact support)"},
+        {"text": "It states Receipt Scanning uses LabelCaptureAdaptiveRecognitionOverlay instead of the standard/basic overlay"},
+        {"text": "It uses ILabelCaptureAdaptiveRecognitionListener to receive results"},
+        {"text": "The result type is ReceiptScanningResult, containing line items (ReceiptScanningLineItem) and store/payment fields"},
+        {"text": "The API names it uses are the ones in the guide (e.g. LabelCaptureAdaptiveRecognitionOverlay.Create, OnRecognized(AdaptiveRecognitionResult), PascalCase result properties), with none invented"}
+      ],
+      "tags": ["receipt-scanning", "beta"]
     }
   ]
 }

@@ -409,6 +409,25 @@
       "tags": [
         "error-troubleshooting"
       ]
+    },
+    {
+      "id": 13,
+      "prompt": "My React Native app needs to read the digits off a seven-segment digital display (a weighing scale readout). Is there a ready-made label for that?",
+      "expected_output": "The skill uses LabelDefinition.createSevenSegmentDisplayLabelDefinition(name) and passes it into LabelCaptureSettings.settingsFromLabelDefinitions to build the settings.",
+      "files": [
+        "fixtures/empty-app.tsx"
+      ],
+      "assertions": [
+        {
+          "text": "LabelDefinition.createSevenSegmentDisplayLabelDefinition( is used for the seven-segment display"
+        },
+        {
+          "text": "The pre-built definition is passed into LabelCaptureSettings.settingsFromLabelDefinitions("
+        }
+      ],
+      "tags": [
+        "seven-segment-display"
+      ]
     }
   ]
 }

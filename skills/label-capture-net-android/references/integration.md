@@ -547,6 +547,46 @@ LabelCaptureSettings settings =
 
 > `AdaptiveRecognitionMode.Off` (the default) keeps everything on-device. Cloud fallback only takes effect when the label is scanned through `LabelCaptureValidationFlowOverlay` — it is **not** available with the basic or advanced overlay.
 
+## Step 12 — Receipt Scanning (Beta, optional)
+
+> **Beta.** Receipt Scanning requires the Adaptive Recognition Engine (beta) and must be enabled on your subscription — contact `support@scandit.com`.
+
+Receipt Scanning extracts structured data from a whole receipt **in the cloud** (store info, payment totals, individual line items) and uses a **different integration pattern** from standard label capture. It is a separate path from Step 11: Step 11's cloud fallback runs inside the Validation Flow, while receipts run through their own overlay.
+
+- A `LabelCaptureAdaptiveRecognitionOverlay` (not the basic overlay from Step 5), created with `LabelCaptureAdaptiveRecognitionOverlay.Create(labelCapture, dataCaptureView)`, which adds it to the view.
+- An `ILabelCaptureAdaptiveRecognitionListener` set as the overlay's `Listener`. Its `OnRecognized` callback delivers an `AdaptiveRecognitionResult`; for receipts it is a `ReceiptScanningResult` — store name/address/city, transaction date/time, pre-tax total, tax, total, loyalty number, and `LineItems` of `ReceiptScanningLineItem` (each with `Name`, `UnitPrice`, `Discount`, `Quantity`, `TotalPrice`). `OnFailure` fires on a connection error.
+
+```csharp
+using Scandit.DataCapture.Label.Data;
+using Scandit.DataCapture.Label.UI.Overlay.AdaptiveRecognition;
+
+// In OnCreate, after labelCapture and dataCaptureView exist:
+var receiptOverlay = LabelCaptureAdaptiveRecognitionOverlay.Create(labelCapture, dataCaptureView);
+receiptOverlay.Listener = new ReceiptListener();
+
+public class ReceiptListener : ILabelCaptureAdaptiveRecognitionListener
+{
+    public void OnRecognized(AdaptiveRecognitionResult result)
+    {
+        if (result is not ReceiptScanningResult receipt) return;
+
+        string? storeName = receipt.StoreName;
+        var total = receipt.PaymentTotal;
+        foreach (ReceiptScanningLineItem item in receipt.LineItems)
+        {
+            // item.Name, item.Quantity, item.UnitPrice, item.Discount, item.TotalPrice
+        }
+    }
+
+    public void OnFailure()
+    {
+        // Network error, or the Adaptive Recognition Engine is not reachable.
+    }
+}
+```
+
+Because this is a beta, cloud-only flow, **fetch the [Advanced Configurations](https://docs.scandit.com/sdks/net/android/label-capture/advanced/) page before implementing it** for the label settings a receipt needs and the overlay's UI options (`LabelCaptureAdaptiveRecognitionSettings`).
+
 ## Setup checklist
 
 After writing the integration code, show this checklist:

@@ -102,7 +102,7 @@ All classes documented with `:available: dotnet.android` in the official RST doc
 
 These are real `dotnet.android` symbols but out of scope for a first integration — don't invent their shapes; fetch the [Advanced Configurations](https://docs.scandit.com/sdks/net/android/label-capture/advanced/) page if the user asks for them:
 
-- **Adaptive Recognition (cloud backup):** `LabelCaptureAdaptiveRecognitionOverlay`, `LabelCaptureAdaptiveRecognitionSettings`, `ILabelCaptureAdaptiveRecognitionListener`, and the result types `AdaptiveRecognitionResult` / `AdaptiveRecognitionResultType` / `ReceiptScanningResult` / `ReceiptScanningLineItem`. Enabled per-definition via `AdaptiveRecognitionMode`.
+- **Adaptive Recognition (cloud backup):** `LabelCaptureAdaptiveRecognitionOverlay`, `LabelCaptureAdaptiveRecognitionSettings`, `ILabelCaptureAdaptiveRecognitionListener`, and the result types `AdaptiveRecognitionResult` / `AdaptiveRecognitionResultType` / `ReceiptScanningResult` / `ReceiptScanningLineItem`. Enabled per-definition via `AdaptiveRecognitionMode`. Receipt Scanning (beta) wiring: [references/integration.md](references/integration.md) Step 12.
 - **Advanced overlay (arbitrary Android views over labels):** `LabelCaptureAdvancedOverlay`, `ILabelCaptureAdvancedOverlayListener`.
 - **`LabelFieldLocation` / `LabelFieldLocationType`** — used with `SetLocation(...)` on custom field builders to constrain where a field is expected on the label.
 
