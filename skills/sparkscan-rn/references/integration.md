@@ -275,6 +275,41 @@ All colors use `Color.fromHex('#RRGGBB')` from `scandit-react-native-datacapture
 | `triggerButtonImage` | `string \| null` | Custom image for the trigger button. |
 | `SparkScanView.defaultBrush` | `Brush` (static) | Default highlight brush. |
 
+### Scanning mode and preview
+
+`SparkScanViewSettings.defaultScanningMode` picks target mode (aim-to-scan) and the preview behavior. `SparkScanPreviewBehavior.Persistent` keeps the camera preview visible when not scanning. Build the settings in `useMemo` (the view reads them only on mount) and pass them through the `sparkScanViewSettings` prop:
+
+```tsx
+import { useMemo } from 'react';
+import {
+  SparkScanScanningBehavior,
+  SparkScanPreviewBehavior,
+  SparkScanScanningModeTarget,
+  SparkScanView,
+  SparkScanViewSettings,
+} from 'scandit-react-native-datacapture-barcode';
+
+const viewSettings = useMemo(() => {
+  const settings = new SparkScanViewSettings();
+  settings.defaultScanningMode = new SparkScanScanningModeTarget(
+    SparkScanScanningBehavior.Single,
+    SparkScanPreviewBehavior.Persistent
+  );
+  return settings;
+}, []);
+
+<SparkScanView
+  context={context}
+  sparkScan={sparkScan}
+  sparkScanViewSettings={viewSettings}
+  style={{ flex: 1 }}
+/>
+```
+
+For the regular (non-target) mode with a persistent preview, use `new SparkScanScanningModeDefault(SparkScanScanningBehavior.Single, SparkScanPreviewBehavior.Persistent)` instead.
+
+> `SparkScanScanningModeTarget` and `SparkScanScanningModeDefault` are deprecated since 8.6 in favor of `SparkScanSettings.selectionMode` (`SelectionMode.On` for target mode, `SelectionMode.Off` for the default mode, from `scandit-react-native-datacapture-core`). At 8.6 `defaultScanningMode` is still the only way to set the preview behavior. From 8.7 the view settings expose `previewBehavior` and `scanningBehavior` directly; they are 8.7+ only, so do not use them against 8.6.x.
+
 ## Step 7 — Custom Feedback
 
 By default SparkScan provides visual and haptic feedback on each scan. To customize feedback per-barcode (e.g., reject invalid codes), set a `feedbackDelegate` on the view. Build the delegate with `useMemo` so the feedback objects aren't recreated on every render.

@@ -588,6 +588,16 @@ viewSettings.DefaultScanningMode = new SparkScanScanningModeTarget(
 
 `SparkScanScanningModeDefault` and `SparkScanScanningModeTarget` are constructed with `new` and both require `(SparkScanScanningBehavior, SparkScanPreviewBehavior)`. There is no parameterless constructor in the .NET binding.
 
+To keep the camera preview visible while the user is not scanning, pass `SparkScanPreviewBehavior.Persistent` as the preview behavior:
+
+```csharp
+viewSettings.DefaultScanningMode = new SparkScanScanningModeTarget(
+    scanningBehavior: SparkScanScanningBehavior.Single,
+    previewBehavior: SparkScanPreviewBehavior.Persistent);
+```
+
+`SparkScanScanningModeDefault` takes the same `previewBehavior` argument. `SparkScanSettings.SelectionMode` (`Scandit.DataCapture.Core.Source.SelectionMode.On` for target mode) is the settings-level alternative. From 8.7 the view settings also expose `PreviewBehavior` directly; it is 8.7+ only, so do not use it against 8.6.x.
+
 To let users switch modes from the toolbar at runtime:
 
 ```csharp
