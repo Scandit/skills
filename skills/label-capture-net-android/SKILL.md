@@ -36,7 +36,7 @@ The .NET-Android-specific facts most often gotten wrong by pattern-matching from
 
 Based on the user's request, load the appropriate reference file before responding:
 
-- **Integrating Label Capture from scratch, defining the label (fields, symbologies, regexes, optional vs required), creating the mode, hosting the `DataCaptureView` + `LabelCaptureBasicOverlay`, wiring the camera lifecycle, handling captured labels, customizing feedback or brushes, or using prebuilt definitions (VIN / price label / 7-segment)** (e.g. "add Smart Label Capture to my .NET Android app", "scan a barcode and an expiry date from a price tag in C#", "read the total price field", "use the recommended camera settings") → read [references/integration.md](references/integration.md) and follow it.
+- **Integrating Label Capture from scratch, defining the label (fields, symbologies, regexes, optional vs required), creating the mode, hosting the `DataCaptureView` + `LabelCaptureBasicOverlay`, wiring the camera lifecycle, handling captured labels, customizing feedback or brushes, using prebuilt definitions (VIN / price label / 7-segment), the Adaptive Recognition cloud fallback (Step 11), or Receipt Scanning — store receipts, line items, totals (beta, Step 12)** (e.g. "add Smart Label Capture to my .NET Android app", "scan a barcode and an expiry date from a price tag in C#", "read the total price field", "use the recommended camera settings") → read [references/integration.md](references/integration.md) and follow it.
 - **Enabling or customizing the Validation Flow** (e.g. "add the guided validation flow so users can review and correct fields", "let the user type a field that didn't scan", "customize the validation-flow hint text / button labels", "the keyboard covers the input field") → read [references/validation-flow.md](references/validation-flow.md) and follow it.
 
 ## API Usage Policy
@@ -102,7 +102,7 @@ All classes documented with `:available: dotnet.android` in the official RST doc
 
 These are real `dotnet.android` symbols but out of scope for a first integration — don't invent their shapes; fetch the [Advanced Configurations](https://docs.scandit.com/sdks/net/android/label-capture/advanced/) page if the user asks for them:
 
-- **Adaptive Recognition (cloud backup):** `LabelCaptureAdaptiveRecognitionOverlay`, `LabelCaptureAdaptiveRecognitionSettings`, `ILabelCaptureAdaptiveRecognitionListener`, and the result types `AdaptiveRecognitionResult` / `AdaptiveRecognitionResultType` / `ReceiptScanningResult` / `ReceiptScanningLineItem`. Enabled per-definition via `AdaptiveRecognitionMode`.
+- **Adaptive Recognition (cloud backup):** `LabelCaptureAdaptiveRecognitionOverlay`, `LabelCaptureAdaptiveRecognitionSettings`, `ILabelCaptureAdaptiveRecognitionListener`, and the result types `AdaptiveRecognitionResult` / `AdaptiveRecognitionResultType` / `ReceiptScanningResult` / `ReceiptScanningLineItem`. Enabled per-definition via `AdaptiveRecognitionMode`. Exception: the Receipt Scanning (beta) overlay + listener wiring is in [references/integration.md](references/integration.md) Step 12 — use those names; only the receipt label settings come from the docs.
 - **Advanced overlay (arbitrary Android views over labels):** `LabelCaptureAdvancedOverlay`, `ILabelCaptureAdvancedOverlayListener`.
 - **`LabelFieldLocation` / `LabelFieldLocationType`** — used with `SetLocation(...)` on custom field builders to constrain where a field is expected on the label.
 
