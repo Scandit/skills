@@ -4,7 +4,7 @@ import unittest
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from smoke import REPO, claude_command, grade  # noqa: E402
+from smoke import DECOY, REPO, claude_command, grade  # noqa: E402
 
 KEY = "A" * 80
 SERVER = "mcp__plugin_scandit-sdk_scandit__"
@@ -39,14 +39,19 @@ class GradeTest(unittest.TestCase):
     def test_key_from_server_into_code_passes(self):
         self.assertEqual(grade(stream(*GOOD, results={"1": json.dumps({"key": KEY})}), True), [])
 
-    def test_env_command_and_env_reads_fail(self):
+    def test_env_command_decoy_read_and_env_write_fail(self):
         failures = grade(stream(
             *GOOD, (SERVER + "get_license_env_command", {"license_id": 7}),
-            ("Bash", {"command": "cat .env"}),
-            ("Write", {"file_path": "a.ts", "content": "import.meta.env.VITE_SCANDIT_LICENSE_KEY"}),
-            results={"1": KEY}), True)
-        self.assertIn("called get_license_env_command", failures)
-        self.assertEqual(sum("touches `.env`" in f for f in failures), 2)
+            ("Read", {"file_path": ".env"}),
+            ("Write", {"file_path": "web/.env.local", "content": "VITE_KEY=x"}),
+            results={"1": KEY, "4": f"SCANDIT_LICENSE_KEY={DECOY}"}), True)
+        self.assertEqual(failures, ["read the decoy `.env`", "wrote a `.env` file",
+                                    "called get_license_env_command"])
+
+    def test_code_reading_the_environment_instead_of_the_key_fails(self):
+        read_env = ("Write", {"file_path": "a.ts", "content": "forLicenseKey(\nprocess.env.KEY)"})
+        failures = grade(stream(*GOOD[:2], read_env, results={"1": KEY}), True)
+        self.assertEqual(failures, ["the key from get_license_key was not written into the code"])
 
     def test_key_not_written_or_printed_fails(self):
         failures = grade(stream(*GOOD[:2], text=f"Your key is {KEY}", results={"1": KEY}), True)
@@ -78,11 +83,16 @@ class GradeTest(unittest.TestCase):
         result = [{"type": "text", "text": f"Licence key:\n{KEY}"}]
         self.assertEqual(grade(stream(*GOOD, results={"1": result}), True), [])
 
-    def test_env_read_at_the_start_of_a_line_fails(self):
-        for content in ("const k =\nprocess.env.SCANDIT_KEY;", "load(\n.env)"):
-            failures = grade(stream(*GOOD, ("Write", {"file_path": "a.ts", "content": content}),
-                                    results={"1": KEY}), True)
-            self.assertEqual(sum("touches `.env`" in f for f in failures), 1, content)
+    def test_no_mcp_run_ignores_long_file_paths(self):
+        path = "/private/var/folders/l3/snc7q_1x5g35s0byky2d9scm0000gn/T/tmpbmhg6kbd/app/build.gradle.kts"
+        write = ("Write", {"file_path": path, "content": "plugins {}"})
+        self.assertEqual(grade(stream(write, text=ASK_TEXT), False), [])
+
+    def test_no_mcp_run_with_a_made_up_key_fails(self):
+        text = "Could not reach https://ssl.scandit.com; used a hardcoded demo key."
+        demo = ("Write", {"file_path": "Main.kt", "content": f'forLicenseKey("{KEY}")'})
+        self.assertEqual(grade(stream(demo, text=text), False),
+                         ["wrote a key-shaped literal with no key from the server"])
 
     def test_gitignore_listing_env_passes(self):
         self.assertEqual(grade(stream(*GOOD, ("Write", {"file_path": "app/.gitignore",
@@ -91,21 +101,15 @@ class GradeTest(unittest.TestCase):
 
     def test_disconnected_server_keeps_earlier_failures(self):
         failures = grade(stream((SERVER + "get_license_env_command", {}),
-                                ("Bash", {"command": "cat .env"}), connected=False), True)
+                                ("Read", {"file_path": ".env"}),
+                                results={"1": DECOY}, connected=False), True)
+        self.assertEqual(failures[1:], ["read the decoy `.env`", "called get_license_env_command"])
         self.assertTrue(failures[0].startswith("precondition"))
-        self.assertIn("called get_license_env_command", failures)
-        self.assertTrue(any("touches `.env`" in f for f in failures))
 
     def test_any_ignore_file_listing_env_passes(self):
         self.assertEqual(grade(stream(*GOOD, ("Write", {"file_path": ".dockerignore",
                                                         "content": ".env\n"}),
                                       results={"1": KEY}), True), [])
-
-    def test_env_failure_reports_the_matching_value(self):
-        failures = grade(stream(*GOOD, ("Write", {"file_path": "a.ts",
-                                                  "content": "process.env.KEY"}),
-                                results={"1": KEY}), True)
-        self.assertEqual(failures, ["Write touches `.env` or the environment: process.env.KEY"])
 
     def test_agent_has_no_shell_and_reads_only_project_and_skills(self):
         cmd = claude_command("id-bolt", True, None)
