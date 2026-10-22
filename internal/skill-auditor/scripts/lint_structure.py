@@ -56,6 +56,7 @@ _DOWNLOADER = r"\b(?:curl|wget|iwr|irm|Invoke-WebRequest|Invoke-RestMethod)\b"
 _ENV_FILE = r"(?<![\w.])(?:\./)?\.env(?![\w-])"
 # Ways an agent or an app build picks a key up from the user's machine.
 _ENV_READ = (r"\bgetenv\b|\bimport\.meta\.env\b|\bprocess\.env\b|\bString\.fromEnvironment\b"
+             r"|\bGetEnvironmentVariable\b|\bprocessInfo\.environment\b|dotenv\b"
              r"|--dart-define|\breact-native-config\b|\bget_license_env_command\b")
 CREDENTIAL_READ = rf"{_ENV_FILE}|{_ENV_READ}"
 DIRECTORY_POLICY = (

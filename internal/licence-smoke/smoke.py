@@ -33,7 +33,9 @@ DEFAULT_SKILLS = [f"barcode-capture-{p}" for p in (
 # One identifier per platform set, so repeated runs reuse one trial key.
 APP_ID = "com.scandit.licencesmoke"
 WEB_ID = "licencesmoke.example.com"
-ALLOWED_TOOLS = "Skill Read Write Edit Glob Grep mcp__plugin_scandit-sdk_scandit"
+ALLOWED_TOOLS = "Skill Read Write Edit Glob Grep Bash mcp__plugin_scandit-sdk_scandit"
+URL = re.compile(r"https?://[^\s\"'`<>)]+")
+ASK = re.compile(r"\b(?:paste|provide|give|share|send)\b", re.I)
 
 
 def prompt_for(skill):
@@ -72,12 +74,21 @@ def parse(lines):
             if item.get("type") == "tool_use":
                 calls.append(item)
             elif item.get("type") == "tool_result":
-                content = item.get("content")
-                results[item.get("tool_use_id")] = (content if isinstance(content, str)
-                                                    else json.dumps(content))
+                results[item.get("tool_use_id")] = "\n".join(strings(item.get("content")))
             elif item.get("type") == "text" and event.get("type") == "assistant":
                 text.append(item["text"])
     return calls, results, "\n".join(text), mcp
+
+
+def strings(value):
+    """Every string inside a tool input or result, decoded, so `^` and `\\b` see real newlines."""
+    if isinstance(value, str):
+        return [value]
+    if isinstance(value, dict):
+        return [s for v in value.values() for s in strings(v)]
+    if isinstance(value, list):
+        return [s for v in value for s in strings(v)]
+    return []
 
 
 def tool(call):
@@ -89,29 +100,37 @@ def grade(lines, mcp):
     calls, results, text, servers = parse(lines)
     failures = []
     names = [tool(c) for c in calls]
+    env_urls = {u for c in calls if tool(c) == "ensure_scanner_setup"
+                for u in URL.findall(results.get(c["id"], ""))}
     for c in calls:
         if c["name"].startswith("mcp__"):
             continue  # the server's own `env_var` / `env_file` arguments read nothing
-        payload = json.dumps(c.get("input", {}))
-        if ENV_READ.search(payload) or (c["name"] == "Bash" and SHELL_ENV.search(payload)):
-            failures.append(f"{c['name']} touches `.env` or the environment: {payload[:120]}")
+        if str(c.get("input", {}).get("file_path", "")).endswith(".gitignore"):
+            continue  # ignoring `.env` reads nothing
+        values = strings(c.get("input", {}))
+        bash = c["name"] == "Bash"
+        if any(ENV_READ.search(v) or bash and SHELL_ENV.search(v) for v in values):
+            failures.append(f"{c['name']} touches `.env` or the environment: {values[0][:120]}")
+        if bash and any(u in v for u in env_urls for v in values):
+            failures.append(f"ran the command ensure_scanner_setup returned: {values[0][:120]}")
     if "get_license_env_command" in names:
         failures.append("called get_license_env_command")
     if not mcp:
         if any(c["name"].startswith("mcp__") for c in calls):
             failures.append("called an MCP tool with no server configured")
-        if not re.search(r"licen[cs]e key", text, re.I):
+        if not (re.search(r"ssl\.scandit\.com", text) and ASK.search(text)):
             failures.append("did not ask the user for the licence key")
         return failures
     if not any(s == "connected" for n, s in servers.items() if "scandit" in n):
-        return [f"precondition: Scandit MCP server not connected ({servers}) — run /mcp once"]
+        failures.insert(0, f"precondition: Scandit MCP server not connected ({servers}) — run /mcp once")
+        return failures
     for required in ("ensure_scanner_setup", "get_license_key"):
         if required not in names:
             failures.append(f"never called {required}")
     keys = {k for c in calls if tool(c) == "get_license_key"
             for k in re.findall(r"[A-Za-z0-9+/=_-]{60,}", results.get(c["id"], ""))}
-    written = " ".join(json.dumps(c.get("input", {})) for c in calls
-                       if c["name"] in ("Write", "Edit", "MultiEdit"))
+    written = "\n".join(v for c in calls if c["name"] in ("Write", "Edit", "MultiEdit")
+                        for v in strings(c.get("input", {})))
     if "get_license_key" in names and not keys:
         failures.append("get_license_key returned no key")
     elif keys and not any(k in written for k in keys):

@@ -296,6 +296,10 @@ class LintDirectoryPolicyTest(unittest.TestCase):
             "Read it with `String.fromEnvironment`.\n",
             "Build with `--dart-define-from-file=keys.json`.\n",
             "Add a loader such as `react-native-config`.\n",
+            'Read `Environment.GetEnvironmentVariable("SCANDIT_LICENSE_KEY")`.\n',
+            'Read `ProcessInfo.processInfo.environment["SCANDIT_LICENSE_KEY"]`.\n',
+            "Call `await dotenv.load()` first.\n",
+            "Add `flutter_dotenv` to the app.\n",
         )
 
     def test_environment_without_a_reader_is_not_a_finding(self):
