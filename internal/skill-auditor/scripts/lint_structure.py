@@ -13,11 +13,11 @@ Checks (per skill, and across siblings sharing a product prefix):
   principles    every references/migration.md and third-party-migration.md carries
                 its "Migration principles" labels
   licence       every non-exempt skill carries a `## Licence key` section naming the product
-                and licence platforms from references/licence-platforms.md plus its
-                key-wiring sentence, and carries the dashboard provisioning link nowhere else
+                and licence platforms from references/licence-platforms.md, and carries
+                the dashboard provisioning link nowhere else
   policy        no skill or README.md text the Claude plugin-directory scan flags: a
-                download run through an interpreter, an unpinned registry launcher, an
-                agent-directed `.env` read (the skill's own key-wiring sentence aside)
+                download run through an interpreter, an unpinned registry launcher, a
+                key taken from `.env` or the environment
   routing       every skills/<dir> is referenced in the router skill's SKILL.md and vice versa
 
 Product prefixes and parity exemptions live in ../manifest.json, not in code.
@@ -31,7 +31,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from common import (REPO_ROOT, frontmatter, list_skill_dirs, load_manifest, eval_dir,
-                    eval_suite_files, licence_platforms, licence_wiring, resolve_licence)
+                    eval_suite_files, licence_platforms, resolve_licence)
 
 # Descriptions are injected into every user session for every installed skill —
 # they are trigger metadata, not documentation. 600 chars ≈ 150 tokens each.
@@ -54,11 +54,14 @@ _INTERPRETER = r"(?:(?:ba|z|da|k)?sh|python3?|node|perl|ruby|pwsh|powershell|iex
 _DOWNLOADER = r"\b(?:curl|wget|iwr|irm|Invoke-WebRequest|Invoke-RestMethod)\b"
 # The `.env` file itself, not `import.meta.env` or `process.env`.
 _ENV_FILE = r"(?<![\w.])(?:\./)?\.env(?![\w-])"
+# Ways an agent or an app build picks a key up from the user's machine.
+_ENV_READ = (r"\bgetenv\b|\bimport\.meta\.env\b|\bprocess\.env\b|\bString\.fromEnvironment\b"
+             r"|\bGetEnvironmentVariables?\b|\bprocessInfo\.environment\b|\bPlatform\.environment\b"
+             r"|dotenv\b|[\"']local\.properties[\"']"
+             r"|--dart-define|\breact-native-config\b|\bget_license_env_command\b")
+CREDENTIAL_READ = rf"{_ENV_FILE}|{_ENV_READ}"
 DIRECTORY_POLICY = (
-    # A read verb with the file within ~40 chars of the same sentence; a negated
-    # verb ("do not search", "never read") is a prohibition, not a read.
-    (rf"(?is)(?<!not )(?<!never )\b(?:read|open|cat|load|look\s+in|search|grep|source)s?\b"
-     rf"(?:(?![.!?]\s|\n\s*\n).){{0,40}}?{_ENV_FILE}",
+    (CREDENTIAL_READ,
      "reads a credential from the user's machine; take the key from the MCP server or the user"),
     (rf"(?i){_DOWNLOADER}[^\n|]*https?://[^\n|]*(?:\\\n[^\n|]*)*"
      rf"\|\s*(?:sudo(?:\s+-\S+)*\s+)?{_INTERPRETER}\b",
@@ -75,12 +78,6 @@ def policy_findings(rel: str, text: str) -> list[str]:
     """`rel:line` findings for every directory-policy match in ``text``."""
     return [f"{rel}:{text.count(chr(10), 0, m.start()) + 1}: directory policy — {why}"
             for pattern, why in DIRECTORY_POLICY for m in re.finditer(pattern, text)]
-
-
-def blank_out(text: str, sentence: str) -> str:
-    """``text`` with ``sentence`` (matched across any wrapping) blanked, offsets kept."""
-    pattern = r"\s+".join(map(re.escape, sentence.split()))
-    return re.sub(pattern, lambda m: re.sub(r"[^\n]", " ", m.group()), text)
 
 
 def _scope(entry: list[str] | dict, platforms: set[str]) -> tuple[list[str], set[str]]:
@@ -163,11 +160,6 @@ def lint(repo_root: Path, manifest: dict, prefix: str | None = None) -> tuple[li
     except (OSError, ValueError) as e:
         licence_map = {}
         findings.append(f"{LICENCE_REFERENCE_REL}: {e}")
-    try:
-        wiring_map = licence_wiring(repo_root / LICENCE_REFERENCE_REL)
-    except (OSError, ValueError) as e:
-        wiring_map = {}
-        findings.append(f"{LICENCE_REFERENCE_REL}: {e}")
     licence_exempt: set[str] = set(manifest.get("licence_key_exempt", []))
     licence_link_allow: set[str] = set(manifest.get("licence_link_allow", []))
     for d in skill_dirs:
@@ -187,18 +179,11 @@ def lint(repo_root: Path, manifest: dict, prefix: str | None = None) -> tuple[li
                                 "add one before the licence-key section can be checked")
             else:
                 product, platforms = expected
-                for token in [product, *platforms]:
+                for token in [product, *platforms, "get_license_key"]:
                     if f"`{token}`" not in section.group(1):
                         findings.append(
                             f"{d.name}: licence-key section does not name `{token}` "
                             f"(per {LICENCE_REFERENCE_REL})")
-            # A key left in `.env` never reaches the app on its own.
-            wiring = resolve_licence(d.name, wiring_map)
-            if wiring_map and wiring is None:
-                findings.append(f"{d.name}: no `## Key wiring` row in {LICENCE_REFERENCE_REL}")
-            elif wiring and wiring not in " ".join(section.group(1).split()):
-                findings.append(f"{d.name}: licence-key section does not carry its "
-                                f"key-wiring sentence (per {LICENCE_REFERENCE_REL})")
         # The dashboard fallback lives in the licence-key section and nowhere else,
         # so a skill never carries two competing provisioning instructions.
         for f in sorted(d.rglob("*.md")):
@@ -214,15 +199,10 @@ def lint(repo_root: Path, manifest: dict, prefix: str | None = None) -> tuple[li
 
     # --- plugin-directory policy: the Claude directory scan flags skill text that
     # runs a download through an interpreter, launches an unpinned registry package,
-    # or reads a credential from the user's machine. The skill's own key-wiring
-    # sentence describes the app's build reading `.env`, so it is blanked first.
+    # or reads a credential from the user's machine — the app's build included.
     for d in list_skill_dirs(skills_dir, prefix):  # the router ships too
-        wiring = resolve_licence(d.name, wiring_map)
         for f in sorted(d.rglob("*.md")):
-            text = read(f)
-            if wiring and f == d / "SKILL.md":
-                text = blank_out(text, wiring)
-            findings += policy_findings(str(f.relative_to(skills_dir)), text)
+            findings += policy_findings(str(f.relative_to(skills_dir)), read(f))
     readme = repo_root / "README.md"
     if readme.exists():  # ships in the plugin too
         findings += policy_findings("README.md", read(readme))

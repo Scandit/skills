@@ -137,22 +137,14 @@ LICENCE_REFERENCE = """# Licence products and platforms
 | `-web` | `sdk` | `webassembly` |
 | `-ios` | `native` | `ios` |
 | `-rn` | `native` | `ios`, `android` |
-
-## Key wiring
-
-| Skill | Wiring |
-| --- | --- |
-| `-web` | Use the bundler, for example `import.meta.env`. |
-| `-ios` | Use `Info.plist`. |
-| `-rn` | Use a loader such as `react-native-config`. |
 """
 
 LICENCE_SECTION = """
 ## Licence key
 
 For this skill the licence product is `{product}` and the platforms are {platforms}.
+Fetch it with `get_license_key`.
 Fallback: <https://ssl.scandit.com>.
-Then: {wiring}
 
 ## References
 """
@@ -175,16 +167,14 @@ class LintLicenceKeyTest(unittest.TestCase):
         ref.parent.mkdir(parents=True)
         ref.write_text(LICENCE_REFERENCE)
         self.skills = self.root / "skills"
-        for name, product, platforms, wiring in (
-            ("p-web", "sdk", "`webassembly`", "Use the bundler, for example `import.meta.env`."),
-            # wrapped across lines, as a hard-wrapped SKILL.md would carry it
-            ("p-rn", "native", "`ios` and `android`",
-             "Use a loader such as\n`react-native-config`."),
+        for name, product, platforms in (
+            ("p-web", "sdk", "`webassembly`"),
+            ("p-rn", "native", "`ios` and `android`"),
         ):
             (self.skills / name / "references").mkdir(parents=True)
             (self.skills / name / "SKILL.md").write_text(
                 FRONTMATTER.format(name=name)
-                + LICENCE_SECTION.format(product=product, platforms=platforms, wiring=wiring))
+                + LICENCE_SECTION.format(product=product, platforms=platforms))
         (self.skills / "p-exempt-ios").mkdir()
         (self.skills / "p-exempt-ios" / "SKILL.md").write_text(
             FRONTMATTER.format(name="p-exempt-ios"))
@@ -209,19 +199,12 @@ class LintLicenceKeyTest(unittest.TestCase):
             "(per internal/skill-auditor/references/licence-platforms.md)",
         ])
 
-    def test_missing_wiring_sentence_is_a_finding(self):
+    def test_section_without_get_license_key_is_a_finding(self):
         sk = self.skills / "p-web" / "SKILL.md"
-        sk.write_text(sk.read_text().replace("Use the bundler", "Use something"))
+        sk.write_text(sk.read_text().replace("Fetch it with `get_license_key`.\n", ""))
         self.assertEqual(self.licence_findings(), [
-            "p-web: licence-key section does not carry its key-wiring sentence "
+            "p-web: licence-key section does not name `get_license_key` "
             "(per internal/skill-auditor/references/licence-platforms.md)",
-        ])
-
-    def test_missing_wiring_table_is_a_finding_not_a_crash(self):
-        ref = self.root / "internal" / "skill-auditor" / "references" / "licence-platforms.md"
-        ref.write_text(LICENCE_REFERENCE.split("## Key wiring")[0])
-        self.assertEqual(self.licence_findings(), [
-            "internal/skill-auditor/references/licence-platforms.md: no `## Key wiring` section",
         ])
 
     def test_link_outside_the_section_is_a_finding(self):
@@ -241,7 +224,7 @@ class LintLicenceKeyTest(unittest.TestCase):
         (self.skills / "p-kmp").mkdir()
         (self.skills / "p-kmp" / "SKILL.md").write_text(
             FRONTMATTER.format(name="p-kmp")
-            + LICENCE_SECTION.format(product="x", platforms="y", wiring="z"))
+            + LICENCE_SECTION.format(product="x", platforms="y"))
         self.assertIn(
             "p-kmp: no row in internal/skill-auditor/references/licence-platforms.md — "
             "add one before the licence-key section can be checked",
@@ -283,10 +266,10 @@ class LintDirectoryPolicyTest(unittest.TestCase):
         self.assertClean(
             "Run `npx pod-install@1.2.1` and `npx cap sync`.\n"
             "| curl | python |\n"
-            "Call `get_license_key`, then write `.env`.\n")
+            "Call `get_license_key`, then write the key into the licence-key call.\n")
 
-    def test_server_returned_command_is_not_a_finding(self):
-        self.assertClean("Call `get_license_env_command` and give the user its command.\n")
+    def test_server_env_command_is_a_finding(self):
+        self.assertFlags("Call `get_license_env_command` and give the user its command.\n")
 
     def test_env_read_is_a_finding(self):
         self.assertFlags(
@@ -302,15 +285,35 @@ class LintDirectoryPolicyTest(unittest.TestCase):
             "Search the project and\n`.env` for a key.\n",
         )
 
-    def test_non_read_env_mentions_are_not_findings(self):
-        self.assertClean(
+    def test_app_reading_the_environment_is_a_finding(self):
+        self.assertFlags(
             "a key in `.env` does not reach the app by itself.\n",
-            "Do not search the project, its files or the environment for a key.\n",
             "Do not read `.env`.\n",
+            "Read the key. Then write it to `.env`.\n",
             "Read it through `import.meta.env` in Vite.\n",
             "Read it from `process.env.SCANDIT_KEY`.\n",
-            "Read the key. Then write it to `.env`.\n",
-            "Read the key back to the user and say it now lives in the project's `.env`.\n",
+            'Fall back to `System.getenv("SCANDIT_LICENSE_KEY")`.\n',
+            "Read it with `String.fromEnvironment`.\n",
+            "Build with `--dart-define-from-file=keys.json`.\n",
+            "Add a loader such as `react-native-config`.\n",
+            'Read `Environment.GetEnvironmentVariable("SCANDIT_LICENSE_KEY")`.\n',
+            'Read `ProcessInfo.processInfo.environment["SCANDIT_LICENSE_KEY"]`.\n',
+            "Call `await dotenv.load()` first.\n",
+            "Add `flutter_dotenv` to the app.\n",
+            "Read `Platform.environment['SCANDIT_KEY']`.\n",
+            "Iterate `Environment.GetEnvironmentVariables()`.\n",
+            'Load it with `rootProject.file("local.properties")`.\n',
+            "def p = new Properties(); p.load(file('local.properties').newInputStream())\n"
+            'buildConfigField "String", "SCANDIT_LICENSE_KEY", "${p.getProperty("k")}"\n',
+        )
+
+    def test_environment_without_a_reader_is_not_a_finding(self):
+        self.assertClean(
+            "Do not search the project, its files or the environment for a key.\n",
+            "Keep `.environment` and `my.env-file` as they are.\n",
+            "Set `sdk.dir` in `local.properties`.\n",
+            "storeFile = keystore path in local.properties\n",
+            "Call `ensure_scanner_setup` with `env_var` `SCANDIT_LICENSE_KEY`.\n",
         )
 
     def test_finding_carries_path_and_line(self):
@@ -318,17 +321,10 @@ class LintDirectoryPolicyTest(unittest.TestCase):
             "p-web/references/integration.md:3: directory policy — reads a credential "
             "from the user's machine; take the key from the MCP server or the user"])
 
-    def test_own_wiring_sentence_is_not_a_finding(self):
-        ref = self.root / "internal" / "skill-auditor" / "references" / "licence-platforms.md"
-        ref.parent.mkdir(parents=True)
-        ref.write_text(LICENCE_REFERENCE.replace(
-            "Use the bundler, for example `import.meta.env`.",
-            "Load `.env` in the bundler, or `--dart-define-from-file=.env`."))
+    def test_licence_section_is_not_exempt(self):
         sk = self.root / "skills" / "p-web" / "SKILL.md"
         sk.write_text(FRONTMATTER.format(name="p-web")
-                      + "Then: Load `.env` in the bundler,\nor `--dart-define-from-file=.env`.\n")
-        self.assertEqual(self.policy_findings(""), [])
-        sk.write_text(sk.read_text() + "\nAlso load `.env` yourself.\n")
+                      + "\n## Licence key\n\nRead it through `import.meta.env`.\n")
         self.assertEqual([f.split(":")[:2] for f in self.policy_findings("")],
                          [["p-web/SKILL.md", "13"]])
 

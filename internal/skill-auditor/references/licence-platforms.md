@@ -13,7 +13,11 @@ file; the lint gate will then name every skill whose section disagrees.
 
 `ensure_scanner_setup` takes the product your agent selected (`sdk`, `native`,
 `express`, `id-bolt`, `enterprise-browser`, or `wedge`) plus the licence platforms
-for your framework.
+for your framework. The skills pass `env_var` `SCANDIT_LICENSE_KEY` because the
+server requires one, never run the command it returns, and fetch the key with
+`get_license_key` instead. The agent writes the key straight into the licence-key
+call: the Claude plugin directory flags any skill that reads a key from a dotenv
+file or the environment, the app's build included.
 
 | Framework | Licence platforms |
 | --- | --- |
@@ -49,25 +53,3 @@ reads the backticked tokens, and the platform cell may hold more than one.
 | `-cordova` | `native` | `ios`, `android` |
 | `-kmp` | `native` | `ios`, `android` |
 | `id-bolt` | `id-bolt` | `webassembly` |
-
-## Key wiring
-
-A key in `.env` does not reach the app by itself: the reference code passes the
-placeholder, and most platforms have no built-in `.env` loading. Each skill's
-`## Licence key` section carries its row's sentence verbatim. Machine-read by
-`common.licence_wiring()`; keys resolve exactly as in the mapping above.
-
-| Skill | Wiring |
-| --- | --- |
-| `-web` | Read it through the bundler's env support: in Vite, `import.meta.env.VITE_SCANDIT_LICENSE_KEY`, because Vite only exposes `VITE_`-prefixed names. |
-| `-android` | Parse the `.env` file itself in the app module's `build.gradle.kts` (`rootProject.file(".env")`, loaded with `java.util.Properties`), expose the key with `buildConfigField("String", "SCANDIT_LICENSE_KEY", "\"$key\"")` (this needs `buildFeatures { buildConfig = true }`), and pass `BuildConfig.SCANDIT_LICENSE_KEY` to the licence-key call. Read `.env` first, because builds from Android Studio do not see shell environment variables; fall back to the environment variable of the same name only for CI. When neither has the key, log a Gradle warning instead of failing, so `clean`, CI and the Studio sync still work. |
-| `-ios` | An `.xcconfig` cannot read `.env`, so generate a gitignored `License.xcconfig` from it in a scheme pre-action (build phases run after `Info.plist` is expanded, too late). Write `SLASH = /` and the key with every `/` replaced by `$(SLASH)`: `//` starts an xcconfig comment and silently cuts the key short. `#include? "License.xcconfig"` from the target's base `.xcconfig`, add `ScanditLicenseKey` = `$(SCANDIT_LICENSE_KEY)` to `Info.plist`, and read it with `Bundle.main.object(forInfoDictionaryKey: "ScanditLicenseKey")`. |
-| `-net-android` | .NET does not load `.env` by itself, so use the simplest route below. |
-| `-net-ios` | .NET does not load `.env` by itself, so use the simplest route below. |
-| `-net-maui` | .NET does not load `.env` by itself, so use the simplest route below. |
-| `-rn` | React Native does not load `.env` by itself: add a loader such as `react-native-config`, or use the simplest route below. |
-| `-flutter` | Pass it at build time with `--dart-define-from-file=.env` and read it with `String.fromEnvironment`. |
-| `-capacitor` | Read it through the web bundler's env support: in Vite, `import.meta.env.VITE_SCANDIT_LICENSE_KEY`, because Vite only exposes `VITE_`-prefixed names. |
-| `-cordova` | Cordova does not load `.env` by itself, so use the simplest route below. |
-| `-kmp` | Kotlin Multiplatform does not load `.env` by itself, so use the simplest route below. |
-| `id-bolt` | Read it through the bundler's env support: in Vite, `import.meta.env.VITE_SCANDIT_LICENSE_KEY`, because Vite only exposes `VITE_`-prefixed names. |
