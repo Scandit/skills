@@ -435,6 +435,25 @@
       "tags": [
         "error-troubleshooting"
       ]
+    },
+    {
+      "id": 14,
+      "prompt": "My Flutter app needs to read the digits off a seven-segment digital display (a weighing scale readout). Is there a ready-made label for that?",
+      "expected_output": "The skill uses LabelDefinition.sevenSegmentDisplayLabelDefinitionWithName(name) and passes it into the LabelCaptureSettings constructor (or LabelCaptureSettingsBuilder) to build the settings.",
+      "files": [
+        "fixtures/empty-app.dart"
+      ],
+      "assertions": [
+        {
+          "text": "LabelDefinition.sevenSegmentDisplayLabelDefinitionWithName( is used for the seven-segment display"
+        },
+        {
+          "text": "The pre-built definition is passed into the LabelCaptureSettings constructor (LabelCaptureSettings([...])) or LabelCaptureSettingsBuilder"
+        }
+      ],
+      "tags": [
+        "seven-segment-display"
+      ]
     }
   ]
 }
