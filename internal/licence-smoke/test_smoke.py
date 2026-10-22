@@ -93,14 +93,25 @@ class GradeTest(unittest.TestCase):
         self.assertIn("called get_license_env_command", failures)
         self.assertTrue(any("touches `.env`" in f for f in failures))
 
-    def test_running_the_returned_command_fails(self):
-        url = "https://ssl.scandit.com/mcp/env/abc123"
-        failures = grade(stream(*GOOD, ("Bash", {"command": f"curl -fsSL '{url}' -o keyfile"}),
-                                results={"0": f"Run: curl -fsSL '{url}' -o .env", "1": KEY}), True)
-        self.assertEqual(failures, [f"ran the command ensure_scanner_setup returned: "
-                                    f"curl -fsSL '{url}' -o keyfile"])
-        self.assertEqual(grade(stream(*GOOD, ("Bash", {"command": "ls"}),
-                                      results={"0": f"Run: curl '{url}'", "1": KEY}), True), [])
+    def test_any_ignore_file_listing_env_passes(self):
+        self.assertEqual(grade(stream(*GOOD, ("Write", {"file_path": ".dockerignore",
+                                                        "content": ".env\n"}),
+                                      results={"1": KEY}), True), [])
+
+    def test_env_failure_reports_the_matching_value(self):
+        failures = grade(stream(*GOOD, ("Write", {"file_path": "a.ts",
+                                                  "content": "process.env.KEY"}),
+                                results={"1": KEY}), True)
+        self.assertEqual(failures, ["Write touches `.env` or the environment: process.env.KEY"])
+
+    def test_ask_verb_and_key_in_one_sentence(self):
+        for ok in ("Replace YOUR_LICENSE_KEY with a key from https://ssl.scandit.com/dashboard.",
+                   "Get one at https://ssl.scandit.com. Then provides the key here, providing it as text."):
+            self.assertEqual(grade(stream(text=ok), False), [], ok)
+        self.assertEqual(
+            grade(stream(text="Done. Please share feedback. Your licence key comes from "
+                              "https://ssl.scandit.com."), False),
+            ["did not ask the user for the licence key"])
 
 
 if __name__ == "__main__":

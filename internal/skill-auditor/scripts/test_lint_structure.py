@@ -300,6 +300,9 @@ class LintDirectoryPolicyTest(unittest.TestCase):
             'Read `ProcessInfo.processInfo.environment["SCANDIT_LICENSE_KEY"]`.\n',
             "Call `await dotenv.load()` first.\n",
             "Add `flutter_dotenv` to the app.\n",
+            "Read `Platform.environment['SCANDIT_KEY']`.\n",
+            "Iterate `Environment.GetEnvironmentVariables()`.\n",
+            "Put the key in `local.properties` and read it into `buildConfigField`.\n",
         )
 
     def test_environment_without_a_reader_is_not_a_finding(self):
