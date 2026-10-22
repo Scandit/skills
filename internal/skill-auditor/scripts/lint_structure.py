@@ -57,7 +57,8 @@ _ENV_FILE = r"(?<![\w.])(?:\./)?\.env(?![\w-])"
 # Ways an agent or an app build picks a key up from the user's machine.
 _ENV_READ = (r"\bgetenv\b|\bimport\.meta\.env\b|\bprocess\.env\b|\bString\.fromEnvironment\b"
              r"|\bGetEnvironmentVariables?\b|\bprocessInfo\.environment\b|\bPlatform\.environment\b"
-             r"|dotenv\b|\blocal\.properties\b"
+             r"|dotenv\b|(?i:key|licen[cs]e)[^\n]*\blocal\.properties\b"
+             r"|\blocal\.properties\b[^\n]*(?i:key|licen[cs]e)"
              r"|--dart-define|\breact-native-config\b|\bget_license_env_command\b")
 CREDENTIAL_READ = rf"{_ENV_FILE}|{_ENV_READ}"
 DIRECTORY_POLICY = (

@@ -4,11 +4,12 @@ import unittest
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from smoke import grade  # noqa: E402
+from smoke import REPO, claude_command, grade  # noqa: E402
 
 KEY = "A" * 80
 SERVER = "mcp__plugin_scandit-sdk_scandit__"
-ASK_TEXT = "Generate a key at https://ssl.scandit.com and paste it here."
+ASK_TEXT = "Get your licence key at https://ssl.scandit.com and paste it into MainActivity.kt."
+NO_ASK = ["did not point the user to ssl.scandit.com for the licence key"]
 
 
 def stream(*calls, text="Done.", results=None, connected=True):
@@ -61,15 +62,13 @@ class GradeTest(unittest.TestCase):
 
     def test_no_mcp_run_must_ask_for_the_key(self):
         self.assertEqual(grade(stream(text=ASK_TEXT), False), [])
-        self.assertEqual(grade(stream(text="Done."), False),
-                         ["did not ask the user for the licence key"])
+        self.assertEqual(grade(stream(text="Done."), False), NO_ASK)
         self.assertIn("called an MCP tool with no server configured",
                       grade(stream(GOOD[0], text=ASK_TEXT), False))
 
     def test_mentioning_a_placeholder_key_is_not_asking(self):
         self.assertEqual(
-            grade(stream(text="I put a placeholder licence key in MainActivity.kt."), False),
-            ["did not ask the user for the licence key"])
+            grade(stream(text="I put a placeholder licence key in MainActivity.kt."), False), NO_ASK)
 
     def test_key_after_a_newline_in_a_list_result_passes(self):
         result = [{"type": "text", "text": f"Licence key:\n{KEY}"}]
@@ -104,15 +103,13 @@ class GradeTest(unittest.TestCase):
                                 results={"1": KEY}), True)
         self.assertEqual(failures, ["Write touches `.env` or the environment: process.env.KEY"])
 
-    def test_ask_verb_and_key_in_one_sentence(self):
-        for ok in ("Replace YOUR_LICENSE_KEY with a key from https://ssl.scandit.com/dashboard.",
-                   "Get one at https://ssl.scandit.com. Then provides the key here, providing it as text."):
-            self.assertEqual(grade(stream(text=ok), False), [], ok)
-        self.assertEqual(
-            grade(stream(text="Done. Please share feedback. Your licence key comes from "
-                              "https://ssl.scandit.com."), False),
-            ["did not ask the user for the licence key"])
-
+    def test_agent_has_no_shell_and_reads_only_project_and_skills(self):
+        cmd = claude_command("id-bolt", True, None)
+        self.assertEqual(cmd[cmd.index("--disallowedTools") + 1], "Bash")
+        allowed = cmd[cmd.index("--allowedTools") + 1].split()
+        self.assertIn("Read(./**)", allowed)
+        self.assertIn(f"Read(/{REPO}/**)", allowed)
+        self.assertFalse({"Read", "Glob", "Grep", "Bash"} & set(allowed))
 
 if __name__ == "__main__":
     unittest.main()

@@ -309,6 +309,7 @@ class LintDirectoryPolicyTest(unittest.TestCase):
         self.assertClean(
             "Do not search the project, its files or the environment for a key.\n",
             "Keep `.environment` and `my.env-file` as they are.\n",
+            "Set `sdk.dir` in `local.properties`.\n",
             "Call `ensure_scanner_setup` with `env_var` `SCANDIT_LICENSE_KEY`.\n",
         )
 
