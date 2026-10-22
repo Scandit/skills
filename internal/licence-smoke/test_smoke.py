@@ -60,13 +60,17 @@ class GradeTest(unittest.TestCase):
     def test_disconnected_server_is_a_precondition(self):
         self.assertTrue(grade(stream(connected=False), True)[0].startswith("precondition"))
 
-    def test_no_mcp_run_must_ask_for_the_key(self):
+    def test_no_mcp_run_must_mention_the_dashboard_and_call_no_mcp_tool(self):
         self.assertEqual(grade(stream(text=ASK_TEXT), False), [])
         self.assertEqual(grade(stream(text="Done."), False), NO_ASK)
         self.assertIn("called an MCP tool with no server configured",
                       grade(stream(GOOD[0], text=ASK_TEXT), False))
 
-    def test_mentioning_a_placeholder_key_is_not_asking(self):
+    def test_dashboard_url_check_ignores_case(self):
+        text = "Get your key from the Scandit dashboard (https://SSL.Scandit.com)."
+        self.assertEqual(grade(stream(text=text), False), [])
+
+    def test_placeholder_key_without_the_dashboard_url_fails(self):
         self.assertEqual(
             grade(stream(text="I put a placeholder licence key in MainActivity.kt."), False), NO_ASK)
 
@@ -106,10 +110,10 @@ class GradeTest(unittest.TestCase):
     def test_agent_has_no_shell_and_reads_only_project_and_skills(self):
         cmd = claude_command("id-bolt", True, None)
         self.assertEqual(cmd[cmd.index("--disallowedTools") + 1], "Bash")
-        allowed = cmd[cmd.index("--allowedTools") + 1].split()
-        self.assertIn("Read(./**)", allowed)
-        self.assertIn(f"Read(/{REPO}/**)", allowed)
-        self.assertFalse({"Read", "Glob", "Grep", "Bash"} & set(allowed))
+        allowed = cmd[cmd.index("--allowedTools") + 1:cmd.index("--disallowedTools")]
+        for rule in ("Read(./**)", f"Read(/{REPO}/**)", "Write(./**)", "Edit(./**)"):
+            self.assertIn(rule, allowed)
+        self.assertFalse({"Read", "Write", "Edit", "Glob", "Grep", "Bash"} & set(allowed))
 
 if __name__ == "__main__":
     unittest.main()

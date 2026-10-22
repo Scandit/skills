@@ -32,8 +32,10 @@ DEFAULT_SKILLS = [f"barcode-capture-{p}" for p in (
 # One identifier per platform set, so repeated runs reuse one trial key.
 APP_ID = "com.scandit.licencesmoke"
 WEB_ID = "licencesmoke.example.com"
-# Reads scoped to the project and this checkout (the skills' references); `-p` denies the rest.
-ALLOWED_TOOLS = f"Skill Write Edit Read(./**) Read(/{REPO}/**) mcp__plugin_scandit-sdk_scandit"
+# Writes scoped to the project, reads also to this checkout (the skills' references); `-p`
+# denies the rest. One argv element per rule, so a space in the checkout path stays in its rule.
+ALLOWED_TOOLS = ["Skill", "Write(./**)", "Edit(./**)", "Read(./**)", f"Read(/{REPO}/**)",
+                 "mcp__plugin_scandit-sdk_scandit"]
 
 
 def prompt_for(skill):
@@ -49,7 +51,7 @@ def claude_command(skill, mcp, model):
     cmd = [os.environ.get("CLAUDE", "claude"), "-p", prompt_for(skill),
            "--plugin-dir", str(REPO), "--setting-sources", "project",
            "--output-format", "stream-json", "--verbose", "--no-session-persistence",
-           "--permission-mode", "acceptEdits", "--allowedTools", ALLOWED_TOOLS, "--disallowedTools", "Bash"]
+           "--permission-mode", "acceptEdits", "--allowedTools", *ALLOWED_TOOLS, "--disallowedTools", "Bash"]
     if not mcp:
         cmd.append("--strict-mcp-config")
     return cmd + (["--model", model] if model else [])
@@ -111,7 +113,7 @@ def grade(lines, mcp):
     if not mcp:
         if any(c["name"].startswith("mcp__") for c in calls):
             failures.append("called an MCP tool with no server configured")
-        if "ssl.scandit.com" not in text:
+        if "ssl.scandit.com" not in text.lower():
             failures.append("did not point the user to ssl.scandit.com for the licence key")
         return failures
     if not any(s == "connected" for n, s in servers.items() if "scandit" in n):

@@ -302,7 +302,9 @@ class LintDirectoryPolicyTest(unittest.TestCase):
             "Add `flutter_dotenv` to the app.\n",
             "Read `Platform.environment['SCANDIT_KEY']`.\n",
             "Iterate `Environment.GetEnvironmentVariables()`.\n",
-            "Put the key in `local.properties` and read it into `buildConfigField`.\n",
+            'Load it with `rootProject.file("local.properties")`.\n',
+            "def p = new Properties(); p.load(file('local.properties').newInputStream())\n"
+            'buildConfigField "String", "SCANDIT_LICENSE_KEY", "${p.getProperty("k")}"\n',
         )
 
     def test_environment_without_a_reader_is_not_a_finding(self):
@@ -310,6 +312,7 @@ class LintDirectoryPolicyTest(unittest.TestCase):
             "Do not search the project, its files or the environment for a key.\n",
             "Keep `.environment` and `my.env-file` as they are.\n",
             "Set `sdk.dir` in `local.properties`.\n",
+            "storeFile = keystore path in local.properties\n",
             "Call `ensure_scanner_setup` with `env_var` `SCANDIT_LICENSE_KEY`.\n",
         )
 
