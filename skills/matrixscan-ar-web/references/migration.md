@@ -79,6 +79,8 @@ await barcodeBatch.setEnabled(true);
 
 **After (BarcodeAr):**
 
+`showMultithreadingWarning()` and its dialog come from the plain-HTML set-up in [Loading the SDK from a CDN](integration.md#loading-the-sdk-from-a-cdn) in `references/integration.md`.
+
 ```typescript
 import {
   BarcodeAr,

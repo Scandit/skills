@@ -270,6 +270,14 @@ class SkillContentTest(unittest.TestCase):
     def test_matrixscan_ar_web(self):
         self.assert_skill("matrixscan-ar-web", "core,barcode")
 
+    def test_matrixscan_ar_web_migration_snippet_checks_multithreading_first(self):
+        text = (ROOT / "skills/matrixscan-ar-web/references/migration.md").read_text()
+        after = text[text.index("**After (BarcodeAr):**"):]
+        snippet = re.search(r"```typescript\n(.*?)```", after, re.S).group(1)
+        self.assertIn(MULTITHREADING_CHECK, snippet)
+        self.assertLess(snippet.index(MULTITHREADING_CHECK), snippet.index("DataCaptureContext.forLicenseKey("))
+        self.assertIn("references/integration.md", after[: after.index("```typescript")])
+
     def test_matrixscan_ar_web_has_no_console_warn_for_multithreading(self):
         text = (ROOT / "skills/matrixscan-ar-web/references/integration.md").read_text()
         self.assertNotIn("console.warn", text)
