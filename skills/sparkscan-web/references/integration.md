@@ -115,7 +115,7 @@ async function run() {
     const sparkScan: SparkScan = SparkScan.forSettings(settings);
 
     const sparkScanListener = {
-        didScan: (sparkScan, session) => {
+        didScan: (sparkScan: SparkScan, session: SparkScanSession) => {
             const barcode = session.newlyRecognizedBarcode;
             if (barcode) {
               console.log("Scanned", barcode.symbology, barcode.data);
