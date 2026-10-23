@@ -149,7 +149,7 @@ async function run() {
 run();
 ```
 
-`unmount()` keeps the context and its engine, so scanning can resume quickly. For a full teardown, for example when the user leaves the scanning feature, release the engine as well. Add `teardown()` inside `run()`, next to `unmount()`, so it uses the same `barcodeCapture`, `barcodeCaptureListener`, `view` and `captureElement`:
+`unmount()` keeps the context and its engine, so scanning can resume quickly. For a full teardown, for example when the user leaves the scanning feature, release the engine as well. Add `teardown()` inside `run()`, next to `unmount()`, so it uses the same `barcodeCapture`, `barcodeCaptureListener`, `view` and `captureElement`, and return both from `run()`, in place of its last `return` and the `run();` call, so the code that closes the scanner can call them:
 
 ```typescript
     async function teardown() {
@@ -158,13 +158,25 @@ run();
         view.detachFromElement();
         captureElement.style.display = "none";
     }
+
+    await mount().catch(async (error) => {
+        console.error(error);
+        await unmount();
+    });
+    return { unmount, teardown };
+}
+
+const scanner = await run();
+document.getElementById("close-scanner")!.addEventListener("click", () => {
+    scanner.teardown().catch(console.error);
+});
 ```
 
 `dispose()` turns the camera off and removes the mode and the view from the context. To scan again afterwards, call `DataCaptureContext.forLicenseKey()` again and set the mode, camera, view and overlay up again.
 
 ### Showing the camera while the WASM loads
 
-`forLicenseKey()` downloads and compiles the WASM engine, which can take seconds. To show the camera preview meanwhile, pass the camera to `connectToElement` and switch it on before awaiting `forLicenseKey()`:
+`forLicenseKey()` downloads and compiles the WASM engine, which can take seconds. To show the camera preview meanwhile, pass the camera to `connectToElement` and switch it on before awaiting `forLicenseKey()`. If `forLicenseKey()` rejects (wrong key, network, CSP), the preview is already live: let the `On` request settle, so a denied permission is not left as an unhandled rejection, then switch the camera off before reporting the error:
 
 ```typescript
 const camera = Camera.pickBestGuess();
@@ -174,10 +186,16 @@ const view = new DataCaptureView();
 view.connectToElement(captureElement, { camera });
 const cameraStarted = camera.switchToDesiredState(FrameSourceState.On);
 
-await DataCaptureContext.forLicenseKey("-- ENTER YOUR SCANDIT LICENSE KEY HERE --", {
-    libraryLocation: new URL("self-hosted-scandit-sdc-lib", document.baseURI).toString(),
-    moduleLoaders: [barcodeCaptureLoader()],
-});
+try {
+    await DataCaptureContext.forLicenseKey("-- ENTER YOUR SCANDIT LICENSE KEY HERE --", {
+        libraryLocation: new URL("self-hosted-scandit-sdc-lib", document.baseURI).toString(),
+        moduleLoaders: [barcodeCaptureLoader()],
+    });
+} catch (error) {
+    await cameraStarted.catch(console.error);
+    await camera.switchToDesiredState(FrameSourceState.Off);
+    throw error;
+}
 await view.setContext(DataCaptureContext.sharedInstance);
 await DataCaptureContext.sharedInstance.setFrameSource(camera);
 await cameraStarted;

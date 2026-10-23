@@ -263,9 +263,14 @@ await barcodeBatch.setEnabled(true);
 
 ### Showing the camera while the WASM loads
 
-`forLicenseKey()` downloads and compiles the WASM engine, which can take seconds. To show the camera preview meanwhile, pass the camera to `connectToElement` and switch it on before awaiting `forLicenseKey()`:
+`forLicenseKey()` downloads and compiles the WASM engine, which can take seconds. To show the camera preview meanwhile, check multithreading first, then pass the camera to `connectToElement` and switch it on before awaiting `forLicenseKey()`. If `forLicenseKey()` rejects (wrong key, network, CSP), the preview is already live: let the `On` request settle, so a denied permission is not left as an unhandled rejection, then switch the camera off before reporting the error:
 
 ```typescript
+const multithreadingSupported = await BrowserHelper.checkMultithreadingSupport();
+if (!multithreadingSupported) {
+  console.warn("Multithreading unavailable: check the COOP/COEP headers, or the device lacks CPU cores or nested workers.");
+}
+
 const camera = Camera.pickBestGuess();
 await camera.applySettings(BarcodeBatch.recommendedCameraSettings);
 
@@ -273,12 +278,18 @@ const view = new DataCaptureView();
 view.connectToElement(document.getElementById("data-capture-view")!, { camera });
 const cameraStarted = camera.switchToDesiredState(FrameSourceState.On);
 
-const context = await DataCaptureContext.forLicenseKey("-- ENTER YOUR SCANDIT LICENSE KEY HERE --", {
-  libraryLocation: new URL("library/engine/", document.baseURI).toString(),
-  moduleLoaders: [barcodeCaptureLoader()],
-});
-await view.setContext(context);
-await context.setFrameSource(camera);
+try {
+  await DataCaptureContext.forLicenseKey("-- ENTER YOUR SCANDIT LICENSE KEY HERE --", {
+    libraryLocation: new URL("library/engine/", document.baseURI).toString(),
+    moduleLoaders: [barcodeCaptureLoader()],
+  });
+} catch (error) {
+  await cameraStarted.catch(console.error);
+  await camera.switchToDesiredState(FrameSourceState.Off);
+  throw error;
+}
+await view.setContext(DataCaptureContext.sharedInstance);
+await DataCaptureContext.sharedInstance.setFrameSource(camera);
 await cameraStarted;
 ```
 
@@ -615,6 +626,7 @@ In React this last line is unnecessary: the element lives in the component's JSX
 Full teardown, releasing the engine as well:
 
 ```typescript
+barcodeBatch.removeListener(batchListener);
 await DataCaptureContext.sharedInstance.dispose();
 view.detachFromElement();
 document.getElementById("data-capture-view")!.style.display = "none";
@@ -624,7 +636,7 @@ document.getElementById("data-capture-view")!.style.display = "none";
 
 ## React integration
 
-For React, initialize inside a `useEffect` and clean up in the returned function:
+For React, initialize inside a `useEffect` and clean up in the returned function. The cleanup can run while `initialize()` is still awaiting (StrictMode mounts, unmounts and mounts again in development), so `initialize()` stops after each `await` once `cancelled` is set:
 
 ```tsx
 import { useEffect, useRef } from "react";
@@ -648,6 +660,7 @@ export const MatrixScanComponent: React.FC = () => {
   const captureRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    let cancelled = false;
     let barcodeBatch: BarcodeBatch | null = null;
     let view: DataCaptureView | null = null;
     const batchListener: BarcodeBatchListener = {
@@ -666,11 +679,16 @@ export const MatrixScanComponent: React.FC = () => {
           moduleLoaders: [barcodeCaptureLoader()],
         }
       );
+      if (cancelled) return;
 
       const settings = new BarcodeBatchSettings();
       settings.enableSymbologies([Symbology.EAN13UPCA, Symbology.Code128]);
 
       barcodeBatch = await BarcodeBatch.forContext(context, settings);
+      if (cancelled) {
+        await context.removeMode(barcodeBatch);
+        return;
+      }
       barcodeBatch.addListener(batchListener);
 
       const camera = Camera.pickBestGuess();
@@ -678,6 +696,7 @@ export const MatrixScanComponent: React.FC = () => {
       await context.setFrameSource(camera);
 
       view = await DataCaptureView.forContext(context);
+      if (cancelled) return;
       view.connectToElement(captureRef.current!);
 
       await BarcodeBatchBasicOverlay.withBarcodeBatchForViewWithStyle(
@@ -685,14 +704,17 @@ export const MatrixScanComponent: React.FC = () => {
         view,
         BarcodeBatchBasicOverlayStyle.Frame
       );
+      if (cancelled) return;
 
       await context.frameSource?.switchToDesiredState(FrameSourceState.On);
+      if (cancelled) return;
       await barcodeBatch.setEnabled(true);
     };
 
     initialize().catch(console.error);
 
     return () => {
+      cancelled = true;
       barcodeBatch?.removeListener(batchListener);
       barcodeBatch?.setEnabled(false).catch(console.error);
       DataCaptureContext.sharedInstance.frameSource
@@ -734,11 +756,11 @@ export const MatrixScanComponent: React.FC = () => {
 | `BarcodeBatch.forContext` not awaited | Always `await` — without it, `barcodeBatch` is a Promise, not a mode. |
 | AR views not appearing | Advanced overlay not awaited, or `viewForTrackedBarcode` returns `undefined` instead of `null` (or a non-Promise value). Or the license key lacks the `AugmentedReality` / `MappingForTracking` features: tracking and decoding still work, but every location and anchor is zero, so all views are drawn at the same off-screen point. The context reports this through `didChangeStatus` of a `DataCaptureContextListener` (status code 1026). |
 | `setAnchorForTrackedBarcode` TypeScript error | Do not `await` it — it is synchronous (`void`). |
-| AR view looks blurry on Retina | Build the element at `window.devicePixelRatio` times its size and pass `{ scale: 1 / window.devicePixelRatio }` to `TrackedBarcodeView.withHTMLElement`. Passing only the scale halves the view. |
+| AR view looks blurry on Retina | Build the element at `window.devicePixelRatio` times its size and pass `{ scale: 1 / window.devicePixelRatio }` to `TrackedBarcodeView.withHTMLElement`. Passing only the scale shrinks the view by `1 / window.devicePixelRatio`. |
 | `removedTrackedBarcodes` ids don't match | Identifiers come back as `string[]`. Parse with `Number.parseInt(id, 10)`. |
 | Duplicate scan events | Camera not paused. Call `setEnabled(false)` and/or `FrameSourceState.Off` when not scanning. |
 | Same code processed twice | A barcode that leaves the frame and comes back gets a new `identifier`. De-duplicate by `barcode.data`. |
 | `checkMultithreadingSupport()` is `false` although the headers are set | The device has fewer than 2 CPU cores or no nested-worker support. |
 | Start-up breaks after a new SDK release | CDN URLs float on `@8` and mixed two versions. Pin one exact version everywhere. |
 | Overlay not rendering highlights | Basic overlay factory not awaited. |
-| React StrictMode double-init | No guard is needed for the context: `forLicenseKey` is idempotent. Guard only your own set-up (mode, overlays, listeners), for example with a ref or a shared in-flight promise. `DataCaptureContext.sharedInstance` is always truthy, so it cannot be the guard. |
+| React StrictMode double-init | No guard is needed for the context: `forLicenseKey` is idempotent. Guard only your own set-up (mode, overlays, listeners), as the React example above does with its `cancelled` flag. `DataCaptureContext.sharedInstance` is always truthy, so it cannot be the guard. |

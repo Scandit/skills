@@ -703,7 +703,7 @@ await barcodeArView.start();
 
 ## Step 8 — Lifecycle and Cleanup
 
-### Freeze / resume (e.g. navigating away and back)
+### Freeze / resume (e.g. a dialog over the scanner)
 
 ```typescript
 // Freeze — pauses scanning, keeps camera warm for faster resume
@@ -721,7 +721,7 @@ barcodeArView.remove();         // removes the element from the DOM
 await context.dispose();        // releases all SDK resources
 ```
 
-`dispose()` releases the context. To come back afterwards, call `DataCaptureContext.forLicenseKey()` again and set `BarcodeAr` and `BarcodeArView` up again before `barcodeArView.start()`; `start()` alone does not restart a disposed context. To leave and come back without setting everything up again, keep the context and use `pause()` / `start()` instead.
+`dispose()` releases the context. To come back afterwards, call `DataCaptureContext.forLicenseKey()` again and set `BarcodeAr` and `BarcodeArView` up again before `barcodeArView.start()`; `start()` alone does not restart a disposed context. To leave and come back without setting everything up again, keep the context and use `stop()` / `start()` instead: `pause()` keeps the camera open in standby, so it suits only a short freeze.
 
 Do not add a `visibilitychange` handler for tab switching: the view already stops the camera while the page is hidden and resumes it when the page is visible again.
 
