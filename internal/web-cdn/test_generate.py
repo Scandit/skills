@@ -267,6 +267,13 @@ class SkillContentTest(unittest.TestCase):
     def test_matrixscan_batch_web(self):
         self.assert_skill("matrixscan-batch-web", "core,barcode")
 
+    def test_matrixscan_ar_web(self):
+        self.assert_skill("matrixscan-ar-web", "core,barcode")
+
+    def test_matrixscan_ar_web_has_no_console_warn_for_multithreading(self):
+        text = (ROOT / "skills/matrixscan-ar-web/references/integration.md").read_text()
+        self.assertNotIn("console.warn", text)
+
     def test_matrixscan_batch_web_has_no_console_warn_for_multithreading(self):
         text = (ROOT / "skills/matrixscan-batch-web/references/integration.md").read_text()
         self.assertNotIn("console.warn", text)

@@ -92,7 +92,11 @@ import {
   barcodeCaptureLoader,
   Symbology,
 } from "@scandit/web-datacapture-barcode";
-import { DataCaptureContext } from "@scandit/web-datacapture-core";
+import { BrowserHelper, DataCaptureContext } from "@scandit/web-datacapture-core";
+
+if (!(await BrowserHelper.checkMultithreadingSupport())) {
+  showMultithreadingWarning();
+}
 
 await DataCaptureContext.forLicenseKey(licenseKey, {
   libraryLocation: new URL("library/engine/", document.baseURI).toString(),
