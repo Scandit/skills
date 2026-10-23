@@ -151,8 +151,15 @@ const context = await DataCaptureContext.create();
 ```
 
 **New (v8):**
+
+`showMultithreadingWarning()` and its dialog come from the plain-HTML set-up in [Loading the SDK from a CDN](integration.md#loading-the-sdk-from-a-cdn) in `references/integration.md`.
+
 ```typescript
-import { DataCaptureContext } from "@scandit/web-datacapture-core";
+import { BrowserHelper, DataCaptureContext } from "@scandit/web-datacapture-core";
+
+if (!(await BrowserHelper.checkMultithreadingSupport())) {
+    showMultithreadingWarning();
+}
 
 await DataCaptureContext.forLicenseKey("-- ENTER YOUR SCANDIT LICENSE KEY HERE --", {
     libraryLocation: new URL("sdc-lib", document.baseURI).toString(),

@@ -270,6 +270,56 @@ class SkillContentTest(unittest.TestCase):
     def test_matrixscan_ar_web(self):
         self.assert_skill("matrixscan-ar-web", "core,barcode")
 
+    def test_sparkscan_web(self):
+        self.assert_skill("sparkscan-web", "core,barcode")
+
+    def test_sparkscan_web_has_no_console_warn_for_multithreading(self):
+        text = (ROOT / "skills/sparkscan-web/references/integration.md").read_text()
+        self.assertNotIn("console.warn", text)
+
+    def test_sparkscan_web_migration_snippet_checks_multithreading_first(self):
+        text = (ROOT / "skills/sparkscan-web/references/migration.md").read_text()
+        after = text[text.index("**New (v8):**"):]
+        snippet = re.search(r"```typescript\n(.*?)```", after, re.S).group(1)
+        self.assertIn(MULTITHREADING_CHECK, snippet)
+        self.assertLess(snippet.index(MULTITHREADING_CHECK), snippet.index("DataCaptureContext.forLicenseKey("))
+        self.assertIn("references/integration.md", after[: after.index("```typescript")])
+
+    def test_sparkscan_web_react_provider_shows_dialog_from_state(self):
+        references = ROOT / "skills/sparkscan-web/references"
+        react_text = (references / "react.md").read_text()
+        provider_in_guide = next(
+            block
+            for block in re.findall(r"```tsx\n(.*?)```", react_text, re.S)
+            if "forLicenseKey(" in block
+        )
+        provider_fixture = (references / "fixtures/ScanditProvider.tsx").read_text()
+        for provider in (provider_in_guide, provider_fixture):
+            self.assertNotIn("showMultithreadingWarning(", provider)
+            self.assertIn("<dialog", provider)
+            self.assertIn("scandit-multithreading-warning-dismissed", provider)
+            component_start = provider.index("export function ScanditProvider")
+            self.assertIn("let multithreadingWarningShown = false", provider[:component_start])
+            accesses = [match.start() for match in re.finditer(r"sessionStorage", provider)]
+            self.assertTrue(accesses)
+            for index in accesses:
+                self.assertTrue(inside_try(provider, index), "sessionStorage access outside try")
+            check = provider.index("await BrowserHelper.checkMultithreadingSupport()")
+            self.assertLess(check, provider.index("DataCaptureContext.forLicenseKey("))
+            self.assertNotIn("console.warn", provider)
+
+    def test_sparkscan_web_single_threaded_fallback_leaves_dialog_out(self):
+        text = (ROOT / "skills/sparkscan-web/references/troubleshooting.md").read_text()
+        fallback = next(p for p in text.split("\n\n") if p.startswith("**Single-threaded fallback"))
+        self.assertIn("multithreading dialog", fallback)
+        credentialless = next(line for line in text.splitlines() if "COEP: credentialless" in line)
+        self.assertIn("dialog", credentialless)
+
+    def test_headers_fragment_scopes_credentialless_rule_to_sdk_set_up(self):
+        text = (ROOT / "internal/web-cdn/fragments/headers.md").read_text()
+        rule = next(line for line in text.splitlines() if "Do not recommend" in line)
+        self.assertIn("SDK set-up", rule)
+
     def test_matrixscan_ar_web_migration_snippet_checks_multithreading_first(self):
         text = (ROOT / "skills/matrixscan-ar-web/references/migration.md").read_text()
         after = text[text.index("**After (BarcodeAr):**"):]

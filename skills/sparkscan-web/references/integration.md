@@ -43,7 +43,7 @@ After providing the code, show this setup checklist:
 2. Replace `-- ENTER YOUR SCANDIT LICENSE KEY HERE --` with your key (see **Licence key** in `SKILL.md`).
 3. If the SDK comes from the CDN, pin one exact version in every URL (see [Loading the SDK from a CDN](#loading-the-sdk-from-a-cdn)).
 
-The code example below is a basic TypeScript v8 implementation.
+The code example below is a basic TypeScript v8 implementation. `showMultithreadingWarning()` and its dialog come from the plain-HTML set-up in [Loading the SDK from a CDN](#loading-the-sdk-from-a-cdn).
 If the user is using React, use the React get-started guide and SparkScanReactSample instead (see References).
 
 > **Mount point requirement:** The SparkScan view needs a container with a resolved, non-zero width and height. If the container has zero or unresolved dimensions, the SparkScan UI will not display. The container's `position` does not matter to SparkScan itself — `<spark-scan-view>` sets `position: relative` on itself internally (that's what its trigger button and mini preview actually position against), independent of whatever `position` its parent has. A plain, normal-flow (`position: static`, i.e. no `position` at all) block-level container with a real height works fine; you don't need `position: fixed`/`absolute`/`relative` on the container unless you specifically want it to float over the rest of the page (see below) rather than take up its own space in your layout. The container also does not have to cover the full viewport — SparkScan sizes itself from its own parent element, so scoping it to part of the page works too (see "Scoping to part of the page" below).
@@ -88,10 +88,14 @@ import {
   SparkScanViewSettings,
   Symbology,
 } from "@scandit/web-datacapture-barcode";
-import { DataCaptureContext } from "@scandit/web-datacapture-core";
+import { BrowserHelper, DataCaptureContext } from "@scandit/web-datacapture-core";
 
 async function run() {
-    
+    const multithreadingSupported = await BrowserHelper.checkMultithreadingSupport();
+    if (!multithreadingSupported) {
+        showMultithreadingWarning();
+    }
+
     await DataCaptureContext.forLicenseKey(
         "-- ENTER YOUR SCANDIT LICENSE KEY HERE --",
         {
@@ -173,7 +177,10 @@ run();
 
 ### Loading the SDK from a CDN
 
-Pin one exact version in every URL. A floating `@8` is resolved separately for each file, so after a new 8.x release the JavaScript and the engine can come from different releases, which breaks start-up.
+<!-- BEGIN GENERATED web-cdn packages=core,barcode engine=barcode -->
+**CDN caveat.** A public CDN ties the page's start-up to that CDN's availability and speed, so for production [the docs](https://docs.scandit.com/sdks/web/add-sdk/#install-via-cdn) recommend self-hosting the SDK files or a paid enterprise CDN.
+
+**Import map.** Load the SDK as ES modules through an import map, as in the docs' [complete CDN example](https://docs.scandit.com/sdks/web/add-sdk/#complete-cdn-example). Pin one exact version in every URL: a floating `@8` is resolved separately for each file, so after a new 8.x release the JavaScript and the engine can come from different releases, which breaks start-up. The `es-module-shims` script adds import-map support to browsers that lack it.
 
 ```html
 <script type="importmap">
@@ -186,11 +193,23 @@ Pin one exact version in every URL. A floating `@8` is resolved separately for e
     }
   }
 </script>
+<script async src="https://cdn.jsdelivr.net/npm/es-module-shims@2.6.2/dist/es-module-shims.js"></script>
 ```
 
 Use the same version in `libraryLocation`: `https://cdn.jsdelivr.net/npm/@scandit/web-datacapture-barcode@8.6.1/sdc-lib/`.
 
-For the multithreaded engine, serve the page with `Cross-Origin-Opener-Policy: same-origin` and `Cross-Origin-Embedder-Policy: require-corp`; jsDelivr answers with `Cross-Origin-Resource-Policy: cross-origin` and `Access-Control-Allow-Origin: *`, which `require-corp` accepts. Without a bundler, any static server that can set headers works. With [`serve`](https://www.npmjs.com/package/serve), put them in a `serve.json` next to `index.html`:
+**Cross-origin isolation headers.** Serve the page with both headers, whether the SDK files come from jsDelivr or are self-hosted:
+
+```
+Cross-Origin-Opener-Policy: same-origin
+Cross-Origin-Embedder-Policy: require-corp
+```
+
+Do not recommend `credentialless` for `Cross-Origin-Embedder-Policy` in the SDK set-up: Safari does not support it, so the page would not be cross-origin isolated there.
+
+jsDelivr serves the SDK files and `es-module-shims` with `Cross-Origin-Resource-Policy: cross-origin` and `Access-Control-Allow-Origin: *`, which `require-corp` accepts.
+
+**Serving the page.** From the folder that holds `index.html`, run [`serve`](https://www.npmjs.com/package/serve) with `npx serve@14.2.6` or `pnpm dlx serve@14.2.6`, and put the headers in a `serve.json` next to `index.html`:
 
 ```json
 {
@@ -206,7 +225,105 @@ For the multithreaded engine, serve the page with `Cross-Origin-Opener-Policy: s
 }
 ```
 
-`serve` matches `source` against the path of the file it serves: `index.html` served at `/` gets the headers, a directory listing does not. If those headers break other cross-origin images on the page, see `troubleshooting.md`.
+`serve` matches `source` against the path of the file it serves: `index.html` served at `/` gets the headers, a directory listing does not.
+
+Any other server must send the same two headers. Plain `python3 -m http.server` does not send them, so it is not enough on its own; this small Python server does (save it as `server.py` next to `index.html`, run `python3 server.py`, and open `http://localhost:8000`):
+
+```python
+from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
+
+class CrossOriginIsolatedHandler(SimpleHTTPRequestHandler):
+    def end_headers(self):
+        self.send_header("Cross-Origin-Opener-Policy", "same-origin")
+        self.send_header("Cross-Origin-Embedder-Policy", "require-corp")
+        super().end_headers()
+
+ThreadingHTTPServer(("", 8000), CrossOriginIsolatedHandler).serve_forever()
+```
+
+**Multithreading check.** Await `BrowserHelper.checkMultithreadingSupport()` before `DataCaptureContext.forLicenseKey()`; it needs no engine and no context. It returns `false` when the page is not cross-origin isolated (the COOP/COEP headers are missing) or the device has fewer than 2 CPU cores or no nested workers. Scanning then still works, single-threaded and slower, and the SDK logs its own console warning, so do not add another: tell the person scanning with this dialog in `index.html` instead.
+
+```html
+<dialog id="multithreading-warning">
+  <form method="dialog">
+    <h2>Scanning may be slower</h2>
+    <p>This browser or device can't use all of its processing power for scanning. You can keep scanning, but barcodes may take longer to read.</p>
+    <p><a href="https://docs.scandit.com/sdks/web/matrixscan/get-started/#improve-runtime-performance-by-enabling-browser-multithreading" target="_blank" rel="noopener">Learn more</a></p>
+    <label><input type="checkbox" /> Don't show this again during this session</label>
+    <button autofocus>OK</button>
+  </form>
+</dialog>
+```
+
+Set-up does not wait for the dialog: `forLicenseKey()` runs while it is open. It shows at most once per page load (a module-level flag, so a scanner restart does not reopen it), and not again during the browser session once it was closed with the checkbox ticked. Every `sessionStorage` access sits in a `try`/`catch`: storage can be blocked, and that only means the dialog may show again on the next page load. The snippet has no type annotations, so it also runs as is in a `<script type="module">`:
+
+```typescript
+import { BrowserHelper, DataCaptureContext } from "@scandit/web-datacapture-core";
+import { barcodeCaptureLoader } from "@scandit/web-datacapture-barcode";
+
+const multithreadingWarningDismissedKey = "scandit-multithreading-warning-dismissed";
+let multithreadingWarningShown = false;
+
+function isMultithreadingWarningDismissed() {
+  try {
+    return sessionStorage.getItem(multithreadingWarningDismissedKey) === "true";
+  } catch {
+    return false;
+  }
+}
+
+function rememberMultithreadingWarningDismissed() {
+  try {
+    sessionStorage.setItem(multithreadingWarningDismissedKey, "true");
+  } catch {}
+}
+
+function showMultithreadingWarning() {
+  const dialog = document.getElementById("multithreading-warning");
+  if (multithreadingWarningShown || isMultithreadingWarningDismissed() || !(dialog instanceof HTMLDialogElement)) {
+    return;
+  }
+  multithreadingWarningShown = true;
+  dialog.addEventListener(
+    "close",
+    () => {
+      const dontShowAgain = dialog.querySelector('input[type="checkbox"]');
+      if (dontShowAgain instanceof HTMLInputElement && dontShowAgain.checked) {
+        rememberMultithreadingWarningDismissed();
+      }
+    },
+    { once: true }
+  );
+  dialog.showModal();
+}
+
+const multithreadingSupported = await BrowserHelper.checkMultithreadingSupport();
+if (!multithreadingSupported) {
+  showMultithreadingWarning();
+}
+
+await DataCaptureContext.forLicenseKey("-- ENTER YOUR SCANDIT LICENSE KEY HERE --", {
+  libraryLocation: "https://cdn.jsdelivr.net/npm/@scandit/web-datacapture-barcode@8.6.1/sdc-lib/",
+  moduleLoaders: [barcodeCaptureLoader()],
+});
+```
+
+If the user explicitly asks to run single-threaded, leave the check and the dialog out.
+
+**UMD build, last resort.** Use the classic-script bundles only when the target browsers support neither ES modules nor the [`es-module-shims`](https://github.com/guybedford/es-module-shims) polyfill: they cannot be tree-shaken, so the page downloads more code and starts slower. Load them in this order, since each bundle reads the globals of the ones before it:
+
+```html
+<script src="https://cdn.jsdelivr.net/npm/@scandit/web-datacapture-core@8.6.1/build/js/umd/index.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@scandit/web-datacapture-barcode@8.6.1/build/js/umd/index.js"></script>
+```
+
+- `@scandit/web-datacapture-core/build/js/umd/index.js` exposes exactly one global, `SDCCore`.
+- `@scandit/web-datacapture-barcode/build/js/umd/index.js` exposes exactly one global, `SDCBarcode`.
+
+A classic `<script>` has no top-level `await`: take the exports off these globals (`const { DataCaptureContext } = SDCCore;`) and wrap the set-up in an async function.
+<!-- END GENERATED web-cdn -->
+
+If those headers break other cross-origin images on the page, see `troubleshooting.md`.
 
 ## SparkScan feedback API
 
