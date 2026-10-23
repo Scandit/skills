@@ -38,7 +38,7 @@ for f in "${FILES[@]}"; do
   esac
 done
 if [ "$PLAT" = web ]; then
-  for pkg in label id; do
+  for pkg in label id parser; do
     grep -qE "['\"]@scandit/web-datacapture-$pkg['\"/]" "${FILES[@]}" && EXTRA_DEPS="$EXTRA_DEPS, \"@scandit/web-datacapture-$pkg\":\"$VER\""
   done
 fi

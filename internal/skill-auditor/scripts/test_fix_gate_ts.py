@@ -41,6 +41,12 @@ export const loader: typeof idCaptureLoader = idCaptureLoader;
 export const mode: typeof IdCapture = IdCapture;
 export const imageType: IdImageType = IdImageType.Face;
 """,
+    "web.parser.ts": """
+import { DataCaptureContext, FrameSourceState } from "@scandit/web-datacapture-core";
+import { Parser, ParserDataFormat, parserLoader } from "@scandit/web-datacapture-parser";
+export const loader: typeof parserLoader = parserLoader;
+export const parser: Promise<Parser> = Parser.forFormat(DataCaptureContext.sharedInstance, ParserDataFormat.GS1_AI);
+""",
     "rn.ts": """
 import { FrameSourceState } from "scandit-react-native-datacapture-core";
 import { Symbology } from "scandit-react-native-datacapture-barcode";
