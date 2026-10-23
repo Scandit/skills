@@ -1,0 +1,1 @@
+**CDN caveat.** A public CDN ties the page's start-up to that CDN's availability and speed, so for production [the docs]({{cdn_warning_link}}) recommend self-hosting the SDK files or a paid enterprise CDN.
