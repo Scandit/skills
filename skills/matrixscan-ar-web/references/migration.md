@@ -79,7 +79,7 @@ await barcodeBatch.setEnabled(true);
 
 **After (BarcodeAr):**
 
-`showMultithreadingWarning()` and its dialog come from the plain-HTML set-up in [Loading the SDK from a CDN](integration.md#loading-the-sdk-from-a-cdn) in `references/integration.md`. Define the helper in the same module as this example, or import it from the module that defines it: otherwise the `false` path throws a ReferenceError and aborts set-up.
+The multithreading check runs in parallel with `forLicenseKey()`. Import `showMultithreadingWarning` from `multithreading-warning.js`, the dialog helper module in [Loading the SDK from a CDN](integration.md#loading-the-sdk-from-a-cdn) in `references/integration.md`; the page needs no markup for the dialog.
 
 ```typescript
 import {
@@ -95,10 +95,15 @@ import {
   Symbology,
 } from "@scandit/web-datacapture-barcode";
 import { BrowserHelper, DataCaptureContext } from "@scandit/web-datacapture-core";
+import { showMultithreadingWarning } from "./multithreading-warning.js";
 
-if (!(await BrowserHelper.checkMultithreadingSupport())) {
-  showMultithreadingWarning();
-}
+BrowserHelper.checkMultithreadingSupport()
+  .then((supported) => {
+    if (!supported) {
+      showMultithreadingWarning();
+    }
+  })
+  .catch(console.error);
 
 await DataCaptureContext.forLicenseKey(licenseKey, {
   libraryLocation: new URL("library/engine/", document.baseURI).toString(),

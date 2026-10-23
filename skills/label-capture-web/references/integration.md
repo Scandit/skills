@@ -275,14 +275,19 @@ import {
   type LabelCaptureSession,
   type LabelField,
 } from "@scandit/web-datacapture-label";
+import { showMultithreadingWarning } from "./multithreading-warning.js";
 
 async function run() {
   const view = new DataCaptureView();
   view.connectToElement(document.getElementById("data-capture-view")!);
 
-  if (!(await BrowserHelper.checkMultithreadingSupport())) {
-    showMultithreadingWarning();
-  }
+  BrowserHelper.checkMultithreadingSupport()
+    .then((supported) => {
+      if (!supported) {
+        showMultithreadingWarning();
+      }
+    })
+    .catch(console.error);
 
   const context = await DataCaptureContext.forLicenseKey(
     "-- ENTER YOUR SCANDIT LICENSE KEY HERE --",
@@ -342,7 +347,7 @@ async function run() {
 run();
 ```
 
-`showMultithreadingWarning()` and its dialog come from [Loading the SDK without a bundler](#loading-the-sdk-without-a-bundler); an app that has no such helper adds an equivalent notice, or leaves the check out when the user asked to run single-threaded. Define the helper in the same module as this example, or import it from the module that defines it: otherwise the `false` path throws a ReferenceError and aborts set-up.
+The multithreading check runs in parallel with `forLicenseKey()`. Import `showMultithreadingWarning` from `multithreading-warning.js`, the dialog helper module in [Loading the SDK without a bundler](#loading-the-sdk-without-a-bundler), which adds the dialog to the page itself, so the page needs no markup for it. Leave the check out when the user asked to run single-threaded.
 
 ## anchorRegex vs valueRegex
 
@@ -383,7 +388,8 @@ After writing the integration code, show this checklist:
 2. Replace `-- ENTER YOUR SCANDIT LICENSE KEY HERE --` with your key (see **Licence key** in `SKILL.md`).
 3. Make sure `libraryLocation` points to a self-hosted copy of the SDK library (the path in `new URL(...)`). You can copy the `sdc-lib` directory from `node_modules/@scandit/web-datacapture-label/sdc-lib/`, or use the CDN pinned to the exact version you import, as in [Loading the SDK without a bundler](#loading-the-sdk-without-a-bundler).
 4. Ensure a DOM element with id `data-capture-view` exists on the page before `run()` executes. The element must have a defined size and be visible — `DataCaptureView` renders the camera feed into it, so if the element has zero dimensions or `display: none` the viewfinder will not appear. A common setup is `width: 100%; height: 100vh;` or any other CSS that gives the element a non-zero area.
-5. For a plain-HTML page, serve it with the `Cross-Origin-Opener-Policy` and `Cross-Origin-Embedder-Policy` headers and include the multithreading dialog, as in [Loading the SDK without a bundler](#loading-the-sdk-without-a-bundler).
+5. For a plain-HTML page, serve it with the `Cross-Origin-Opener-Policy` and `Cross-Origin-Embedder-Policy` headers, as in [Loading the SDK without a bundler](#loading-the-sdk-without-a-bundler).
+6. Add `multithreading-warning.js`, the dialog helper module from [Loading the SDK without a bundler](#loading-the-sdk-without-a-bundler), and import `showMultithreadingWarning` from it. The helper adds the dialog to the page itself, so the page needs no markup for it.
 
 ## Overlay Integration
 

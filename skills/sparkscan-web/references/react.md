@@ -22,7 +22,7 @@ If you can't determine the version, default to the **ref-binding** pattern — i
 
 The idiomatic React home for one-time, app-wide setup is a **context provider**. Mount it once at the app root; it calls `forLicenseKey`, which the SDK caches internally — so the engine initializes only once even when StrictMode invokes the effect twice in dev, and you don't need your own promise guard. Once initialized, the context is reachable anywhere via the static `DataCaptureContext.sharedInstance` — so prefer that over storing the instance in component state, a variable, or a ref. The provider therefore only needs to publish a **readiness** flag, not the instance itself.
 
-The provider also renders the multithreading dialog from state, and a module-level flag keeps it to once per page load, so StrictMode's second effect run does not open it twice. Set-up does not wait for the dialog.
+The provider also renders the multithreading dialog from state, and a module-level flag keeps it to once per page load, so StrictMode's second effect run does not open it twice. The check runs in parallel with `forLicenseKey()`, so set-up waits for neither the check nor the dialog. Once the cleanup has set `cancelled`, the check's result is ignored, so StrictMode's first mount does not use up the once-per-page-load flag.
 
 ```tsx
 // ScanditProvider.tsx
@@ -64,11 +64,15 @@ export function ScanditProvider({ children }: { children: ReactNode }) {
     useEffect(() => {
         let cancelled = false;
         async function initialize() {
-            const multithreadingSupported = await BrowserHelper.checkMultithreadingSupport();
-            if (!multithreadingSupported && !multithreadingWarningShown && !isMultithreadingWarningDismissed()) {
-                multithreadingWarningShown = true;
-                setMultithreadingUnavailable(true);
-            }
+            BrowserHelper.checkMultithreadingSupport()
+                .then((multithreadingSupported) => {
+                    if (cancelled) return;
+                    if (!multithreadingSupported && !multithreadingWarningShown && !isMultithreadingWarningDismissed()) {
+                        multithreadingWarningShown = true;
+                        setMultithreadingUnavailable(true);
+                    }
+                })
+                .catch(console.error);
 
             // forLicenseKey is cached internally by the SDK, so calling it once per provider
             // mount is safe even under StrictMode's extra dev mount/unmount/remount — the

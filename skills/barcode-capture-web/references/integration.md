@@ -45,9 +45,9 @@ After providing the code, show this setup checklist:
 3. Add a `<div id="capture-element">` (or similar) to your HTML with defined dimensions and positioning (see mount point requirement below)
 4. If self-hosting the SDK engine files, update `libraryLocation` to point to the correct path. Alternatively, use the CDN path pinned to the exact version you import, for example `https://cdn.jsdelivr.net/npm/@scandit/web-datacapture-barcode@8.6.1/sdc-lib/` (see [Loading the SDK from a CDN](#loading-the-sdk-from-a-cdn))
 5. Serve the page with `Cross-Origin-Opener-Policy: same-origin` and `Cross-Origin-Embedder-Policy: require-corp`, also when the SDK comes from the CDN (see [Loading the SDK from a CDN](#loading-the-sdk-from-a-cdn)).
-6. Add the multithreading dialog markup and the `showMultithreadingWarning()` helper from [Loading the SDK from a CDN](#loading-the-sdk-from-a-cdn), with the helper defined in the same module as the code that calls it.
+6. Add `multithreading-warning.js`, the dialog helper module from [Loading the SDK from a CDN](#loading-the-sdk-from-a-cdn), and import `showMultithreadingWarning` from it. The helper adds the dialog to the page itself, so the page needs no markup for it.
 
-The code example below is a basic TypeScript v8 implementation. It starts with the multithreading check: `showMultithreadingWarning()` and its dialog come from the plain-HTML set-up in [Loading the SDK from a CDN](#loading-the-sdk-from-a-cdn); an app that has no such helper adds an equivalent notice, or leaves the check out when the user asked to run single-threaded. Define the helper in the same module as this example, or import it from the module that defines it: otherwise the `false` path throws a ReferenceError and aborts set-up.
+The code example below is a basic TypeScript v8 implementation. It starts the multithreading check in parallel with `forLicenseKey()`: import `showMultithreadingWarning` from `multithreading-warning.js`, the dialog helper module in [Loading the SDK from a CDN](#loading-the-sdk-from-a-cdn), which adds the dialog to the page itself, so the page needs no markup for it. Leave the check out when the user asked to run single-threaded.
 If the user is using React, see the React section below.
 
 > **Mount point requirement:** The `DataCaptureView` needs a container with defined dimensions and positioning to render its camera preview correctly. If the container has zero or unresolved dimensions, the camera preview will not display.
@@ -73,11 +73,16 @@ import {
     type FrameData,
     FrameSourceState,
 } from "@scandit/web-datacapture-core";
+import { showMultithreadingWarning } from "./multithreading-warning.js";
 
 async function run() {
-    if (!(await BrowserHelper.checkMultithreadingSupport())) {
-        showMultithreadingWarning();
-    }
+    BrowserHelper.checkMultithreadingSupport()
+        .then((supported) => {
+            if (!supported) {
+                showMultithreadingWarning();
+            }
+        })
+        .catch(console.error);
 
     await DataCaptureContext.forLicenseKey(
         "-- ENTER YOUR SCANDIT LICENSE KEY HERE --",
@@ -186,9 +191,13 @@ document.getElementById("close-scanner")!.addEventListener("click", () => {
 `forLicenseKey()` downloads and compiles the WASM engine, which can take seconds. To show the camera preview meanwhile, pass the camera to `connectToElement` and switch it on before awaiting `forLicenseKey()`. If `forLicenseKey()` rejects (wrong key, network, CSP), the preview is already live: let the `On` request settle, so a denied permission is not left as an unhandled rejection, then switch the camera off before reporting the error:
 
 ```typescript
-if (!(await BrowserHelper.checkMultithreadingSupport())) {
-    showMultithreadingWarning();
-}
+BrowserHelper.checkMultithreadingSupport()
+    .then((supported) => {
+        if (!supported) {
+            showMultithreadingWarning();
+        }
+    })
+    .catch(console.error);
 
 const camera = Camera.pickBestGuess();
 await camera.applySettings(BarcodeCapture.recommendedCameraSettings);
@@ -212,7 +221,7 @@ await DataCaptureContext.sharedInstance.setFrameSource(camera);
 await cameraStarted;
 ```
 
-`showMultithreadingWarning()` and the dialog come from the plain-HTML set-up in [Loading the SDK from a CDN](#loading-the-sdk-from-a-cdn). Define the helper in the same module as this example, or import it from the module that defines it: otherwise the `false` path throws a ReferenceError and aborts set-up.
+Import `showMultithreadingWarning` from `multithreading-warning.js`, the dialog helper module in [Loading the SDK from a CDN](#loading-the-sdk-from-a-cdn); the page needs no markup for the dialog.
 
 `FrameSourceState.Standby` opens the camera without showing a preview. Use the exact enum members `On`, `Off` and `Standby`: in JavaScript a misspelled one such as `FrameSourceState.StandBy` is `undefined`, and `switchToDesiredState(undefined)` silently does nothing.
 
@@ -220,7 +229,7 @@ await cameraStarted;
 
 ## React integration
 
-For React, use a `useRef` to attach `DataCaptureView` to a DOM element, and `useEffect` for initialization and cleanup. The dialog is rendered from component state instead of the DOM helper, and a module-level flag keeps it to once per page load, so the effect running twice in React StrictMode does not open it twice. Set-up does not wait for the dialog.
+For React, use a `useRef` to attach `DataCaptureView` to a DOM element, and `useEffect` for initialization and cleanup. The dialog is rendered from component state instead of the DOM helper, and a module-level flag keeps it to once per page load, so the effect running twice in React StrictMode does not open it twice. The check runs in parallel with `forLicenseKey()`, so set-up waits for neither the check nor the dialog. Once the cleanup has set `cancelled`, the check's result is ignored, so a StrictMode first mount or a fast unmount does not use up the once-per-page-load flag.
 
 ```tsx
 import { useEffect, useRef, useState } from "react";
@@ -272,16 +281,21 @@ export const BarcodeScannerComponent: React.FC = () => {
     }, [multithreadingUnavailable]);
 
     useEffect(() => {
+        let cancelled = false;
         let barcodeCapture: BarcodeCapture | null = null;
         let view: DataCaptureView | null = null;
         let barcodeCaptureListener: BarcodeCaptureListener | null = null;
 
         async function initialize() {
-            const multithreadingSupported = await BrowserHelper.checkMultithreadingSupport();
-            if (!multithreadingSupported && !multithreadingWarningShown && !isMultithreadingWarningDismissed()) {
-                multithreadingWarningShown = true;
-                setMultithreadingUnavailable(true);
-            }
+            BrowserHelper.checkMultithreadingSupport()
+                .then((multithreadingSupported) => {
+                    if (cancelled) return;
+                    if (!multithreadingSupported && !multithreadingWarningShown && !isMultithreadingWarningDismissed()) {
+                        multithreadingWarningShown = true;
+                        setMultithreadingUnavailable(true);
+                    }
+                })
+                .catch(console.error);
 
             await DataCaptureContext.forLicenseKey(
                 "-- ENTER YOUR SCANDIT LICENSE KEY HERE --",
@@ -325,6 +339,7 @@ export const BarcodeScannerComponent: React.FC = () => {
         initialize().catch(console.error);
 
         return () => {
+            cancelled = true;
             if (barcodeCaptureListener && barcodeCapture) {
                 barcodeCapture.removeListener(barcodeCaptureListener);
             }

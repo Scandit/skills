@@ -325,12 +325,51 @@ class PinTest(unittest.TestCase):
 
 GENERATED_BLOCK = re.compile(r"<!-- BEGIN GENERATED web-cdn (.*?) -->.*?<!-- END GENERATED web-cdn -->", re.S)
 MULTITHREADING_CHECK = "checkMultithreadingSupport()"
+AWAITED_CHECK = re.compile(r"await\W+BrowserHelper\.checkMultithreadingSupport", re.I)
+HELPER_IMPORT = 'import { showMultithreadingWarning } from "./multithreading-warning.js";'
+HELPER_POINTER = "import `showMultithreadingWarning` from `multithreading-warning.js`"
+OLD_HELPER_POINTERS = ("dialog markup and the `showMultithreadingWarning()` helper", "Define the helper in the same module")
 
 
 def examples_outside_block(text):
     outside = GENERATED_BLOCK.sub("", text)
     blocks = re.findall(r"```(?:typescript|tsx)\n(.*?)```", outside, re.S)
     return [block for block in blocks if "forLicenseKey(" in block]
+
+
+def web_skill_texts_outside_blocks():
+    paths = [*generate.skill_files(ROOT), *sorted(ROOT.glob("skills/*-web/**/*.tsx"))]
+    return {path.relative_to(ROOT): GENERATED_BLOCK.sub("", path.read_text()) for path in paths}
+
+
+def setup_checklist(text):
+    lines = GENERATED_BLOCK.sub("", text).splitlines()
+    start = next(index for index, line in enumerate(lines) if line.rstrip().endswith("checklist:"))
+    items = []
+    for line in lines[start + 1:]:
+        if re.match(r"\d+\. ", line):
+            items.append(line)
+        elif items and not line.startswith(" "):
+            break
+    return items
+
+
+def react_example(skill):
+    text = (ROOT / "skills" / skill / "references/integration.md").read_text()
+    return next(
+        block
+        for block in re.findall(r"```tsx\n(.*?)```", GENERATED_BLOCK.sub("", text), re.S)
+        if "forLicenseKey(" in block
+    )
+
+
+def sparkscan_provider_in_guide():
+    text = (ROOT / "skills/sparkscan-web/references/react.md").read_text()
+    return next(block for block in re.findall(r"```tsx\n(.*?)```", text, re.S) if "forLicenseKey(" in block)
+
+
+def sparkscan_provider_fixture():
+    return (ROOT / "skills/sparkscan-web/references/fixtures/ScanditProvider.tsx").read_text()
 
 
 class SkillContentTest(unittest.TestCase):
@@ -346,6 +385,8 @@ class SkillContentTest(unittest.TestCase):
         )
         self.assertIn("forLicenseKey(", rule, f"{skill}: SKILL.md has no multithreading rule")
         self.assertLess(rule.index(MULTITHREADING_CHECK), rule.index("forLicenseKey("))
+        self.assertIn("in parallel", rule)
+        self.assertIn(HELPER_POINTER, rule)
         self.assertIn("credentialless", rule)
         examples = examples_outside_block(reference_text)
         self.assertTrue(examples, f"{skill}: no complete example found")
@@ -386,6 +427,55 @@ class SkillContentTest(unittest.TestCase):
             for forbidden in ("checkMultithreadingSupport", "showMultithreadingWarning", "multithreading-warning"):
                 self.assertNotIn(forbidden, content, f"{path}: {forbidden}")
 
+    def test_no_web_skill_waits_for_the_check(self):
+        for path, text in web_skill_texts_outside_blocks().items():
+            self.assertIsNone(AWAITED_CHECK.search(text), path)
+
+    def test_examples_import_the_dialog_helper(self):
+        for path, text in web_skill_texts_outside_blocks().items():
+            for example in re.findall(r"```(?:typescript|tsx)\n(.*?)```", text, re.S):
+                if "showMultithreadingWarning(" in example and "import " in example:
+                    self.assertIn(HELPER_IMPORT, example, path)
+
+    def test_helper_pointers_name_the_module(self):
+        for path, text in web_skill_texts_outside_blocks().items():
+            for old in OLD_HELPER_POINTERS:
+                self.assertNotIn(old, text, path)
+            if "showMultithreadingWarning" in text:
+                self.assertIn(HELPER_POINTER.lower(), text.lower(), path)
+
+    def test_setup_checklists_add_the_helper_module(self):
+        for skill in ("barcode-capture-web", "matrixscan-batch-web", "matrixscan-ar-web", "sparkscan-web", "label-capture-web"):
+            text = (ROOT / "skills" / skill / "references/integration.md").read_text()
+            dialog_steps = [item for item in setup_checklist(text) if "dialog" in item]
+            self.assertEqual(len(dialog_steps), 1, skill)
+            self.assertIn("`multithreading-warning.js`", dialog_steps[0])
+            self.assertIn("no markup", dialog_steps[0])
+
+    def test_barcode_capture_web_react_example_checks_cancelled_before_flag(self):
+        self.assert_react_check_waits_for_cancelled(react_example("barcode-capture-web"))
+
+    def test_matrixscan_batch_web_react_example_checks_cancelled_before_flag(self):
+        self.assert_react_check_waits_for_cancelled(react_example("matrixscan-batch-web"))
+
+    def test_sparkscan_web_react_guide_checks_cancelled_before_flag(self):
+        self.assert_react_check_waits_for_cancelled(sparkscan_provider_in_guide())
+
+    def test_sparkscan_web_react_fixture_checks_cancelled_before_flag(self):
+        self.assert_react_check_waits_for_cancelled(sparkscan_provider_fixture())
+
+    def assert_react_check_waits_for_cancelled(self, code):
+        self.assertIn("let cancelled = false", code)
+        self.assertIn("cancelled = true;", code)
+        check = code.index("BrowserHelper.checkMultithreadingSupport()")
+        self.assertLess(check, code.index("DataCaptureContext.forLicenseKey("))
+        self.assertIn(".catch(", code[check:])
+        on_result = code[check:code.index(".catch(", check)]
+        self.assertIn(".then(", on_result)
+        self.assertIn("if (cancelled) return;", on_result)
+        self.assertIn("multithreadingWarningShown = true", on_result)
+        self.assertLess(on_result.index("if (cancelled) return;"), on_result.index("multithreadingWarningShown = true"))
+
     def test_sparkscan_web_has_no_console_warn_for_multithreading(self):
         text = (ROOT / "skills/sparkscan-web/references/integration.md").read_text()
         self.assertNotIn("console.warn", text)
@@ -395,19 +485,12 @@ class SkillContentTest(unittest.TestCase):
         after = text[text.index("**New (v8):**"):]
         snippet = re.search(r"```typescript\n(.*?)```", after, re.S).group(1)
         self.assertIn(MULTITHREADING_CHECK, snippet)
+        self.assertIn(HELPER_IMPORT, snippet)
         self.assertLess(snippet.index(MULTITHREADING_CHECK), snippet.index("DataCaptureContext.forLicenseKey("))
         self.assertIn("references/integration.md", after[: after.index("```typescript")])
 
     def test_sparkscan_web_react_provider_shows_dialog_from_state(self):
-        references = ROOT / "skills/sparkscan-web/references"
-        react_text = (references / "react.md").read_text()
-        provider_in_guide = next(
-            block
-            for block in re.findall(r"```tsx\n(.*?)```", react_text, re.S)
-            if "forLicenseKey(" in block
-        )
-        provider_fixture = (references / "fixtures/ScanditProvider.tsx").read_text()
-        for provider in (provider_in_guide, provider_fixture):
+        for provider in (sparkscan_provider_in_guide(), sparkscan_provider_fixture()):
             self.assertNotIn("showMultithreadingWarning(", provider)
             self.assertIn("<dialog", provider)
             self.assertIn("scandit-multithreading-warning-dismissed", provider)
@@ -417,8 +500,6 @@ class SkillContentTest(unittest.TestCase):
             self.assertTrue(accesses)
             for index in accesses:
                 self.assertTrue(inside_try(provider, index), "sessionStorage access outside try")
-            check = provider.index("await BrowserHelper.checkMultithreadingSupport()")
-            self.assertLess(check, provider.index("DataCaptureContext.forLicenseKey("))
             self.assertNotIn("console.warn", provider)
 
     def test_sparkscan_web_single_threaded_fallback_leaves_dialog_out(self):
@@ -438,6 +519,7 @@ class SkillContentTest(unittest.TestCase):
         after = text[text.index("**After (BarcodeAr):**"):]
         snippet = re.search(r"```typescript\n(.*?)```", after, re.S).group(1)
         self.assertIn(MULTITHREADING_CHECK, snippet)
+        self.assertIn(HELPER_IMPORT, snippet)
         self.assertLess(snippet.index(MULTITHREADING_CHECK), snippet.index("DataCaptureContext.forLicenseKey("))
         self.assertIn("references/integration.md", after[: after.index("```typescript")])
 
@@ -456,12 +538,7 @@ class SkillContentTest(unittest.TestCase):
         self.assert_react_example_shows_dialog_from_state("matrixscan-batch-web")
 
     def assert_react_example_shows_dialog_from_state(self, skill):
-        text = (ROOT / "skills" / skill / "references/integration.md").read_text()
-        react = next(
-            block
-            for block in re.findall(r"```tsx\n(.*?)```", GENERATED_BLOCK.sub("", text), re.S)
-            if "forLicenseKey(" in block
-        )
+        react = react_example(skill)
         self.assertNotIn("showMultithreadingWarning(", react)
         self.assertIn("<dialog", react)
         component_start = react.index("export const")

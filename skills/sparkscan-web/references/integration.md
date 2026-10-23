@@ -43,9 +43,9 @@ After providing the code, show this setup checklist:
 2. Replace `-- ENTER YOUR SCANDIT LICENSE KEY HERE --` with your key (see **Licence key** in `SKILL.md`).
 3. If the SDK comes from the CDN, pin one exact version in every URL (see [Loading the SDK from a CDN](#loading-the-sdk-from-a-cdn)).
 4. Serve the page with `Cross-Origin-Opener-Policy: same-origin` and `Cross-Origin-Embedder-Policy: require-corp`, also when the SDK comes from the CDN (see [Loading the SDK from a CDN](#loading-the-sdk-from-a-cdn)).
-5. Add the multithreading dialog markup and the `showMultithreadingWarning()` helper from [Loading the SDK from a CDN](#loading-the-sdk-from-a-cdn), with the helper defined in the same module as the code that calls it.
+5. Add `multithreading-warning.js`, the dialog helper module from [Loading the SDK from a CDN](#loading-the-sdk-from-a-cdn), and import `showMultithreadingWarning` from it. The helper adds the dialog to the page itself, so the page needs no markup for it.
 
-The code example below is a basic TypeScript v8 implementation. `showMultithreadingWarning()` and its dialog come from the plain-HTML set-up in [Loading the SDK from a CDN](#loading-the-sdk-from-a-cdn). Define the helper in the same module as this example, or import it from the module that defines it: otherwise the `false` path throws a ReferenceError and aborts set-up.
+The code example below is a basic TypeScript v8 implementation. It starts the multithreading check in parallel with `forLicenseKey()`: import `showMultithreadingWarning` from `multithreading-warning.js`, the dialog helper module in [Loading the SDK from a CDN](#loading-the-sdk-from-a-cdn), which adds the dialog to the page itself, so the page needs no markup for it.
 If the user is using React, use the React get-started guide and SparkScanReactSample instead (see References).
 
 > **Mount point requirement:** The SparkScan view needs a container with a resolved, non-zero width and height. If the container has zero or unresolved dimensions, the SparkScan UI will not display. The container's `position` does not matter to SparkScan itself — `<spark-scan-view>` sets `position: relative` on itself internally (that's what its trigger button and mini preview actually position against), independent of whatever `position` its parent has. A plain, normal-flow (`position: static`, i.e. no `position` at all) block-level container with a real height works fine; you don't need `position: fixed`/`absolute`/`relative` on the container unless you specifically want it to float over the rest of the page (see below) rather than take up its own space in your layout. The container also does not have to cover the full viewport — SparkScan sizes itself from its own parent element, so scoping it to part of the page works too (see "Scoping to part of the page" below).
@@ -91,12 +91,16 @@ import {
   Symbology,
 } from "@scandit/web-datacapture-barcode";
 import { BrowserHelper, DataCaptureContext } from "@scandit/web-datacapture-core";
+import { showMultithreadingWarning } from "./multithreading-warning.js";
 
 async function run() {
-    const multithreadingSupported = await BrowserHelper.checkMultithreadingSupport();
-    if (!multithreadingSupported) {
-        showMultithreadingWarning();
-    }
+    BrowserHelper.checkMultithreadingSupport()
+        .then((supported) => {
+            if (!supported) {
+                showMultithreadingWarning();
+            }
+        })
+        .catch(console.error);
 
     await DataCaptureContext.forLicenseKey(
         "-- ENTER YOUR SCANDIT LICENSE KEY HERE --",

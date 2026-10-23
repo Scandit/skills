@@ -41,11 +41,15 @@ export function ScanditProvider({ children }: { children: ReactNode }) {
     useEffect(() => {
         let cancelled = false;
         async function initialize() {
-            const multithreadingSupported = await BrowserHelper.checkMultithreadingSupport();
-            if (!multithreadingSupported && !multithreadingWarningShown && !isMultithreadingWarningDismissed()) {
-                multithreadingWarningShown = true;
-                setMultithreadingUnavailable(true);
-            }
+            BrowserHelper.checkMultithreadingSupport()
+                .then((multithreadingSupported) => {
+                    if (cancelled) return;
+                    if (!multithreadingSupported && !multithreadingWarningShown && !isMultithreadingWarningDismissed()) {
+                        multithreadingWarningShown = true;
+                        setMultithreadingUnavailable(true);
+                    }
+                })
+                .catch(console.error);
 
             // forLicenseKey is cached internally by the SDK — the StrictMode dev double-invoke
             // resolves to the same initialization rather than starting a second one. The resolved
