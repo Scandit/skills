@@ -74,7 +74,14 @@ users until a new version is reviewed and published. Each update is:
    `scandit-sdk` (`plugin_name_mismatch` blocks the upload otherwise).
 2. `internal/release/build_openai_bundle.py --ref v1.2.0`.
 3. Install the ZIP locally and run the submission test cases against that exact
-   tree, not against a working checkout.
+   tree, not against a working checkout. The cases ship in the ZIP under
+   `extensions.com.openai.review.test_cases` in `.codex-plugin/plugin.json`
+   (exactly five positive and three negative; the portal rejects any other
+   count, and the builder enforces it). Imported cases are read-only in the
+   portal, so edit the manifest and re-upload to change them. Reviewer
+   credentials go in the portal's Review details, never in the ZIP; the
+   walkthrough video URL may go in either place. Tags before `v1.1.7` carry no
+   cases, so rebuilding one of them needs the builder from that tag.
 4. In the portal, create a new draft version of the existing plugin, upload the
    ZIP, write release notes describing what changed, and submit for review.
 5. Publish the approved version. It replaces the previous one.

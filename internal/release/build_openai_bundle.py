@@ -308,6 +308,62 @@ def check_mcp(root: Path, manifest: dict) -> None:
         error("mcp_server_not_remote_https", f"MCP server {name!r} must be type http with an HTTPS url")
 
 
+REVIEW_CASE_FIELDS = {"description", "prompt", "tools_triggered", "expected_behavior",
+                      "file_attachment_urls", "expected_output_url"}
+
+
+def check_review(manifest: dict) -> None:
+    # MCP review needs five positive and three negative cases in the ZIP
+    # (extensions.com.openai.review.test_cases); the portal refuses to submit without them.
+    # Reviewer credentials and instructions are rejected from the ZIP and go in the portal form.
+    extensions = manifest.get("extensions")
+    openai = extensions.get("com.openai") if isinstance(extensions, dict) else None
+    review = openai.get("review") if isinstance(openai, dict) else None
+    if not isinstance(review, dict):
+        error("review_test_cases_missing", "extensions.com.openai.review.test_cases is required for an MCP plugin")
+        return
+    for key in ("test_credentials", "reviewer_instructions"):
+        if key in review:
+            error("review_field_not_allowed", f"review.{key} is rejected from the ZIP; enter it in the portal's Review details")
+    cases = review.get("test_cases")
+    if not isinstance(cases, dict):
+        error("review_test_cases_missing", "review.test_cases must be an object with positive and negative lists")
+        return
+    for kind, need in (("positive", 5), ("negative", 3)):
+        items = cases.get(kind)
+        # The portal wants exactly five and three; a sixth case is a rejection, not a bonus.
+        if not isinstance(items, list) or len(items) != need:
+            got = len(items) if isinstance(items, list) else 0
+            error(f"review_{kind}_test_case_count", f"review.test_cases.{kind}: need exactly {need}, got {got}")
+            continue
+        required = ("description", "prompt") + (("tools_triggered", "expected_behavior") if kind == "positive" else ())
+        for i, case in enumerate(items):
+            if not isinstance(case, dict):
+                error("review_test_case_malformed", f"review.test_cases.{kind}[{i}] must be an object")
+                continue
+            missing = [f for f in required if not isinstance(case.get(f), str) or not case[f].strip()]
+            unknown = sorted(set(case) - REVIEW_CASE_FIELDS)
+            if missing:
+                error("review_test_case_field_missing", f"review.test_cases.{kind}[{i}] missing {', '.join(missing)}")
+            if unknown:
+                error("review_test_case_field_unknown", f"review.test_cases.{kind}[{i}] has unknown field(s) {', '.join(unknown)}")
+            where = f"review.test_cases.{kind}[{i}]"
+            if isinstance(case.get("description"), str):
+                check_len(case["description"], 4000, "review_test_case_description_too_long", f"{where}.description")
+            urls = case.get("file_attachment_urls")
+            if urls is not None and (not isinstance(urls, list) or not all(is_https_url(u) for u in urls)):
+                error("review_test_case_attachment_invalid", f"{where}.file_attachment_urls must be a list of HTTPS URLs")
+            output_url = case.get("expected_output_url")
+            if output_url is not None and not is_https_url(output_url):
+                error("review_test_case_output_url_invalid", f"{where}.expected_output_url must be an HTTPS URL")
+    demo = review.get("demo_recording_url")
+    if demo is None:
+        warn("review_demo_recording_missing",
+             "review.demo_recording_url is not set; MCP review requires a reviewer-accessible walkthrough video (set it here or in the portal)")
+    elif not is_https_url(demo):
+        error("review_demo_recording_url_invalid", "review.demo_recording_url must be an HTTPS URL")
+
+
 def check_manifest(root: Path) -> dict:
     path = root / MANIFEST
     if not path.is_file():
@@ -731,6 +787,8 @@ def main() -> int:
         removed = strip_tree(stage)
 
         manifest = check_manifest(stage)
+        if manifest:
+            check_review(manifest)
         skill_count = check_skills(stage, manifest.get("name", ""), manifest.get("license", ""))
         entries, uncompressed = check_paths(stage)
 
