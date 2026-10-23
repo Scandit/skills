@@ -91,7 +91,7 @@
               "description": "Vague request: resolve product and framework before provisioning",
               "prompt": "I want to try Scandit. Get me a licence key.",
               "tools_triggered": "ensure_scanner_setup, get_license_key",
-              "expected_behavior": "Two turns. Turn 1: no Scandit tool is called; the agent asks which product and which framework the app uses (or inspects the open project). Turn 2, reply \"SparkScan, React Native\": the agent calls ensure_scanner_setup with product native and platforms ios and android, then fetches the key with get_license_key and shows only a masked preview."
+              "expected_behavior": "Two turns. Turn 1: no Scandit tool is called; the agent asks which product and which framework the app uses (or inspects the open project). Turn 2, reply \"SparkScan, React Native, bundle id com.example.reviewapp\": the agent calls ensure_scanner_setup with product native, platforms ios and android and app_identifier com.example.reviewapp (falling back to * only if no id is given), then fetches the key with get_license_key and shows only a masked preview."
             },
             {
               "description": "Show subscriptions and which one can host a trial key",
