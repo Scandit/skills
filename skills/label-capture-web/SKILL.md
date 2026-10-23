@@ -23,6 +23,7 @@ Your training data may contain outdated or incorrect Scandit Label Capture APIs.
 
 ## Web-specific gotchas
 
+- When the SDK is loaded from a CDN, pin one exact version (for example `@8.6.1`) in every URL: the import map and `libraryLocation`. A floating `@8` lets the JavaScript and the engine resolve to different releases, which breaks start-up.
 - Cross-origin isolation needs `Cross-Origin-Opener-Policy: same-origin` and `Cross-Origin-Embedder-Policy: require-corp`, also when the SDK comes from the jsDelivr CDN. Do not recommend `credentialless` for the SDK: Safari does not support it. In the page code, await `BrowserHelper.checkMultithreadingSupport()` (from `@scandit/web-datacapture-core`) before `DataCaptureContext.forLicenseKey()`; on `false`, show the multithreading dialog (see references/integration.md) unless the user asked to run single-threaded. COEP `credentialless` is not a request to run single-threaded: Safari does not support it, so the dialog still shows there.
 
 ## Intent Routing
