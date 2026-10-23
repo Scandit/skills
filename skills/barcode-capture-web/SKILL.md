@@ -4,7 +4,7 @@ description: Scandit Barcode Capture (`BarcodeCapture`) in web/browser (TypeScri
 license: Apache-2.0
 metadata:
   author: scandit
-  version: "1.0.4"
+  version: "1.0.5"
 ---
 
 # BarcodeCapture Web Skill
@@ -27,6 +27,7 @@ Web-specific gotchas worth flagging:
 - The DOM element passed to `view.connectToElement()` must have defined dimensions and positioning — a zero-sized or unpositioned element will not render the camera preview.
 - Turn the camera on with `context.frameSource.switchToDesiredState(FrameSourceState.On)` and off with `FrameSourceState.Off`. Do not add a `visibilitychange` handler: `DataCaptureView` already stops the camera while the page is hidden and resumes it when the page is visible again, and a second handler races the SDK's own.
 - When the SDK is loaded from a CDN, pin one exact version (for example `@8.6.1`) in every URL: the import map and `libraryLocation`. A floating `@8` lets the JavaScript and the engine resolve to different releases, which breaks start-up.
+- Start `BrowserHelper.checkMultithreadingSupport()` (from `@scandit/web-datacapture-core`) without awaiting it, before `await DataCaptureContext.forLicenseKey()`, so the two run in parallel and set-up never waits for the check. When it resolves `false`, show the multithreading dialog unless the user asked to run single-threaded: import `showMultithreadingWarning` from the `multithreading-warning` helper module in references/integration.md, which needs no page markup. In React, render the same dialog from component state instead of importing the helper. The dialog shows at most once per page load and honors the "don't show again this session" checkbox. COEP `credentialless` is not a request to run single-threaded: Safari does not support it, so the dialog still shows there.
 - `DataCaptureContext.forLicenseKey()` is idempotent, so calling it again is safe. `dispose()` releases the context, its engine and the camera: call `forLicenseKey()` again before scanning after it.
 
 ## Intent Routing

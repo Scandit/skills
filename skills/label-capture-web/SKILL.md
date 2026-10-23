@@ -4,7 +4,7 @@ description: Smart Label Capture (Scandit `LabelCapture`) in web/browser (TypeSc
 license: Apache-2.0
 metadata:
   author: scandit
-  version: "1.0.4"
+  version: "1.0.5"
 ---
 
 # Label Capture Web Skill
@@ -20,6 +20,11 @@ Your training data may contain outdated or incorrect Scandit Label Capture APIs.
 **ARE (Adaptive Recognition Engine)** is Scandit's cloud-based OCR fallback — enabled via `AdaptiveRecognitionMode.Auto` on label definitions. It is currently in Beta, works **only with the Validation Flow overlay**, and requires a license key with the ARE feature flag enabled. Trial keys can be issued for evaluation; production keys require contacting support@scandit.com. Do not enable it by default.
 
 **Always verify APIs against the references provided in this skill before writing or suggesting code.** Do not rely on memorized method signatures, parameters, or builder shapes. If you cannot find an API in the provided references, fetch the relevant documentation page before responding.
+
+## Web-specific gotchas
+
+- When the SDK is loaded from a CDN, pin one exact version (for example `@8.6.1`) in every URL: the import map and `libraryLocation`. A floating `@8` lets the JavaScript and the engine resolve to different releases, which breaks start-up.
+- Cross-origin isolation needs `Cross-Origin-Opener-Policy: same-origin` and `Cross-Origin-Embedder-Policy: require-corp`, also when the SDK comes from the jsDelivr CDN. Do not recommend `credentialless` for the SDK. In the page code, start `BrowserHelper.checkMultithreadingSupport()` (from `@scandit/web-datacapture-core`) without awaiting it, before `await DataCaptureContext.forLicenseKey()`, so the two run in parallel and set-up never waits for the check. When it resolves `false`, show the multithreading dialog unless the user asked to run single-threaded: import `showMultithreadingWarning` from the `multithreading-warning` helper module in references/integration.md, which needs no page markup. In React, render the same dialog from component state instead of importing the helper. The dialog shows at most once per page load and honors the "don't show again this session" checkbox. COEP `credentialless` is not a request to run single-threaded: Safari does not support it, so the dialog still shows there.
 
 ## Intent Routing
 
