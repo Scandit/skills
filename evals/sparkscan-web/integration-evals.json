@@ -599,7 +599,7 @@
           "text": "Every jsDelivr URL for an @scandit package (import map and libraryLocation) pins one exact version such as @8.6.1, never a floating @8 major (semantic)"
         },
         {
-          "text": "No `ScanditDataCapture*` or other invented global is used; the SDK is loaded through an import map, or through the SDCCore/SDCBarcode/SDCLabel/SDCId UMD globals (semantic)"
+          "text": "No `ScanditDataCapture*` or other invented global is used; the SDK is loaded through an import map, or through the SDCCore/SDCBarcode/SDCLabel/SDCId/SDCParser UMD globals (semantic)"
         },
         {
           "text": "The recommended server sends Cross-Origin-Opener-Policy: same-origin and Cross-Origin-Embedder-Policy: require-corp: `serve.json` with `npx serve` or `pnpm dlx serve`, or a Python server that sets both; plain `python3 -m http.server` alone is not presented as enough (semantic)"
@@ -626,7 +626,7 @@
       "files": ["fixtures/empty-app.ts"],
       "assertions": [
         {
-          "text": "No `ScanditDataCapture*` or other invented global is used; the SDK is loaded through an import map, or through the SDCCore/SDCBarcode/SDCLabel/SDCId UMD globals (semantic)"
+          "text": "No `ScanditDataCapture*` or other invented global is used; the SDK is loaded through an import map, or through the SDCCore/SDCBarcode/SDCLabel/SDCId/SDCParser UMD globals (semantic)"
         },
         {
           "text": "The self-hosted `@scandit` packages are all installed at the same version, and `libraryLocation` points at the self-hosted copy of that same version (semantic)"

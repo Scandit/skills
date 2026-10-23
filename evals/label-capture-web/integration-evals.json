@@ -156,7 +156,7 @@
       "files": ["fixtures/empty-app.ts"],
       "assertions": [
         {
-          "text": "No `ScanditDataCapture*` or other invented global is used; the SDK is loaded through an import map, or through the SDCCore/SDCBarcode/SDCLabel/SDCId UMD globals (semantic)"
+          "text": "No `ScanditDataCapture*` or other invented global is used; the SDK is loaded through an import map, or through the SDCCore/SDCBarcode/SDCLabel/SDCId/SDCParser UMD globals (semantic)"
         },
         {
           "text": "Every `@scandit` CDN URL and `libraryLocation` pins one exact version such as @8.6.1, never a floating @8 major (semantic)"
