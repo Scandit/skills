@@ -76,10 +76,12 @@ users until a new version is reviewed and published. Each update is:
 3. Install the ZIP locally and run the submission test cases against that exact
    tree, not against a working checkout. The cases ship in the ZIP under
    `extensions.com.openai.review.test_cases` in `.codex-plugin/plugin.json`
-   (five positive, three negative; the builder fails without them). Imported
-   cases are read-only in the portal, so edit the manifest and re-upload to
-   change them. Reviewer credentials and the walkthrough video URL go in the
-   portal's Review details, never in the ZIP.
+   (exactly five positive and three negative; the portal rejects any other
+   count, and the builder enforces it). Imported cases are read-only in the
+   portal, so edit the manifest and re-upload to change them. Reviewer
+   credentials go in the portal's Review details, never in the ZIP; the
+   walkthrough video URL may go in either place. Tags before `v1.1.7` carry no
+   cases, so rebuilding one of them needs the builder from that tag.
 4. In the portal, create a new draft version of the existing plugin, upload the
    ZIP, write release notes describing what changed, and submit for review.
 5. Publish the approved version. It replaces the previous one.

@@ -90,8 +90,8 @@
             {
               "description": "Vague request: resolve product and framework before provisioning",
               "prompt": "I want to try Scandit. Get me a licence key.",
-              "tools_triggered": "ensure_scanner_setup",
-              "expected_behavior": "Does not call any Scandit tool first. Asks which product and which framework the app uses, or inspects the open project to find out. Only then calls ensure_scanner_setup with the matching product and platforms."
+              "tools_triggered": "ensure_scanner_setup, get_license_key",
+              "expected_behavior": "Two turns. Turn 1: no Scandit tool is called; the agent asks which product and which framework the app uses (or inspects the open project). Turn 2, reply \"SparkScan, React Native\": the agent calls ensure_scanner_setup with product native and platforms ios and android, then fetches the key with get_license_key and shows only a masked preview."
             },
             {
               "description": "Show subscriptions and which one can host a trial key",
@@ -102,15 +102,15 @@
           ],
           "negative": [
             {
-              "description": "Barcode generation, not scanning: Scandit reads codes and does not create them",
+              "description": "Barcode generation, not scanning: Scandit reads codes and does not create them. Expected: the agent answers with a QR-generation library or service, loads no Scandit skill and calls no Scandit tool.",
               "prompt": "Add a QR code generator to my checkout page so each order shows a scannable QR code for pickup."
             },
             {
-              "description": "General document OCR with a third-party engine, no Scandit SDK involved",
+              "description": "General document OCR with a third-party engine, no Scandit SDK involved. Expected: the agent writes the Tesseract script, loads no Scandit skill and calls no Scandit tool.",
               "prompt": "I have a folder of scanned PDF invoices. Write a Python script that extracts the text and totals from them with Tesseract."
             },
             {
-              "description": "Label printing with ZPL on a Zebra printer, no scanning and no SDK",
+              "description": "Label printing with ZPL on a Zebra printer, no scanning and no SDK. Expected: the agent answers with plain ZPL and a print command, loads no Scandit skill and calls no Scandit tool.",
               "prompt": "Write the ZPL for a 4x6 shipping label with a Code 128 tracking barcode and send it to my Zebra ZT411 over the network."
             }
           ]
