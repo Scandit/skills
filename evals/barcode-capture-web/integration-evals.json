@@ -524,7 +524,7 @@
     },
     {
       "id": 15,
-      "prompt": "I'm adding BarcodeCapture to a page that has no bundler, so I want to load the Scandit SDK from the jsDelivr CDN. Users switch browser tabs a lot, so the camera must not keep running while the tab is in the background. I also need a stopScanning() that fully tears the scanner down when the user closes the scanner panel, and scanning must be able to start again afterwards. Scan EAN-13 and Code 128. File: empty-app.ts.",
+      "prompt": "I'm adding BarcodeCapture to a page that has no bundler, so I want to load the Scandit SDK from the jsDelivr CDN and tell me which headers my static server needs. Users switch browser tabs a lot, so the camera must not keep running while the tab is in the background. I also need a stopScanning() that fully tears the scanner down when the user closes the scanner panel, and scanning must be able to start again afterwards. Scan EAN-13 and Code 128. File: empty-app.ts.",
       "expected_output": "Integration code that loads @scandit/* from jsDelivr with one exact version pinned in the import map and in libraryLocation, no visibilitychange handler (DataCaptureView already stops the camera while the page is hidden), a named listener constant that is added and removed, teardown through DataCaptureContext.sharedInstance.dispose() and view.detachFromElement(), and a restart that calls DataCaptureContext.forLicenseKey again. The server sends COOP same-origin and COEP require-corp, the licence key is written into forLicenseKey, and await BrowserHelper.checkMultithreadingSupport() runs before it with a once-per-page-load dialog that never blocks set-up.",
       "files": ["fixtures/empty-app.ts"],
       "assertions": [
@@ -556,7 +556,10 @@
           "text": "`await BrowserHelper.checkMultithreadingSupport()` runs before `DataCaptureContext.forLicenseKey(` (semantic)"
         },
         {
-          "text": "When multithreading is unavailable, a dialog shows with a link to the multithreading docs and a don't-show-again-this-session checkbox; it shows at most once per page load, so a restart does not reopen it, and it does not stop set-up (semantic)"
+          "text": "When multithreading is unavailable, a dialog shows with a link to https://docs.scandit.com/sdks/web/matrixscan/get-started/#improve-runtime-performance-by-enabling-browser-multithreading and a don't-show-again-this-session checkbox (semantic)"
+        },
+        {
+          "text": "A module-level flag (or equivalent page-level state) ensures the dialog shows at most once per page load, so stopping and restarting scanning does not reopen it, and it does not stop or delay set-up (semantic)"
         }
       ],
       "tags": ["lifecycle", "no-bundler"]

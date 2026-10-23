@@ -211,7 +211,10 @@
           "text": "`await BrowserHelper.checkMultithreadingSupport()` runs before `DataCaptureContext.forLicenseKey(` (semantic)"
         },
         {
-          "text": "When multithreading is unavailable, a dialog shows with a link to the multithreading docs and a don't-show-again-this-session checkbox; it shows at most once per page load, so a restart does not reopen it, and it does not stop set-up (semantic)"
+          "text": "When multithreading is unavailable, a dialog shows with a link to https://docs.scandit.com/sdks/web/matrixscan/get-started/#improve-runtime-performance-by-enabling-browser-multithreading and a don't-show-again-this-session checkbox (semantic)"
+        },
+        {
+          "text": "A module-level flag (or equivalent page-level state) ensures the dialog shows at most once per page load, and it does not stop or delay set-up (semantic)"
         }
       ],
       "tags": ["view-lifecycle", "no-bundler"]
