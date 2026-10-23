@@ -321,7 +321,7 @@
           "text": "Starting again after teardown calls DataCaptureContext.forLicenseKey( again (semantic)"
         },
         {
-          "text": "`await BrowserHelper.checkMultithreadingSupport()` runs before `DataCaptureContext.forLicenseKey(` (semantic)"
+          "text": "`BrowserHelper.checkMultithreadingSupport()` is started no later than `DataCaptureContext.forLicenseKey(` and set-up does not wait for it; when it resolves false the dialog is shown (semantic)"
         },
         {
           "text": "No `ScanditDataCapture*` or other invented global is used; the SDK is loaded through an import map, or through the SDCCore/SDCBarcode/SDCLabel/SDCId/SDCParser UMD globals (semantic)"

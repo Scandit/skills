@@ -608,7 +608,7 @@
           "text": "The license key is written into the page's `DataCaptureContext.forLicenseKey(` call, not read from `.env` or the environment (semantic)"
         },
         {
-          "text": "`await BrowserHelper.checkMultithreadingSupport()` runs before `DataCaptureContext.forLicenseKey(` (semantic)"
+          "text": "`BrowserHelper.checkMultithreadingSupport()` is started no later than `DataCaptureContext.forLicenseKey(` and set-up does not wait for it; when it resolves false the dialog is shown (semantic)"
         },
         {
           "text": "When multithreading is unavailable, a dialog shows with a link to https://docs.scandit.com/sdks/web/matrixscan/get-started/#improve-runtime-performance-by-enabling-browser-multithreading and a don't-show-again-this-session checkbox (semantic)"

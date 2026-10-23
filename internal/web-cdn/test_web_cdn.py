@@ -549,6 +549,31 @@ class SkillContentTest(unittest.TestCase):
             self.assertTrue(inside_try(react, index), "sessionStorage access outside try")
 
 
+PARALLEL_CHECK_ASSERTION = (
+    "`BrowserHelper.checkMultithreadingSupport()` is started no later than `DataCaptureContext.forLicenseKey(` "
+    "and set-up does not wait for it; when it resolves false the dialog is shown (semantic)"
+)
+
+
+def eval_assertions(skill):
+    path = ROOT / "evals" / skill / "integration-evals.json"
+    return [assertion["text"] for case in json.loads(path.read_text())["evals"] for assertion in case["assertions"]]
+
+
+class EvalTest(unittest.TestCase):
+    def test_eval_assertions_do_not_require_awaiting_the_check(self):
+        for path in sorted(ROOT.glob("evals/*-web/integration-evals.json")):
+            for text in eval_assertions(path.parent.name):
+                self.assertIsNone(AWAITED_CHECK.search(text), f"{path.relative_to(ROOT)}: {text}")
+
+    def test_evals_assert_the_parallel_check(self):
+        for skill in ("barcode-capture-web", "matrixscan-batch-web", "matrixscan-ar-web", "sparkscan-web", "label-capture-web"):
+            self.assertIn(PARALLEL_CHECK_ASSERTION, eval_assertions(skill), skill)
+
+    def test_id_capture_web_eval_still_rules_the_check_out(self):
+        self.assertIn("`BrowserHelper.checkMultithreadingSupport` is NOT used (semantic)", eval_assertions("id-capture-web"))
+
+
 REACT_DIALOGS = (
     "skills/barcode-capture-web/references/integration.md",
     "skills/matrixscan-batch-web/references/integration.md",
