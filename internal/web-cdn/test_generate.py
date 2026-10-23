@@ -231,5 +231,39 @@ class PinTest(unittest.TestCase):
         self.assertEqual(generate.rewrite_pins(text, "9.0.0"), text)
 
 
+GENERATED_BLOCK = re.compile(r"<!-- BEGIN GENERATED web-cdn (.*?) -->.*?<!-- END GENERATED web-cdn -->", re.S)
+MULTITHREADING_CHECK = "checkMultithreadingSupport()"
+
+
+def examples_outside_block(text):
+    outside = GENERATED_BLOCK.sub("", text)
+    blocks = re.findall(r"```(?:typescript|tsx)\n(.*?)```", outside, re.S)
+    return [block for block in blocks if "forLicenseKey(" in block]
+
+
+class SkillContentTest(unittest.TestCase):
+    def assert_skill(self, skill, packages, reference="references/integration.md"):
+        skill_dir = ROOT / "skills" / skill
+        reference_text = (skill_dir / reference).read_text()
+        blocks = GENERATED_BLOCK.findall(reference_text)
+        self.assertEqual(len(blocks), 1, f"{skill}: expected one generated block")
+        self.assertIn(f"packages={packages}", blocks[0])
+        rule = next(
+            (line for line in (skill_dir / "SKILL.md").read_text().splitlines() if MULTITHREADING_CHECK in line),
+            "",
+        )
+        self.assertIn("forLicenseKey(", rule, f"{skill}: SKILL.md has no multithreading rule")
+        self.assertLess(rule.index(MULTITHREADING_CHECK), rule.index("forLicenseKey("))
+        self.assertIn("credentialless", rule)
+        examples = examples_outside_block(reference_text)
+        self.assertTrue(examples, f"{skill}: no complete example found")
+        for example in examples:
+            self.assertIn(MULTITHREADING_CHECK, example)
+            self.assertLess(example.index(MULTITHREADING_CHECK), example.index("forLicenseKey("))
+
+    def test_barcode_capture_web(self):
+        self.assert_skill("barcode-capture-web", "core,barcode")
+
+
 if __name__ == "__main__":
     unittest.main()
