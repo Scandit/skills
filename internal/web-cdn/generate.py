@@ -86,6 +86,9 @@ def placeholders(listed: list[dict], engine: dict, config: dict) -> dict[str, st
         "engine_npm": engine["npm"],
         "engine_loader": engine["loader"],
         "umd_scripts": "\n".join(f'<script src="{url}/build/js/umd/index.js"></script>' for url in base.values()),
+        "umd_all_globals": ", ".join(f"`{pkg['global']}`" for pkg in config["packages"].values()),
+        "umd_parser_npm": config["packages"]["parser"]["npm"],
+        "umd_parser_global": config["packages"]["parser"]["global"],
         "umd_globals": "\n".join(
             f"- `{pkg['npm']}/build/js/umd/index.js` exposes exactly one global, `{pkg['global']}`." for pkg in listed
         ),

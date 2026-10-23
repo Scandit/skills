@@ -122,12 +122,28 @@ class BlockTest(unittest.TestCase):
         self.assertIn("@scandit/web-datacapture-barcode@8.6.1/build/js/index.js", text)
         self.assertNotIn("web-datacapture-id", text)
 
-    def test_umd_names_only_the_listed_globals(self):
+    def test_umd_loads_only_the_listed_packages(self):
         text = "\n".join(generate.block({"packages": "core,id", "engine": "id", "multithreading": "no"}, CONFIG_AT_8_6_1))
-        self.assertIn("SDCCore", text)
-        self.assertIn("SDCId", text)
-        self.assertNotIn("SDCBarcode", text)
-        self.assertNotIn("SDCLabel", text)
+        per_skill = [line for line in text.splitlines() if "exposes exactly one global" in line]
+        self.assertEqual(len(per_skill), 2)
+        self.assertIn("SDCCore", per_skill[0])
+        self.assertIn("SDCId", per_skill[1])
+        scripts = re.findall(r'<script src="[^"]*umd/index.js"', text)
+        self.assertEqual(len(scripts), 2)
+        self.assertNotIn("web-datacapture-parser@", text)
+
+    def test_umd_documents_all_five_globals(self):
+        text = rendered()
+        for name in ("SDCCore", "SDCBarcode", "SDCLabel", "SDCId", "SDCParser"):
+            self.assertIn(f"`{name}`", text)
+        self.assertEqual(
+            {pkg["global"] for pkg in CONFIG["packages"].values()},
+            {"SDCCore", "SDCBarcode", "SDCLabel", "SDCId", "SDCParser"},
+        )
+
+    def test_parser_is_not_an_engine(self):
+        with self.assertRaises(ValueError):
+            generate.block({"packages": "core,barcode,parser", "engine": "parser"}, CONFIG_AT_8_6_1)
 
     def test_multithreading_no_omits_check_and_dialog(self):
         text = rendered(multithreading="no")

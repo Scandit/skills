@@ -12,6 +12,7 @@
     "core": { "npm": "@scandit/web-datacapture-core", "global": "SDCCore" },
     "barcode": { "npm": "@scandit/web-datacapture-barcode", "global": "SDCBarcode", "loader": "barcodeCaptureLoader" },
     "label": { "npm": "@scandit/web-datacapture-label", "global": "SDCLabel", "loader": "labelCaptureLoader" },
-    "id": { "npm": "@scandit/web-datacapture-id", "global": "SDCId", "loader": "idCaptureLoader" }
+    "id": { "npm": "@scandit/web-datacapture-id", "global": "SDCId", "loader": "idCaptureLoader" },
+    "parser": { "npm": "@scandit/web-datacapture-parser", "global": "SDCParser" }
   }
 }
