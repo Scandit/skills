@@ -273,6 +273,11 @@ class SkillContentTest(unittest.TestCase):
     def test_sparkscan_web(self):
         self.assert_skill("sparkscan-web", "core,barcode")
 
+    def test_label_capture_web(self):
+        self.assert_skill("label-capture-web", "core,barcode,label")
+        text = (ROOT / "skills/label-capture-web/references/integration.md").read_text()
+        self.assertIn("engine=label", GENERATED_BLOCK.search(text).group(1))
+
     def test_sparkscan_web_has_no_console_warn_for_multithreading(self):
         text = (ROOT / "skills/sparkscan-web/references/integration.md").read_text()
         self.assertNotIn("console.warn", text)

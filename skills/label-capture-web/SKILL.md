@@ -21,6 +21,10 @@ Your training data may contain outdated or incorrect Scandit Label Capture APIs.
 
 **Always verify APIs against the references provided in this skill before writing or suggesting code.** Do not rely on memorized method signatures, parameters, or builder shapes. If you cannot find an API in the provided references, fetch the relevant documentation page before responding.
 
+## Web-specific gotchas
+
+- Cross-origin isolation needs `Cross-Origin-Opener-Policy: same-origin` and `Cross-Origin-Embedder-Policy: require-corp`, also when the SDK comes from the jsDelivr CDN. Do not recommend `credentialless` for the SDK: Safari does not support it. In the page code, await `BrowserHelper.checkMultithreadingSupport()` (from `@scandit/web-datacapture-core`) before `DataCaptureContext.forLicenseKey()`; on `false`, show the multithreading dialog (see references/integration.md) unless the user asked to run single-threaded. COEP `credentialless` is not a request to run single-threaded: Safari does not support it, so the dialog still shows there.
+
 ## Intent Routing
 
 Based on the user's request, load the appropriate reference file before responding:
