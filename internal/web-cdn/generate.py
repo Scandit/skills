@@ -18,8 +18,11 @@ The BEGIN marker's indentation is applied to every generated line.
 
 Outside the blocks, every `@scandit/web-datacapture-*@x.y.z` URL and every
 backticked `@x.y.z` example in the .md files under skills/*-web is rewritten to
-`sdk_version`, and --check verifies the same. Floating-major examples such as
-`@8`, caret ranges and non-Markdown files are not covered.
+`sdk_version`, and --check verifies the same. The migration guides,
+references/migration.md and references/third-party-migration.md, quote older
+versions on purpose, so their pins are left alone (generated blocks in them are
+still rendered). Floating-major examples such as `@8`, caret ranges and
+non-Markdown files are not covered.
 """
 
 from __future__ import annotations
@@ -37,6 +40,7 @@ FRAGMENTS = HERE / "fragments"
 FRAGMENT_ORDER = ("cdn-warning", "import-map", "headers", "serving", "multithreading", "umd")
 OPTIONS = ("packages", "engine", "multithreading")
 SKILL_GLOB = "skills/*-web/**/*.md"
+MIGRATION_GUIDES = ("migration.md", "third-party-migration.md")
 JSDELIVR = "https://cdn.jsdelivr.net/npm"
 
 BEGIN = re.compile(r"^(?P<indent>[ \t]*)<!-- BEGIN GENERATED web-cdn (?P<args>[^>]*?) -->$", re.M)
@@ -48,6 +52,10 @@ EXAMPLE_PIN = re.compile(r"`@\d+\.\d+\.\d+`")
 
 def skill_files(root: Path) -> list[Path]:
     return sorted(root.glob(SKILL_GLOB))
+
+
+def rewrites_pins(path: Path) -> bool:
+    return not (path.parent.name == "references" and path.name in MIGRATION_GUIDES)
 
 
 def fill(template: str, values: dict[str, str]) -> str:
@@ -122,7 +130,7 @@ def rewrite_pins(text: str, version: str) -> str:
     return EXAMPLE_PIN.sub(f"`@{version}`", text)
 
 
-def render(text: str, config: dict) -> str:
+def render(text: str, config: dict, pins: bool = True) -> str:
     out, pos, blocks = [], 0, 0
     for begin in BEGIN.finditer(text):
         if begin.start() < pos:
@@ -138,7 +146,8 @@ def render(text: str, config: dict) -> str:
     if text.count("GENERATED web-cdn") != 2 * blocks:
         raise ValueError("malformed or unpaired web-cdn marker")
     out.append(text[pos:])
-    return rewrite_pins("".join(out), config["sdk_version"])
+    rendered = "".join(out)
+    return rewrite_pins(rendered, config["sdk_version"]) if pins else rendered
 
 
 def main() -> int:
@@ -153,7 +162,7 @@ def main() -> int:
     for path in skill_files(opts.root):
         text = path.read_text()
         try:
-            new = render(text, config)
+            new = render(text, config, pins=rewrites_pins(path))
         except (ValueError, KeyError) as error:
             sys.exit(f"{path.relative_to(opts.root)}: {error}")
         if new == text:

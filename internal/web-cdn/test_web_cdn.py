@@ -79,7 +79,7 @@ class CheckTest(unittest.TestCase):
         feature_note = f"- `SmartSelection` (v{old}+)\n"
         noted = tmp / "skills/barcode-capture-web/references/integration.md"
         noted.write_text(noted.read_text() + feature_note)
-        pinned = [p for p in generate.skill_files(tmp) if pinned_versions(p.read_text())]
+        pinned = [p for p in generate.skill_files(tmp) if generate.rewrites_pins(p) and pinned_versions(p.read_text())]
         self.assertTrue(pinned)
         self.assertIn(noted, pinned)
         config = tmp / "cdn.json"
@@ -93,6 +93,25 @@ class CheckTest(unittest.TestCase):
             self.assertEqual(pinned_versions(path.read_text()), {"9.9.9"}, path)
         self.assertTrue(noted.read_text().endswith(feature_note))
         self.assertEqual(run("--check", "--root", str(tmp), "--config", str(config)).returncode, 0)
+
+    def test_migration_guides_keep_the_versions_they_quote(self):
+        tmp = tempdir(self)
+        quoted = "npm install @scandit/web-datacapture-core@7.6.0, for example `@7.6.0`\n"
+        references = tmp / "skills/foo-web/references"
+        references.mkdir(parents=True)
+        guides = [references / "migration.md", references / "third-party-migration.md"]
+        integration = references / "integration.md"
+        for path in (*guides, integration):
+            path.write_text(quoted)
+
+        result = run("--root", str(tmp))
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+        for guide in guides:
+            self.assertEqual(guide.read_text(), quoted, guide.name)
+        self.assertEqual(pinned_versions(integration.read_text()), {CONFIG["sdk_version"]})
+        result = run("--check", "--root", str(tmp))
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
     def test_unknown_package_fails(self):
         tmp = tempdir(self)
