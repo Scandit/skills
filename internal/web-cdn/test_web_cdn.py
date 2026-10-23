@@ -35,8 +35,19 @@ def rendered(**args):
     return "\n".join(generate.block({"packages": "core,barcode", "engine": "barcode", **args}, CONFIG_AT_8_6_1))
 
 
-def typescript(text):
-    return re.search(r"```typescript\n(.*?)```", text, re.S)[1]
+def typescript(text, containing):
+    blocks = [block for block in re.findall(r"```typescript\n(.*?)```", text, re.S) if containing in block]
+    if len(blocks) != 1:
+        raise AssertionError(f"expected one typescript block containing {containing!r}, found {len(blocks)}")
+    return blocks[0]
+
+
+def dialog_helper(text):
+    return typescript(text, "export function showMultithreadingWarning")
+
+
+def check_start(text):
+    return typescript(text, "forLicenseKey(")
 
 
 def inside_try(code, index):
@@ -173,6 +184,7 @@ class BlockTest(unittest.TestCase):
     def test_multithreading_no_omits_check_and_dialog(self):
         text = rendered(multithreading="no")
         self.assertNotIn("checkMultithreadingSupport", text)
+        self.assertNotIn("showMultithreadingWarning", text)
         self.assertNotIn("<dialog", text)
 
     def test_dialog_copy_is_exact(self):
@@ -188,20 +200,53 @@ class BlockTest(unittest.TestCase):
         self.assertIn("Don't show this again during this session", text)
         self.assertIn(">OK</button>", text)
 
+    def test_dialog_helper_is_a_standalone_module(self):
+        helper = dialog_helper(rendered())
+        for name in ("showMultithreadingWarning", "isMultithreadingWarningDismissed", "rememberMultithreadingWarningDismissed"):
+            self.assertIn(f"export function {name}()", helper)
+        self.assertNotIn("forLicenseKey", helper)
+        self.assertNotIn("await", helper)
+        self.assertNotIn("import ", helper)
+
+    def test_dialog_helper_needs_no_page_markup(self):
+        text = rendered()
+        html_dialogs = [block for block in re.findall(r"```html\n(.*?)```", text, re.S) if "<dialog" in block]
+        self.assertEqual(html_dialogs, [])
+        helper = dialog_helper(text)
+        self.assertIn('<dialog id="multithreading-warning">', helper)
+        self.assertIn("document.body.insertAdjacentHTML(", helper)
+        self.assertIn("`multithreading-warning.js`", text)
+
+    def test_dialog_shows_at_most_once_per_page_load(self):
+        helper = dialog_helper(rendered())
+        self.assertIn("let multithreadingWarningShown = false", helper)
+        shown = helper.index("multithreadingWarningShown = true")
+        self.assertLess(helper.index("if (multithreadingWarningShown"), shown)
+        self.assertLess(shown, helper.index(".showModal()"))
+
+    def test_check_runs_in_parallel_with_forLicenseKey(self):
+        start = check_start(rendered())
+        self.assertIn('import { showMultithreadingWarning } from "./multithreading-warning.js";', start)
+        self.assertNotIn("await BrowserHelper.checkMultithreadingSupport()", start)
+        check = start.index("BrowserHelper.checkMultithreadingSupport()")
+        license_key = start.index("await DataCaptureContext.forLicenseKey(")
+        self.assertLess(check, license_key)
+        not_awaited = start[check:license_key]
+        self.assertIn(".then(", not_awaited)
+        self.assertIn("showMultithreadingWarning()", not_awaited)
+        self.assertIn(".catch(", not_awaited)
+
     def test_session_storage_access_is_guarded(self):
-        code = typescript(rendered())
+        code = dialog_helper(rendered())
         accesses = [m.start() for m in re.finditer(r"sessionStorage\.", code)]
         self.assertTrue(accesses)
         for index in accesses:
             self.assertTrue(inside_try(code, index), code[index:index + 60])
 
     def test_no_extra_console_warning(self):
-        self.assertNotIn("console.warn", typescript(rendered()))
-
-    def test_check_precedes_forLicenseKey(self):
-        code = typescript(rendered())
-        check = code.index("await BrowserHelper.checkMultithreadingSupport()")
-        self.assertLess(check, code.index("DataCaptureContext.forLicenseKey("))
+        text = rendered()
+        self.assertNotIn("console.warn", dialog_helper(text))
+        self.assertNotIn("console.warn", check_start(text))
 
     def test_python_server_listens_only_on_localhost(self):
         text = rendered()

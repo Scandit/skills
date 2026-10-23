@@ -795,30 +795,15 @@ class CrossOriginIsolatedHandler(SimpleHTTPRequestHandler):
 ThreadingHTTPServer(("127.0.0.1", 8000), CrossOriginIsolatedHandler).serve_forever()
 ```
 
-**Multithreading check.** Await `BrowserHelper.checkMultithreadingSupport()` before `DataCaptureContext.forLicenseKey()`; it needs no engine and no context. It returns `false` when the page is not cross-origin isolated (the COOP/COEP headers are missing) or the device has fewer than 2 CPU cores or no nested workers. Scanning then still works, single-threaded and slower, and the SDK logs its own console warning, so do not add another: tell the person scanning with this dialog in `index.html` instead.
+**Multithreading check.** Start `BrowserHelper.checkMultithreadingSupport()` without awaiting it, then await `DataCaptureContext.forLicenseKey()`: the two run in parallel, so set-up never waits for the check. The check needs no engine and no context. It resolves `false` when the page is not cross-origin isolated (the COOP/COEP headers are missing) or the device has fewer than 2 CPU cores or no nested workers. Scanning then still works, single-threaded and slower, and the SDK logs its own console warning, so do not add another: tell the person scanning with the dialog below instead.
 
-```html
-<dialog id="multithreading-warning">
-  <form method="dialog">
-    <h2>Scanning may be slower</h2>
-    <p>This browser or device can't use all of its processing power for scanning. You can keep scanning, but scanning may take longer.</p>
-    <p><a href="https://docs.scandit.com/sdks/web/matrixscan/get-started/#improve-runtime-performance-by-enabling-browser-multithreading" target="_blank" rel="noopener">Learn more</a></p>
-    <label><input type="checkbox" /> Don't show this again during this session</label>
-    <button autofocus>OK</button>
-  </form>
-</dialog>
-```
-
-Set-up does not wait for the dialog: `forLicenseKey()` runs while it is open. It shows at most once per page load (a module-level flag, so a scanner restart does not reopen it), and not again during the browser session once it was closed with the checkbox ticked. Every `sessionStorage` access sits in a `try`/`catch`: storage can be blocked, and that only means the dialog may show again on the next page load. The snippet has no type annotations, so it also runs as is in a `<script type="module">`:
+**Dialog helper.** Save this module as `multithreading-warning.js` next to `index.html`, or as `multithreading-warning.ts` in a TypeScript app: it has no type annotations, so it is valid as either. `index.html` needs no markup for it: the helper adds the dialog to the page itself, unless the page already has a `<dialog id="multithreading-warning">`. The dialog shows at most once per page load (a module-level flag, so a scanner restart does not reopen it), and not again during the browser session once it was closed with the checkbox ticked. Every `sessionStorage` access sits in a `try`/`catch`: storage can be blocked, and that only means the dialog may show again on the next page load.
 
 ```typescript
-import { BrowserHelper, DataCaptureContext } from "@scandit/web-datacapture-core";
-import { barcodeCaptureLoader } from "@scandit/web-datacapture-barcode";
-
 const multithreadingWarningDismissedKey = "scandit-multithreading-warning-dismissed";
 let multithreadingWarningShown = false;
 
-function isMultithreadingWarningDismissed() {
+export function isMultithreadingWarningDismissed() {
   try {
     return sessionStorage.getItem(multithreadingWarningDismissedKey) === "true";
   } catch {
@@ -826,15 +811,36 @@ function isMultithreadingWarningDismissed() {
   }
 }
 
-function rememberMultithreadingWarningDismissed() {
+export function rememberMultithreadingWarningDismissed() {
   try {
     sessionStorage.setItem(multithreadingWarningDismissedKey, "true");
   } catch {}
 }
 
-function showMultithreadingWarning() {
-  const dialog = document.getElementById("multithreading-warning");
-  if (multithreadingWarningShown || isMultithreadingWarningDismissed() || !(dialog instanceof HTMLDialogElement)) {
+function multithreadingWarningDialog() {
+  if (!document.getElementById("multithreading-warning")) {
+    document.body.insertAdjacentHTML(
+      "beforeend",
+      `<dialog id="multithreading-warning">
+        <form method="dialog">
+          <h2>Scanning may be slower</h2>
+          <p>This browser or device can't use all of its processing power for scanning. You can keep scanning, but scanning may take longer.</p>
+          <p><a href="https://docs.scandit.com/sdks/web/matrixscan/get-started/#improve-runtime-performance-by-enabling-browser-multithreading" target="_blank" rel="noopener">Learn more</a></p>
+          <label><input type="checkbox" /> Don't show this again during this session</label>
+          <button autofocus>OK</button>
+        </form>
+      </dialog>`
+    );
+  }
+  return document.getElementById("multithreading-warning");
+}
+
+export function showMultithreadingWarning() {
+  if (multithreadingWarningShown || isMultithreadingWarningDismissed()) {
+    return;
+  }
+  const dialog = multithreadingWarningDialog();
+  if (!(dialog instanceof HTMLDialogElement)) {
     return;
   }
   multithreadingWarningShown = true;
@@ -850,11 +856,22 @@ function showMultithreadingWarning() {
   );
   dialog.showModal();
 }
+```
 
-const multithreadingSupported = await BrowserHelper.checkMultithreadingSupport();
-if (!multithreadingSupported) {
-  showMultithreadingWarning();
-}
+**Starting the check.** Import the helper and start the check before `forLicenseKey()`. The dialog opens as soon as the check resolves `false`, while the engine keeps loading. This snippet has no type annotations either, so it runs as is in a `<script type="module">`:
+
+```typescript
+import { BrowserHelper, DataCaptureContext } from "@scandit/web-datacapture-core";
+import { barcodeCaptureLoader } from "@scandit/web-datacapture-barcode";
+import { showMultithreadingWarning } from "./multithreading-warning.js";
+
+BrowserHelper.checkMultithreadingSupport()
+  .then((supported) => {
+    if (!supported) {
+      showMultithreadingWarning();
+    }
+  })
+  .catch(console.error);
 
 await DataCaptureContext.forLicenseKey("-- ENTER YOUR SCANDIT LICENSE KEY HERE --", {
   libraryLocation: "https://cdn.jsdelivr.net/npm/@scandit/web-datacapture-barcode@8.6.1/sdc-lib/",
