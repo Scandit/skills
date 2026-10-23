@@ -566,6 +566,11 @@ class EvalTest(unittest.TestCase):
             for text in eval_assertions(path.parent.name):
                 self.assertIsNone(AWAITED_CHECK.search(text), f"{path.relative_to(ROOT)}: {text}")
 
+    def test_expected_outputs_do_not_await_the_check(self):
+        for path in sorted(ROOT.glob("evals/*-web/integration-evals.json")):
+            for case in json.loads(path.read_text())["evals"]:
+                self.assertIsNone(AWAITED_CHECK.search(case["expected_output"]), f"{path.relative_to(ROOT)} eval {case['id']}")
+
     def test_evals_assert_the_parallel_check(self):
         for skill in ("barcode-capture-web", "matrixscan-batch-web", "matrixscan-ar-web", "sparkscan-web", "label-capture-web"):
             self.assertIn(PARALLEL_CHECK_ASSERTION, eval_assertions(skill), skill)

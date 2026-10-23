@@ -586,7 +586,7 @@
     {
       "id": 20,
       "prompt": "Add SparkScan to empty-app.ts on a page with no bundler: load the Scandit SDK from the jsDelivr CDN and tell me which headers the server needs. When the user switches to another browser tab, scanning should pause so the camera is not left running. Scan EAN-13 and Code 128.",
-      "expected_output": "SparkScan integration loading @scandit/* from jsDelivr with one exact version pinned in the import map and in libraryLocation, COOP same-origin plus COEP require-corp, and no visibilitychange handler, because SparkScanView already switches to idle when the page is hidden. The license key is written into forLicenseKey, and await BrowserHelper.checkMultithreadingSupport() runs before it with a once-per-page-load dialog that never blocks set-up.",
+      "expected_output": "SparkScan integration loading @scandit/* from jsDelivr with one exact version pinned in the import map and in libraryLocation, COOP same-origin plus COEP require-corp, and no visibilitychange handler, because SparkScanView already switches to idle when the page is hidden. The license key is written into forLicenseKey, and BrowserHelper.checkMultithreadingSupport() starts no later than it and set-up does not wait for it, with a once-per-page-load dialog when it resolves false.",
       "files": ["fixtures/empty-app.ts"],
       "assertions": [
         {

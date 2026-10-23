@@ -152,7 +152,7 @@
     {
       "id": 9,
       "prompt": "Add Smart Label Capture to empty-app.ts on a plain HTML page with no bundler: load the Scandit SDK from the jsDelivr CDN and tell me which headers the server needs. The label has a total price and an expiry date.",
-      "expected_output": "Label Capture integration for a plain HTML page loading @scandit/* from jsDelivr with one exact version pinned, COOP same-origin plus COEP require-corp from the recommended server, the license key written into forLicenseKey, and await BrowserHelper.checkMultithreadingSupport() before it with a once-per-page-load dialog that never blocks set-up.",
+      "expected_output": "Label Capture integration for a plain HTML page loading @scandit/* from jsDelivr with one exact version pinned, COOP same-origin plus COEP require-corp from the recommended server, the license key written into forLicenseKey, and BrowserHelper.checkMultithreadingSupport() started no later than it, with set-up not waiting for it and a once-per-page-load dialog when it resolves false.",
       "files": ["fixtures/empty-app.ts"],
       "assertions": [
         {
