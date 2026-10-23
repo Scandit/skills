@@ -152,12 +152,12 @@ const context = await DataCaptureContext.create();
 
 **New (v8):**
 
-The multithreading check runs in parallel with `forLicenseKey()`. Import `showMultithreadingWarning` from `multithreading-warning.js`, the dialog helper module in [Loading the SDK from a CDN](integration.md#loading-the-sdk-from-a-cdn) in `references/integration.md`; the page needs no markup for the dialog.
+The multithreading check runs in parallel with `forLicenseKey()`. Import `showMultithreadingWarning` from the `multithreading-warning` helper module in [Loading the SDK from a CDN](integration.md#loading-the-sdk-from-a-cdn) in `references/integration.md`; the page needs no markup for the dialog.
 
 ```typescript
 import { BrowserHelper, DataCaptureContext } from "@scandit/web-datacapture-core";
 import { barcodeCaptureLoader } from "@scandit/web-datacapture-barcode";
-import { showMultithreadingWarning } from "./multithreading-warning.js";
+import { showMultithreadingWarning } from "./multithreading-warning";
 
 BrowserHelper.checkMultithreadingSupport()
     .then((supported) => {

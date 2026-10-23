@@ -213,9 +213,11 @@ class BlockTest(unittest.TestCase):
         html_dialogs = [block for block in re.findall(r"```html\n(.*?)```", text, re.S) if "<dialog" in block]
         self.assertEqual(html_dialogs, [])
         helper = dialog_helper(text)
-        self.assertIn('<dialog id="multithreading-warning">', helper)
-        self.assertIn("document.body.insertAdjacentHTML(", helper)
+        self.assertIn('document.querySelector("dialog#multithreading-warning")', helper)
+        self.assertIn('document.createElement("dialog")', helper)
+        self.assertIn('dialog.id = "multithreading-warning"', helper)
         self.assertIn("`multithreading-warning.js`", text)
+        self.assertIn('"./multithreading-warning"', text)
 
     def test_dialog_shows_at_most_once_per_page_load(self):
         helper = dialog_helper(rendered())
@@ -326,8 +328,8 @@ class PinTest(unittest.TestCase):
 GENERATED_BLOCK = re.compile(r"<!-- BEGIN GENERATED web-cdn (.*?) -->.*?<!-- END GENERATED web-cdn -->", re.S)
 MULTITHREADING_CHECK = "checkMultithreadingSupport()"
 AWAITED_CHECK = re.compile(r"await\W+BrowserHelper\.checkMultithreadingSupport", re.I)
-HELPER_IMPORT = 'import { showMultithreadingWarning } from "./multithreading-warning.js";'
-HELPER_POINTER = "import `showMultithreadingWarning` from `multithreading-warning.js`"
+HELPER_IMPORT = 'import { showMultithreadingWarning } from "./multithreading-warning";'
+HELPER_POINTER = "import `showMultithreadingWarning` from the `multithreading-warning` helper module"
 OLD_HELPER_POINTERS = ("dialog markup and the `showMultithreadingWarning()` helper", "Define the helper in the same module")
 
 
@@ -387,6 +389,7 @@ class SkillContentTest(unittest.TestCase):
         self.assertLess(rule.index(MULTITHREADING_CHECK), rule.index("forLicenseKey("))
         self.assertIn("in parallel", rule)
         self.assertIn(HELPER_POINTER, rule)
+        self.assertIn("component state", rule)
         self.assertIn("credentialless", rule)
         examples = examples_outside_block(reference_text)
         self.assertTrue(examples, f"{skill}: no complete example found")
@@ -592,7 +595,7 @@ def squeezed(text):
 
 
 def generated_dialog_copy():
-    dialog = re.search(r"<dialog.*?</dialog>", rendered(), re.S)[0]
+    dialog = re.search(r'<form method="dialog">.*?</form>', rendered(), re.S)[0]
     copy = {
         "title": re.search(r"<h2>(.*?)</h2>", dialog)[1],
         "text": re.search(r"<p>(This browser.*?)</p>", dialog)[1],

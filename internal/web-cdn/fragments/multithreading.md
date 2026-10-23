@@ -1,6 +1,6 @@
 **Multithreading check.** Start `BrowserHelper.checkMultithreadingSupport()` without awaiting it, then await `DataCaptureContext.forLicenseKey()`: the two run in parallel, so set-up never waits for the check. The check needs no engine and no context. It resolves `false` when the page is not cross-origin isolated (the COOP/COEP headers are missing) or the device has fewer than 2 CPU cores or no nested workers. Scanning then still works, single-threaded and slower, and the SDK logs its own console warning, so do not add another: tell the person scanning with the dialog below instead.
 
-**Dialog helper.** Save this module as `multithreading-warning.js` next to `index.html`, or as `multithreading-warning.ts` in a TypeScript app: it has no type annotations, so it is valid as either. `index.html` needs no markup for it: the helper adds the dialog to the page itself, unless the page already has a `<dialog id="multithreading-warning">`. The dialog shows at most once per page load (a module-level flag, so a scanner restart does not reopen it), and not again during the browser session once it was closed with the checkbox ticked. Every `sessionStorage` access sits in a `try`/`catch`: storage can be blocked, and that only means the dialog may show again on the next page load.
+**Dialog helper.** Save this module as `multithreading-warning.js` next to `index.html` and import it as `"./multithreading-warning.js"`, or as `multithreading-warning.ts` in a bundled app and import it as `"./multithreading-warning"`: it has no type annotations, so it is valid as either. `index.html` needs no markup for it: the helper adds the dialog to the page itself, unless the page already has a `<dialog id="multithreading-warning">`. The dialog shows at most once per page load (a module-level flag, so a scanner restart does not reopen it), and not again during the browser session once it was closed with the checkbox ticked. Every `sessionStorage` access sits in a `try`/`catch`: storage can be blocked, and that only means the dialog may show again on the next page load.
 
 ```typescript
 const multithreadingWarningDismissedKey = "scandit-multithreading-warning-dismissed";
@@ -21,21 +21,22 @@ export function rememberMultithreadingWarningDismissed() {
 }
 
 function multithreadingWarningDialog() {
-  if (!document.getElementById("multithreading-warning")) {
-    document.body.insertAdjacentHTML(
-      "beforeend",
-      `<dialog id="multithreading-warning">
+  const existing = document.querySelector("dialog#multithreading-warning");
+  if (existing instanceof HTMLDialogElement) {
+    return existing;
+  }
+  const dialog = document.createElement("dialog");
+  dialog.id = "multithreading-warning";
+  dialog.innerHTML = `
         <form method="dialog">
           <h2>Scanning may be slower</h2>
           <p>This browser or device can't use all of its processing power for scanning. You can keep scanning, but scanning may take longer.</p>
           <p><a href="{{multithreading_link}}" target="_blank" rel="noopener">Learn more</a></p>
           <label><input type="checkbox" /> Don't show this again during this session</label>
           <button autofocus>OK</button>
-        </form>
-      </dialog>`
-    );
-  }
-  return document.getElementById("multithreading-warning");
+        </form>`;
+  document.body.append(dialog);
+  return dialog;
 }
 
 export function showMultithreadingWarning() {
@@ -43,9 +44,6 @@ export function showMultithreadingWarning() {
     return;
   }
   const dialog = multithreadingWarningDialog();
-  if (!(dialog instanceof HTMLDialogElement)) {
-    return;
-  }
   multithreadingWarningShown = true;
   dialog.addEventListener(
     "close",

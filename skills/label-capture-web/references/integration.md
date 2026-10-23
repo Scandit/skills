@@ -100,7 +100,7 @@ ThreadingHTTPServer(("127.0.0.1", 8000), CrossOriginIsolatedHandler).serve_forev
 
 **Multithreading check.** Start `BrowserHelper.checkMultithreadingSupport()` without awaiting it, then await `DataCaptureContext.forLicenseKey()`: the two run in parallel, so set-up never waits for the check. The check needs no engine and no context. It resolves `false` when the page is not cross-origin isolated (the COOP/COEP headers are missing) or the device has fewer than 2 CPU cores or no nested workers. Scanning then still works, single-threaded and slower, and the SDK logs its own console warning, so do not add another: tell the person scanning with the dialog below instead.
 
-**Dialog helper.** Save this module as `multithreading-warning.js` next to `index.html`, or as `multithreading-warning.ts` in a TypeScript app: it has no type annotations, so it is valid as either. `index.html` needs no markup for it: the helper adds the dialog to the page itself, unless the page already has a `<dialog id="multithreading-warning">`. The dialog shows at most once per page load (a module-level flag, so a scanner restart does not reopen it), and not again during the browser session once it was closed with the checkbox ticked. Every `sessionStorage` access sits in a `try`/`catch`: storage can be blocked, and that only means the dialog may show again on the next page load.
+**Dialog helper.** Save this module as `multithreading-warning.js` next to `index.html` and import it as `"./multithreading-warning.js"`, or as `multithreading-warning.ts` in a bundled app and import it as `"./multithreading-warning"`: it has no type annotations, so it is valid as either. `index.html` needs no markup for it: the helper adds the dialog to the page itself, unless the page already has a `<dialog id="multithreading-warning">`. The dialog shows at most once per page load (a module-level flag, so a scanner restart does not reopen it), and not again during the browser session once it was closed with the checkbox ticked. Every `sessionStorage` access sits in a `try`/`catch`: storage can be blocked, and that only means the dialog may show again on the next page load.
 
 ```typescript
 const multithreadingWarningDismissedKey = "scandit-multithreading-warning-dismissed";
@@ -121,21 +121,22 @@ export function rememberMultithreadingWarningDismissed() {
 }
 
 function multithreadingWarningDialog() {
-  if (!document.getElementById("multithreading-warning")) {
-    document.body.insertAdjacentHTML(
-      "beforeend",
-      `<dialog id="multithreading-warning">
+  const existing = document.querySelector("dialog#multithreading-warning");
+  if (existing instanceof HTMLDialogElement) {
+    return existing;
+  }
+  const dialog = document.createElement("dialog");
+  dialog.id = "multithreading-warning";
+  dialog.innerHTML = `
         <form method="dialog">
           <h2>Scanning may be slower</h2>
           <p>This browser or device can't use all of its processing power for scanning. You can keep scanning, but scanning may take longer.</p>
           <p><a href="https://docs.scandit.com/sdks/web/matrixscan/get-started/#improve-runtime-performance-by-enabling-browser-multithreading" target="_blank" rel="noopener">Learn more</a></p>
           <label><input type="checkbox" /> Don't show this again during this session</label>
           <button autofocus>OK</button>
-        </form>
-      </dialog>`
-    );
-  }
-  return document.getElementById("multithreading-warning");
+        </form>`;
+  document.body.append(dialog);
+  return dialog;
 }
 
 export function showMultithreadingWarning() {
@@ -143,9 +144,6 @@ export function showMultithreadingWarning() {
     return;
   }
   const dialog = multithreadingWarningDialog();
-  if (!(dialog instanceof HTMLDialogElement)) {
-    return;
-  }
   multithreadingWarningShown = true;
   dialog.addEventListener(
     "close",
@@ -275,7 +273,7 @@ import {
   type LabelCaptureSession,
   type LabelField,
 } from "@scandit/web-datacapture-label";
-import { showMultithreadingWarning } from "./multithreading-warning.js";
+import { showMultithreadingWarning } from "./multithreading-warning";
 
 async function run() {
   const view = new DataCaptureView();
@@ -347,7 +345,7 @@ async function run() {
 run();
 ```
 
-The multithreading check runs in parallel with `forLicenseKey()`. Import `showMultithreadingWarning` from `multithreading-warning.js`, the dialog helper module in [Loading the SDK without a bundler](#loading-the-sdk-without-a-bundler), which adds the dialog to the page itself, so the page needs no markup for it. Leave the check out when the user asked to run single-threaded.
+The multithreading check runs in parallel with `forLicenseKey()`. Import `showMultithreadingWarning` from the `multithreading-warning` helper module in [Loading the SDK without a bundler](#loading-the-sdk-without-a-bundler), which adds the dialog to the page itself, so the page needs no markup for it. Leave the check out when the user asked to run single-threaded.
 
 ## anchorRegex vs valueRegex
 
@@ -389,7 +387,7 @@ After writing the integration code, show this checklist:
 3. Make sure `libraryLocation` points to a self-hosted copy of the SDK library (the path in `new URL(...)`). You can copy the `sdc-lib` directory from `node_modules/@scandit/web-datacapture-label/sdc-lib/`, or use the CDN pinned to the exact version you import, as in [Loading the SDK without a bundler](#loading-the-sdk-without-a-bundler).
 4. Ensure a DOM element with id `data-capture-view` exists on the page before `run()` executes. The element must have a defined size and be visible — `DataCaptureView` renders the camera feed into it, so if the element has zero dimensions or `display: none` the viewfinder will not appear. A common setup is `width: 100%; height: 100vh;` or any other CSS that gives the element a non-zero area.
 5. For a plain-HTML page, serve it with the `Cross-Origin-Opener-Policy` and `Cross-Origin-Embedder-Policy` headers, as in [Loading the SDK without a bundler](#loading-the-sdk-without-a-bundler).
-6. Add `multithreading-warning.js`, the dialog helper module from [Loading the SDK without a bundler](#loading-the-sdk-without-a-bundler), and import `showMultithreadingWarning` from it. The helper adds the dialog to the page itself, so the page needs no markup for it.
+6. Add the `multithreading-warning` helper module from [Loading the SDK without a bundler](#loading-the-sdk-without-a-bundler) (`multithreading-warning.js` on a plain-HTML page, `multithreading-warning.ts` in a bundled app) and import `showMultithreadingWarning` from it. The helper adds the dialog to the page itself, so the page needs no markup for it.
 
 ## Overlay Integration
 
