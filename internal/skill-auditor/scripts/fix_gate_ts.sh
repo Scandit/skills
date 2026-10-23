@@ -37,6 +37,11 @@ for f in "${FILES[@]}"; do
     [ "$PLAT" = rn ] && EXTRA_DEPS="$EXTRA_DEPS"', "react-native":"0.81.4"';;
   esac
 done
+if [ "$PLAT" = web ]; then
+  for pkg in label id; do
+    grep -qE "['\"]@scandit/web-datacapture-$pkg['\"/]" "${FILES[@]}" && EXTRA_DEPS="$EXTRA_DEPS, \"@scandit/web-datacapture-$pkg\":\"$VER\""
+  done
+fi
 # A plain-JS main file (Capacitor / web snippet) is checked as JS (allowJs + checkJs), not as TS.
 case "$FILE" in *.js) EXT=js;; esac
 # Capacitor apps import Capacitor from @capacitor/core (e.g. the getPlatform() web guard).
