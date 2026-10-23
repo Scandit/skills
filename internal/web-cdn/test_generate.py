@@ -280,6 +280,20 @@ class SkillContentTest(unittest.TestCase):
         skill = (ROOT / "skills/label-capture-web/SKILL.md").read_text()
         self.assertIn("pin one exact version", skill)
 
+    def test_id_capture_web(self):
+        skill_dir = ROOT / "skills/id-capture-web"
+        text = (skill_dir / "references/cdn.md").read_text()
+        blocks = GENERATED_BLOCK.findall(text)
+        self.assertEqual(len(blocks), 1)
+        self.assertEqual(blocks[0], "packages=core,id engine=id multithreading=no")
+        skill = (skill_dir / "SKILL.md").read_text()
+        self.assertIn("(references/cdn.md)", skill)
+        self.assertIn("pin one exact version", skill)
+        for path in skill_dir.rglob("*.md"):
+            content = path.read_text()
+            for forbidden in ("checkMultithreadingSupport", "showMultithreadingWarning", "multithreading-warning"):
+                self.assertNotIn(forbidden, content, f"{path}: {forbidden}")
+
     def test_sparkscan_web_has_no_console_warn_for_multithreading(self):
         text = (ROOT / "skills/sparkscan-web/references/integration.md").read_text()
         self.assertNotIn("console.warn", text)

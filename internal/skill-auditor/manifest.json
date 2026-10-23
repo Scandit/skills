@@ -39,6 +39,7 @@
     "id-capture-": {
       "evals/advanced-evals.json": ["net-android", "net-ios", "net-maui"],
       "references/advanced.md": ["android", "ios", "net-android", "net-ios", "net-maui"],
+      "references/cdn.md": ["web"],
       "references/framework-recipes.md": ["capacitor", "flutter", "rn"],
       "references/supplementary-modules.md": ["capacitor", "cordova", "flutter", "rn"],
       "references/migration.md": {"except": ["kmp"]},
