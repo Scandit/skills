@@ -49,6 +49,11 @@ def inside_try(code, index):
     return any(open_blocks)
 
 
+def pinned_versions(text):
+    pins = [*generate.SCANDIT_PIN.finditer(text), *generate.EXAMPLE_PIN.finditer(text)]
+    return {pin[0].rsplit("@", 1)[1].strip("`") for pin in pins}
+
+
 def copy_skills(tmp):
     for path in generate.skill_files(ROOT):
         dest = tmp / path.relative_to(ROOT)
@@ -71,8 +76,12 @@ class CheckTest(unittest.TestCase):
         tmp = tempdir(self)
         copy_skills(tmp)
         old = CONFIG["sdk_version"]
-        pinned = [p for p in generate.skill_files(tmp) if old in p.read_text()]
+        feature_note = f"- `SmartSelection` (v{old}+)\n"
+        noted = tmp / "skills/barcode-capture-web/references/integration.md"
+        noted.write_text(noted.read_text() + feature_note)
+        pinned = [p for p in generate.skill_files(tmp) if pinned_versions(p.read_text())]
         self.assertTrue(pinned)
+        self.assertIn(noted, pinned)
         config = tmp / "cdn.json"
         config.write_text(json.dumps({**CONFIG, "sdk_version": "9.9.9"}))
 
@@ -80,10 +89,9 @@ class CheckTest(unittest.TestCase):
         result = run("--root", str(tmp), "--config", str(config))
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
-        for path in generate.skill_files(tmp):
-            self.assertNotIn(old, path.read_text(), path)
         for path in pinned:
-            self.assertIn("9.9.9", path.read_text(), path)
+            self.assertEqual(pinned_versions(path.read_text()), {"9.9.9"}, path)
+        self.assertTrue(noted.read_text().endswith(feature_note))
         self.assertEqual(run("--check", "--root", str(tmp), "--config", str(config)).returncode, 0)
 
     def test_unknown_package_fails(self):
