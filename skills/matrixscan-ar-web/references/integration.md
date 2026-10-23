@@ -205,10 +205,11 @@ After providing the code, show this setup checklist:
 3. Configure `libraryLocation` to point to the SDK engine files (self-hosted) or set to the CDN path pinned to the exact version you import, for example `https://cdn.jsdelivr.net/npm/@scandit/web-datacapture-barcode@8.6.1/sdc-lib/`
 4. Replace `'-- ENTER YOUR SCANDIT LICENSE KEY HERE --'` with your key (see **Licence key** in `SKILL.md`).
 5. Add a container element to your HTML (e.g. `<div id="barcode-ar-view" style="position:fixed;inset:0">`) with defined dimensions
+6. Add the multithreading dialog markup and the `showMultithreadingWarning()` helper from [Loading the SDK from a CDN](#loading-the-sdk-from-a-cdn), with the helper defined in the same module as the code that calls it.
 
 ## Step 1 — Initialize DataCaptureContext
 
-Check multithreading first, then initialize the context. `showMultithreadingWarning()` and its dialog come from the plain-HTML set-up in [Loading the SDK from a CDN](#loading-the-sdk-from-a-cdn); an app that has no such helper adds an equivalent notice, or leaves the check out when the user asked to run single-threaded:
+Check multithreading first, then initialize the context. `showMultithreadingWarning()` and its dialog come from the plain-HTML set-up in [Loading the SDK from a CDN](#loading-the-sdk-from-a-cdn); an app that has no such helper adds an equivalent notice, or leaves the check out when the user asked to run single-threaded. Define the helper in the same module as this example, or import it from the module that defines it: otherwise the `false` path throws a ReferenceError and aborts set-up:
 
 ```typescript
 import { BrowserHelper, DataCaptureContext } from "@scandit/web-datacapture-core";
@@ -916,7 +917,7 @@ async function run(): Promise<void> {
 run();
 ```
 
-`showMultithreadingWarning()` and the dialog come from the plain-HTML set-up in [Loading the SDK from a CDN](#loading-the-sdk-from-a-cdn).
+`showMultithreadingWarning()` and the dialog come from the plain-HTML set-up in [Loading the SDK from a CDN](#loading-the-sdk-from-a-cdn). Define the helper in the same module as this example, or import it from the module that defines it: otherwise the `false` path throws a ReferenceError and aborts set-up.
 
 ## Key Rules
 

@@ -206,12 +206,13 @@ After providing the code, show this setup checklist:
 3. If self-hosting the SDK engine, configure `libraryLocation` to point to the correct path; or use the CDN path pinned to the exact version you import, for example `https://cdn.jsdelivr.net/npm/@scandit/web-datacapture-barcode@8.6.1/sdc-lib/`
 4. Replace `'-- ENTER YOUR SCANDIT LICENSE KEY HERE --'` with your key (see **Licence key** in `SKILL.md`).
 5. Add a `<div id="data-capture-view">` (or similar) to your HTML with defined dimensions and `position: fixed` or `absolute`. Revert that styling in your cleanup: the element belongs to the app, so detaching the view does not undo the positioning you applied, and an empty full-viewport `position: fixed` element still blocks every click on the page underneath
+6. Add the multithreading dialog markup and the `showMultithreadingWarning()` helper from [Loading the SDK from a CDN](#loading-the-sdk-from-a-cdn), with the helper defined in the same module as the code that calls it.
 
 ---
 
 ## Step 1 — Initialize DataCaptureContext
 
-Check multithreading first, then create the `DataCaptureView` so a loading indicator can be shown during SDK initialization, then initialize the context. `showMultithreadingWarning()` and its dialog come from the plain-HTML set-up in [Loading the SDK from a CDN](#loading-the-sdk-from-a-cdn); an app that has no such helper adds an equivalent notice, or leaves the check out when the user asked to run single-threaded:
+Check multithreading first, then create the `DataCaptureView` so a loading indicator can be shown during SDK initialization, then initialize the context. `showMultithreadingWarning()` and its dialog come from the plain-HTML set-up in [Loading the SDK from a CDN](#loading-the-sdk-from-a-cdn); an app that has no such helper adds an equivalent notice, or leaves the check out when the user asked to run single-threaded. Define the helper in the same module as this example, or import it from the module that defines it: otherwise the `false` path throws a ReferenceError and aborts set-up:
 
 ```typescript
 import {
@@ -393,7 +394,7 @@ await DataCaptureContext.sharedInstance.setFrameSource(camera);
 await cameraStarted;
 ```
 
-`showMultithreadingWarning()` and the dialog come from the plain-HTML set-up in [Loading the SDK from a CDN](#loading-the-sdk-from-a-cdn).
+`showMultithreadingWarning()` and the dialog come from the plain-HTML set-up in [Loading the SDK from a CDN](#loading-the-sdk-from-a-cdn). Define the helper in the same module as this example, or import it from the module that defines it: otherwise the `false` path throws a ReferenceError and aborts set-up.
 
 `FrameSourceState.Standby` opens the camera without showing a preview. Use the exact enum members `On`, `Off` and `Standby`: in JavaScript a misspelled one such as `FrameSourceState.StandBy` is `undefined`, and `switchToDesiredState(undefined)` silently does nothing.
 

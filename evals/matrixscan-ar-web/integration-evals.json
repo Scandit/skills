@@ -183,7 +183,7 @@
     {
       "id": 11,
       "prompt": "Add MatrixScan AR to empty-app.ts, but my site has no build step: load the Scandit SDK from the jsDelivr CDN and tell me exactly which response headers the server must send. It has to work in Safari on iPhone too. Track EAN-13 and Code 128.",
-      "expected_output": "Integration code loading @scandit/* from jsDelivr with one exact version pinned in the import map and in libraryLocation, plus Cross-Origin-Opener-Policy: same-origin and Cross-Origin-Embedder-Policy: require-corp, which jsDelivr satisfies and which Safari supports. The licence key is written into forLicenseKey, and await BrowserHelper.checkMultithreadingSupport() runs before it with a once-per-page-load dialog that never blocks set-up.",
+      "expected_output": "Integration code loading @scandit/* from jsDelivr with one exact version pinned in the import map and in libraryLocation, plus Cross-Origin-Opener-Policy: same-origin and Cross-Origin-Embedder-Policy: require-corp, which jsDelivr satisfies and which Safari supports. The license key is written into forLicenseKey, and await BrowserHelper.checkMultithreadingSupport() runs before it with a once-per-page-load dialog that never blocks set-up.",
       "files": ["fixtures/empty-app.ts"],
       "assertions": [
         {
@@ -205,7 +205,7 @@
           "text": "The recommended server sends Cross-Origin-Opener-Policy: same-origin and Cross-Origin-Embedder-Policy: require-corp: `serve.json` with `npx serve` or `pnpm dlx serve`, or a Python server that sets both; plain `python3 -m http.server` alone is not presented as enough (semantic)"
         },
         {
-          "text": "The licence key is written into the page's `DataCaptureContext.forLicenseKey(` call, not read from `.env` or the environment (semantic)"
+          "text": "The license key is written into the page's `DataCaptureContext.forLicenseKey(` call, not read from `.env` or the environment (semantic)"
         },
         {
           "text": "`await BrowserHelper.checkMultithreadingSupport()` runs before `DataCaptureContext.forLicenseKey(` (semantic)"

@@ -79,7 +79,7 @@ await barcodeBatch.setEnabled(true);
 
 **After (BarcodeAr):**
 
-`showMultithreadingWarning()` and its dialog come from the plain-HTML set-up in [Loading the SDK from a CDN](integration.md#loading-the-sdk-from-a-cdn) in `references/integration.md`.
+`showMultithreadingWarning()` and its dialog come from the plain-HTML set-up in [Loading the SDK from a CDN](integration.md#loading-the-sdk-from-a-cdn) in `references/integration.md`. Define the helper in the same module as this example, or import it from the module that defines it: otherwise the `false` path throws a ReferenceError and aborts set-up.
 
 ```typescript
 import {

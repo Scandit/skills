@@ -44,8 +44,10 @@ After providing the code, show this setup checklist:
 2. Replace `-- ENTER YOUR SCANDIT LICENSE KEY HERE --` with your key (see **Licence key** in `SKILL.md`).
 3. Add a `<div id="capture-element">` (or similar) to your HTML with defined dimensions and positioning (see mount point requirement below)
 4. If self-hosting the SDK engine files, update `libraryLocation` to point to the correct path. Alternatively, use the CDN path pinned to the exact version you import, for example `https://cdn.jsdelivr.net/npm/@scandit/web-datacapture-barcode@8.6.1/sdc-lib/` (see [Loading the SDK from a CDN](#loading-the-sdk-from-a-cdn))
+5. Serve the page with `Cross-Origin-Opener-Policy: same-origin` and `Cross-Origin-Embedder-Policy: require-corp`, also when the SDK comes from the CDN (see [Loading the SDK from a CDN](#loading-the-sdk-from-a-cdn)).
+6. Add the multithreading dialog markup and the `showMultithreadingWarning()` helper from [Loading the SDK from a CDN](#loading-the-sdk-from-a-cdn), with the helper defined in the same module as the code that calls it.
 
-The code example below is a basic TypeScript v8 implementation. It starts with the multithreading check: `showMultithreadingWarning()` and its dialog come from the plain-HTML set-up in [Loading the SDK from a CDN](#loading-the-sdk-from-a-cdn); an app that has no such helper adds an equivalent notice, or leaves the check out when the user asked to run single-threaded.
+The code example below is a basic TypeScript v8 implementation. It starts with the multithreading check: `showMultithreadingWarning()` and its dialog come from the plain-HTML set-up in [Loading the SDK from a CDN](#loading-the-sdk-from-a-cdn); an app that has no such helper adds an equivalent notice, or leaves the check out when the user asked to run single-threaded. Define the helper in the same module as this example, or import it from the module that defines it: otherwise the `false` path throws a ReferenceError and aborts set-up.
 If the user is using React, see the React section below.
 
 > **Mount point requirement:** The `DataCaptureView` needs a container with defined dimensions and positioning to render its camera preview correctly. If the container has zero or unresolved dimensions, the camera preview will not display.
@@ -210,7 +212,7 @@ await DataCaptureContext.sharedInstance.setFrameSource(camera);
 await cameraStarted;
 ```
 
-`showMultithreadingWarning()` and the dialog come from the plain-HTML set-up in [Loading the SDK from a CDN](#loading-the-sdk-from-a-cdn).
+`showMultithreadingWarning()` and the dialog come from the plain-HTML set-up in [Loading the SDK from a CDN](#loading-the-sdk-from-a-cdn). Define the helper in the same module as this example, or import it from the module that defines it: otherwise the `false` path throws a ReferenceError and aborts set-up.
 
 `FrameSourceState.Standby` opens the camera without showing a preview. Use the exact enum members `On`, `Off` and `Standby`: in JavaScript a misspelled one such as `FrameSourceState.StandBy` is `undefined`, and `switchToDesiredState(undefined)` silently does nothing.
 

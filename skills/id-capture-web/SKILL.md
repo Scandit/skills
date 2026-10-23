@@ -4,7 +4,7 @@ description: Scandit ID Capture in web/browser projects (`@scandit/web-datacaptu
 license: Apache-2.0
 metadata:
   author: scandit
-  version: "1.0.4"
+  version: "1.0.5"
 ---
 
 # ID Capture Web (TypeScript/JavaScript) Skill

@@ -299,7 +299,7 @@
     {
       "id": 10,
       "prompt": "My MatrixScan Batch page has no bundler: a static index.html loads empty-app.ts compiled to a plain ES module, and I want to load the Scandit SDK from the jsDelivr CDN instead of self-hosting it. Tell me which headers my static server needs. Users switch browser tabs a lot, so the camera must not keep running while the tab is in the background. Also give me a stopScanning() that fully tears scanning down when the user closes the scanner panel, and make sure scanning can be started again afterwards. Scan EAN-13 and Code 128. File: empty-app.ts.",
-      "expected_output": "Integration code that loads @scandit/* from jsDelivr with one exact version pinned in the import map and in libraryLocation, COOP same-origin plus COEP require-corp, no visibilitychange handler (DataCaptureView already stops the camera while the page is hidden), a named listener constant that is added and removed, teardown through DataCaptureContext.sharedInstance.dispose() and view.detachFromElement(), and a restart that calls DataCaptureContext.forLicenseKey again. The licence key is written into forLicenseKey, and await BrowserHelper.checkMultithreadingSupport() runs before it with a once-per-page-load dialog that never blocks set-up.",
+      "expected_output": "Integration code that loads @scandit/* from jsDelivr with one exact version pinned in the import map and in libraryLocation, COOP same-origin plus COEP require-corp, no visibilitychange handler (DataCaptureView already stops the camera while the page is hidden), a named listener constant that is added and removed, teardown through DataCaptureContext.sharedInstance.dispose() and view.detachFromElement(), and a restart that calls DataCaptureContext.forLicenseKey again. The license key is written into forLicenseKey, and await BrowserHelper.checkMultithreadingSupport() runs before it with a once-per-page-load dialog that never blocks set-up.",
       "files": ["fixtures/empty-app.ts"],
       "assertions": [
         {
@@ -330,7 +330,7 @@
           "text": "The recommended server sends Cross-Origin-Opener-Policy: same-origin and Cross-Origin-Embedder-Policy: require-corp: `serve.json` with `npx serve` or `pnpm dlx serve`, or a Python server that sets both; plain `python3 -m http.server` alone is not presented as enough (semantic)"
         },
         {
-          "text": "The licence key is written into the page's `DataCaptureContext.forLicenseKey(` call, not read from `.env` or the environment (semantic)"
+          "text": "The license key is written into the page's `DataCaptureContext.forLicenseKey(` call, not read from `.env` or the environment (semantic)"
         },
         {
           "text": "When multithreading is unavailable, a dialog shows with a link to https://docs.scandit.com/sdks/web/matrixscan/get-started/#improve-runtime-performance-by-enabling-browser-multithreading and a don't-show-again-this-session checkbox (semantic)"

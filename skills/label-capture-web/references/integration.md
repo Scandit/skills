@@ -182,7 +182,7 @@ If the user explicitly asks to run single-threaded, leave the check and the dial
 A classic `<script>` has no top-level `await`: take the exports off these globals (`const { DataCaptureContext } = SDCCore;`) and wrap the set-up in an async function.
 <!-- END GENERATED web-cdn -->
 
-Label Capture needs browser multithreading to scan labels at a usable speed, so keep the headers and the check in any app, bundled or not.
+Label Capture runs faster with browser multithreading, so keep the headers and the check in any app, bundled or not.
 
 ## Interactive Label Definition
 
@@ -323,7 +323,7 @@ async function run() {
 run();
 ```
 
-`showMultithreadingWarning()` and its dialog come from [Loading the SDK without a bundler](#loading-the-sdk-without-a-bundler); an app that has no such helper adds an equivalent notice, or leaves the check out when the user asked to run single-threaded.
+`showMultithreadingWarning()` and its dialog come from [Loading the SDK without a bundler](#loading-the-sdk-without-a-bundler); an app that has no such helper adds an equivalent notice, or leaves the check out when the user asked to run single-threaded. Define the helper in the same module as this example, or import it from the module that defines it: otherwise the `false` path throws a ReferenceError and aborts set-up.
 
 ## anchorRegex vs valueRegex
 

@@ -586,7 +586,7 @@
     {
       "id": 20,
       "prompt": "Add SparkScan to empty-app.ts on a page with no bundler: load the Scandit SDK from the jsDelivr CDN and tell me which headers the server needs. When the user switches to another browser tab, scanning should pause so the camera is not left running. Scan EAN-13 and Code 128.",
-      "expected_output": "SparkScan integration loading @scandit/* from jsDelivr with one exact version pinned in the import map and in libraryLocation, COOP same-origin plus COEP require-corp, and no visibilitychange handler, because SparkScanView already switches to idle when the page is hidden. The licence key is written into forLicenseKey, and await BrowserHelper.checkMultithreadingSupport() runs before it with a once-per-page-load dialog that never blocks set-up.",
+      "expected_output": "SparkScan integration loading @scandit/* from jsDelivr with one exact version pinned in the import map and in libraryLocation, COOP same-origin plus COEP require-corp, and no visibilitychange handler, because SparkScanView already switches to idle when the page is hidden. The license key is written into forLicenseKey, and await BrowserHelper.checkMultithreadingSupport() runs before it with a once-per-page-load dialog that never blocks set-up.",
       "files": ["fixtures/empty-app.ts"],
       "assertions": [
         {
@@ -605,7 +605,7 @@
           "text": "The recommended server sends Cross-Origin-Opener-Policy: same-origin and Cross-Origin-Embedder-Policy: require-corp: `serve.json` with `npx serve` or `pnpm dlx serve`, or a Python server that sets both; plain `python3 -m http.server` alone is not presented as enough (semantic)"
         },
         {
-          "text": "The licence key is written into the page's `DataCaptureContext.forLicenseKey(` call, not read from `.env` or the environment (semantic)"
+          "text": "The license key is written into the page's `DataCaptureContext.forLicenseKey(` call, not read from `.env` or the environment (semantic)"
         },
         {
           "text": "`await BrowserHelper.checkMultithreadingSupport()` runs before `DataCaptureContext.forLicenseKey(` (semantic)"
@@ -622,7 +622,7 @@
     {
       "id": 21,
       "prompt": "Add SparkScan to empty-app.ts on a plain HTML page with no bundler. I self-host the SDK files on a static host where I cannot set COOP/COEP headers, and I explicitly accept running single-threaded, so don't add multithreading checks or warnings. Scan EAN-13 and Code 128.",
-      "expected_output": "SparkScan integration for a plain HTML page that loads the self-hosted SDK files, with the installed @scandit package versions matching each other, the licence key written into forLicenseKey, no COOP/COEP requirement imposed, and no multithreading check or dialog because the user chose to run single-threaded.",
+      "expected_output": "SparkScan integration for a plain HTML page that loads the self-hosted SDK files, with the installed @scandit package versions matching each other, the license key written into forLicenseKey, no COOP/COEP requirement imposed, and no multithreading check or dialog because the user chose to run single-threaded.",
       "files": ["fixtures/empty-app.ts"],
       "assertions": [
         {
@@ -632,7 +632,7 @@
           "text": "The self-hosted `@scandit` packages are all installed at the same version, and `libraryLocation` points at the self-hosted copy of that same version (semantic)"
         },
         {
-          "text": "The licence key is written into the page's `DataCaptureContext.forLicenseKey(` call, not read from `.env` or the environment (semantic)"
+          "text": "The license key is written into the page's `DataCaptureContext.forLicenseKey(` call, not read from `.env` or the environment (semantic)"
         },
         {
           "text": "No multithreading dialog is added (semantic)"
