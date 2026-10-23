@@ -299,10 +299,8 @@
     {
       "id": 10,
       "prompt": "My MatrixScan Batch page has no bundler: a static index.html loads empty-app.ts compiled to a plain ES module, and I want to load the Scandit SDK from the jsDelivr CDN instead of self-hosting it. Tell me which headers my static server needs. Users switch browser tabs a lot, so the camera must not keep running while the tab is in the background. Also give me a stopScanning() that fully tears scanning down when the user closes the scanner panel, and make sure scanning can be started again afterwards. Scan EAN-13 and Code 128. File: empty-app.ts.",
-      "expected_output": "Integration code that loads @scandit/* from jsDelivr with one exact version pinned in the import map and in libraryLocation, COOP same-origin plus COEP require-corp, no visibilitychange handler (DataCaptureView already stops the camera while the page is hidden), a named listener constant that is added and removed, teardown through DataCaptureContext.sharedInstance.dispose() and view.detachFromElement(), and a restart that calls DataCaptureContext.forLicenseKey again.",
-      "files": [
-        "fixtures/empty-app.ts"
-      ],
+      "expected_output": "Integration code that loads @scandit/* from jsDelivr with one exact version pinned in the import map and in libraryLocation, COOP same-origin plus COEP require-corp, no visibilitychange handler (DataCaptureView already stops the camera while the page is hidden), a named listener constant that is added and removed, teardown through DataCaptureContext.sharedInstance.dispose() and view.detachFromElement(), and a restart that calls DataCaptureContext.forLicenseKey again. The license key is written into forLicenseKey, and BrowserHelper.checkMultithreadingSupport() starts no later than it and set-up does not wait for it, with a once-per-page-load dialog when it resolves false.",
+      "files": ["fixtures/empty-app.ts"],
       "assertions": [
         {
           "text": "No visibilitychange listener is added to switch the camera Off/On or to disable BarcodeBatch: the answer relies on the SDK's own page-visibility handling (semantic)"
@@ -323,10 +321,25 @@
           "text": "Starting again after teardown calls DataCaptureContext.forLicenseKey( again (semantic)"
         },
         {
-          "text": "BrowserHelper.checkMultithreadingSupport() is awaited before the camera is switched on (semantic)"
+          "text": "`BrowserHelper.checkMultithreadingSupport()` is started no later than `DataCaptureContext.forLicenseKey(` and set-up does not wait for it; when it resolves false the dialog is shown (semantic)"
+        },
+        {
+          "text": "No `ScanditDataCapture*` or other invented global is used; the SDK is loaded through an import map, or through the SDCCore/SDCBarcode/SDCLabel/SDCId/SDCParser UMD globals (semantic)"
+        },
+        {
+          "text": "The recommended server sends Cross-Origin-Opener-Policy: same-origin and Cross-Origin-Embedder-Policy: require-corp: `serve.json` with `npx serve` or `pnpm dlx serve`, or a Python server that sets both; plain `python3 -m http.server` alone is not presented as enough (semantic)"
+        },
+        {
+          "text": "The license key is written into the page's `DataCaptureContext.forLicenseKey(` call, not read from `.env` or the environment (semantic)"
+        },
+        {
+          "text": "When multithreading is unavailable, a dialog shows with a link to https://docs.scandit.com/sdks/web/matrixscan/get-started/#improve-runtime-performance-by-enabling-browser-multithreading and a don't-show-again-this-session checkbox (semantic)"
+        },
+        {
+          "text": "A module-level flag (or equivalent page-level state) ensures the dialog shows at most once per page load, so stopping and restarting scanning does not reopen it, and it does not stop or delay set-up (semantic)"
         }
       ],
-      "tags": ["lifecycle"]
+      "tags": ["lifecycle", "no-bundler"]
     },
     {
       "id": 11,

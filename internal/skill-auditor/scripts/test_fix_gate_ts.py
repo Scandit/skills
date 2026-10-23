@@ -26,6 +26,27 @@ export const state: FrameSourceState = FrameSourceState.On;
 export const symbology: Symbology = Symbology.EAN13UPCA;
 export const pixelRatio: number = window.devicePixelRatio;
 """,
+    "web.label.ts": """
+import { FrameSourceState } from "@scandit/web-datacapture-core";
+import { LabelCapture, labelCaptureLoader } from "@scandit/web-datacapture-label";
+import type { LabelCaptureSettings } from "@scandit/web-datacapture-label";
+export const loader: typeof labelCaptureLoader = labelCaptureLoader;
+export const mode: typeof LabelCapture = LabelCapture;
+export const settings: LabelCaptureSettings | null = null;
+""",
+    "web.id.ts": """
+import { FrameSourceState } from "@scandit/web-datacapture-core";
+import { IdCapture, IdImageType, idCaptureLoader } from "@scandit/web-datacapture-id";
+export const loader: typeof idCaptureLoader = idCaptureLoader;
+export const mode: typeof IdCapture = IdCapture;
+export const imageType: IdImageType = IdImageType.Face;
+""",
+    "web.parser.ts": """
+import { DataCaptureContext, FrameSourceState } from "@scandit/web-datacapture-core";
+import { Parser, ParserDataFormat, parserLoader } from "@scandit/web-datacapture-parser";
+export const loader: typeof parserLoader = parserLoader;
+export const parser: Promise<Parser> = Parser.forFormat(DataCaptureContext.sharedInstance, ParserDataFormat.GS1_AI);
+""",
     "rn.ts": """
 import { FrameSourceState } from "scandit-react-native-datacapture-core";
 import { Symbology } from "scandit-react-native-datacapture-barcode";
@@ -136,7 +157,7 @@ class FixGateTsTest(unittest.TestCase):
     def run_gate(self, snippet_name, source):
         snippet = self.tmp / snippet_name
         snippet.write_text(source)
-        platform = snippet.stem
+        platform = snippet_name.split(".")[0]
         return subprocess.run(
             ["bash", str(GATE), platform, str(snippet), VERSION],
             capture_output=True,

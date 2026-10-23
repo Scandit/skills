@@ -183,17 +183,41 @@
     {
       "id": 11,
       "prompt": "Add MatrixScan AR to empty-app.ts, but my site has no build step: load the Scandit SDK from the jsDelivr CDN and tell me exactly which response headers the server must send. It has to work in Safari on iPhone too. Track EAN-13 and Code 128.",
-      "expected_output": "Integration code loading @scandit/* from jsDelivr with one exact version pinned in the import map and in libraryLocation, plus Cross-Origin-Opener-Policy: same-origin and Cross-Origin-Embedder-Policy: require-corp, which jsDelivr satisfies and which Safari supports.",
-      "files": [
-        "fixtures/empty-app.ts"
-      ],
+      "expected_output": "Integration code loading @scandit/* from jsDelivr with one exact version pinned in the import map and in libraryLocation, plus Cross-Origin-Opener-Policy: same-origin and Cross-Origin-Embedder-Policy: require-corp, which jsDelivr satisfies and which Safari supports. The license key is written into forLicenseKey, and BrowserHelper.checkMultithreadingSupport() starts no later than it and set-up does not wait for it, with a once-per-page-load dialog when it resolves false.",
+      "files": ["fixtures/empty-app.ts"],
       "assertions": [
-        {"text": "Cross-Origin-Opener-Policy: same-origin is required"},
-        {"text": "Cross-Origin-Embedder-Policy: require-corp is recommended for the CDN setup, and credentialless is not recommended as the CDN value (semantic)"},
-        {"text": "Every jsDelivr URL for an @scandit package (import map and libraryLocation) pins one exact version such as @8.6.1, never a floating @8 major (semantic)"},
-        {"text": "BarcodeArView.create( is used and barcodeArView.start() is called"}
+        {
+          "text": "Cross-Origin-Opener-Policy: same-origin is required"
+        },
+        {
+          "text": "Cross-Origin-Embedder-Policy: require-corp is recommended for the CDN setup, and credentialless is not recommended as the CDN value (semantic)"
+        },
+        {
+          "text": "Every jsDelivr URL for an @scandit package (import map and libraryLocation) pins one exact version such as @8.6.1, never a floating @8 major (semantic)"
+        },
+        {
+          "text": "BarcodeArView.create( is used and barcodeArView.start() is called"
+        },
+        {
+          "text": "No `ScanditDataCapture*` or other invented global is used; the SDK is loaded through an import map, or through the SDCCore/SDCBarcode/SDCLabel/SDCId/SDCParser UMD globals (semantic)"
+        },
+        {
+          "text": "The recommended server sends Cross-Origin-Opener-Policy: same-origin and Cross-Origin-Embedder-Policy: require-corp: `serve.json` with `npx serve` or `pnpm dlx serve`, or a Python server that sets both; plain `python3 -m http.server` alone is not presented as enough (semantic)"
+        },
+        {
+          "text": "The license key is written into the page's `DataCaptureContext.forLicenseKey(` call, not read from `.env` or the environment (semantic)"
+        },
+        {
+          "text": "`BrowserHelper.checkMultithreadingSupport()` is started no later than `DataCaptureContext.forLicenseKey(` and set-up does not wait for it; when it resolves false the dialog is shown (semantic)"
+        },
+        {
+          "text": "When multithreading is unavailable, a dialog shows with a link to https://docs.scandit.com/sdks/web/matrixscan/get-started/#improve-runtime-performance-by-enabling-browser-multithreading and a don't-show-again-this-session checkbox (semantic)"
+        },
+        {
+          "text": "A module-level flag (or equivalent page-level state) ensures the dialog shows at most once per page load, and it does not stop or delay set-up (semantic)"
+        }
       ],
-      "tags": ["view-lifecycle"]
+      "tags": ["view-lifecycle", "no-bundler"]
     }
   ]
 }

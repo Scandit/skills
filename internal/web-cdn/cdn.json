@@ -1,0 +1,18 @@
+{
+  "sdk_version": "8.6.1",
+  "serve_version": "14.2.6",
+  "es_module_shims_version": "2.6.2",
+  "links": {
+    "cdn_warning": "https://docs.scandit.com/sdks/web/add-sdk/#install-via-cdn",
+    "complete_cdn_example": "https://docs.scandit.com/sdks/web/add-sdk/#complete-cdn-example",
+    "multithreading": "https://docs.scandit.com/sdks/web/matrixscan/get-started/#improve-runtime-performance-by-enabling-browser-multithreading",
+    "es_module_shims": "https://github.com/guybedford/es-module-shims"
+  },
+  "packages": {
+    "core": { "npm": "@scandit/web-datacapture-core", "global": "SDCCore" },
+    "barcode": { "npm": "@scandit/web-datacapture-barcode", "global": "SDCBarcode", "loader": "barcodeCaptureLoader" },
+    "label": { "npm": "@scandit/web-datacapture-label", "global": "SDCLabel", "loader": "labelCaptureLoader" },
+    "id": { "npm": "@scandit/web-datacapture-id", "global": "SDCId", "loader": "idCaptureLoader" },
+    "parser": { "npm": "@scandit/web-datacapture-parser", "global": "SDCParser" }
+  }
+}

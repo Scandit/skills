@@ -4,7 +4,7 @@ description: Scandit ID Capture in web/browser projects (`@scandit/web-datacaptu
 license: Apache-2.0
 metadata:
   author: scandit
-  version: "1.0.4"
+  version: "1.0.5"
 ---
 
 # ID Capture Web (TypeScript/JavaScript) Skill
@@ -51,6 +51,7 @@ Based on the user's request, pick the right path before responding:
 - **Hosted, drop-in ID scanning with no custom camera UI** (e.g. "add ID/passport scanning to my website with as little code as possible", "use the hosted / pop-up ID scanner", "scan an ID without building the camera UI", or the project uses `@scandit/web-id-bolt`) → that is **ID Bolt**, a hosted wrapper around ID Capture, not the in-page ID Capture SDK. Hand off to the `id-bolt` skill.
 - **Questions about other Scandit products or scanning modes** (e.g. Barcode Capture, SparkScan, MatrixScan, Label Capture, or product selection) → hand off to the `data-capture-sdk` skill. Do not attempt to answer questions about other capture modes from memory.
 - **Integrating ID Capture from scratch, configuring documents/scanner/rejection rules, reading results, customizing the overlay, or verification** (e.g. "scan a passport in the browser", "reject expired IDs", "show the face image") → use the Product Guidance and Minimal integration shape below, verifying every API against the References.
+- **A plain HTML page, no bundler, or loading the SDK from a CDN** (e.g. "scan IDs on a static page", "use an import map") → read [references/cdn.md](references/cdn.md) for the import map, `libraryLocation` and the headers, then use the Minimal integration shape.
 - **Migrating or upgrading an existing ID Capture integration** (e.g. "upgrade from v6 to v7", "migrate my ID Capture to v8", "bump the Scandit Web SDK", "what changed between SDK versions") → read [references/migration.md](references/migration.md) and follow the instructions there.
 
 ## Product Guidance
@@ -67,6 +68,10 @@ Based on the user's request, pick the right path before responding:
 ## Minimal integration shape
 
 Prerequisites: install `@scandit/web-datacapture-core` and `@scandit/web-datacapture-id` (same version) with the project's package manager, and serve the SDK engine files so `libraryLocation` resolves them (the samples copy them to `library/engine/`; self-hosted projects typically use `sdc-lib`). License keys — see **Licence key** below.
+
+A page without a bundler follows [references/cdn.md](references/cdn.md) for loading the SDK.
+
+When the SDK is loaded from a CDN, pin one exact version (for example `@8.6.1`) in every URL: the import map and `libraryLocation`. A floating `@8` lets the JavaScript and the engine resolve to different releases, which breaks start-up.
 
 This is the canonical structure shared by every sample under `web/samples/02_ID_Scanning_Samples/`. Use it as the skeleton; adjust documents/scanner/listeners to the task.
 

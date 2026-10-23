@@ -79,6 +79,8 @@ await barcodeBatch.setEnabled(true);
 
 **After (BarcodeAr):**
 
+The multithreading check runs in parallel with `forLicenseKey()`. Import `showMultithreadingWarning` from the `multithreading-warning` helper module in [Loading the SDK from a CDN](integration.md#loading-the-sdk-from-a-cdn) in `references/integration.md`; the page needs no markup for the dialog.
+
 ```typescript
 import {
   BarcodeAr,
@@ -92,7 +94,16 @@ import {
   barcodeCaptureLoader,
   Symbology,
 } from "@scandit/web-datacapture-barcode";
-import { DataCaptureContext } from "@scandit/web-datacapture-core";
+import { BrowserHelper, DataCaptureContext } from "@scandit/web-datacapture-core";
+import { showMultithreadingWarning } from "./multithreading-warning";
+
+BrowserHelper.checkMultithreadingSupport()
+  .then((supported) => {
+    if (!supported) {
+      showMultithreadingWarning();
+    }
+  })
+  .catch(console.error);
 
 await DataCaptureContext.forLicenseKey(licenseKey, {
   libraryLocation: new URL("library/engine/", document.baseURI).toString(),
