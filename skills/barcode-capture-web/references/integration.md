@@ -218,10 +218,10 @@ await cameraStarted;
 
 ## React integration
 
-For React, use a `useRef` to attach `DataCaptureView` to a DOM element, and `useEffect` for initialization and cleanup. `showMultithreadingWarning()` and the dialog come from the plain-HTML set-up in [Loading the SDK from a CDN](#loading-the-sdk-from-a-cdn); it shows the dialog at most once per page load, so the effect running twice in React StrictMode does not open it twice.
+For React, use a `useRef` to attach `DataCaptureView` to a DOM element, and `useEffect` for initialization and cleanup. The dialog is rendered from component state instead of the DOM helper, and a module-level flag keeps it to once per page load, so the effect running twice in React StrictMode does not open it twice. Set-up does not wait for the dialog.
 
 ```tsx
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
     BarcodeCapture,
     type BarcodeCaptureListener,
@@ -240,8 +240,34 @@ import {
     FrameSourceState,
 } from "@scandit/web-datacapture-core";
 
+const multithreadingWarningDismissedKey = "scandit-multithreading-warning-dismissed";
+let multithreadingWarningShown = false;
+
+function isMultithreadingWarningDismissed() {
+    try {
+        return sessionStorage.getItem(multithreadingWarningDismissedKey) === "true";
+    } catch {
+        return false;
+    }
+}
+
+function rememberMultithreadingWarningDismissed() {
+    try {
+        sessionStorage.setItem(multithreadingWarningDismissedKey, "true");
+    } catch {}
+}
+
 export const BarcodeScannerComponent: React.FC = () => {
     const captureRef = useRef<HTMLDivElement>(null);
+    const warningRef = useRef<HTMLDialogElement>(null);
+    const [multithreadingUnavailable, setMultithreadingUnavailable] = useState(false);
+    const [dontShowAgain, setDontShowAgain] = useState(false);
+
+    useEffect(() => {
+        if (multithreadingUnavailable && !warningRef.current?.open) {
+            warningRef.current?.showModal();
+        }
+    }, [multithreadingUnavailable]);
 
     useEffect(() => {
         let barcodeCapture: BarcodeCapture | null = null;
@@ -249,8 +275,10 @@ export const BarcodeScannerComponent: React.FC = () => {
         let barcodeCaptureListener: BarcodeCaptureListener | null = null;
 
         async function initialize() {
-            if (!(await BrowserHelper.checkMultithreadingSupport())) {
-                showMultithreadingWarning();
+            const multithreadingSupported = await BrowserHelper.checkMultithreadingSupport();
+            if (!multithreadingSupported && !multithreadingWarningShown && !isMultithreadingWarningDismissed()) {
+                multithreadingWarningShown = true;
+                setMultithreadingUnavailable(true);
             }
 
             await DataCaptureContext.forLicenseKey(
@@ -306,10 +334,48 @@ export const BarcodeScannerComponent: React.FC = () => {
     }, []);
 
     return (
-        <div
-            ref={captureRef}
-            style={{ position: "fixed", top: 0, left: 0, width: "100%", height: "100%" }}
-        />
+        <>
+            <div
+                ref={captureRef}
+                style={{ position: "fixed", top: 0, left: 0, width: "100%", height: "100%" }}
+            />
+            {multithreadingUnavailable && (
+                <dialog
+                    ref={warningRef}
+                    onClose={() => {
+                        if (dontShowAgain) {
+                            rememberMultithreadingWarningDismissed();
+                        }
+                    }}
+                >
+                    <form method="dialog">
+                        <h2>Scanning may be slower</h2>
+                        <p>
+                            This browser or device can't use all of its processing power for scanning. You can keep
+                            scanning, but barcodes may take longer to read.
+                        </p>
+                        <p>
+                            <a
+                                href="https://docs.scandit.com/sdks/web/matrixscan/get-started/#improve-runtime-performance-by-enabling-browser-multithreading"
+                                target="_blank"
+                                rel="noopener"
+                            >
+                                Learn more
+                            </a>
+                        </p>
+                        <label>
+                            <input
+                                type="checkbox"
+                                checked={dontShowAgain}
+                                onChange={(event) => setDontShowAgain(event.target.checked)}
+                            />{" "}
+                            Don't show this again during this session
+                        </label>
+                        <button autoFocus>OK</button>
+                    </form>
+                </dialog>
+            )}
+        </>
     );
 };
 ```

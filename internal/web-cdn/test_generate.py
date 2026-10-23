@@ -264,6 +264,22 @@ class SkillContentTest(unittest.TestCase):
     def test_barcode_capture_web(self):
         self.assert_skill("barcode-capture-web", "core,barcode")
 
+    def test_barcode_capture_web_react_example_shows_dialog_from_state(self):
+        text = (ROOT / "skills/barcode-capture-web/references/integration.md").read_text()
+        react = next(
+            block
+            for block in re.findall(r"```tsx\n(.*?)```", GENERATED_BLOCK.sub("", text), re.S)
+            if "forLicenseKey(" in block
+        )
+        self.assertNotIn("showMultithreadingWarning(", react)
+        self.assertIn("<dialog", react)
+        component_start = react.index("export const")
+        self.assertIn("let multithreadingWarningShown = false", react[:component_start])
+        accesses = [match.start() for match in re.finditer(r"sessionStorage", react)]
+        self.assertTrue(accesses)
+        for index in accesses:
+            self.assertTrue(inside_try(react, index), "sessionStorage access outside try")
+
 
 if __name__ == "__main__":
     unittest.main()
