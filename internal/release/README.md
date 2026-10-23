@@ -14,9 +14,27 @@ changes, so a merge without a bump reaches nobody who already installed.
    NEW items.
 3. Tag the merge commit: `git tag v1.2.0 && git push origin v1.2.0`.
    `versions.py check --tag v1.2.0` confirms the tag matches the manifests.
-4. Publish to the directories that pin a reviewed snapshot:
+4. Build the OpenAI bundle from the tag and create the GitHub release with it
+   attached. A tag without a release is not a release: the release page is
+   where the ZIP, its SHA-256 and the notes live for anyone who did not cut it.
+
+   ```bash
+   internal/release/build_openai_bundle.py --ref v1.2.0
+   gh release create v1.2.0 dist/scandit-sdk-1.2.0.zip --title v1.2.0 --latest --notes-file notes.md
+   ```
+
+   Notes are prose grouped by theme (licence handling, per-platform guidance,
+   release process, ...) with the SDC keys, not the commit list. End with an
+   `## Assets` section naming the ZIP and its SHA-256, and the `dist` commit
+   once it exists (next step). `v1.1.2` is the reference shape.
+5. Publish to the directories that pin a reviewed snapshot:
    [Claude Code](#claude-code-official-directory) and
    [OpenAI](#openai-plugin-directory).
+6. Announce in Slack `#proj-ai-skills` (`C0AQDAD2PAQ`), pinging the product
+   manager (Raffaele Farinaro): what changed, the `dist` commit for Anthropic,
+   the release link with the ZIP, and what is still manual on the OpenAI
+   portal (video URL, reviewer credentials). Start the message with 🤖 when an
+   agent posts it.
 
 `versions.py check` runs in the pre-push hook and in `publish-dist`, so
 manifests that drift apart never reach `dist`.
