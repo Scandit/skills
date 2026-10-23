@@ -17,7 +17,9 @@ is the fragments in FRAGMENTS order, with `{{name}}` placeholders filled in.
 The BEGIN marker's indentation is applied to every generated line.
 
 Outside the blocks, every `@scandit/web-datacapture-*@x.y.z` URL and every
-backticked `@x.y.z` example in skills/*-web is rewritten to `sdk_version`.
+backticked `@x.y.z` example in the .md files under skills/*-web is rewritten to
+`sdk_version`, and --check verifies the same. Floating-major examples such as
+`@8`, caret ranges and non-Markdown files are not covered.
 """
 
 from __future__ import annotations

@@ -73,5 +73,5 @@ Direct users to the right resource based on their question:
 | Topic | Resource |
 |---|---|
 | Get Started | [Get Started](https://docs.scandit.com/sdks/web/matrixscan-ar/get-started/) · [Simple Sample](https://github.com/Scandit/datacapture-web-samples/tree/master/03_Advanced_Batch_Scanning_Samples/01_Batch_Scanning_and_AR_Info_Lookup/MatrixScanARSimpleSample) |
-| Multithreading / COOP+COEP headers | [Improve Runtime Performance](https://docs.scandit.com/sdks/web/matrixscan-ar/get-started/#improve-runtime-performance-by-enabling-browser-multithreading) |
+| Multithreading / COOP+COEP headers | [Improve Runtime Performance](https://docs.scandit.com/sdks/web/matrixscan/get-started/#improve-runtime-performance-by-enabling-browser-multithreading) |
 | Full API reference | [BarcodeAr API](https://docs.scandit.com/data-capture-sdk/web/barcode-capture/api.html) |

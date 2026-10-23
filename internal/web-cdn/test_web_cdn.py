@@ -380,5 +380,50 @@ class SkillContentTest(unittest.TestCase):
             self.assertTrue(inside_try(react, index), "sessionStorage access outside try")
 
 
+REACT_DIALOGS = (
+    "skills/barcode-capture-web/references/integration.md",
+    "skills/matrixscan-batch-web/references/integration.md",
+    "skills/sparkscan-web/references/react.md",
+    "skills/sparkscan-web/references/fixtures/ScanditProvider.tsx",
+)
+
+
+def squeezed(text):
+    return " ".join(text.split())
+
+
+def generated_dialog_copy():
+    dialog = re.search(r"<dialog.*?</dialog>", rendered(), re.S)[0]
+    copy = {
+        "title": re.search(r"<h2>(.*?)</h2>", dialog)[1],
+        "text": re.search(r"<p>(This browser.*?)</p>", dialog)[1],
+        "link text": re.search(r"<a [^>]*>(.*?)</a>", dialog)[1],
+        "checkbox label": re.search(r"/> (.*?)</label>", dialog)[1],
+        "button": re.search(r"<button[^>]*>(.*?)</button>", dialog)[1],
+        "href": re.search(r'<a href="(.*?)"', dialog)[1],
+    }
+    return copy
+
+
+def missing_dialog_copy(text):
+    haystack = squeezed(text)
+    return [name for name, expected in generated_dialog_copy().items() if squeezed(expected) not in haystack]
+
+
+class ReactDialogDriftTest(unittest.TestCase):
+    def test_generated_dialog_copy_has_every_part(self):
+        self.assertEqual(len(generated_dialog_copy()), 6)
+
+    def test_react_dialogs_repeat_the_generated_copy(self):
+        for path in REACT_DIALOGS:
+            text = (ROOT / path).read_text()
+            self.assertEqual(missing_dialog_copy(text), [], path)
+
+    def test_drift_in_a_react_dialog_is_detected(self):
+        text = (ROOT / REACT_DIALOGS[0]).read_text()
+        drifted = text.replace("Scanning may be slower", "Scanning may be slow")
+        self.assertEqual(missing_dialog_copy(drifted), ["title"])
+
+
 if __name__ == "__main__":
     unittest.main()
