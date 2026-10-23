@@ -203,6 +203,12 @@ class BlockTest(unittest.TestCase):
         check = code.index("await BrowserHelper.checkMultithreadingSupport()")
         self.assertLess(check, code.index("DataCaptureContext.forLicenseKey("))
 
+    def test_python_server_listens_only_on_localhost(self):
+        text = rendered()
+        self.assertIn("open `http://localhost:8000`", text)
+        self.assertIn('ThreadingHTTPServer(("127.0.0.1", 8000), CrossOriginIsolatedHandler)', text)
+        self.assertNotIn('("", 8000)', text)
+
     def test_serving_rejects_plain_http_server(self):
         text = rendered()
         self.assertIn("npx serve@14.2.6", text)

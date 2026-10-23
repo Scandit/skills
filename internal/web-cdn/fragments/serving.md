@@ -27,5 +27,5 @@ class CrossOriginIsolatedHandler(SimpleHTTPRequestHandler):
         self.send_header("Cross-Origin-Embedder-Policy", "require-corp")
         super().end_headers()
 
-ThreadingHTTPServer(("", 8000), CrossOriginIsolatedHandler).serve_forever()
+ThreadingHTTPServer(("127.0.0.1", 8000), CrossOriginIsolatedHandler).serve_forever()
 ```

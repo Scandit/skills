@@ -792,7 +792,7 @@ class CrossOriginIsolatedHandler(SimpleHTTPRequestHandler):
         self.send_header("Cross-Origin-Embedder-Policy", "require-corp")
         super().end_headers()
 
-ThreadingHTTPServer(("", 8000), CrossOriginIsolatedHandler).serve_forever()
+ThreadingHTTPServer(("127.0.0.1", 8000), CrossOriginIsolatedHandler).serve_forever()
 ```
 
 **Multithreading check.** Await `BrowserHelper.checkMultithreadingSupport()` before `DataCaptureContext.forLicenseKey()`; it needs no engine and no context. It returns `false` when the page is not cross-origin isolated (the COOP/COEP headers are missing) or the device has fewer than 2 CPU cores or no nested workers. Scanning then still works, single-threaded and slower, and the SDK logs its own console warning, so do not add another: tell the person scanning with this dialog in `index.html` instead.
