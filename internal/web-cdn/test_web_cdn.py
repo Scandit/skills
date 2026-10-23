@@ -141,6 +141,12 @@ class BlockTest(unittest.TestCase):
             {"SDCCore", "SDCBarcode", "SDCLabel", "SDCId", "SDCParser"},
         )
 
+    def test_parser_bundle_only_needs_core(self):
+        text = "\n".join(generate.block({"packages": "core,id", "engine": "id", "multithreading": "no"}, CONFIG_AT_8_6_1))
+        parser_note = next(line for line in text.splitlines() if "`SDCParser` is only for" in line)
+        self.assertNotIn("barcode", parser_note)
+        self.assertIn("after the core bundle", parser_note)
+
     def test_parser_is_not_an_engine(self):
         with self.assertRaises(ValueError):
             generate.block({"packages": "core,barcode,parser", "engine": "parser"}, CONFIG_AT_8_6_1)

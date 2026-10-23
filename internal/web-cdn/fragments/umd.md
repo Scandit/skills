@@ -6,6 +6,6 @@
 
 {{umd_globals}}
 
-The Scandit web UMD globals are {{umd_all_globals}}; no others exist. `{{umd_parser_global}}` is only for an app that parses data with `{{umd_parser_npm}}`: load that bundle after core and barcode.
+The Scandit web UMD globals are {{umd_all_globals}}; no others exist. `{{umd_parser_global}}` is only for an app that parses data with `{{umd_parser_npm}}`: load that bundle after the core bundle.
 
 A classic `<script>` has no top-level `await`: take the exports off these globals (`const { DataCaptureContext } = SDCCore;`) and wrap the set-up in an async function.
