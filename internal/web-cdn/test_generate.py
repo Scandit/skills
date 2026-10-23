@@ -264,8 +264,21 @@ class SkillContentTest(unittest.TestCase):
     def test_barcode_capture_web(self):
         self.assert_skill("barcode-capture-web", "core,barcode")
 
+    def test_matrixscan_batch_web(self):
+        self.assert_skill("matrixscan-batch-web", "core,barcode")
+
+    def test_matrixscan_batch_web_has_no_console_warn_for_multithreading(self):
+        text = (ROOT / "skills/matrixscan-batch-web/references/integration.md").read_text()
+        self.assertNotIn("console.warn", text)
+
     def test_barcode_capture_web_react_example_shows_dialog_from_state(self):
-        text = (ROOT / "skills/barcode-capture-web/references/integration.md").read_text()
+        self.assert_react_example_shows_dialog_from_state("barcode-capture-web")
+
+    def test_matrixscan_batch_web_react_example_shows_dialog_once_per_page_load(self):
+        self.assert_react_example_shows_dialog_from_state("matrixscan-batch-web")
+
+    def assert_react_example_shows_dialog_from_state(self, skill):
+        text = (ROOT / "skills" / skill / "references/integration.md").read_text()
         react = next(
             block
             for block in re.findall(r"```tsx\n(.*?)```", GENERATED_BLOCK.sub("", text), re.S)

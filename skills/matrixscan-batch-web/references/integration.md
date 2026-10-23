@@ -35,20 +35,50 @@ Only proceed to the manual integration steps below if the user already has an ex
 
 **BarcodeBatch requires browser multithreading via `SharedArrayBuffer`.** Without these headers the SDK degrades to single-threaded mode, which is too slow for batch tracking.
 
-Always set both, whether you self-host the SDK files or load them from jsDelivr:
-```
-Cross-Origin-Opener-Policy: same-origin
-Cross-Origin-Embedder-Policy: require-corp
-```
-
-jsDelivr answers with `Cross-Origin-Resource-Policy: cross-origin` and `Access-Control-Allow-Origin: *`, which `require-corp` accepts. Do not recommend `credentialless`: Safari does not support it, so the page would not be cross-origin isolated there.
+The headers, the multithreading check and the dialog shown when the check fails are in [Loading the SDK from a CDN](#loading-the-sdk-from-a-cdn); the same two headers apply whether the SDK files come from jsDelivr or are self-hosted. The check also returns `false` on devices with fewer than 2 CPU cores or without nested workers, so an error message should not always blame the headers.
 
 > **Heads up:** COEP blocks cross-origin resources (images, fonts, iframes, third-party scripts) that do not include `Cross-Origin-Resource-Policy` or `Access-Control-Allow-Origin`. Audit your page's cross-origin dependencies before enabling COEP in production. After changing headers, clear your browser cache and restart the dev server.
 
 For the complete Vite setup — COOP/COEP middleware, `library/engine` self-hosting with `vite-plugin-static-copy`, and license key injection — use the official sample `vite.config.ts` as the source of truth:
 <https://github.com/Scandit/datacapture-web-samples/blob/master/03_Advanced_Batch_Scanning_Samples/01_Batch_Scanning_and_AR_Info_Lookup/MatrixScanSimpleSample/vite.config.ts>
 
-Without a bundler, any static server that can set headers works. With [`serve`](https://www.npmjs.com/package/serve), put them in a `serve.json` next to `index.html`:
+### Loading the SDK from a CDN
+
+For a plain-HTML page without a bundler, set the SDK up as follows. The headers and the multithreading check also apply to a bundled app.
+
+<!-- BEGIN GENERATED web-cdn packages=core,barcode engine=barcode -->
+**CDN caveat.** A public CDN ties the page's start-up to that CDN's availability and speed, so for production [the docs](https://docs.scandit.com/sdks/web/add-sdk/#install-via-cdn) recommend self-hosting the SDK files or a paid enterprise CDN.
+
+**Import map.** Load the SDK as ES modules through an import map, as in the docs' [complete CDN example](https://docs.scandit.com/sdks/web/add-sdk/#complete-cdn-example). Pin one exact version in every URL: a floating `@8` is resolved separately for each file, so after a new 8.x release the JavaScript and the engine can come from different releases, which breaks start-up. The `es-module-shims` script adds import-map support to browsers that lack it.
+
+```html
+<script type="importmap">
+  {
+    "imports": {
+      "@scandit/web-datacapture-core": "https://cdn.jsdelivr.net/npm/@scandit/web-datacapture-core@8.6.1/build/js/index.js",
+      "@scandit/web-datacapture-core/": "https://cdn.jsdelivr.net/npm/@scandit/web-datacapture-core@8.6.1/",
+      "@scandit/web-datacapture-barcode": "https://cdn.jsdelivr.net/npm/@scandit/web-datacapture-barcode@8.6.1/build/js/index.js",
+      "@scandit/web-datacapture-barcode/": "https://cdn.jsdelivr.net/npm/@scandit/web-datacapture-barcode@8.6.1/"
+    }
+  }
+</script>
+<script async src="https://cdn.jsdelivr.net/npm/es-module-shims@2.6.2/dist/es-module-shims.js"></script>
+```
+
+Use the same version in `libraryLocation`: `https://cdn.jsdelivr.net/npm/@scandit/web-datacapture-barcode@8.6.1/sdc-lib/`.
+
+**Cross-origin isolation headers.** Serve the page with both headers, whether the SDK files come from jsDelivr or are self-hosted:
+
+```
+Cross-Origin-Opener-Policy: same-origin
+Cross-Origin-Embedder-Policy: require-corp
+```
+
+Do not recommend `credentialless` for `Cross-Origin-Embedder-Policy`: Safari does not support it, so the page would not be cross-origin isolated there.
+
+jsDelivr serves the SDK files and `es-module-shims` with `Cross-Origin-Resource-Policy: cross-origin` and `Access-Control-Allow-Origin: *`, which `require-corp` accepts.
+
+**Serving the page.** From the folder that holds `index.html`, run [`serve`](https://www.npmjs.com/package/serve) with `npx serve@14.2.6` or `pnpm dlx serve@14.2.6`, and put the headers in a `serve.json` next to `index.html`:
 
 ```json
 {
@@ -66,35 +96,101 @@ Without a bundler, any static server that can set headers works. With [`serve`](
 
 `serve` matches `source` against the path of the file it serves: `index.html` served at `/` gets the headers, a directory listing does not.
 
-Check multithreading support first, before the camera prompt and the engine download: `BrowserHelper.checkMultithreadingSupport()` needs no engine and no context. It also returns `false` on devices with fewer than 2 CPU cores or without nested workers, so an error message should not always blame the headers.
+Any other server must send the same two headers. Plain `python3 -m http.server` does not send them, so it is not enough on its own; this small Python server does (save it as `server.py` next to `index.html`, run `python3 server.py`, and open `http://localhost:8000`):
+
+```python
+from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
+
+class CrossOriginIsolatedHandler(SimpleHTTPRequestHandler):
+    def end_headers(self):
+        self.send_header("Cross-Origin-Opener-Policy", "same-origin")
+        self.send_header("Cross-Origin-Embedder-Policy", "require-corp")
+        super().end_headers()
+
+ThreadingHTTPServer(("", 8000), CrossOriginIsolatedHandler).serve_forever()
+```
+
+**Multithreading check.** Await `BrowserHelper.checkMultithreadingSupport()` before `DataCaptureContext.forLicenseKey()`; it needs no engine and no context. It returns `false` when the page is not cross-origin isolated (the COOP/COEP headers are missing) or the device has fewer than 2 CPU cores or no nested workers. Scanning then still works, single-threaded and slower, and the SDK logs its own console warning, so do not add another: tell the person scanning with this dialog in `index.html` instead.
+
+```html
+<dialog id="multithreading-warning">
+  <form method="dialog">
+    <h2>Scanning may be slower</h2>
+    <p>This browser or device can't use all of its processing power for scanning. You can keep scanning, but barcodes may take longer to read.</p>
+    <p><a href="https://docs.scandit.com/sdks/web/matrixscan/get-started/#improve-runtime-performance-by-enabling-browser-multithreading" target="_blank" rel="noopener">Learn more</a></p>
+    <label><input type="checkbox" /> Don't show this again during this session</label>
+    <button autofocus>OK</button>
+  </form>
+</dialog>
+```
+
+Set-up does not wait for the dialog: `forLicenseKey()` runs while it is open. It shows at most once per page load (a module-level flag, so a scanner restart does not reopen it), and not again during the browser session once it was closed with the checkbox ticked. Every `sessionStorage` access sits in a `try`/`catch`: storage can be blocked, and that only means the dialog may show again on the next page load. The snippet has no type annotations, so it also runs as is in a `<script type="module">`:
 
 ```typescript
-import { BrowserHelper } from "@scandit/web-datacapture-core";
+import { BrowserHelper, DataCaptureContext } from "@scandit/web-datacapture-core";
+import { barcodeCaptureLoader } from "@scandit/web-datacapture-barcode";
+
+const multithreadingWarningDismissedKey = "scandit-multithreading-warning-dismissed";
+let multithreadingWarningShown = false;
+
+function isMultithreadingWarningDismissed() {
+  try {
+    return sessionStorage.getItem(multithreadingWarningDismissedKey) === "true";
+  } catch {
+    return false;
+  }
+}
+
+function rememberMultithreadingWarningDismissed() {
+  try {
+    sessionStorage.setItem(multithreadingWarningDismissedKey, "true");
+  } catch {}
+}
+
+function showMultithreadingWarning() {
+  const dialog = document.getElementById("multithreading-warning");
+  if (multithreadingWarningShown || isMultithreadingWarningDismissed() || !(dialog instanceof HTMLDialogElement)) {
+    return;
+  }
+  multithreadingWarningShown = true;
+  dialog.addEventListener(
+    "close",
+    () => {
+      const dontShowAgain = dialog.querySelector('input[type="checkbox"]');
+      if (dontShowAgain instanceof HTMLInputElement && dontShowAgain.checked) {
+        rememberMultithreadingWarningDismissed();
+      }
+    },
+    { once: true }
+  );
+  dialog.showModal();
+}
 
 const multithreadingSupported = await BrowserHelper.checkMultithreadingSupport();
 if (!multithreadingSupported) {
-  console.warn("Multithreading unavailable: check the COOP/COEP headers, or the device lacks CPU cores or nested workers.");
+  showMultithreadingWarning();
 }
+
+await DataCaptureContext.forLicenseKey("-- ENTER YOUR SCANDIT LICENSE KEY HERE --", {
+  libraryLocation: "https://cdn.jsdelivr.net/npm/@scandit/web-datacapture-barcode@8.6.1/sdc-lib/",
+  moduleLoaders: [barcodeCaptureLoader()],
+});
 ```
 
-### Loading the SDK from a CDN
+If the user explicitly asks to run single-threaded, leave the check and the dialog out.
 
-Pin one exact version in every URL. A floating `@8` is resolved separately for each file, so after a new 8.x release the JavaScript and the engine can come from different releases, which breaks start-up.
+**UMD build, last resort.** Use the classic-script bundles only when the target browsers support neither ES modules nor the [`es-module-shims`](https://github.com/guybedford/es-module-shims) polyfill: they cannot be tree-shaken, so the page downloads more code and starts slower. Load them in this order, since each bundle reads the globals of the ones before it:
 
 ```html
-<script type="importmap">
-  {
-    "imports": {
-      "@scandit/web-datacapture-core": "https://cdn.jsdelivr.net/npm/@scandit/web-datacapture-core@8.6.1/build/js/index.js",
-      "@scandit/web-datacapture-core/": "https://cdn.jsdelivr.net/npm/@scandit/web-datacapture-core@8.6.1/",
-      "@scandit/web-datacapture-barcode": "https://cdn.jsdelivr.net/npm/@scandit/web-datacapture-barcode@8.6.1/build/js/index.js",
-      "@scandit/web-datacapture-barcode/": "https://cdn.jsdelivr.net/npm/@scandit/web-datacapture-barcode@8.6.1/"
-    }
-  }
-</script>
+<script src="https://cdn.jsdelivr.net/npm/@scandit/web-datacapture-core@8.6.1/build/js/umd/index.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@scandit/web-datacapture-barcode@8.6.1/build/js/umd/index.js"></script>
 ```
 
-Use the same version in `libraryLocation`: `https://cdn.jsdelivr.net/npm/@scandit/web-datacapture-barcode@8.6.1/sdc-lib/`.
+- `@scandit/web-datacapture-core/build/js/umd/index.js` exposes exactly one global, `SDCCore`.
+- `@scandit/web-datacapture-barcode/build/js/umd/index.js` exposes exactly one global, `SDCBarcode`.
+
+A classic `<script>` has no top-level `await`: take the exports off these globals (`const { DataCaptureContext } = SDCCore;`) and wrap the set-up in an async function.
+<!-- END GENERATED web-cdn -->
 
 ## Integration flow
 
@@ -115,10 +211,11 @@ After providing the code, show this setup checklist:
 
 ## Step 1 — Initialize DataCaptureContext
 
-Create the `DataCaptureView` first so a loading indicator can be shown during SDK initialization, then initialize the context:
+Check multithreading first, then create the `DataCaptureView` so a loading indicator can be shown during SDK initialization, then initialize the context. `showMultithreadingWarning()` and its dialog come from the plain-HTML set-up in [Loading the SDK from a CDN](#loading-the-sdk-from-a-cdn); an app that has no such helper adds an equivalent notice, or leaves the check out when the user asked to run single-threaded:
 
 ```typescript
 import {
+  BrowserHelper,
   Camera,
   DataCaptureContext,
   DataCaptureView,
@@ -132,6 +229,10 @@ import {
 } from "@scandit/web-datacapture-barcode";
 
 async function run(): Promise<void> {
+  if (!(await BrowserHelper.checkMultithreadingSupport())) {
+    showMultithreadingWarning();
+  }
+
   // Create the view before context init so a progress bar can be shown.
   const view = new DataCaptureView();
   view.connectToElement(document.getElementById("data-capture-view")!);
@@ -266,9 +367,8 @@ await barcodeBatch.setEnabled(true);
 `forLicenseKey()` downloads and compiles the WASM engine, which can take seconds. To show the camera preview meanwhile, check multithreading first, then pass the camera to `connectToElement` and switch it on before awaiting `forLicenseKey()`. If `forLicenseKey()` rejects (wrong key, network, CSP), the preview is already live: let the `On` request settle, so a denied permission is not left as an unhandled rejection, then switch the camera off before reporting the error:
 
 ```typescript
-const multithreadingSupported = await BrowserHelper.checkMultithreadingSupport();
-if (!multithreadingSupported) {
-  console.warn("Multithreading unavailable: check the COOP/COEP headers, or the device lacks CPU cores or nested workers.");
+if (!(await BrowserHelper.checkMultithreadingSupport())) {
+  showMultithreadingWarning();
 }
 
 const camera = Camera.pickBestGuess();
@@ -292,6 +392,8 @@ await view.setContext(DataCaptureContext.sharedInstance);
 await DataCaptureContext.sharedInstance.setFrameSource(camera);
 await cameraStarted;
 ```
+
+`showMultithreadingWarning()` and the dialog come from the plain-HTML set-up in [Loading the SDK from a CDN](#loading-the-sdk-from-a-cdn).
 
 `FrameSourceState.Standby` opens the camera without showing a preview. Use the exact enum members `On`, `Off` and `Standby`: in JavaScript a misspelled one such as `FrameSourceState.StandBy` is `undefined`, and `switchToDesiredState(undefined)` silently does nothing.
 
@@ -636,11 +738,12 @@ document.getElementById("data-capture-view")!.style.display = "none";
 
 ## React integration
 
-For React, initialize inside a `useEffect` and clean up in the returned function. The cleanup can run while `initialize()` is still awaiting (StrictMode mounts, unmounts and mounts again in development), so `initialize()` stops after each `await` once `cancelled` is set:
+For React, initialize inside a `useEffect` and clean up in the returned function. The dialog is rendered from component state instead of the DOM helper, and a module-level flag keeps it to once per page load, so the effect running twice in React StrictMode does not open it twice. Set-up does not wait for the dialog. The cleanup can run while `initialize()` is still awaiting (StrictMode mounts, unmounts and mounts again in development), so `initialize()` stops after each `await` once `cancelled` is set:
 
 ```tsx
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
+  BrowserHelper,
   Camera,
   DataCaptureContext,
   DataCaptureView,
@@ -656,8 +759,34 @@ import {
   Symbology,
 } from "@scandit/web-datacapture-barcode";
 
+const multithreadingWarningDismissedKey = "scandit-multithreading-warning-dismissed";
+let multithreadingWarningShown = false;
+
+function isMultithreadingWarningDismissed() {
+  try {
+    return sessionStorage.getItem(multithreadingWarningDismissedKey) === "true";
+  } catch {
+    return false;
+  }
+}
+
+function rememberMultithreadingWarningDismissed() {
+  try {
+    sessionStorage.setItem(multithreadingWarningDismissedKey, "true");
+  } catch {}
+}
+
 export const MatrixScanComponent: React.FC = () => {
   const captureRef = useRef<HTMLDivElement>(null);
+  const warningRef = useRef<HTMLDialogElement>(null);
+  const [multithreadingUnavailable, setMultithreadingUnavailable] = useState(false);
+  const [dontShowAgain, setDontShowAgain] = useState(false);
+
+  useEffect(() => {
+    if (multithreadingUnavailable && !warningRef.current?.open) {
+      warningRef.current?.showModal();
+    }
+  }, [multithreadingUnavailable]);
 
   useEffect(() => {
     let cancelled = false;
@@ -672,6 +801,13 @@ export const MatrixScanComponent: React.FC = () => {
     };
 
     const initialize = async () => {
+      const multithreadingSupported = await BrowserHelper.checkMultithreadingSupport();
+      if (cancelled) return;
+      if (!multithreadingSupported && !multithreadingWarningShown && !isMultithreadingWarningDismissed()) {
+        multithreadingWarningShown = true;
+        setMultithreadingUnavailable(true);
+      }
+
       const context = await DataCaptureContext.forLicenseKey(
         "-- ENTER YOUR SCANDIT LICENSE KEY HERE --",
         {
@@ -725,10 +861,48 @@ export const MatrixScanComponent: React.FC = () => {
   }, []);
 
   return (
-    <div
-      ref={captureRef}
-      style={{ position: "fixed", top: 0, left: 0, width: "100%", height: "100%" }}
-    />
+    <>
+      <div
+        ref={captureRef}
+        style={{ position: "fixed", top: 0, left: 0, width: "100%", height: "100%" }}
+      />
+      {multithreadingUnavailable && (
+        <dialog
+          ref={warningRef}
+          onClose={() => {
+            if (dontShowAgain) {
+              rememberMultithreadingWarningDismissed();
+            }
+          }}
+        >
+          <form method="dialog">
+            <h2>Scanning may be slower</h2>
+            <p>
+              This browser or device can't use all of its processing power for scanning. You can keep
+              scanning, but barcodes may take longer to read.
+            </p>
+            <p>
+              <a
+                href="https://docs.scandit.com/sdks/web/matrixscan/get-started/#improve-runtime-performance-by-enabling-browser-multithreading"
+                target="_blank"
+                rel="noopener"
+              >
+                Learn more
+              </a>
+            </p>
+            <label>
+              <input
+                type="checkbox"
+                checked={dontShowAgain}
+                onChange={(event) => setDontShowAgain(event.target.checked)}
+              />{" "}
+              Don't show this again during this session
+            </label>
+            <button autoFocus>OK</button>
+          </form>
+        </dialog>
+      )}
+    </>
   );
 };
 ```
