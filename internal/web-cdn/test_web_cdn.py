@@ -180,7 +180,7 @@ class BlockTest(unittest.TestCase):
         self.assertIn(">Scanning may be slower<", text)
         self.assertIn(
             "This browser or device can't use all of its processing power for scanning. "
-            "You can keep scanning, but barcodes may take longer to read.",
+            "You can keep scanning, but scanning may take longer.",
             text,
         )
         self.assertIn(f'href="{CONFIG["links"]["multithreading"]}"', text)

@@ -106,7 +106,7 @@ export function ScanditProvider({ children }: { children: ReactNode }) {
                         <h2>Scanning may be slower</h2>
                         <p>
                             This browser or device can't use all of its processing power for scanning. You can keep
-                            scanning, but barcodes may take longer to read.
+                            scanning, but scanning may take longer.
                         </p>
                         <p>
                             <a

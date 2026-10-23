@@ -251,7 +251,7 @@ ThreadingHTTPServer(("127.0.0.1", 8000), CrossOriginIsolatedHandler).serve_forev
 <dialog id="multithreading-warning">
   <form method="dialog">
     <h2>Scanning may be slower</h2>
-    <p>This browser or device can't use all of its processing power for scanning. You can keep scanning, but barcodes may take longer to read.</p>
+    <p>This browser or device can't use all of its processing power for scanning. You can keep scanning, but scanning may take longer.</p>
     <p><a href="https://docs.scandit.com/sdks/web/matrixscan/get-started/#improve-runtime-performance-by-enabling-browser-multithreading" target="_blank" rel="noopener">Learn more</a></p>
     <label><input type="checkbox" /> Don't show this again during this session</label>
     <button autofocus>OK</button>
