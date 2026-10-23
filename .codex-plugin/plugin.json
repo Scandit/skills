@@ -47,7 +47,10 @@
     "longDescription": "Install the Scandit SDK skills to teach Codex how to integrate Scandit's barcode scanning, ID capture, and smart label capture products correctly. Includes a product-selection advisor plus per-product, per-framework implementation and migration guides for iOS, Android, web, React Native, Flutter, Capacitor, Cordova, and .NET/MAUI.",
     "developerName": "Scandit",
     "category": "Developer Tools",
-    "capabilities": ["Read", "Write"],
+    "capabilities": [
+      "Read",
+      "Write"
+    ],
     "websiteURL": "https://www.scandit.com/",
     "privacyPolicyURL": "https://www.scandit.com/privacy/",
     "termsOfServiceURL": "https://ssl.scandit.com/terms-archive",
@@ -60,5 +63,59 @@
     "brandColor": "#2EC1CE",
     "composerIcon": "./assets/logo.png",
     "logo": "./assets/logo.png"
+  },
+  "extensions": {
+    "com.openai": {
+      "review": {
+        "test_cases": {
+          "positive": [
+            {
+              "description": "New app, no key yet: provision a trial key and write it into the code",
+              "prompt": "I've added SparkScan to my React Native app but I don't have a Scandit licence key yet. Get me a trial key and put it in the project.",
+              "tools_triggered": "ensure_scanner_setup, get_license_key",
+              "expected_behavior": "Calls ensure_scanner_setup with product native, platforms ios and android, the app's bundle id and env var SCANDIT_LICENSE_KEY, without running the command it returns. Fetches the key with get_license_key and writes it into the licence-key call in place of the placeholder. Shows at most a masked preview in chat and never prints the full key."
+            },
+            {
+              "description": "List the account's licence keys without exposing any key",
+              "prompt": "List the Scandit licence keys on my account.",
+              "tools_triggered": "list_license_keys",
+              "expected_behavior": "Calls list_license_keys and shows each key's label, type, status, expiry and masked preview. No full key appears in the reply."
+            },
+            {
+              "description": "Pick a named existing key and put it into the project",
+              "prompt": "Use my \"Warehouse App\" licence key in this project.",
+              "tools_triggered": "list_license_keys, get_license_key",
+              "expected_behavior": "Calls list_license_keys to find the key by label. If it is not a trial key, asks the user to confirm before fetching it. Calls get_license_key and writes the key into the licence-key call in the code, showing only a masked preview in chat."
+            },
+            {
+              "description": "Vague request: resolve product and framework before provisioning",
+              "prompt": "I want to try Scandit. Get me a licence key.",
+              "tools_triggered": "ensure_scanner_setup",
+              "expected_behavior": "Does not call any Scandit tool first. Asks which product and which framework the app uses, or inspects the open project to find out. Only then calls ensure_scanner_setup with the matching product and platforms."
+            },
+            {
+              "description": "Show subscriptions and which one can host a trial key",
+              "prompt": "Which Scandit subscriptions does my account have, and which of them can I create a trial key on?",
+              "tools_triggered": "list_subscriptions",
+              "expected_behavior": "Calls list_subscriptions and lists each subscription with its type and status. Explains that keys can only be created on trial subscriptions; test and production subscriptions are listed but cannot receive new keys."
+            }
+          ],
+          "negative": [
+            {
+              "description": "Barcode generation, not scanning: Scandit reads codes and does not create them",
+              "prompt": "Add a QR code generator to my checkout page so each order shows a scannable QR code for pickup."
+            },
+            {
+              "description": "General document OCR with a third-party engine, no Scandit SDK involved",
+              "prompt": "I have a folder of scanned PDF invoices. Write a Python script that extracts the text and totals from them with Tesseract."
+            },
+            {
+              "description": "Label printing with ZPL on a Zebra printer, no scanning and no SDK",
+              "prompt": "Write the ZPL for a 4x6 shipping label with a Code 128 tracking barcode and send it to my Zebra ZT411 over the network."
+            }
+          ]
+        }
+      }
+    }
   }
 }

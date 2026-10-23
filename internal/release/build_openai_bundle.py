@@ -308,6 +308,47 @@ def check_mcp(root: Path, manifest: dict) -> None:
         error("mcp_server_not_remote_https", f"MCP server {name!r} must be type http with an HTTPS url")
 
 
+REVIEW_CASE_FIELDS = {"description", "prompt", "tools_triggered", "expected_behavior",
+                      "file_attachment_urls", "expected_output_url"}
+
+
+def check_review(manifest: dict) -> None:
+    # MCP review needs five positive and three negative cases in the ZIP
+    # (extensions.com.openai.review.test_cases); the portal refuses to submit without them.
+    # Reviewer credentials and instructions are rejected from the ZIP and go in the portal form.
+    review = manifest.get("extensions", {}).get("com.openai", {}).get("review")
+    if not isinstance(review, dict):
+        error("review_test_cases_missing", "extensions.com.openai.review.test_cases is required for an MCP plugin")
+        return
+    for key in ("test_credentials", "reviewer_instructions"):
+        if key in review:
+            error("review_field_not_allowed", f"review.{key} is rejected from the ZIP; enter it in the portal's Review details")
+    cases = review.get("test_cases")
+    if not isinstance(cases, dict):
+        error("review_test_cases_missing", "review.test_cases must be an object with positive and negative lists")
+        return
+    for kind, need in (("positive", 5), ("negative", 3)):
+        items = cases.get(kind)
+        if not isinstance(items, list) or len(items) < need:
+            got = len(items) if isinstance(items, list) else 0
+            error(f"review_{kind}_test_cases_missing", f"review.test_cases.{kind}: need {need}, got {got}")
+            continue
+        required = ("description", "prompt") + (("tools_triggered", "expected_behavior") if kind == "positive" else ())
+        for i, case in enumerate(items):
+            if not isinstance(case, dict):
+                error("review_test_case_malformed", f"review.test_cases.{kind}[{i}] must be an object")
+                continue
+            missing = [f for f in required if not isinstance(case.get(f), str) or not case[f].strip()]
+            unknown = sorted(set(case) - REVIEW_CASE_FIELDS)
+            if missing:
+                error("review_test_case_field_missing", f"review.test_cases.{kind}[{i}] missing {', '.join(missing)}")
+            if unknown:
+                error("review_test_case_field_unknown", f"review.test_cases.{kind}[{i}] has unknown field(s) {', '.join(unknown)}")
+    if not is_https_url(review.get("demo_recording_url")):
+        warn("review_demo_recording_missing",
+             "review.demo_recording_url is not set; MCP review requires a reviewer-accessible walkthrough video (set it here or in the portal)")
+
+
 def check_manifest(root: Path) -> dict:
     path = root / MANIFEST
     if not path.is_file():
@@ -731,6 +772,7 @@ def main() -> int:
         removed = strip_tree(stage)
 
         manifest = check_manifest(stage)
+        check_review(manifest)
         skill_count = check_skills(stage, manifest.get("name", ""), manifest.get("license", ""))
         entries, uncompressed = check_paths(stage)
 
