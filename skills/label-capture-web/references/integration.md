@@ -598,7 +598,61 @@ mode.addListener(labelCaptureListener);
 
 ### Advanced Overlay
 
-Use `LabelCaptureAdvancedOverlay` only when the app needs fully custom AR rendering — drawing its own HTML elements or canvas graphics on top of the camera feed with full positional control. This requires significantly more implementation work. Refer to the [Advanced Configurations](https://docs.scandit.com/sdks/web/label-capture/advanced/) page for the listener interface and anchor points.
+Use `LabelCaptureAdvancedOverlay` only when the app needs fully custom AR rendering — its own HTML elements that follow captured labels and fields on top of the camera feed. It is more work than the Basic Overlay or the Validation Flow.
+
+The overlay is created with the static `withLabelCaptureForView` (there is no constructor on web), and the listener is a plain object assigned to `listener`. `viewForCapturedLabelField()` returns an `HTMLElement` for a field, or `null` to show nothing; `anchorForCapturedLabelField()` picks the anchor on the field, and `offsetForCapturedLabelField()` moves the element away from it. The `...CapturedLabel` methods do the same for a whole label. Read dates from `field.date` (`day`, `month`, `year`) rather than parsing `field.text`.
+
+```typescript
+import {
+  Anchor,
+  MeasureUnit,
+  NumberWithUnit,
+  PointWithUnit,
+} from "@scandit/web-datacapture-core";
+import { LabelCaptureAdvancedOverlay, type LabelField } from "@scandit/web-datacapture-label";
+
+const EXPIRY_FIELD_NAME = "<your-expiry-date-field-name>";
+const WARNING_DAYS = 3;
+
+function daysUntilExpiry(field: LabelField): number | null {
+  const date = field.date;
+  if (date?.day == null || date.month == null || date.year == null) {
+    return null;
+  }
+  const expiry = new Date(date.year, date.month - 1, date.day);
+  return Math.ceil((expiry.getTime() - Date.now()) / (24 * 60 * 60 * 1000));
+}
+
+const advancedOverlay = await LabelCaptureAdvancedOverlay.withLabelCaptureForView(mode, view);
+
+advancedOverlay.listener = {
+  viewForCapturedLabelField: (_overlay, field) => {
+    const days = field.name === EXPIRY_FIELD_NAME ? daysUntilExpiry(field) : null;
+    if (days == null || days > WARNING_DAYS) {
+      return null;
+    }
+    const badge = document.createElement("div");
+    badge.textContent = "Expires soon";
+    badge.style.cssText = "background: #d32f2f; color: #fff; padding: 4px 8px; border-radius: 4px; font: 600 14px sans-serif;";
+    return badge;
+  },
+  anchorForCapturedLabelField: () => Anchor.BottomCenter,
+  offsetForCapturedLabelField: () =>
+    new PointWithUnit(new NumberWithUnit(0, MeasureUnit.Pixel), new NumberWithUnit(8, MeasureUnit.Pixel)),
+};
+
+// Up to SDK 8.7 the advanced overlay only draws while the mode has a LabelCaptureListener.
+mode.addListener({ didUpdateSession: () => {} });
+```
+
+Notes for generating this code:
+
+- **Up to SDK 8.7, keep a `LabelCaptureListener` on the mode.** The advanced overlay receives no updates otherwise and draws nothing. If the app already has one, that is enough; never remove it while the overlay is in use.
+- Always return the anchor and the offset explicitly. Offsets are `new PointWithUnit(new NumberWithUnit(x, unit), new NumberWithUnit(y, unit))`; web `MeasureUnit` has only `Pixel` and `Fraction` (a fraction of the element's own size).
+- Return `null` (not `undefined`) for fields that get no element.
+- Keep the elements cheap to build: up to SDK 8.7 the listener is called on every frame.
+- `setViewForCapturedLabelField(field, label, element)` sets an element from code, for example from `didUpdateSession`; it takes precedence over the listener. Up to SDK 8.7, the first element set for a field stays until `clearCapturedLabelViews()`, so prefer the listener for content that changes.
+- Do not use `LabelCaptureAdvancedOverlayView` or `MeasureUnit.Dip`: they belong to the React Native and native SDKs, not web.
 
 ---
 
