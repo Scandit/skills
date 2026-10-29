@@ -28,12 +28,13 @@ ENABLE_PROP = re.compile(r"(?<![\w.])symbologies=\{")
 CALLABLE = re.compile(r"\b(\w+)\s*(?:=\s*(?:async\s*)?(?:function\b\s*)?)?\(")
 DECLARATION_TAIL = re.compile(r"\s*(?::[^;{}()=]*)?(?:async\s*)?(?:\{|=>)")
 KEYWORDS = {"if", "for", "while", "switch", "catch", "return", "function"}
-IDENTIFIER = re.compile(r"(?<![.\w])([A-Za-z_]\w*)\b(?!\s*\()")
+IDENTIFIER = re.compile(r"(?<!\w)([A-Za-z_]\w*)\b(?!\s*\()")
 GATE_SKIPPED = 3
 TS_ERROR = re.compile(r"\berror TS\d+")
 CS_ERROR = re.compile(r"\berror CS\d+")
 TS_TOOLS = "Read Edit Write Glob Grep Skill"
 TS_SUFFIX = "\n\nThe files are in the current directory. Edit them in place."
+SOURCE_SUFFIXES = {"dart": {".dart"}, "js": {".ts", ".tsx", ".js", ".jsx", ".vue"}, "csharp": {".cs", ".xaml"}}
 
 
 @dataclass(frozen=True)
@@ -110,6 +111,12 @@ def fixture_paths(suite, eval_entry):
     if len(set(paths)) < len(paths):
         raise ValueError(f"eval files must have distinct names, got {files}")
     return paths
+
+
+def source_files(suite, root):
+    """Workdir-relative paths of every source file under root."""
+    return {str(p.relative_to(root)) for p in Path(root).rglob("*")
+            if p.suffix in SOURCE_SUFFIXES[suite.lang] and p.is_file()}
 
 
 def run_gate(command):
@@ -226,6 +233,10 @@ def resolve_args(code, arg, seen, at):
         definitions = re.compile(rf"\b{re.escape(ident)}\s*(?::[^=;{{}}]+)?=\s*(?:const\s*)?(?:new\s*\w*\s*(?:<[^>]*>\s*)?(?:\[\]\s*)?)?(?:<[^>]*>\s*)?[{{\[]")
         for definition in definitions.finditer(code, *(span or (0, len(code)))):
             names.update(SYMBOLOGY.findall(balanced(code, definition.end() - 1)))
+        # `this.formats = defaultFormats`: follow a name assigned from another name.
+        aliases = re.compile(rf"\b{re.escape(ident)}\s*(?::[^=;{{}}]+)?=\s*(?:const\s*)?([A-Za-z_][\w.]*)\s*[,;)}}\n]")
+        for alias in aliases.finditer(code, *(span or (0, len(code)))):
+            names.update(resolve_args(code, alias.group(1), seen, alias.start(1)))
     return names
 
 
@@ -273,6 +284,9 @@ def score_eval(suite, eval_entry, output_dir, evals_dir, gate_runner=None, sdk_v
         return {**row, "status": "missing", "compiles": None, "errors_left": 0,
                 "found": [], "missing": expected, "kept": False, "narrowed": False}
     extras = [s for s in extras if s.is_file()]
+    # Files the run added (e.g. a scandit.ts helper) carry part of the migration.
+    known = {main, *extras}
+    extras += [Path(output_dir) / p for p in sorted(source_files(suite, output_dir)) if Path(output_dir) / p not in known]
     code, output = (gate_runner or run_gate)(gate_command(suite, main, extras, sdk_version, original))
     errors_left = len(suite.error_line.findall(output))
     status = gate_status(code, errors_left)

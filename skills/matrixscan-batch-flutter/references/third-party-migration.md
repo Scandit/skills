@@ -25,6 +25,12 @@ Search the project for the plugin import and its types:
 1. Delete the third-party dependency from `pubspec.yaml` (e.g. `mobile_scanner:`) once the migration is complete.
 2. Remove its import and all of its types from the screen (`MobileScannerController`, `MobileScanner`, `onDetect`, `BarcodeCapture`, `Barcode`, `BarcodeFormat`).
 3. Add the Scandit dependency: `scandit_flutter_datacapture_barcode` (pulls in `scandit_flutter_datacapture_core` transitively) and `permission_handler`. Run `flutter pub get`.
+4. Import all three Scandit libraries in the screen. `BarcodeBatch`, its settings, listener, session and overlays live only in the `_barcode_batch.dart` library:
+   ```dart
+   import 'package:scandit_flutter_datacapture_barcode/scandit_flutter_datacapture_barcode.dart';
+   import 'package:scandit_flutter_datacapture_barcode/scandit_flutter_datacapture_barcode_batch.dart';
+   import 'package:scandit_flutter_datacapture_core/scandit_flutter_datacapture_core.dart';
+   ```
 
 ## Step 3: Map the scanned formats to Scandit symbologies
 

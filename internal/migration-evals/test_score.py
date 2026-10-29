@@ -101,6 +101,23 @@ class ScoreCase(unittest.TestCase):
         row = self.score(5, "// no settings here", GATE_OK)
         self.assertIs(row["kept"], True)
 
+    def test_symbologies_in_a_file_the_run_added_count(self):
+        (self.tmp / "lib").mkdir()
+        (self.tmp / "lib" / "scandit_setup.dart").write_text("settings.enableSymbologies({Symbology.qr});")
+        row = self.score(5, "// no settings here", GATE_OK)
+        self.assertIs(row["kept"], True)
+
+    def test_qualified_collection_resolves(self):
+        text = ("class Config { static const all = [Symbology.qr, Symbology.code128]; }\n"
+                "settings.enableSymbologies(Config.all.toSet());")
+        self.assertEqual(self.found(text), ["qr", "code128"])
+
+    def test_constructor_default_alias_resolves(self):
+        text = ("class Config { const Config({this.formats = all}); static const all = [Symbology.qr];\n"
+                "  final List<Symbology> formats; }\n"
+                "settings.enableSymbologies(widget.config.formats.toSet());")
+        self.assertEqual(self.found(text), ["qr"])
+
     def test_commented_out_symbology_does_not_count(self):
         text = MIGRATED_PAGE.replace("Symbology.code128", "/* Symbology.code128 */ // Symbology.code128\n Symbology.qr")
         row = self.score(1, text, GATE_OK)
