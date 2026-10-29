@@ -83,11 +83,11 @@ def collect(args, root):
 
 
 def run_eval(args, skill, suite, ev, system, work):
-    fixtures = "".join(
-        f"\n\n=== File: {f} ===\n```\n{(REPO / 'evals' / skill / f).read_text()}\n```" for f in ev.get("files", [])
-    )
     row = {"skill": skill, "file": suite, "id": ev["id"], "cost_usd": 0.0, "models": set()}
     try:
+        fixtures = "".join(
+            f"\n\n=== File: {f} ===\n```\n{(REPO / 'evals' / skill / f).read_text()}\n```" for f in ev.get("files", [])
+        )
         output, cost, models = claude(f"{ev['prompt']}\n\nHere are the relevant files:{fixtures}\n\n{TASK}",
                                       system, args.model, args.effort, args.timeout, work)
         row["cost_usd"] += cost
