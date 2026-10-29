@@ -17,7 +17,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from report import write_report  # noqa: E402
-from score import DEFAULT_SDK_VERSION, REPO, SUITES, eval_dir, fixture_paths, score_eval  # noqa: E402
+from score import DEFAULT_SDK_VERSION, REPO, SUITES, eval_dir, fixture_paths, score_eval, source_files  # noqa: E402
 
 
 def load_evals(skill, ids):
@@ -52,8 +52,8 @@ def as_text(value):
     return value.decode() if isinstance(value, bytes) else (value or "")
 
 
-def save_outputs(suite, entry, work, out):
-    for name in fixture_paths(suite, entry):
+def save_outputs(suite, entry, work, out, before):
+    for name in [*fixture_paths(suite, entry), *sorted(source_files(suite, work) - before)]:
         if (work / name).is_file():
             (out / name).parent.mkdir(parents=True, exist_ok=True)
             shutil.copy(work / name, out / name)
@@ -72,6 +72,7 @@ def run_claude(suite, evals_dir, entry, out, model, timeout, sdk_version=DEFAULT
     with tempfile.TemporaryDirectory(prefix="migration-eval-") as tmp:
         work = Path(tmp)
         prepare_workdir(suite, evals_dir, entry, work)
+        before = source_files(suite, work)
         prompt = build_prompt(suite, entry, sdk_version)
         try:
             proc = subprocess.run(
@@ -84,7 +85,7 @@ def run_claude(suite, evals_dir, entry, out, model, timeout, sdk_version=DEFAULT
             stdout, stderr = as_text(exc.stdout), as_text(exc.stderr)
         (out / "claude.json").write_text(stdout)
         (out / "claude.stderr").write_text(stderr)
-        save_outputs(suite, entry, work, out)
+        save_outputs(suite, entry, work, out, before)
     (out / "run.json").write_text(json.dumps(info) + "\n")
 
 

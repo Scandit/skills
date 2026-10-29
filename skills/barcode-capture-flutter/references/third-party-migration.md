@@ -27,6 +27,12 @@ Search the project for the plugin import and its types:
 1. Delete the dependency from `pubspec.yaml` once nothing imports it (a gallery/still-image path migrates too, see Step 8).
 2. Remove its import and all of its types from the screen.
 3. Add `scandit_flutter_datacapture_barcode` (pulls in core) and `permission_handler`. Run `flutter pub get`.
+4. Import all three Scandit libraries in the screen. `BarcodeCapture`, its settings, listener, session and overlay live only in the `_barcode_capture.dart` library:
+   ```dart
+   import 'package:scandit_flutter_datacapture_barcode/scandit_flutter_datacapture_barcode.dart';
+   import 'package:scandit_flutter_datacapture_barcode/scandit_flutter_datacapture_barcode_capture.dart';
+   import 'package:scandit_flutter_datacapture_core/scandit_flutter_datacapture_core.dart';
+   ```
 
 ## Step 3: Map the scanned formats to Scandit symbologies
 
