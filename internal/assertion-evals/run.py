@@ -3,7 +3,7 @@
 
 Usage: run.py --skill barcode-capture-android [--skill 'id-capture-*'] [--files integration-evals]
               [--ids 1,3] [--smoke] [--reps N] [--ref main] [--jobs 4] [--out DIR]
-              [--model claude-sonnet-5-5] [--effort medium] [--judge-model claude-opus-4-7]
+              [--model sonnet] [--effort medium] [--judge-model opus]
 """
 import argparse
 import io
@@ -43,7 +43,7 @@ def claude(prompt, system_file, model, effort, timeout, work):
         raise RuntimeError((proc.stderr or proc.stdout)[-300:]) from None
     if proc.returncode or data.get("is_error"):
         raise RuntimeError(str(data.get("result") or proc.stderr)[-300:])
-    return data["result"], data.get("total_cost_usd") or 0.0
+    return data["result"], data.get("total_cost_usd") or 0.0, set(data.get("modelUsage") or ())
 
 
 def skills_root(ref, work):
@@ -86,11 +86,12 @@ def run_eval(args, skill, suite, ev, system, work):
     fixtures = "".join(
         f"\n\n=== File: {f} ===\n```\n{(REPO / 'evals' / skill / f).read_text()}\n```" for f in ev.get("files", [])
     )
-    row = {"skill": skill, "file": suite, "id": ev["id"], "cost_usd": 0.0}
+    row = {"skill": skill, "file": suite, "id": ev["id"], "cost_usd": 0.0, "models": set()}
     try:
-        output, cost = claude(f"{ev['prompt']}\n\nHere are the relevant files:{fixtures}\n\n{TASK}",
-                              system, args.model, args.effort, args.timeout, work)
+        output, cost, models = claude(f"{ev['prompt']}\n\nHere are the relevant files:{fixtures}\n\n{TASK}",
+                                      system, args.model, args.effort, args.timeout, work)
         row["cost_usd"] += cost
+        row["models"] |= models
         texts = [a["text"] if isinstance(a, dict) else a for a in ev["assertions"]]
         scoped = [scoped_output(output, t, "migration" in suite) for t in texts]
         results = [deterministic_check(s, t) for s, t in zip(scoped, texts)]
@@ -101,9 +102,10 @@ def run_eval(args, skill, suite, ev, system, work):
             for i in pending:
                 groups.setdefault(scoped[i], []).append(i)
             for scope, idx in groups.items():
-                verdict, cost = claude(judge_prompt(scope, [texts[i] for i in idx]), work / "judge.system.md",
-                                       args.judge_model, None, args.timeout, work)
+                verdict, cost, models = claude(judge_prompt(scope, [texts[i] for i in idx]), work / "judge.system.md",
+                                               args.judge_model, None, args.timeout, work)
                 row["cost_usd"] += cost
+                row["models"] |= models
                 for i, v in zip(idx, parse_verdicts(verdict, len(idx))):
                     results[i] = v
     except Exception as e:  # noqa: BLE001
@@ -119,7 +121,7 @@ def git(*a):
 
 def summarize(rows, meta):
     lines = [f"model {meta['model']} (effort {meta['effort'] or 'default'}), judge {meta['judge_model']}, "
-             f"skills {meta['skills_ref']}{' (dirty)' if meta['dirty'] else ''}"]
+             f"resolved {', '.join(meta['models_used'])}, skills {meta['skills_ref']}{' (dirty)' if meta['dirty'] else ''}"]
     by_skill = {}
     for r in rows:
         by_skill.setdefault(r["skill"], []).append(r)
@@ -149,9 +151,9 @@ def main():
     ap.add_argument("--reps", type=int, default=1)
     ap.add_argument("--ref", help="git ref to take skills/ from (evals stay at the working tree)")
     ap.add_argument("--jobs", type=int, default=4)
-    ap.add_argument("--model", default="claude-sonnet-5-5")
+    ap.add_argument("--model", default="sonnet", help="model or alias; aliases follow the latest release")
     ap.add_argument("--effort", default="medium", help="generator effort; '' for the model default")
-    ap.add_argument("--judge-model", default="claude-opus-4-7")
+    ap.add_argument("--judge-model", default="opus")
     ap.add_argument("--timeout", type=int, default=900)
     ap.add_argument("--out", type=Path)
     args = ap.parse_args()
@@ -171,6 +173,7 @@ def main():
             futures = [pool.submit(run_eval, args, s, f, ev, systems[s], work) for s, f, ev in jobs]
             for fut in as_completed(futures):
                 r = fut.result()
+                r["models"] = sorted(r["models"])
                 rows.append(r)
                 ok = sum(a["pass"] for a in r["assertions"])
                 print(f"  {r['skill']} {r['file']}#{r['id']}: {ok}/{len(r['assertions'])} "
@@ -178,6 +181,7 @@ def main():
     rows.sort(key=lambda r: (r["skill"], r["file"], r["id"]))
     meta = {
         "generated_at": stamp, "model": args.model, "effort": args.effort, "judge_model": args.judge_model,
+        "models_used": sorted({m for r in rows for m in r["models"]}),
         "skills_ref": args.ref or git("rev-parse", "--short", "HEAD"),
         "dirty": not args.ref and bool(git("status", "--porcelain", "skills", "evals")),
         "cost_usd": round(sum(r["cost_usd"] for r in rows), 4),

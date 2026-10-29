@@ -17,8 +17,9 @@ Runs through `claude -p` (`CLAUDE` overrides the binary), so a Claude Code login
 Python dependencies. Sessions get no tools, no settings, MCP servers or skills, so installed plugins do not leak in.
 `--ref` takes `skills/` from a git ref; evals and fixtures always come from the working tree.
 
-Defaults: generator `claude-sonnet-5-5` at `--effort medium`, judge `claude-opus-4-7`. Changing either moves the
-scores, so compare runs made with the same pair (both are recorded in `results.json`).
+Defaults: generator `sonnet` at `--effort medium`, judge `opus`: `claude` aliases for the latest release, so a new
+model moves the scores. `results.json` records the resolved ids (`models_used`); compare runs with the same pair,
+or pin them, e.g. `--model claude-sonnet-5-5 --judge-model claude-opus-5-5`.
 
 ## Scoring
 
