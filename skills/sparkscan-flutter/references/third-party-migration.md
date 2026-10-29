@@ -26,6 +26,12 @@ Identify the plugin by its imports and types: `MobileScannerController`, the `Mo
 1. Delete the dependency from `pubspec.yaml` once nothing imports it (a gallery/still-image path migrates too, see Step 7).
 2. Remove its import and types (`MobileScannerController`, `MobileScanner`, `onDetect`, `BarcodeFormat`).
 3. Add `scandit_flutter_datacapture_barcode` (pulls in core) and `permission_handler`; run `flutter pub get`.
+4. Import all three Scandit libraries in the screen. `SparkScan`, `SparkScanView` and their settings and listeners live only in the `_spark_scan.dart` library:
+   ```dart
+   import 'package:scandit_flutter_datacapture_barcode/scandit_flutter_datacapture_barcode.dart';
+   import 'package:scandit_flutter_datacapture_barcode/scandit_flutter_datacapture_spark_scan.dart';
+   import 'package:scandit_flutter_datacapture_core/scandit_flutter_datacapture_core.dart';
+   ```
 
 ## Step 3: Map formats to symbologies
 
