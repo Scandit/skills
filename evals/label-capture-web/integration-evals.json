@@ -178,6 +178,42 @@
         }
       ],
       "tags": ["no-bundler"]
+    },
+    {
+      "id": 10,
+      "prompt": "My web app uses @scandit/web-datacapture-label 8.6 and already scans a perishable-product label with an expiry date field named \"expiry\". When the item expires within 3 days, I want to show my own red \"Expires soon\" badge (an HTML element) 8 pixels below that field on top of the camera preview, following the label as it moves. How do I do that?",
+      "expected_output": "The skill creates a LabelCaptureAdvancedOverlay with LabelCaptureAdvancedOverlay.withLabelCaptureForView(mode, view), assigns overlay.listener with viewForCapturedLabelField returning a document.createElement badge for the expiry field (null otherwise), anchorForCapturedLabelField returning Anchor.BottomCenter, and offsetForCapturedLabelField returning new PointWithUnit(new NumberWithUnit(0, MeasureUnit.Pixel), new NumberWithUnit(8, MeasureUnit.Pixel)); it keeps a LabelCaptureListener on the mode because the 8.6 overlay only draws while one is registered.",
+      "files": [],
+      "assertions": [
+        {
+          "text": "LabelCaptureAdvancedOverlay.withLabelCaptureForView( is called with the LabelCapture mode and the DataCaptureView"
+        },
+        {
+          "text": "The overlay listener is assigned as a property (overlay.listener = { ... }), not through a setListener(...) method (semantic)"
+        },
+        {
+          "text": "The listener implements viewForCapturedLabelField and returns an element built with document.createElement for the expiry field, and null for other fields (semantic)"
+        },
+        {
+          "text": "anchorForCapturedLabelField returns Anchor.BottomCenter, with Anchor imported from @scandit/web-datacapture-core"
+        },
+        {
+          "text": "The 8-pixel offset is built as new PointWithUnit(new NumberWithUnit(0, MeasureUnit.Pixel), new NumberWithUnit(8, MeasureUnit.Pixel)), not as new PointWithUnit(x, y, unit) (semantic)"
+        },
+        {
+          "text": "A LabelCaptureListener is added to the mode (addListener) so that the advanced overlay receives session updates on SDK 8.6 (semantic)"
+        },
+        {
+          "text": "new LabelCaptureAdvancedOverlay( is NOT present"
+        },
+        {
+          "text": "The React Native LabelCaptureAdvancedOverlayView type is NOT used in the code (semantic)"
+        },
+        {
+          "text": "MeasureUnit.Dip is NOT used in the code; offsets use MeasureUnit.Pixel or MeasureUnit.Fraction (semantic)"
+        }
+      ],
+      "tags": ["advanced-overlay"]
     }
   ]
 }
