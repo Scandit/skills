@@ -133,6 +133,13 @@
       ]
     },
     {
+      "title": "Linux SDK",
+      "description": "Barcode scanning, MatrixScan tracking, parser and barcode generator for the Linux C API and Python bindings.",
+      "skills": [
+        "scandit-linux-sdk"
+      ]
+    },
+    {
       "title": "Barcode Selection",
       "description": "Let the user tap or aim to pick one barcode out of many.",
       "skills": [

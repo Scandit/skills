@@ -38,6 +38,9 @@
     "maui",
     "xamarin",
     "sdk",
-    "smart-data-capture"
+    "smart-data-capture",
+    "linux",
+    "c",
+    "python"
   ]
 }

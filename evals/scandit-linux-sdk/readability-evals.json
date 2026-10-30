@@ -1,0 +1,70 @@
+{
+  "skill_name": "scandit-linux-sdk",
+  "evals": [
+    {
+      "id": 1,
+      "tags": [
+        "ppm",
+        "code128"
+      ],
+      "prompt": "My Code 128 with 20 characters is 300 px wide in a 1920x1080 frame and doesn't scan. Why?",
+      "expected_output": "Counts modules (ppm_calc.py or the formula), computes PPM vs the 2–4 requirement and gives a target width.",
+      "files": [],
+      "assertions": [
+        {
+          "text": "The module count of the Code 128 is computed (ppm_calc.py ppm code128 --chars 20 --pixels 300, or the formula from code-readability.md)"
+        },
+        {
+          "text": "A pixels-per-module number is given and compared with the 2–4 PPM requirement"
+        },
+        {
+          "text": "A target width in pixels (or a smaller distance / higher resolution) is given to reach enough PPM"
+        },
+        {
+          "text": "The answer asks for or mentions the original full-resolution frame rather than a screenshot"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "tags": [
+        "ppm",
+        "setup-planning"
+      ],
+      "prompt": "Camera 1920 px wide, 70° horizontal field of view, 600 mm from the labels; the Code 128 X-dimension is 0.25 mm. Enough?",
+      "expected_output": "Uses ppm_calc.py plan (or the formula) to compute PPM at that distance and compares with 2–4; gives max distance or lens change.",
+      "files": [],
+      "assertions": [
+        {
+          "text": "ppm_calc.py plan --res-px 1920 --hfov 70 --distance-mm 600 --x-mm 0.25 (or the equivalent formula with steps) is used"
+        },
+        {
+          "text": "A PPM value is stated and compared with the 2–4 requirement"
+        },
+        {
+          "text": "A concrete improvement is given (shorter distance, narrower lens, higher resolution) with a target"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "tags": [
+        "phone-vs-linux"
+      ],
+      "prompt": "The Scandit app on my phone reads this label but my Linux single-image scanner doesn't. Same SDK, so why?",
+      "expected_output": "Video at close range with autofocus and many attempts vs one image; compare PPM and sharpness; HIGH_EFFORT, frame sequence per image; original frames.",
+      "files": [],
+      "assertions": [
+        {
+          "text": "The answer explains a phone scans a video stream at close range with autofocus and many attempts, a single image gets one try"
+        },
+        {
+          "text": "The answer suggests comparing pixels per module and sharpness of the Linux frame"
+        },
+        {
+          "text": "The answer checks single-image settings (SC_PRESET_HIGH_EFFORT, new frame sequence per image, duplicate filter off)"
+        }
+      ]
+    }
+  ]
+}

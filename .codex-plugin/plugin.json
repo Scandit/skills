@@ -37,14 +37,17 @@
     "maui",
     "xamarin",
     "sdk",
-    "smart-data-capture"
+    "smart-data-capture",
+    "linux",
+    "c",
+    "python"
   ],
   "skills": "./skills/",
   "mcpServers": "./.mcp.json",
   "interface": {
     "displayName": "Scandit SDK",
     "shortDescription": "Scan barcodes, IDs and labels",
-    "longDescription": "Install the Scandit SDK skills to teach Codex how to integrate Scandit's barcode scanning, ID capture, and smart label capture products correctly. Includes a product-selection advisor plus per-product, per-framework implementation and migration guides for iOS, Android, web, React Native, Flutter, Capacitor, Cordova, and .NET/MAUI.",
+    "longDescription": "Install the Scandit SDK skills to teach Codex how to integrate Scandit's barcode scanning, ID capture, and smart label capture products correctly. Includes a product-selection advisor plus per-product, per-framework implementation and migration guides for iOS, Android, web, React Native, Flutter, Capacitor, Cordova, .NET/MAUI, and Linux (C API and Python).",
     "developerName": "Scandit",
     "category": "Developer Tools",
     "capabilities": [

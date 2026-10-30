@@ -1,0 +1,240 @@
+{
+  "skill_name": "scandit-linux-sdk",
+  "evals": [
+    {
+      "id": 1,
+      "tags": [
+        "licensing",
+        "status-15",
+        "python"
+      ],
+      "prompt": "I get 'Processing frame failed with code 15' running python3 scan.py on Ubuntu with the Scandit Linux SDK.",
+      "expected_output": "Status 15 = app ID mismatch; on Linux the app ID is the executable name = python3, not scan.py; key with the right or no executable name.",
+      "files": [],
+      "assertions": [
+        {
+          "text": "The answer says status 15 is an app ID / executable-name mismatch"
+        },
+        {
+          "text": "The answer says the executable name for a Python script is python3, not scan.py"
+        },
+        {
+          "text": "The answer suggests a key with the right executable name or without an executable name"
+        },
+        {
+          "text": "The answer points only to public resources (Scandit docs, the dashboard, support@scandit.com)"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "tags": [
+        "install",
+        "glibc"
+      ],
+      "prompt": "Linking fails on our Debian 10 box: undefined reference to `log@GLIBC_2.29' from libscanditsdk.so (SDK 8.6). dpkg installed the package without complaints.",
+      "expected_output": "The system glibc is too old; the SDK needs glibc 2.31 or newer since 7.0 (Ubuntu 20.04 / Debian 11), and the package can install but fail at link or load time; check ldd --version; upgrade the OS.",
+      "files": [],
+      "assertions": [
+        {
+          "text": "The answer says the glibc is too old for the SDK"
+        },
+        {
+          "text": "The answer gives 2.31 or newer as the requirement (Ubuntu 20.04 / Debian 11 or newer)"
+        },
+        {
+          "text": "The answer explains that a successful install does not mean the system meets the glibc requirement: the error appears at link or load time"
+        },
+        {
+          "text": "The answer suggests ldd --version and an OS upgrade (e.g. Debian 11 / Ubuntu 20.04 or newer)"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "tags": [
+        "camera",
+        "stepwise"
+      ],
+      "prompt": "Raspberry Pi Camera Module 3 with sc_camera: 'Could not request buffers: Cannot allocate memory'. I request the maximum resolution the camera reports.",
+      "expected_output": "The driver reports a stepwise range with an unrealistic maximum (e.g. 16376x16376); request a real sensor mode; check the return of sc_camera_request_resolution; query the mode with sc_camera_get_resolution_mode.",
+      "files": [],
+      "assertions": [
+        {
+          "text": "The answer explains the stepwise range with an unrealistic maximum (e.g. 16376×16376)"
+        },
+        {
+          "text": "The answer says to request a real sensor mode (datasheet or v4l2-ctl --list-formats-ext)"
+        },
+        {
+          "text": "The answer mentions checking the return value of sc_camera_request_resolution("
+        },
+        {
+          "text": "The answer mentions sc_camera_get_resolution_mode( with discrete vs stepwise (or v4l2-ctl --list-formats-ext) to see what the camera offers"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "tags": [
+        "python",
+        "symbology-settings",
+        "inverted"
+      ],
+      "prompt": "How do I enable inverted (light-on-dark) Data Matrix codes in Python?",
+      "expected_output": "settings.symbologies[sc.SYMBOLOGY_DATA_MATRIX].color_inverted_enabled = True in addition to enabling the symbology; only QR/MicroQR inverted by default.",
+      "files": [],
+      "assertions": [
+        {
+          "text": "settings.symbologies[sc.SYMBOLOGY_DATA_MATRIX].color_inverted_enabled = True is shown"
+        },
+        {
+          "text": "The symbology itself is enabled too (enable_symbology or .enabled = True)"
+        },
+        {
+          "text": "The answer says scanner.apply_settings(settings) is needed afterwards"
+        },
+        {
+          "text": "No Python method or property is used that is not in the 8.6 bindings"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "tags": [
+        "blurry-codes"
+      ],
+      "prompt": "Is there some setting I can tweak to make the Linux SDK scan blurry codes better?",
+      "expected_output": "Only documented options; explain physical causes (focus, motion, exposure, PPM), documented options (HIGH_EFFORT etc.), and support contact.",
+      "files": [],
+      "assertions": [
+        {
+          "text": "Every setting the answer suggests is a documented API or JSON setting from the skill references (e.g. SC_PRESET_HIGH_EFFORT, code direction hint, search area)"
+        },
+        {
+          "text": "The answer does not set settings by name strings other than documented JSON keys and symbology extensions"
+        },
+        {
+          "text": "The answer explains blur causes (focus, motion, exposure) and pixels per module"
+        },
+        {
+          "text": "The answer offers Scandit support (support@scandit.com) with original frames for hard cases"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "tags": [
+        "multi-scan",
+        "upgrade"
+      ],
+      "prompt": "After upgrading from 7.4 to 8.2 only one code per image is returned.",
+      "expected_output": "Multi-scan off by default; set_max_number_of_codes_per_frame removed in 8.0 → set_multi_scan_enabled + set_max_num_locations_to_process_per_frame; JSON key replaced; tracking feature.",
+      "files": [],
+      "assertions": [
+        {
+          "text": "The answer says multi-scan is off by default"
+        },
+        {
+          "text": "sc_barcode_scanner_settings_set_multi_scan_enabled( and sc_barcode_scanner_settings_set_max_num_locations_to_process_per_frame( are named"
+        },
+        {
+          "text": "The answer says set_max_number_of_codes_per_frame was removed in 8.0 (and JSON maxNumberOfCodesPerFrame is ignored)"
+        },
+        {
+          "text": "The answer mentions the \"tracking\" license feature"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "tags": [
+        "python",
+        "image-description"
+      ],
+      "prompt": "broken_descr.py processes my label but returns status 5 or finds nothing. The same image works with the C sample.",
+      "expected_output": "first_plane_row_bytes and memory_size are not properties of the 8.x ImageDescription; Python silently creates attributes; the stride is never set → use descr.set_plane_row_bytes(0, frame.strides[0]); contiguous buffer.",
+      "files": [
+        "fixtures/broken_descr.py"
+      ],
+      "assertions": [
+        {
+          "text": "The answer says first_plane_row_bytes and memory_size are not properties of sc.ImageDescription in the 8.x bindings"
+        },
+        {
+          "text": "The answer explains Python silently creates a plain attribute, so the stride is never set"
+        },
+        {
+          "text": "The fix uses descr.set_plane_row_bytes(0, ...) with the array's stride (strides[0]) or 3 * width for a contiguous BGR frame"
+        },
+        {
+          "text": "The fix keeps sc.IMAGE_LAYOUT_BGR_8U for the BGR frame (or converts to grey with GRAY_8U)"
+        },
+        {
+          "text": "The answer suggests checking the apply_settings status (is_success()) as well"
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "tags": [
+        "licensing",
+        "status-codes"
+      ],
+      "prompt": "sc_recognition_context_new returns a valid pointer, so my license key must be fine, right? But nothing ever scans.",
+      "expected_output": "A wrong key doesn't make context creation fail; the license status comes from sc_barcode_scanner_apply_settings / process_frame; print code and message.",
+      "files": [],
+      "assertions": [
+        {
+          "text": "The answer says context creation succeeds even with a wrong or missing key"
+        },
+        {
+          "text": "The answer says the license status is reported by sc_barcode_scanner_apply_settings( and/or sc_recognition_context_process_frame("
+        },
+        {
+          "text": "The answer says to print the status code and the message (sc_byte_array_get_string(status.message))"
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "tags": [
+        "json-settings"
+      ],
+      "prompt": "My settings JSON has \"maxNumberOfCodesPerFrame\": 5 but the Linux SDK 8.6 still returns one code per frame. No error is reported.",
+      "expected_output": "The key was removed in 8.0 and unknown keys are silently ignored; use multiScanEnabled + maxNumLocationsToProcessPerFrame; check as_json; tracking feature.",
+      "files": [],
+      "assertions": [
+        {
+          "text": "The answer says unknown JSON keys are ignored without an error and maxNumberOfCodesPerFrame no longer exists in 8.x"
+        },
+        {
+          "text": "The replacement keys \"multiScanEnabled\" and \"maxNumLocationsToProcessPerFrame\" are given"
+        },
+        {
+          "text": "The answer recommends checking sc_barcode_scanner_settings_as_json("
+        },
+        {
+          "text": "The answer mentions the \"tracking\" license feature"
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "tags": [
+        "out-of-scope"
+      ],
+      "prompt": "How do I configure SparkScan on Android?",
+      "expected_output": "The Linux skill does not apply (should not trigger); if loaded, it says it covers the Linux SDK only and points to docs.scandit.com.",
+      "files": [],
+      "assertions": [
+        {
+          "text": "The scandit-linux-sdk skill is not triggered, or the answer says it only covers the Linux SDK"
+        },
+        {
+          "text": "No Linux C API code (sc_* functions) is given as the answer to the SparkScan question"
+        }
+      ]
+    }
+  ]
+}
