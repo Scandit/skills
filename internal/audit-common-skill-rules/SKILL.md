@@ -58,6 +58,6 @@ Must exist and convey, in this order of preference:
 - **Then into the code:** the agent writes the key — fetched or pasted by the user — into the licence-key call in place of the placeholder. Neither the agent nor the app's build takes a key from a dotenv file, environment variables or other local files (the Claude directory scan flags that as using a credential from the user's machine).
 - The dashboard provisioning flow appears here and nowhere else in the skill, so a reader gets one instruction rather than two.
 
-_Exempt: `data-capture-sdk` (advisory skill — it recommends a product rather than integrating one), `scandit-xamarin-to-net-migration`, `matrixscan-ar-highlight-ios`, `matrixscan-ar-annotation-ios`._
+_Exempt: `data-capture-sdk` (advisory skill — it recommends a product rather than integrating one), `scandit-xamarin-to-net-migration`, `matrixscan-ar-highlight-ios`, `matrixscan-ar-annotation-ios`, `scandit-linux-sdk` (the MCP server has no Linux licence platform: its section sends the user to the dashboard, names the Linux executable-name rule, and writes the pasted key into the placeholder)._
 
 The deterministic half of this rule — section present, product, platforms and `get_license_key` named, no key read from the user's machine, no stray provisioning link — is enforced by `internal/skill-auditor/scripts/lint_structure.py`. Audit the wording; let the linter count.

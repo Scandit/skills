@@ -1,0 +1,157 @@
+{
+  "skill_name": "scandit-linux-sdk",
+  "evals": [
+    {
+      "id": 1,
+      "tags": [
+        "third-party-pyzbar",
+        "compatibility-layer"
+      ],
+      "prompt": "Replace pyzbar with the Scandit Linux SDK in pyzbar_scanner.py. Other modules call find_codes(path) and read .data, .type and .rect.",
+      "expected_output": "Reads third-party-migration.md; keeps find_codes(path) and the result fields (compatibility layer), creates context/scanner once, enables Code 128, EAN-13 and QR, removes the binarization step, maps results back, notes Scandit symbology names and multi-scan / tracking. Judge library-absence assertions against code / written files only; the summary may name the old library.",
+      "files": [
+        "fixtures/pyzbar_scanner.py"
+      ],
+      "assertions": [
+        {
+          "text": "from pyzbar is NOT imported in the new code"
+        },
+        {
+          "text": "find_codes(path) keeps its name and argument, and results still expose .data, .type and .rect"
+        },
+        {
+          "text": "sc.SYMBOLOGY_CODE128, sc.SYMBOLOGY_EAN13_UPCA and sc.SYMBOLOGY_QR are enabled"
+        },
+        {
+          "text": "The binarization / thresholding preprocessing (image.point(...)) is removed, with the reason (pass the original greyscale frame)"
+        },
+        {
+          "text": "The RecognitionContext and BarcodeScanner are created once and reused, not per call"
+        },
+        {
+          "text": "descr.set_plane_row_bytes(0, ...) is used to set the stride"
+        },
+        {
+          "text": "settings.multi_scan_enabled = True with max_num_locations_to_process_per_frame is set, or the answer explains that several codes per image need multi-scan and the \"tracking\" license feature"
+        },
+        {
+          "text": "The answer notes .type values become Scandit symbology names (e.g. ean13upca, code128, qr) as a behaviour difference"
+        },
+        {
+          "text": "The data stays bytes (e.g. via code.raw_data) or the answer flags the change to str as a judgment call"
+        },
+        {
+          "text": "The answer says to remove pyzbar from the dependencies"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "tags": [
+        "third-party-zbar"
+      ],
+      "prompt": "Swap ZBar for Scandit in zbar_scanner.c but keep init_scanner/scan_frame/shutdown_scanner as they are; frames come from a fixed camera.",
+      "expected_output": "Keeps the three functions, creates context/scanner in init, one frame sequence for the stream (video), GRAY_8U description, EAN-13 + Code 128, results printed, releases in shutdown with context last; -lzbar removed. Judge library-absence assertions against code / written files only; the summary may name the old library.",
+      "files": [
+        "fixtures/zbar_scanner.c"
+      ],
+      "assertions": [
+        {
+          "text": "#include <zbar.h> and zbar_* calls are NOT in the new code"
+        },
+        {
+          "text": "init_scanner, scan_frame and shutdown_scanner keep their names and signatures"
+        },
+        {
+          "text": "SC_SYMBOLOGY_EAN13_UPCA and SC_SYMBOLOGY_CODE128 are enabled"
+        },
+        {
+          "text": "sc_barcode_scanner_new( + sc_barcode_scanner_apply_settings( are called in init_scanner and the status is checked and freed"
+        },
+        {
+          "text": "sc_recognition_context_start_new_frame_sequence( is called once for the stream (not per frame), because the frames are a continuous video"
+        },
+        {
+          "text": "SC_IMAGE_LAYOUT_GRAY_8U and sc_image_description_set_plane_row_bytes( are used"
+        },
+        {
+          "text": "sc_process_frame_result_free( is called per frame"
+        },
+        {
+          "text": "shutdown_scanner releases scanner, settings/description and finally the context"
+        },
+        {
+          "text": "The answer says to replace -lzbar with -lscanditsdk"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "tags": [
+        "third-party-zxing"
+      ],
+      "prompt": "Move zxing_scanner.cpp (zxing-cpp) to Scandit, keep read_codes() as it is.",
+      "expected_output": "Keeps read_codes signature; Data Matrix + QR; try-harder → HIGH_EFFORT; try-rotate → direction hint NONE; try-invert → color-inverted per symbology; stride passed as row bytes; multi-scan for several codes. Judge library-absence assertions against code / written files only; the summary may name the old library.",
+      "files": [
+        "fixtures/zxing_scanner.cpp"
+      ],
+      "assertions": [
+        {
+          "text": "ZXing headers and ZXing:: calls are NOT in the new code"
+        },
+        {
+          "text": "read_codes keeps its signature and return type"
+        },
+        {
+          "text": "SC_SYMBOLOGY_DATA_MATRIX and SC_SYMBOLOGY_QR are enabled"
+        },
+        {
+          "text": "setTryHarder maps to SC_PRESET_HIGH_EFFORT"
+        },
+        {
+          "text": "setTryRotate maps to the code direction hint (SC_CODE_DIRECTION_NONE), not to rotating the image"
+        },
+        {
+          "text": "setTryInvert maps to sc_symbology_settings_set_color_inverted_enabled( for Data Matrix (QR is inverted by default), not to inverting the image"
+        },
+        {
+          "text": "The stride argument is passed to sc_image_description_set_plane_row_bytes("
+        },
+        {
+          "text": "The context and scanner are created once, not per call"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "tags": [
+        "third-party-opencv"
+      ],
+      "prompt": "opencv_qr.py uses cv2.QRCodeDetector on a webcam. Replace the decoding with Scandit but keep OpenCV for capture.",
+      "expected_output": "Keeps cv2.VideoCapture; passes frames (grey or BGR) with the right layout and stride; one frame sequence for the stream; QR enabled; multi-scan for several QR codes. Judge library-absence assertions against code / written files only; the summary may name the old library.",
+      "files": [
+        "fixtures/opencv_qr.py"
+      ],
+      "assertions": [
+        {
+          "text": "cv2.QRCodeDetector is NOT used in the new code; cv2.VideoCapture is kept"
+        },
+        {
+          "text": "sc.SYMBOLOGY_QR is enabled"
+        },
+        {
+          "text": "BGR frames use sc.IMAGE_LAYOUT_BGR_8U or are converted to grey with sc.IMAGE_LAYOUT_GRAY_8U"
+        },
+        {
+          "text": "descr.set_plane_row_bytes(0, frame.strides[0]) (or equivalent stride) is set"
+        },
+        {
+          "text": "context.start_new_frame_sequence() is called once before the loop"
+        },
+        {
+          "text": "detectAndDecodeMulti's several-codes behaviour is mapped to multi-scan (multi_scan_enabled + max_num_locations_to_process_per_frame) with the \"tracking\" feature mentioned, or flagged as a behaviour difference"
+        }
+      ]
+    }
+  ]
+}

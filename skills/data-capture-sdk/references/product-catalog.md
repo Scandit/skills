@@ -16,6 +16,9 @@ When recommending a product, always include the relevant **docs link** and **sam
 | .NET (MAUI) | `https://github.com/Scandit/datacapture-dotnet-samples/tree/master/maui/` |
 | Capacitor | `https://github.com/Scandit/datacapture-capacitor-samples/tree/master/` |
 | Cordova | `https://github.com/Scandit/datacapture-cordova-samples/tree/master/` |
+| Linux | No GitHub repo: the samples ship in the `samples/` folder of the Linux SDK package (overview: https://docs.scandit.com/sdks/linux/samples/) |
+
+**Linux** is a separate SDK: a low-level C API (usable from C++) with Python bindings, Debian packages for amd64 and arm64. It covers single barcode scanning, multi-barcode scanning and tracking (MatrixScan), the parser and the barcode generator — from single images, V4L2 cameras or the app's own frames — with no UI. SparkScan, MatrixScan AR, MatrixScan Count, Find and Pick, Smart Label Capture and ID Capture are **not** available on Linux. Docs: https://docs.scandit.com/sdks/linux/overview/. Skill: `scandit-linux-sdk`.
 
 ---
 
@@ -32,7 +35,7 @@ When recommending a product, always include the relevant **docs link** and **sam
 - **Use when**: The user needs complete control over the scanning UI and experience, or has specific UX requirements that SparkScan's pre-built workflows cannot satisfy.
 - **Key traits**: No pre-built UI — maximum flexibility over look and feel. Supports all major symbologies and over 20,000 smart device models. Includes Scandit's AI-powered scanning engine, which prevents unintentional scans, lets users precisely select a barcode in crowded environments, avoids scanning duplicates when not intended, and falls back to OCR when a barcode is too damaged to decode.
 - **Limitation**: Scans one barcode at a time. For multiple barcodes, consider a MatrixScan product or Smart Label Capture.
-- **Platforms**: iOS, Android, Web, React Native, Flutter, .NET, Capacitor, Cordova
+- **Platforms**: iOS, Android, Web, React Native, Flutter, .NET, Capacitor, Cordova, Linux (C API / Python, no UI)
 - **Docs**:
   - iOS: https://docs.scandit.com/sdks/ios/barcode-capture/get-started
   - Android: https://docs.scandit.com/sdks/android/barcode-capture/get-started
@@ -42,6 +45,7 @@ When recommending a product, always include the relevant **docs link** and **sam
   - .NET: https://docs.scandit.com/sdks/net/ios/barcode-capture/get-started
   - Capacitor: https://docs.scandit.com/sdks/capacitor/barcode-capture/get-started
   - Cordova: https://docs.scandit.com/sdks/cordova/barcode-capture/get-started
+  - Linux: https://docs.scandit.com/sdks/linux/overview/#single-barcodes-scanning
 - **Sample apps** (path relative to repo base):
   - iOS (Swift): `01_Single_Scanning_Samples/02_Barcode_Scanning_with_Low_Level_API/BarcodeCaptureSimpleSampleSwift`
   - iOS (ObjC): `01_Single_Scanning_Samples/02_Barcode_Scanning_with_Low_Level_API/BarcodeCaptureSimpleSampleObjC`
@@ -52,6 +56,7 @@ When recommending a product, always include the relevant **docs link** and **sam
   - .NET (MAUI): `01_Single_Scanning_Samples/02_Barcode_Scanning_with_Low_Level_API/BarcodeCaptureSimpleSample`
   - Capacitor: `01_Single_Scanning_Samples/02_Barcode_Scanning_with_Low_Level_API/BarcodeCaptureSimpleSample`
   - Cordova: `01_Single_Scanning_Samples/02_Barcode_Scanning_with_Low_Level_API/BarcodeCaptureSimpleSample`
+  - Linux (in the SDK package): `samples/CommandLineBarcodeScannerImageProcessingSample.c`, `samples/CommandLineBarcodeScannerCameraSample.c`, `samples/CommandLineBarcodeScannerImageProcessingSample.py`
 - **Available skills**: `barcode-capture-ios`
 
 ### SparkScan
@@ -90,7 +95,7 @@ When recommending a product, always include the relevant **docs link** and **sam
 - **Also known as**: BarcodeBatch (renamed in SDK v7+). Legacy name: BarcodeTracking.
 - **Use when**: The goal is to capture a list of all barcodes present — no verification against a master list needed. Ideal for proof of delivery, high-volume receiving, and packing.
 - **Trade-off**: BarcodeBatch is the general-purpose multi-barcode scanning product. For specialized workflows like counting with manifest verification (BarcodeCount) or AR-guided item search (BarcodeFind), see those products below — but they require contacting support first.
-- **Platforms**: iOS, Android, Web, React Native, Flutter, .NET, Capacitor, Cordova
+- **Platforms**: iOS, Android, Web, React Native, Flutter, .NET, Capacitor, Cordova, Linux (C API object tracker / Python bindings, no UI; needs the "tracking" license feature)
 - **Docs**:
   - iOS: https://docs.scandit.com/sdks/ios/matrixscan/intro
   - Android: https://docs.scandit.com/sdks/android/matrixscan/intro
@@ -100,6 +105,7 @@ When recommending a product, always include the relevant **docs link** and **sam
   - .NET: https://docs.scandit.com/sdks/net/ios/matrixscan/intro
   - Capacitor: https://docs.scandit.com/sdks/capacitor/matrixscan/intro
   - Cordova: https://docs.scandit.com/sdks/cordova/matrixscan/intro
+  - Linux: https://docs.scandit.com/sdks/linux/overview/#multi-barcode-scanning-and-tracking
 - **Sample apps** (path relative to repo base):
   - iOS: `03_Advanced_Batch_Scanning_Samples/01_Batch_Scanning_and_AR_Info_Lookup/MatrixScanSimpleSample`
   - Android: `03_Advanced_Batch_Scanning_Samples/01_Batch_Scanning_and_AR_Info_Lookup/MatrixScanSimpleSample`
@@ -109,6 +115,7 @@ When recommending a product, always include the relevant **docs link** and **sam
   - .NET (MAUI): `03_Advanced_Batch_Scanning_Samples/01_Batch_Scanning_and_AR_Info_Lookup/MatrixScanSimpleSample`
   - Capacitor: `03_Advanced_Batch_Scanning_Samples/01_Batch_Scanning_and_AR_Info_Lookup/MatrixScanSimpleSample`
   - Cordova: `03_Advanced_Batch_Scanning_Samples/01_Batch_Scanning_and_AR_Info_Lookup/MatrixScanSimpleSample`
+  - Linux (in the SDK package): `samples/CommandLineMatrixScanCameraSample.c`, `samples/opencv_py_demo/OpenCvPyTrackingSample.py`
 
 ### MatrixScan AR
 

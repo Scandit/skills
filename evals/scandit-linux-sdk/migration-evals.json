@@ -1,0 +1,226 @@
+{
+  "skill_name": "scandit-linux-sdk",
+  "evals": [
+    {
+      "id": 1,
+      "tags": [
+        "migration-7-to-8",
+        "multi-scan"
+      ],
+      "prompt": "Upgrade ScannerV7.c from Scandit Linux SDK 7.4 to 8.6.",
+      "expected_output": "Reads references/migration.md, detects 7.x from the code, applies the 7 → 8 table in the file, lists behaviour changes between 7.4 and 8.6 as judgment calls, and summarizes. Judge API-absence assertions against code blocks / written files only; prose may name old APIs.",
+      "files": [
+        "fixtures/ScannerV7.c"
+      ],
+      "assertions": [
+        {
+          "text": "The installed version is identified as 7.x (from the code or by asking) and the 7 → 8 path is applied"
+        },
+        {
+          "text": "In the code, sc_barcode_scanner_new_with_settings is replaced by sc_barcode_scanner_new( followed by sc_barcode_scanner_apply_settings("
+        },
+        {
+          "text": "The ScContextStatus from sc_barcode_scanner_apply_settings is checked and freed with sc_context_status_free( (by value)"
+        },
+        {
+          "text": "In the code, sc_barcode_scanner_settings_set_max_number_of_codes_per_frame is replaced by sc_barcode_scanner_settings_set_multi_scan_enabled( + sc_barcode_scanner_settings_set_max_num_locations_to_process_per_frame( with 4"
+        },
+        {
+          "text": "In the code, result.status.flag is compared with SC_RECOGNITION_CONTEXT_STATUS_SUCCESS (not result.status)"
+        },
+        {
+          "text": "In the code, sc_context_status_flag_get_message is replaced by sc_byte_array_get_string(result.status.message)"
+        },
+        {
+          "text": "sc_process_frame_result_free( is called on every process_frame result"
+        },
+        {
+          "text": "In the code, SC_SYMBOLOGY_RM4SCC is replaced by SC_SYMBOLOGY_ROYAL_MAIL_4STATE"
+        },
+        {
+          "text": "The answer mentions that multi-scan needs the \"tracking\" license feature"
+        },
+        {
+          "text": "The summary lists behaviour changes as judgment calls (e.g. 8.5 Code 128 minimum symbol count 4, tighter Code 39), not as renames"
+        },
+        {
+          "text": "The answer says to replace scanditsdk.py / reinstall the .deb from the same new package and rebuild"
+        },
+        {
+          "text": "The license-key placeholder/constant is preserved (no key read from the environment)"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "tags": [
+        "migration-5-to-8",
+        "parser"
+      ],
+      "prompt": "We still run ScannerV5.c on SDK 5.x and have to move to 8.6 for a new device. Migrate it.",
+      "expected_output": "Detects 5.x, applies 5.x → 7.0 then 7 → 8 in order (Linux skipped 6.x): parser renames, EAN13_UPCA, no code caching, HIGH_EFFORT instead of the single-frame preset, ScByteArray instead of ScData, plane API instead of memory size, scanner creation and statuses for 8.x; mentions glibc. Judge API-absence assertions against code blocks / written files only; prose may name old APIs.",
+      "files": [
+        "fixtures/ScannerV5.c"
+      ],
+      "assertions": [
+        {
+          "text": "The answer applies 5.x → 7.0 first and then 7 → 8 (and mentions there is no Linux 6.x)"
+        },
+        {
+          "text": "In the code, #include <Scandit/Parser/SpParser.h> becomes #include <Scandit/ScParser.h> and sp_parser_* / SpParser* become sc_parser_* / ScParser*"
+        },
+        {
+          "text": "In the code, sc_parser_new_with_context( takes an ScContextStatus * as last argument (or NULL)"
+        },
+        {
+          "text": "In the code, SC_SYMBOLOGY_EAN13 and SC_SYMBOLOGY_UPCA are replaced by SC_SYMBOLOGY_EAN13_UPCA"
+        },
+        {
+          "text": "In the code, sc_barcode_scanner_settings_set_code_caching_duration is removed"
+        },
+        {
+          "text": "In the code, SC_PRESET_ENABLE_SINGLE_FRAME_MODE is replaced by SC_PRESET_HIGH_EFFORT"
+        },
+        {
+          "text": "In the code, ScData / sc_data_free / .c_str / .length are replaced by ScByteArray accessors (sc_byte_array_get_string / sc_byte_array_get_data / sc_byte_array_get_size)"
+        },
+        {
+          "text": "In the code, sc_image_description_set_memory_size is removed and sc_image_description_set_plane_row_bytes( is set"
+        },
+        {
+          "text": "In the code, the scanner is created with sc_barcode_scanner_new( + sc_barcode_scanner_apply_settings("
+        },
+        {
+          "text": "The answer mentions the newer glibc requirement for 7.0 and later"
+        },
+        {
+          "text": "The answer suggests creating the context and scanner once instead of per image (or keeps the structure and notes it as a judgment call)"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "tags": [
+        "migration-7-to-8",
+        "json-settings"
+      ],
+      "prompt": "We load settings_v7.json with sc_barcode_scanner_settings_new_from_json. After updating to 8.6 we only get one code per frame. Fix the file.",
+      "expected_output": "maxNumberOfCodesPerFrame is silently ignored in 8.x → multiScanEnabled + maxNumLocationsToProcessPerFrame; codeCachingDuration and focusMode removed; rm4scc → royal-mail-4state; data-matrix extensions replace defaults (add strip_leading_fnc1); check with as_json.",
+      "files": [
+        "fixtures/settings_v7.json"
+      ],
+      "assertions": [
+        {
+          "text": "The answer says maxNumberOfCodesPerFrame is silently ignored in 8.x"
+        },
+        {
+          "text": "The fixed JSON contains \"multiScanEnabled\": true and \"maxNumLocationsToProcessPerFrame\": 3"
+        },
+        {
+          "text": "The fixed JSON does NOT contain maxNumberOfCodesPerFrame, codeCachingDuration or focusMode"
+        },
+        {
+          "text": "\"rm4scc\" is replaced by \"royal-mail-4state\" (or the answer notes rm4scc is still accepted as input but royal-mail-4state is current)"
+        },
+        {
+          "text": "The answer mentions that the data-matrix extensions array replaces the default extensions (strip_leading_fnc1)"
+        },
+        {
+          "text": "The answer recommends comparing with sc_barcode_scanner_settings_as_json("
+        },
+        {
+          "text": "The answer mentions the \"tracking\" license feature for multi-scan"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "tags": [
+        "migration-7-to-8",
+        "compatibility-layer"
+      ],
+      "prompt": "ScannerWrapper.c implements our ScannerWrapper.h API on SDK 7.6. 14 call sites use that header. Port the implementation to 8.6.",
+      "expected_output": "Keeps ScannerWrapper.h unchanged (compatibility layer) and changes only the Scandit calls in ScannerWrapper.c. Judge API-absence assertions against code blocks / written files only; prose may name old APIs.",
+      "files": [
+        "fixtures/ScannerWrapper.h",
+        "fixtures/ScannerWrapper.c"
+      ],
+      "assertions": [
+        {
+          "text": "ScannerWrapper.h is not changed (same function names, signatures and scan_result_t fields)"
+        },
+        {
+          "text": "In ScannerWrapper.c, sc_barcode_scanner_new( + sc_barcode_scanner_apply_settings( replace sc_barcode_scanner_new_with_settings"
+        },
+        {
+          "text": "In ScannerWrapper.c, a failed apply_settings status is turned into the existing err message / NULL return of scanner_create"
+        },
+        {
+          "text": "In ScannerWrapper.c, set_max_number_of_codes_per_frame(8) becomes multi-scan enabled + max_num_locations_to_process_per_frame(8)"
+        },
+        {
+          "text": "In ScannerWrapper.c, r.status.flag and r.status.message replace r.status / sc_context_status_flag_get_message, and sc_process_frame_result_free( is called"
+        },
+        {
+          "text": "The summary names the compatibility layer (wrapper API kept frozen) and lists behaviour changes as judgment calls"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "tags": [
+        "migration-7-to-8",
+        "dual-version"
+      ],
+      "prompt": "Our firmware must build against both Scandit 7.6 (old devices) and 8.6 (new devices) for a year. How do I write the scanner creation so it compiles with both?",
+      "expected_output": "Build-time selection with SC_VERSION_MAJOR from <Scandit/ScConfig.h>, not run-time probing; 8.x branch sc_barcode_scanner_new + apply_settings; 7.x branch sc_barcode_scanner_new_with_settings; notes only one branch can be verified per header set.",
+      "files": [],
+      "assertions": [
+        {
+          "text": "#include <Scandit/ScConfig.h> is used"
+        },
+        {
+          "text": "The code path is selected with #if SC_VERSION_MAJOR >= 8 (or SC_VERSION_INT), at build time"
+        },
+        {
+          "text": "The answer says not to choose the path at run time / by checking for the new function"
+        },
+        {
+          "text": "The 8.x branch uses sc_barcode_scanner_new( + sc_barcode_scanner_apply_settings( and frees the status"
+        },
+        {
+          "text": "The 7.x branch uses sc_barcode_scanner_new_with_settings("
+        },
+        {
+          "text": "The answer says each branch must be built against the matching headers"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "tags": [
+        "behaviour-changes"
+      ],
+      "prompt": "We went from Linux SDK 8.4.2 to 8.6.1. Short Code 128 labels (4–5 characters) now show up as false reads and some Code 39 codes stopped scanning. Bug?",
+      "expected_output": "Not an API change: 8.5 lowered the Code 128 minimum symbol count to 4 (restrict active symbol counts) and tightened the Code 39 filter (relaxed extension restores it); presented as behaviour changes; test on original frames.",
+      "files": [],
+      "assertions": [
+        {
+          "text": "The answer says 8.5 changed the Code 128 minimum symbol count from 6 to 4"
+        },
+        {
+          "text": "The answer suggests sc_symbology_settings_set_active_symbol_counts( (or JSON activeSymbolCounts) to exclude short Code 128 codes"
+        },
+        {
+          "text": "The answer says 8.5 tightened the Code 39 false-positive filter and the \"relaxed\" extension restores the old behaviour"
+        },
+        {
+          "text": "The answer recommends comparing the same original frames on both versions"
+        },
+        {
+          "text": "The answer does NOT invent other version changes not in the release notes"
+        }
+      ]
+    }
+  ]
+}
