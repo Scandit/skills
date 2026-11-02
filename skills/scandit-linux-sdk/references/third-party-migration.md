@@ -66,7 +66,7 @@
 
 ## Example: a pyzbar-compatible `decode()` (Python)
 
-Callers that did `from pyzbar.pyzbar import decode` switch to `from scandit_decode import decode` and keep reading `.data`, `.type`, `.rect` and `.polygon`. The `type` values become Scandit symbology names (`ean13upca`, `code128`, `qr`, …): map them if callers compare against pyzbar's names (`EAN13`, `CODE128`, `QRCODE`).
+Callers that did `from pyzbar.pyzbar import decode` switch to `from scandit_decode import decode` and keep reading `.data`, `.type`, `.rect` and `.polygon`. The `type` values become Scandit symbology names (`ean13upca`, `code128`, `qr`, …): map them if callers compare against pyzbar's names (`EAN13`, `CODE128`, `QRCODE`). Two differences to list as judgment calls: pyzbar returns every code in the image, while the drop-in returns one code per image unless the caller constructs `Decoder(multi_scan=True)` (needs the "tracking" licence feature; without it `apply_settings` fails); and a 3-channel numpy array needs its channel order stated (`layout=`), because pyzbar guessed and the SDK doesn't.
 
 ```python
 """scandit_decode.py - a pyzbar-style decode() on top of the Scandit Linux SDK Python bindings (8.x).
@@ -117,7 +117,7 @@ class Decoded(NamedTuple):
 
 
 class Decoder:
-    def __init__(self, symbologies=PYZBAR_DEFAULT_SYMBOLOGIES):
+    def __init__(self, symbologies=PYZBAR_DEFAULT_SYMBOLOGIES, multi_scan=False, max_codes=10):
         self._context = sc.RecognitionContext(LICENSE_KEY, WRITABLE_DATA_PATH)
         settings = sc.BarcodeScannerSettings(preset=sc.PRESET_HIGH_EFFORT)
         for symbology in symbologies:  # Scandit starts with everything disabled
@@ -129,24 +129,35 @@ class Decoder:
         settings.code_location_constraint_1d = sc.CODE_LOCATION_IGNORE
         settings.code_location_constraint_2d = sc.CODE_LOCATION_IGNORE
         settings.code_direction_hint = sc.CODE_DIRECTION_NONE
-        # pyzbar returns every code in the image; with Scandit that needs multi-scan
-        # and the "tracking" license feature.
-        settings.multi_scan_enabled = True
-        settings.max_num_locations_to_process_per_frame = 10
+        # pyzbar returns every code in the image. With Scandit that needs multi-scan and the "tracking"
+        # licence feature, and apply_settings fails on a key without it, so it is opt-in:
+        # Decoder(multi_scan=True). Off, decode() returns at most one code per image.
+        if multi_scan:
+            settings.multi_scan_enabled = True
+            settings.max_num_locations_to_process_per_frame = max_codes
         self._scanner = sc.BarcodeScanner(self._context)
         status = self._scanner.apply_settings(settings)
         if not status.is_success():
-            raise RuntimeError(f"Scandit settings: status {status.flag}: {status.message}")
+            hint = " (multi_scan=True needs the tracking feature on the licence key)" if multi_scan else ""
+            raise RuntimeError(f"Scandit settings: status {status.flag}: {status.message}{hint}")
         self._scanner.wait_for_setup_completed()
         self._descr = sc.ImageDescription()
 
-    def decode(self, image) -> List[Decoded]:
-        """image: a PIL image or a numpy array (greyscale HxW or BGR HxWx3, uint8)."""
+    def decode(self, image, layout=None) -> List[Decoded]:
+        """image: a PIL image (any mode), or a numpy uint8 array: greyscale HxW, or HxWx3 with its channel
+        order given as layout=sc.IMAGE_LAYOUT_RGB_8U (PIL, imageio) or sc.IMAGE_LAYOUT_BGR_8U (OpenCV).
+        A 3-channel array without layout is rejected rather than guessed."""
         pixels = np.asarray(image.convert("L")) if hasattr(image, "convert") else np.asarray(image)
         pixels = np.ascontiguousarray(pixels, dtype=np.uint8)
+        if pixels.ndim == 2:
+            layout = sc.IMAGE_LAYOUT_GRAY_8U
+        elif not (pixels.ndim == 3 and pixels.shape[2] == 3
+                  and layout in (sc.IMAGE_LAYOUT_RGB_8U, sc.IMAGE_LAYOUT_BGR_8U)):
+            raise ValueError("pass a greyscale HxW array, or an HxWx3 array with "
+                             "layout=sc.IMAGE_LAYOUT_RGB_8U or sc.IMAGE_LAYOUT_BGR_8U")
         self._descr.width = pixels.shape[1]
         self._descr.height = pixels.shape[0]
-        self._descr.layout = sc.IMAGE_LAYOUT_GRAY_8U if pixels.ndim == 2 else sc.IMAGE_LAYOUT_BGR_8U
+        self._descr.layout = layout
         self._descr.set_plane_row_bytes(0, pixels.strides[0])
 
         frame_seq = self._context.start_new_frame_sequence()  # unrelated images: one sequence each
@@ -169,12 +180,13 @@ class Decoder:
 _decoder = None
 
 
-def decode(image) -> List[Decoded]:
-    """Drop-in for `pyzbar.pyzbar.decode(image)`."""
+def decode(image, layout=None) -> List[Decoded]:
+    """Drop-in for `pyzbar.pyzbar.decode(image)`: one code per image. For every code in the image,
+    create `Decoder(multi_scan=True)` yourself (needs the tracking feature on the licence key)."""
     global _decoder
     if _decoder is None:
         _decoder = Decoder()
-    return _decoder.decode(image)
+    return _decoder.decode(image, layout)
 ```
 
 For C code using ZBar's `zbar_scan_image`, the same pattern applies: keep your function, and inside it describe the greyscale buffer, start a frame sequence, process the frame and copy the results out of the session (complete program: integration.md, single image).
