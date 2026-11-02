@@ -16,7 +16,7 @@ Examples:
   ppm_calc.py ppm code39 --chars 16 --ratio 2.5 --pixels 400
   ppm_calc.py ppm qr --version 3 --pixels 120
   ppm_calc.py modules codabar --data A12345B
-  ppm_calc.py modules code11 --data 123455 --ratio 2
+  ppm_calc.py modules code11 --data 123455
   ppm_calc.py ppm section --section-modules 34 --pixels 340      # e.g. 2 PDF417 codewords
   ppm_calc.py location --corners 100,200 520,210 518,300 98,290 --modules-x 156
   ppm_calc.py location --corners 10,10 130,12 128,132 8,130 --modules-x 25 --modules-y 25
@@ -38,7 +38,7 @@ BORDERLINE = 1.0  # ~1-2 PPM: intermittent; below 1: very unlikely
 
 def modules(sym, a):
     s = sym.lower()
-    r = a.ratio
+    r = a.ratio if a.ratio is not None else (2.0 if s == "code11" else 2.5)   # Code 11 is worked at R = 2 in the guide
     if s in ("ean13", "upca"):
         return 95
     if s == "ean8":
@@ -180,7 +180,7 @@ def profile(a):
 def add_sym_args(p):
     p.add_argument("symbology")
     p.add_argument("--chars", type=int, default=0, help="data characters / symbol characters / digits")
-    p.add_argument("--ratio", type=float, default=2.5, help="wide:narrow ratio (Code39/ITF/Codabar/Code11), default 2.5")
+    p.add_argument("--ratio", type=float, default=None, help="wide:narrow ratio (Code39/ITF/Codabar/Code11); default 2.5, Code 11 2")
     p.add_argument("--gap", type=float, default=1.0, help="Code39/Codabar inter-character gap in X, default 1")
     p.add_argument("--data", default="", help="Codabar / Code 11: the encoded content (exact module count)")
     p.add_argument("--checks", type=int, default=0, help="check characters (Code39/MSI)")
