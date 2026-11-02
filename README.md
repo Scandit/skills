@@ -6,7 +6,7 @@ Each skill is specific to a product and a framework (e.g. SparkScan iOS), and bu
 
 ## Installation
 
-Install the plugin. One command, and your agent gets all 86 skills:
+Install the plugin. One command, and your agent gets all 87 skills:
 
 ```bash
 npx plugins@1.3.4 add scandit/skills
