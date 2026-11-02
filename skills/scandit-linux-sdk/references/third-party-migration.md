@@ -195,7 +195,7 @@ For C code using ZBar's `zbar_scan_image`, the same pattern applies: keep your f
 
 | Field | ZBar / pyzbar | ZXing / zxing-cpp | Scandit C | Scandit Python |
 | --- | --- | --- | --- | --- |
-| Data | `zbar_symbol_get_data` / `.data` (bytes) | `text()` / `bytes()` | `sc_barcode_get_data` → `ScByteArray` | `code.data` (text), `code.raw_data` (bytes) |
+| Data | `zbar_symbol_get_data` / `.data` (bytes) | `text()` / `bytes()` | `sc_barcode_get_data` → `ScByteArray` | `code.data` (text), `code.raw_data` (a byte-array struct, not `bytes`: `ctypes.string_at(raw.bytes, raw.size)`) |
 | Type | `zbar_symbol_get_type` / `.type` | `format()` | `sc_barcode_get_symbology` + `sc_symbology_to_string` | `code.symbology`, `code.symbology_string` |
 | Position | `.rect`, `.polygon` | `position()` | `sc_barcode_get_location` (4 corners, pixels) | `code.location` |
 | GS1 | — | `contentType()` / symbology identifier | `sc_barcode_is_gs1_data_carrier` | `code.is_gs1_data_carrier` |
