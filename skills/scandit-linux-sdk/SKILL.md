@@ -9,7 +9,7 @@ metadata:
 
 # Scandit Linux SDK Skill
 
-The Linux SDK is a low-level C API (usable from C++) with Python bindings (`scanditsdk.py`). There is no UI and no stream management: the app passes image buffers in and reads decoded codes from a session. Debian packages for amd64 and arm64 (Jetson, Raspberry Pi 4/5). This skill covers the **Linux SDK only**; for iOS, Android, Web or cross-platform frameworks, say it doesn't apply and point to https://docs.scandit.com.
+The Linux SDK is a low-level C API (usable from C++) with Python bindings (`scanditsdk.py`); the bindings are provided on a best-effort basis and are not an officially supported Scandit product, so C/C++ is the supported path for production and Python names must be checked against the package's `scanditsdk.py`. There is no UI and no stream management: the app passes image buffers in and reads decoded codes from a session. Debian packages for amd64 and arm64 (Jetson, Raspberry Pi 4/5). This skill covers the **Linux SDK only**; for iOS, Android, Web or cross-platform frameworks, say it doesn't apply and point to https://docs.scandit.com.
 
 ## Critical: Do Not Trust Internal Knowledge
 
