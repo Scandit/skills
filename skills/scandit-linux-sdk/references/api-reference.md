@@ -314,10 +314,10 @@ Source: [Linux release notes](https://docs.scandit.com/sdks/linux/release-notes/
 | 8.4.2 | | Data Matrix DPM (direct part marking) fix for 8.4.0 |
 | 8.5.0 | 2026-07-09 | Low-resolution QR (versions 1–3); Code 128 minimum symbol count 4; tighter Code 39 (`relaxed` restores old behavior); camera single-plane fallback |
 | 8.5.3 | | Low-res QR disabled for multi-code tracking |
+| 8.5.5 | 2026-10-29 | Data Matrix `direct_part_marking_mode` accuracy fix (regression from 8.4.0) |
 | 8.6.0 | 2026-08-31 | DotCode ECI and structured append; fewer EAN/UPC false positives; ITF +20 %; MicroQR +40 %; mirrored MaxiCode by default; Python segment fields; camera disconnect hang fixed |
 | 8.6.1 | 2026-10-01 | QR with degraded finder patterns (regression in 8.6.0) fixed; Data Matrix unlatch/pad; 1D on colored backgrounds (regression since 5.19) fixed; Data Matrix DPM fix |
 | 8.6.2 | 2026-10-26 | MicroQR improvements for rotated codes and cluttered backgrounds now active; faster scanning with many codes in the frame when only QR or Data Matrix is enabled (tracking modes) |
-| 8.5.5 | 2026-10-29 | Data Matrix `direct_part_marking_mode` accuracy fix (regression from 8.4.0) |
 
 **If results got worse after upgrading, check this table first**: tightened validation (8.5 Code 39) can look like a regression but is intentional; real regressions (8.4.0 DPM, 8.6.0 QR) are fixed in later patches.
 
