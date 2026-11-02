@@ -218,8 +218,28 @@ def main():
     pl.add_argument("--target-ppm", type=float, help="solve for the max distance that still gives this PPM")
     a = ap.parse_args()
 
+    def need(cond, msg):            # argument validation: an argparse error instead of a ZeroDivisionError or a silent 0
+        if not cond:
+            ap.error(msg)
+
     if a.cmd in ("modules", "ppm"):
+        s = a.symbology.lower()
+        need(a.ratio is None or a.ratio > 1, "--ratio is the wide:narrow ratio and must be > 1")
+        need(a.gap >= 0 and a.chars >= 0 and a.checks >= 0, "--gap, --chars and --checks must not be negative")
+        if s in ("datamatrix", "dm"):
+            need(a.size > 0, "Data Matrix: pass --size <modules per side> (10 ... 144)")
+        if s == "pdf417":
+            need(a.columns > 0, "PDF417: pass --columns <data columns> (1 ... 30)")
+        if s in ("qr", "microqr"):
+            need(a.version >= 1, "--version must be >= 1")
+        if s == "section":
+            need(a.section_modules > 0, "section: pass --section-modules <modules in the measured section>")
+        if s in ("code128", "gs1-128", "code39", "code93", "itf", "itf14", "interleaved2of5", "msi", "msi-plessey"):
+            need(a.chars > 0, f"{a.symbology}: pass --chars N (number of characters / digits, > 0)")
+        if a.cmd == "ppm":
+            need(a.pixels > 0, "--pixels must be > 0")
         n = modules(a.symbology, a)
+        need(n > 0, f"module count came out as {n:g}; check the arguments")
         print(f"modules: {n:g}")
         if a.cmd == "ppm":
             v = a.pixels / n
@@ -231,6 +251,8 @@ def main():
         return
 
     if a.cmd == "location":
+        need(a.modules_x > 0, "--modules-x must be > 0")
+        need(a.modules_y == -1 or a.modules_y > 0, "--modules-y must be > 0 (or -1 for a 1D code)")
         c = [tuple(float(v) for v in xy.split(",")) for xy in a.corners]
         d = lambda p, q: math.hypot(q[0] - p[0], q[1] - p[1])
         along = (d(c[0], c[1]) + d(c[3], c[2])) / 2          # top and bottom edge
@@ -249,10 +271,17 @@ def main():
         return
 
     if a.cmd == "profile":
+        need(a.modules >= 0, "--modules must be >= 0")
         profile(a)
         return
 
     # plan
+    need(a.res_px > 0 and a.x_mm > 0, "--res-px and --x-mm must be > 0")
+    need(a.hfov is None or 0 < a.hfov < 180, "--hfov must be between 0 and 180 degrees")
+    need((a.sensor_mm is None or a.sensor_mm > 0) and (a.focal_mm is None or a.focal_mm > 0), "--sensor-mm and --focal-mm must be > 0")
+    need(a.distance_mm is None or a.distance_mm > 0, "--distance-mm must be > 0")
+    need(a.target_ppm is None or a.target_ppm > 0, "--target-ppm must be > 0")
+    need(0 <= a.angle < 90, "--angle must be between 0 and 90 degrees")
     if a.hfov:
         fov_per_mm = 2 * math.tan(math.radians(a.hfov / 2))          # FOV width per mm of distance
     elif a.sensor_mm and a.focal_mm:
