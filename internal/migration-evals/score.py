@@ -230,7 +230,7 @@ def resolve_args(code, arg, seen, at):
             for name, args, body, start in callables(code):
                 if name == owner and not body:
                     names.update(resolve_args(code, args, seen, start))
-        definitions = re.compile(rf"\b{re.escape(ident)}\s*(?::[^=;{{}}]+)?=\s*(?:const\s*)?(?:new\s*\w*\s*(?:<[^>]*>\s*)?(?:\[\]\s*)?)?(?:<[^>]*>\s*)?[{{\[]")
+        definitions = re.compile(rf"\b{re.escape(ident)}\s*(?::[^=;{{}}]+)?=\s*(?:const\s*)?(?:new\s*\w*\s*(?:<[^>]*>\s*)?(?:\[\]\s*)?(?:\(\s*)?)?(?:<[^>]*>\s*)?[{{\[]")
         for definition in definitions.finditer(code, *(span or (0, len(code)))):
             names.update(SYMBOLOGY.findall(balanced(code, definition.end() - 1)))
         # `this.formats = defaultFormats`: follow a name assigned from another name.
