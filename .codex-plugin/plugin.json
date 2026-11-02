@@ -39,7 +39,7 @@
     "sdk",
     "smart-data-capture",
     "linux",
-    "c",
+    "c-api",
     "python"
   ],
   "skills": "./skills/",

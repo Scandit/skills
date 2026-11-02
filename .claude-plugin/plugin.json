@@ -40,7 +40,7 @@
     "sdk",
     "smart-data-capture",
     "linux",
-    "c",
+    "c-api",
     "python"
   ]
 }

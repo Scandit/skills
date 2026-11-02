@@ -42,7 +42,7 @@
     "sdk",
     "smart-data-capture",
     "linux",
-    "c",
+    "c-api",
     "python"
   ],
   "logo": "assets/logo.svg"
