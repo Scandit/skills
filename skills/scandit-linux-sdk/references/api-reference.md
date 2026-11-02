@@ -7,6 +7,7 @@
 Always check which SDK version is in use: many names changed in **8.0** (see §11).
 
 **Contents:** 1 What the C API is · 2 Installation and samples · 3 Lifecycle and memory · 4 Recognition context and status codes · 5 Scanner settings (presets, setters, JSON, properties) · 6 Symbology settings (inversion, checksums, symbol counts, extensions, add-on/composite/GS1, structured append) · 7 Session and results (`module_counts`) · 8 Images · 9 Camera (discrete vs stepwise modes, framerates, layouts, streaming loop) · 10 Tracker, parser, generator, version · 11 Migrating to 8.0 · 12 Release notes
+
 ---
 
 ## 1. What the C API is
@@ -72,7 +73,8 @@ Check exact signatures against the headers of the SDK version in use. A complete
 ## 4. Recognition context
 
 - `sc_recognition_context_new(license_key, writable_data_path, device_name)`. `device_name` is used for analytics; `NULL` disables it.
-- **Use one context per application** (per process).- **One scanner per context:** `sc_barcode_scanner_new(ctx)` returns `NULL` if the context already has one (8.0).
+- **Use one context per application** (per process).
+- **One scanner per context:** `sc_barcode_scanner_new(ctx)` returns `NULL` if the context already has one (8.0).
 - Calling `process_frame` without `start_new_frame_sequence` returns status 3.
 - A wrong or missing license key does **not** make `sc_recognition_context_new` fail: the license status is reported by `sc_barcode_scanner_apply_settings` and `process_frame`.
 - `sc_recognition_context_set_camera_properties` exists for camera metadata.
@@ -122,6 +124,7 @@ Always print `status.message` together with the code; it names the missing featu
 | `SC_PRESET_SINGLE_CODE_HAND_HELD` | 0x08 (7.1+) | Hand-held devices scanning one code in a static scene. Smart scan intention prevents background scans and scans during fast movement. Returns **at most one code (or group) per frame**. Fixed in **8.3.0** (smart scan intention setup) | FullHD or 4K |
 
 Presets can't be combined; if several bits are set, the lowest value wins. There is **no single-frame-mode preset in 8.x**; for single images use `SC_PRESET_HIGH_EFFORT`.
+
 ### Main setters
 
 - Symbologies: `sc_barcode_scanner_settings_set_symbology_enabled(settings, SC_SYMBOLOGY_X, SC_TRUE)` or via `sc_barcode_scanner_settings_get_symbology_settings` (§6). **All symbologies are disabled by default.**
@@ -157,6 +160,7 @@ Presets can't be combined; if several bits are set, the lowest value wins. There
 - Names are case-insensitive. Symbology keys: `aruco`, `australian-post-4state`, `aztec`, `codabar`, `code11`, `code128`, `code32`, `code39`, `code93`, `code25`, `databar`, `databar-expanded`, `databar-limited`, `data-matrix`, `dotcode`, `ean13upca`, `ean8`, `five-digit-add-on`, `two-digit-add-on`, `french-post`, `iata2of5`, `itf`, `kix`, `lapa4sc`, `matrix2of5`, `maxicode`, `micropdf417`, `microqr`, `msi-plessey`, `pdf417`, `qr`, `royal-mail-4state` (`rm4scc` before 8.0; still accepted as input in 8.6), `upce`, `upu-4state`, `usps-intelligent-mail`.
 - Per symbology: `enabled`, `colorInvertedEnabled`, `activeSymbolCounts`, `extensions`, `checksums`, `ocrFallbackRegex`. Other keys: `multiScanEnabled`, `maxNumLocationsToProcessPerFrame`, `codeDuplicateFilter`, `searchArea`, `codeLocation1d`, `codeLocation2d`, `codeDirectionHint` (`left-to-right`, `right-to-left`, `bottom-to-top`, `top-to-bottom`, `none`, `vertical`, `horizontal`), `arucoDictionaryPreset`.
 - Write float settings with a decimal point (`1.0`, not `1`).
+
 ## 6. Symbology settings
 
 - `sc_symbology_settings_set_enabled` covers **dark-on-light only**. For light-on-dark also call `sc_symbology_settings_set_color_inverted_enabled`. Enable both if both polarities occur.
@@ -212,7 +216,9 @@ Defaults are those of SDK 8.6 (as reported by `sc_barcode_scanner_settings_as_js
 ### Add-on and composite codes
 
 - **Add-ons (EAN/UPC + 2/5-digit):** enable the main symbology and `two-digit-add-on` / `five-digit-add-on`, allow at least 2 codes/locations per frame, and combine main + add-on from the session. An add-on alone is never returned.
-- **Composite codes (GS1 1D + 2D part):** enable the 1D symbology plus PDF417/MicroPDF417, allow 2 codes per frame, and concatenate. `sc_barcode_get_composite_flag`: NONE 0, UNKNOWN 1 (EAN/UPC), LINKED 2 (DataBar/GS1-128), GS1_A 3, GS1_B 4 (MicroPDF417), GS1_C 5 (PDF417).- **GS1:** check `sc_barcode_is_gs1_data_carrier`. Read the raw data and use the parser (§10). Typical encoding mistakes: a leading GS in Data Matrix byte mode, or human-readable "(01)…" text in a plain Data Matrix.- **Structured append** (split codes; e.g. DotCode since 8.6): `sc_barcode_get_file_id`, `get_segment_index`, `get_segment_count` (7.6; Python fields 8.6). The app has to reassemble the segments.
+- **Composite codes (GS1 1D + 2D part):** enable the 1D symbology plus PDF417/MicroPDF417, allow 2 codes per frame, and concatenate. `sc_barcode_get_composite_flag`: NONE 0, UNKNOWN 1 (EAN/UPC), LINKED 2 (DataBar/GS1-128), GS1_A 3, GS1_B 4 (MicroPDF417), GS1_C 5 (PDF417).
+- **GS1:** check `sc_barcode_is_gs1_data_carrier`. Read the raw data and use the parser (§10). Typical encoding mistakes: a leading GS in Data Matrix byte mode, or human-readable "(01)…" text in a plain Data Matrix.
+- **Structured append** (split codes; e.g. DotCode since 8.6): `sc_barcode_get_file_id`, `get_segment_index`, `get_segment_count` (7.6; Python fields 8.6). The app has to reassemble the segments.
 
 ## 7. Session and results
 
@@ -223,18 +229,21 @@ Defaults are those of SDK 8.6 (as reported by `sc_barcode_scanner_settings_as_js
   - 1D: x = modules along the code, y = -1
   - 2D: x, y = modules per side
   - stacked (PDF417, DataBar stacked): x = modules per row, y = rows
-  - Python: not in the 8.6 bindings.  - **PPM of a decoded code = edge length of `get_location` in px ÷ module count.** Use it to measure the PPM margin of codes that do scan (code-readability §2.2).
+  - Python: not in the 8.6 bindings.
+  - **PPM of a decoded code = edge length of `get_location` in px ÷ module count.** Use it to measure the PPM margin of codes that do scan (code-readability §2.2).
 
 ## 8. Images
 
 - `ScImageDescription` (`sc_image_description_new`, all zero + `SC_IMAGE_LAYOUT_UNKNOWN`): set width, height and layout (always required) and the row bytes per plane (`set_plane_row_bytes`). Bi-planar layouts (NV12, NV21) also need **both** plane offsets (`set_plane_offset`; plane API 7.0). `get_planes_count` tells you how many planes a layout has. Padded rows (row bytes > width × bytes per pixel) are common with camera buffers; set the real stride.
-- Layouts: GRAY_8U 0x1, RGB_8U 0x2, RGBA_8U 0x4, YPCBCR_8U 0x8 (NV12), YPCRCB_8U 0x10 (NV21), YUYV_8U 0x20, UYVY_8U 0x40, I420_8U 0x80, ARGB_8U 0x100, BGR_8U 0x200, NV16_8U 0x800.- **Prefer GRAY_8U or a YUV layout**; RGB is converted to grey by the SDK.
+- Layouts: GRAY_8U 0x1, RGB_8U 0x2, RGBA_8U 0x4, YPCBCR_8U 0x8 (NV12), YPCRCB_8U 0x10 (NV21), YUYV_8U 0x20, UYVY_8U 0x40, I420_8U 0x80, ARGB_8U 0x100, BGR_8U 0x200, NV16_8U 0x800.
+- **Prefer GRAY_8U or a YUV layout**; RGB is converted to grey by the SDK.
 - Docs' recommendations for **single images**: 800×600 to 1920×1080 (1280×720 recommended for speed), FullHD or 4K with HIGH_EFFORT for small codes; a restricted area of at least **320×160 px**; no pre-cropping, filtering, blurring or binarizing; uncompressed input (JPEG block artifacts hurt); `start_new_frame_sequence` / `process_frame` / `end_frame_sequence` per image; duplicate filter off; HIGH_EFFORT. A single image is never as robust as a video stream.
 - **Video:** FullHD (4K for range). Restart the frame sequence only when the stream is discontinuous. The SDK does no exposure/focus control for you.
 
 ## 9. Camera (`ScCamera`, V4L2 only)
 
 The camera API is a thin V4L2 wrapper (on non-V4L2 platforms it returns a dummy object). Most camera problems come from **what the driver reports** and **which resolution/layout gets requested**, so read the capabilities first.
+
 **Create and release:** `sc_camera_new()`, `sc_camera_new_with_buffer_count(n)`, `sc_camera_new_from_path("/dev/video0", 4)`. They return NULL on error. Too many buffers can make the allocation fail; 4 is the documented example. `sc_camera_release` / `retain`.
 
 **Capabilities: two modes (`ScCameraMode`)**, separately for resolution and framerate:
@@ -270,6 +279,7 @@ The camera API is a thin V4L2 wrapper (on non-V4L2 platforms it returns a dummy 
 - **Barcode generator** (5.8; license feature): `sc_barcode_generator_new(ctx, symbology, &err)` / `sc_barcode_generator_new_with_options(ctx, symbology, json, &err)`, `sc_barcode_generator_set_options`, `sc_barcode_generator_generate(gen, data, len, encoding, &err)` (`ScEncodingArray` by value) → RGBA `ScImageBuffer` (`sc_image_buffer_free`); free the generator with `sc_barcode_generator_free`. Guide: barcode-generator.md. Symbologies: Code 39, Code 128, EAN-13, UPC-A, ITF, QR, Data Matrix, PDF417 (8.2). Options: foreground/background `[r,g,b,a]`; QR `errorCorrectionLevel` L/M/Q/H (default M), `versionNumber` 1–40; PDF417 `errorCorrectionLevel` 0–8, `compact`, `compaction`, `dimensions`. Useful to create clean reference codes for a repro or a PPM test series.
 - **Version string:** `sc_get_information_string(SC_INFORMATION_KEY_SDK_VERSION)` (also `SDK_BUILD`, `SOFTWARE_LICENSES`). Log it at startup and include it in support requests.
 - `sc_symbology_to_string` / `sc_symbology_from_string`; `SC_ALL_SYMBOLOGIES`.
+
 ### Python bindings coverage (8.6 `scanditsdk.py`)
 
 | Area | Python | Not in the 8.6 bindings |
@@ -300,9 +310,11 @@ Step-by-step guide including 5.x → 7.0 and the behaviour changes per version: 
 | unscanned default locations in the session | no longer reported |
 
 Code written for 7.x uses the removed calls in the left column; replace them with the 8.x calls above.
+
 ## 12. Release notes: what changed when
 
 Source: [Linux release notes](https://docs.scandit.com/sdks/linux/release-notes/).
+
 | Version | Date | What changed |
 | --- | --- | --- |
 | 8.0.0 | 2025-11-04 | Breaking API changes (§11) |

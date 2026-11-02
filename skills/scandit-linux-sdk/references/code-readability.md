@@ -269,6 +269,7 @@ Scandit doesn't specify a minimum ISO/IEC 15416 (1D) or ISO/IEC 15415 (2D) print
 ### 3.6 Settings that look like image problems
 
 Check these before blaming the image:
+
 - The **symbology isn't enabled.** In the Linux SDK, all symbologies are disabled by default, and an empty JSON configuration enables nothing.
 - The code's **length is outside the active symbol-count range** (common for Code 39, Code 128, ITF, Codabar and MSI). The count includes start/stop and check characters, for example:
   - Code 39: characters + 2 (a 17-character code has 19). Default 6–40.
@@ -279,7 +280,8 @@ Check these before blaming the image:
 - A **JSON key is misspelled or outdated.** Unknown keys are ignored without an error. Print the effective settings with `sc_barcode_scanner_settings_as_json` and compare.
 - **Settings weren't applied:** changes take effect only after `sc_barcode_scanner_apply_settings`; check the status it returns.
 - **Checksum settings** don't match the printed code (e.g. Code 39 with or without mod43, MSI mod10/mod11).
-- **The `strict` extension is enabled** on a low-resolution image. It trades scan rate for fewer false reads.- **Multi-scan is off.** In Linux SDK 7.x and 8.x, multi-scan is off by default: only one or a few codes per frame are returned, and the rest appear over the next frames. When several codes are in view, enable multi-scan (`sc_barcode_scanner_settings_set_multi_scan_enabled`; it needs the multi-code "tracking" feature on your license) and, from SDK 8.0, raise `sc_barcode_scanner_settings_set_max_num_locations_to_process_per_frame`.
+- **The `strict` extension is enabled** on a low-resolution image. It trades scan rate for fewer false reads.
+- **Multi-scan is off.** In Linux SDK 7.x and 8.x, multi-scan is off by default: only one or a few codes per frame are returned, and the rest appear over the next frames. When several codes are in view, enable multi-scan (`sc_barcode_scanner_settings_set_multi_scan_enabled`; it needs the multi-code "tracking" feature on your license) and, from SDK 8.0, raise `sc_barcode_scanner_settings_set_max_num_locations_to_process_per_frame`.
 - The **scan area or circle of interest** excludes the code, or the **duplicate filter** hides repeats.
 - **Settings differ** between the test app and the integration. Compare like with like.
 
