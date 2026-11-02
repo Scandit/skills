@@ -20,7 +20,7 @@ Ask which capture stack the user has (OpenCV, GStreamer, libcamera, a vendor cam
 | BGR (OpenCV `CV_8UC3`) | `SC_IMAGE_LAYOUT_BGR_8U` | ≥ 3 × width | converted to grey by the SDK |
 | RGB / RGBA / ARGB | `SC_IMAGE_LAYOUT_RGB_8U` / `RGBA_8U` / `ARGB_8U` | 3 or 4 × width | converted to grey by the SDK |
 
-- **Always use the real stride** reported by your capture stack (GStreamer `GST_VIDEO_INFO_PLANE_STRIDE`, OpenCV `Mat::step` / numpy `strides[0]`, V4L2 `bytesperline`). Rows are often padded; width × bytes per pixel is then wrong and gives status 5 (`INCONSISTENT_IMAGE_DATA`) or garbage.
+- **Always use the real stride** reported by your capture stack (GStreamer: the buffer's `GstVideoMeta` `stride[]`/`offset[]` when present, else `GST_VIDEO_INFO_PLANE_STRIDE`; OpenCV `Mat::step` / numpy `strides[0]`; V4L2 `bytesperline`). Rows are often padded; width × bytes per pixel is then wrong and gives status 5 (`INCONSISTENT_IMAGE_DATA`) or garbage.
 - Prefer formats with a luminance plane (grey or YUV). Converting a YUV frame to RGB just to pass it to the SDK costs time and adds nothing.
 - Pass the frame **before** any scaling, sharpening, thresholding or compression. Cropping is fine if the crop keeps enough pixels per module and is at least 320×160 px.
 - The buffer must stay valid and unchanged until `sc_recognition_context_process_frame` returns.
@@ -162,13 +162,18 @@ int main(int argc, char **argv) {
         GstBuffer *buffer = gst_sample_get_buffer(sample);
         if (gst_video_info_from_caps(&info, gst_sample_get_caps(sample)) &&
             gst_buffer_map(buffer, &map, GST_MAP_READ)) {
-            /* GStreamer pads rows: always take the stride (and plane offsets) from GstVideoInfo. */
+            /* Padding producers (v4l2src, hardware decoders) attach the real per-buffer stride and plane
+             * offsets as GstVideoMeta. The caps-derived GstVideoInfo only knows the default, unpadded
+             * values, so use the meta when it is present and fall back to the info otherwise. */
+            GstVideoMeta *meta = gst_buffer_get_video_meta(buffer);
+            uint32_t stride = (uint32_t)(meta ? meta->stride[0] : GST_VIDEO_INFO_PLANE_STRIDE(&info, 0));
+            const uint8_t *pixels = map.data + (meta ? meta->offset[0] : GST_VIDEO_INFO_PLANE_OFFSET(&info, 0));
             sc_image_description_set_width(desc, (uint32_t)GST_VIDEO_INFO_WIDTH(&info));
             sc_image_description_set_height(desc, (uint32_t)GST_VIDEO_INFO_HEIGHT(&info));
             sc_image_description_set_layout(desc, SC_IMAGE_LAYOUT_GRAY_8U);
-            sc_image_description_set_plane_row_bytes(desc, 0, (uint32_t)GST_VIDEO_INFO_PLANE_STRIDE(&info, 0));
+            sc_image_description_set_plane_row_bytes(desc, 0, stride);
 
-            ScProcessFrameResult r = sc_recognition_context_process_frame(ctx, desc, map.data);
+            ScProcessFrameResult r = sc_recognition_context_process_frame(ctx, desc, pixels);
             ok = (r.status.flag == SC_RECOGNITION_CONTEXT_STATUS_SUCCESS);
             if (!ok) fprintf(stderr, "process_frame: status %d: %s\n", (int)r.status.flag,
                              sc_byte_array_get_string(r.status.message));
@@ -199,7 +204,7 @@ int main(int argc, char **argv) {
 }
 ```
 
-- For NV12 use `format=NV12` in the caps filter and `describe_nv12(desc, w, h, GST_VIDEO_INFO_PLANE_STRIDE(&info, 0), GST_VIDEO_INFO_PLANE_STRIDE(&info, 1), GST_VIDEO_INFO_PLANE_OFFSET(&info, 1))` from the helper above.
+- For NV12 use `format=NV12` in the caps filter and `describe_nv12` from the helper above, with the strides and the CbCr offset taken from `GstVideoMeta` when the buffer has one (`meta->stride[0]`, `meta->stride[1]`, `meta->offset[1] - meta->offset[0]`, and pass `map.data + meta->offset[0]` as the pixels) and from `GstVideoInfo` otherwise (`GST_VIDEO_INFO_PLANE_STRIDE(&info, 0/1)`, `GST_VIDEO_INFO_PLANE_OFFSET(&info, 1)`). Mapping with `gst_video_frame_map` gives the same values via `GST_VIDEO_FRAME_PLANE_STRIDE` / `GST_VIDEO_FRAME_PLANE_DATA`.
 - `max-buffers=2 drop=true` keeps latency low when scanning is slower than the camera: old frames are dropped instead of queued.
 - The package also contains a GStreamer **plugin** sample (`samples/gstreamer`, built with meson and ninja) that scans inside a pipeline: `... ! video/x-raw,format=YUY2 ! scanditsdkplugin symbologies=ean13,qr ! autovideosink`. It accepts YUY2 and NV12 only, and its license key is a macro in its source. See its README for the properties (`silent`, `once`, `singleframe`, `draw`, `symbologies`).
 
