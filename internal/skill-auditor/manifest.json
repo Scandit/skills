@@ -18,6 +18,7 @@
     "matrixscan-ar-highlight-ios"
   ],
   "licence_key_exempt": [
+    "scandit-linux-sdk",
     "scandit-xamarin-to-net-migration",
     "matrixscan-ar-annotation-ios",
     "matrixscan-ar-highlight-ios"

@@ -75,6 +75,7 @@ When the user is inside a project directory, check for framework markers before 
 | `*.csproj` with a MAUI target (`<UseMaui>true</UseMaui>`) | .NET MAUI |
 | `build.gradle.kts` with `kotlin("multiplatform")`, or a `shared/` module alongside `androidApp/` + `iosApp/` directories | Kotlin Multiplatform |
 | `package.json` without `react-native`, with `index.html` / Vite / Next / etc. | Web |
+| C/C++ sources that include `<Scandit/Sc*.h>` or link `-lscanditsdk` (Makefile, `CMakeLists.txt`, `meson.build`), Python that imports `scanditsdk`, or Debian packaging for a Linux device (`debian/control`, `.deb`) | Linux |
 
 If nothing matches or the workspace is empty, then ask. Either way, **always confirm the platform with the user before proposing a skill** — don't silently guess.
 
@@ -185,6 +186,11 @@ Always include both the docs.scandit.com link and the platform-specific sample-a
 | MatrixScan Pick | iOS | `matrixscan-pick-ios` | "Ask me to integrate MatrixScan Pick into your iOS app" |
 | MatrixScan Pick | Kotlin Multiplatform | `matrixscan-pick-kmp` | "Ask me to integrate MatrixScan Pick into your Kotlin Multiplatform app" |
 | Parser | Kotlin Multiplatform | `parser-kmp` | "Ask me to integrate the Scandit Parser into your Kotlin Multiplatform app" |
+| Barcode Capture | Linux | `scandit-linux-sdk` | "Ask me to add barcode scanning to your Linux C, C++ or Python app" |
+| MatrixScan Batch | Linux | `scandit-linux-sdk` | "Ask me to add multi-barcode tracking (MatrixScan) to your Linux app" |
+| Parser | Linux | `scandit-linux-sdk` | "Ask me to parse GS1, HIBC or AAMVA data in your Linux app" |
+
+**Linux has one skill for all its products**: `scandit-linux-sdk` covers the Linux SDK's low-level C API (usable from C++) and its Python bindings — single barcode scanning, multi-barcode scanning and tracking (MatrixScan), the parser and the barcode generator, from images, V4L2 cameras or the app's own frames. The Linux SDK has no SparkScan, MatrixScan AR/Count/Find/Pick, Smart Label Capture, ID Capture or any UI: for those products on a Linux device, say so instead of offering the skill. Linux licence keys don't come from the Scandit MCP server; the skill's own `## Licence key` section sends the user to the dashboard.
 
 **MatrixScan AR on iOS has two specialized sibling skills**: `matrixscan-ar-highlight-ios` (highlight styling and interaction) and `matrixscan-ar-annotation-ios` (annotation content, appearance, and interaction). Always hand off to `matrixscan-ar-ios` as the entry point — it routes highlight- and annotation-specific work to the siblings itself. Only name a sibling directly when the user's request is *exclusively* about highlights or annotations on an existing MatrixScan AR iOS integration.
 
@@ -220,6 +226,7 @@ Use [references/product-catalog.md](references/product-catalog.md) for trade-off
 | Capacitor SDK docs | [Capacitor SDK](https://docs.scandit.com/sdks/capacitor/) |
 | Cordova SDK docs | [Cordova SDK](https://docs.scandit.com/sdks/cordova/) |
 | Kotlin Multiplatform SDK docs | [Kotlin Multiplatform SDK](https://docs.scandit.com/sdks/kmp/) |
+| Linux SDK docs (C API, Python bindings) | [Linux SDK](https://docs.scandit.com/sdks/linux/overview/) · [C API reference](https://docs.scandit.com/stable/c_api/annotated.html) |
 | Barcode symbologies | [Supported Symbologies](https://docs.scandit.com/sdks/ios/barcode-symbologies/) |
 | System requirements | [System Requirements](https://docs.scandit.com/system-requirements/) |
 | Pricing | [Scandit Pricing](https://www.scandit.com/pricing/) |

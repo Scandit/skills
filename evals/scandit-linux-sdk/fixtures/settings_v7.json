@@ -1,0 +1,11 @@
+{
+  "symbologies": {
+    "code128": { "enabled": true, "activeSymbolCounts": [18, 19, 20, 21, 22] },
+    "data-matrix": { "enabled": true, "extensions": ["direct_part_marking_mode"] },
+    "rm4scc": true
+  },
+  "maxNumberOfCodesPerFrame": 3,
+  "codeCachingDuration": 0,
+  "focusMode": "fixed",
+  "codeDuplicateFilter": 500
+}

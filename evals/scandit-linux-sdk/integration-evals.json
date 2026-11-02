@@ -1,0 +1,463 @@
+{
+  "skill_name": "scandit-linux-sdk",
+  "evals": [
+    {
+      "id": 1,
+      "tags": [
+        "integration-c",
+        "single-image",
+        "setup-checklist"
+      ],
+      "prompt": "Add Scandit barcode scanning to our inspection tool: EmptyScanner.c. It reads one PGM image per run. We need EAN-13 and Code 128.",
+      "expected_output": "Reads references/integration.md, writes the single-image integration into EmptyScanner.c (context, HIGH_EFFORT settings with EAN-13 and Code 128 only, sc_barcode_scanner_new + apply_settings with checked and freed status, image description with row bytes, new frame sequence, process_frame, session results, teardown with the context last) and shows the setup checklist.",
+      "files": [
+        "fixtures/EmptyScanner.c"
+      ],
+      "assertions": [
+        {
+          "text": "The code is written into EmptyScanner.c (not only shown in chat)"
+        },
+        {
+          "text": "sc_recognition_context_new( is used to create the context"
+        },
+        {
+          "text": "SC_PRESET_HIGH_EFFORT is used for the single image"
+        },
+        {
+          "text": "SC_SYMBOLOGY_EAN13_UPCA and SC_SYMBOLOGY_CODE128 are enabled and no other symbology is enabled"
+        },
+        {
+          "text": "sc_barcode_scanner_new( is followed by sc_barcode_scanner_apply_settings("
+        },
+        {
+          "text": "The ScContextStatus returned by sc_barcode_scanner_apply_settings is checked (.flag) and freed with sc_context_status_free(status) — by value, not sc_context_status_free(&status)"
+        },
+        {
+          "text": "sc_barcode_scanner_new_with_settings is NOT used"
+        },
+        {
+          "text": "sc_image_description_set_layout( is called with SC_IMAGE_LAYOUT_GRAY_8U"
+        },
+        {
+          "text": "sc_image_description_set_plane_row_bytes( is called"
+        },
+        {
+          "text": "sc_recognition_context_start_new_frame_sequence( is called before sc_recognition_context_process_frame("
+        },
+        {
+          "text": "sc_recognition_context_end_frame_sequence( is called"
+        },
+        {
+          "text": "sc_process_frame_result_free( is called on the process_frame result"
+        },
+        {
+          "text": "The duplicate filter is turned off (SC_DUPLICATE_FILTER_OFF)"
+        },
+        {
+          "text": "sc_barcode_scanner_session_get_newly_recognized_codes( is used and the array is released with sc_barcode_array_release("
+        },
+        {
+          "text": "sc_recognition_context_release( is called after the scanner and settings are released"
+        },
+        {
+          "text": "The license key placeholder `-- INSERT YOUR LICENSE KEY HERE --` is used (or the user's key, shown in chat only as a masked preview)"
+        },
+        {
+          "text": "The license key is NOT read from an environment variable in the code (no getenv / os.environ / dotenv)"
+        },
+        {
+          "text": "A setup checklist is shown that mentions installing the .deb with dpkg -i, linking with -lscanditsdk, replacing the license-key placeholder and a persistent writable data path"
+        },
+        {
+          "text": "The setup checklist or answer mentions the glibc requirement (2.31 or newer)"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "tags": [
+        "integration-python",
+        "opencv",
+        "capture-pipelines"
+      ],
+      "prompt": "Turn empty_scanner.py into a scanner for our USB camera, read with OpenCV (cv2.VideoCapture(0), 1920x1080). QR and Code 128.",
+      "expected_output": "Writes a Python scanner into empty_scanner.py that reads frames with cv2.VideoCapture, converts them to greyscale, maps them to an ImageDescription with the real stride, keeps one frame sequence for the stream, and reads newly_recognized_codes after each frame (capture-pipelines.md, OpenCV Python).",
+      "files": [
+        "fixtures/empty_scanner.py"
+      ],
+      "assertions": [
+        {
+          "text": "The code is written into empty_scanner.py"
+        },
+        {
+          "text": "import scanditsdk as sc is used"
+        },
+        {
+          "text": "sc.RecognitionContext( is used"
+        },
+        {
+          "text": "settings.enable_symbology(sc.SYMBOLOGY_QR, True) and settings.enable_symbology(sc.SYMBOLOGY_CODE128, True) are called"
+        },
+        {
+          "text": "scanner.apply_settings(settings) is called and its result is checked with is_success()"
+        },
+        {
+          "text": "cv2.VideoCapture( is used to open the camera"
+        },
+        {
+          "text": "Frames are converted to greyscale (cv2.cvtColor with COLOR_BGR2GRAY) or passed as BGR with sc.IMAGE_LAYOUT_BGR_8U, and made contiguous (np.ascontiguousarray)"
+        },
+        {
+          "text": "descr.set_plane_row_bytes(0, <array>.strides[0]) is used to set the stride (not memory_size or first_plane_row_bytes)"
+        },
+        {
+          "text": "context.start_new_frame_sequence() is called once before the frame loop (not per frame)"
+        },
+        {
+          "text": "process_frame(descr, <array>.ctypes.data) is called per frame"
+        },
+        {
+          "text": "scanner.session.newly_recognized_codes is read after each frame"
+        },
+        {
+          "text": "The answer mentions that Python processes are licensed under the executable name python3"
+        },
+        {
+          "text": "The license key placeholder `-- INSERT YOUR LICENSE KEY HERE --` is used (or the user's key, shown in chat only as a masked preview)"
+        },
+        {
+          "text": "The license key is NOT read from an environment variable in the code (no getenv / os.environ / dotenv)"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "tags": [
+        "integration-cpp",
+        "opencv",
+        "capture-pipelines"
+      ],
+      "prompt": "opencv_app.cpp loads label photos with OpenCV. Make it decode QR and Data Matrix codes with Scandit, C++17.",
+      "expected_output": "Reads capture-pipelines.md and integration.md, adds Scandit to opencv_app.cpp mapping cv::Mat to ScImageDescription without a copy (BGR → SC_IMAGE_LAYOUT_BGR_8U or greyscale → GRAY_8U, row bytes from Mat::step), HIGH_EFFORT, new frame sequence per image, RAII or careful release.",
+      "files": [
+        "fixtures/opencv_app.cpp"
+      ],
+      "assertions": [
+        {
+          "text": "The code is written into opencv_app.cpp"
+        },
+        {
+          "text": "A BGR cv::Mat from cv::IMREAD_COLOR is described with SC_IMAGE_LAYOUT_BGR_8U (not SC_IMAGE_LAYOUT_RGB_8U), or the image is loaded/converted to greyscale and described with SC_IMAGE_LAYOUT_GRAY_8U"
+        },
+        {
+          "text": "The row bytes come from the Mat's step (m.step / step[0]), not computed as width only"
+        },
+        {
+          "text": "SC_SYMBOLOGY_QR and SC_SYMBOLOGY_DATA_MATRIX are enabled"
+        },
+        {
+          "text": "The context and scanner are created once, outside the per-image loop"
+        },
+        {
+          "text": "sc_recognition_context_start_new_frame_sequence( is called per image"
+        },
+        {
+          "text": "Every created SDK object is released (RAII wrapper or explicit *_release), with the context released last"
+        },
+        {
+          "text": "The build line links -lscanditsdk together with the OpenCV libraries"
+        },
+        {
+          "text": "The license key placeholder `-- INSERT YOUR LICENSE KEY HERE --` is used (or the user's key, shown in chat only as a masked preview)"
+        },
+        {
+          "text": "The license key is NOT read from an environment variable in the code (no getenv / os.environ / dotenv)"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "tags": [
+        "capture-pipelines",
+        "gstreamer",
+        "nv12"
+      ],
+      "prompt": "Our conveyor app gst_pipeline.c gets NV12 frames from a GStreamer appsink. Add Scandit scanning for EAN-13 there.",
+      "expected_output": "Describes the NV12 buffer with SC_IMAGE_LAYOUT_YPCBCR_8U, row bytes for both planes and the UV plane offset taken from GstVideoInfo (GST_VIDEO_INFO_PLANE_STRIDE / GST_VIDEO_INFO_PLANE_OFFSET), processes frames in one frame sequence for the stream, unmaps after processing.",
+      "files": [
+        "fixtures/gst_pipeline.c"
+      ],
+      "assertions": [
+        {
+          "text": "The code is written into gst_pipeline.c"
+        },
+        {
+          "text": "SC_IMAGE_LAYOUT_YPCBCR_8U is used for NV12"
+        },
+        {
+          "text": "sc_image_description_set_plane_row_bytes( is set for plane 0 and plane 1"
+        },
+        {
+          "text": "sc_image_description_set_plane_offset( is set for plane 1 (the CbCr plane)"
+        },
+        {
+          "text": "The strides/offsets come from GstVideoInfo (GST_VIDEO_INFO_PLANE_STRIDE and GST_VIDEO_INFO_PLANE_OFFSET), not from width"
+        },
+        {
+          "text": "sc_recognition_context_start_new_frame_sequence( is called once for the stream, not per frame"
+        },
+        {
+          "text": "The buffer is processed before gst_buffer_unmap("
+        },
+        {
+          "text": "All SDK calls are made from the same thread as the pull loop (or the answer explains the single-thread rule)"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "tags": [
+        "multi-scan",
+        "licensing"
+      ],
+      "prompt": "Each of our tray images has up to 6 Data Matrix codes. With the Scandit C API I only ever get one. How do I get all of them in one image?",
+      "expected_output": "Multi-scan is off by default; enable sc_barcode_scanner_settings_set_multi_scan_enabled and set sc_barcode_scanner_settings_set_max_num_locations_to_process_per_frame (> 0, e.g. 6 or more); needs the tracking license feature; not set_max_number_of_codes_per_frame (removed in 8.0).",
+      "files": [],
+      "assertions": [
+        {
+          "text": "The answer says multi-scan is off by default"
+        },
+        {
+          "text": "sc_barcode_scanner_settings_set_multi_scan_enabled( is used with SC_TRUE"
+        },
+        {
+          "text": "sc_barcode_scanner_settings_set_max_num_locations_to_process_per_frame( is used with a value of at least 6"
+        },
+        {
+          "text": "The answer says multi-scan needs the \"tracking\" license feature"
+        },
+        {
+          "text": "sc_barcode_scanner_settings_set_max_number_of_codes_per_frame is NOT recommended as the current API (mentioning it as removed is fine)"
+        },
+        {
+          "text": "The answer notes the settings take effect only after sc_barcode_scanner_apply_settings("
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "tags": [
+        "matrixscan",
+        "object-tracker"
+      ],
+      "prompt": "Write a C function that tracks all EAN-13 codes on a conveyor and prints each code with a stable ID while it is in view. Our capture thread already hands us greyscale frames as (pointer, width, height, stride).",
+      "expected_output": "Reads matrixscan.md; uses sc_object_tracker_new + sc_object_tracker_apply_scanner_settings (no ScBarcodeScanner), code location IGNORE, one frame sequence, an ScImageDescription with the real stride, sc_object_tracker_session_get_tracked_objects per frame with map iteration and release, sc_tracked_object_get_barcode released with sc_barcode_release; says the tracking feature is needed and that the bundled CommandLineMatrixScanCameraSample.c shows the full loop.",
+      "files": [],
+      "assertions": [
+        {
+          "text": "sc_object_tracker_new( is used"
+        },
+        {
+          "text": "sc_object_tracker_apply_scanner_settings( is used to pass the settings"
+        },
+        {
+          "text": "No ScBarcodeScanner is required for the tracker (sc_barcode_scanner_new is not needed for tracking)"
+        },
+        {
+          "text": "Code location constraints are set to SC_CODE_LOCATION_IGNORE"
+        },
+        {
+          "text": "sc_image_description_set_plane_row_bytes( is set from the stride the capture thread provides"
+        },
+        {
+          "text": "sc_object_tracker_session_get_tracked_objects( is called after each processed frame"
+        },
+        {
+          "text": "The map is iterated with sc_tracked_object_map_get_size( and sc_tracked_object_map_get_ids( (or get_item_at by id)"
+        },
+        {
+          "text": "sc_tracked_object_map_release( is called for every map"
+        },
+        {
+          "text": "The barcode from sc_tracked_object_get_barcode( is released with sc_barcode_release("
+        },
+        {
+          "text": "The answer says IDs can be reused after an object is lost"
+        },
+        {
+          "text": "The answer says the license key needs the \"tracking\" (MatrixScan) feature"
+        },
+        {
+          "text": "sc_object_tracker_release( is called before sc_recognition_context_release("
+        },
+        {
+          "text": "The license key placeholder `-- INSERT YOUR LICENSE KEY HERE --` is used (or the user's key, shown in chat only as a masked preview)"
+        },
+        {
+          "text": "The license key is NOT read from an environment variable in the code (no getenv / os.environ / dotenv)"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "tags": [
+        "parser",
+        "gs1"
+      ],
+      "prompt": "We scan GS1-128 labels on Linux in C. How do I split the data into application identifiers like (01), (17), (10)?",
+      "expected_output": "Reads parser.md; creates the parser with sc_parser_new_with_context(ctx, SC_PARSER_TYPE_GS1_AI, &status), passes the raw data, iterates fields, frees every ScByteArray, frees result and parser before the context; parser is a license feature.",
+      "files": [],
+      "assertions": [
+        {
+          "text": "sc_parser_new_with_context( is called with SC_PARSER_TYPE_GS1_AI"
+        },
+        {
+          "text": "The ScContextStatus from parser creation is freed with sc_context_status_free("
+        },
+        {
+          "text": "sc_parser_parse_string( is used with the raw barcode data and its length"
+        },
+        {
+          "text": "Fields are read with sc_parser_result_get_fields_count( and sc_parser_result_get_field_by_index( (or get_field_by_name)"
+        },
+        {
+          "text": "sc_field_get_name( / sc_field_get_string_value( results are freed with sc_byte_array_free("
+        },
+        {
+          "text": "sc_parser_result_free( and sc_parser_free( are called, the parser before the context"
+        },
+        {
+          "text": "The answer says not to strip the GS (0x1D) separators / to pass raw data, not the human-readable \"(01)\" text"
+        },
+        {
+          "text": "The answer says the parser is a license feature (NULL / status when missing)"
+        },
+        {
+          "text": "The answer does NOT claim a Python parser class exists in the 8.6 bindings"
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "tags": [
+        "barcode-generator",
+        "integration-python"
+      ],
+      "prompt": "In Python, generate a Code 128 label image for the text 'PALLET-000123' with the Scandit SDK and save it as PNG.",
+      "expected_output": "Reads barcode-generator.md; sc.BarcodeGenerator(context, sc.SYMBOLOGY_CODE128), set_options, generate (ASCII), reshape numpy data by (height, row bytes) then crop to width*4, save RGBA with Pillow; generator is a license feature.",
+      "files": [],
+      "assertions": [
+        {
+          "text": "sc.BarcodeGenerator(context, sc.SYMBOLOGY_CODE128) is used"
+        },
+        {
+          "text": "generator.generate( is called with the text"
+        },
+        {
+          "text": "The image data is reshaped using the height and the row bytes (description.get_plane_row_bytes(0)), not reshape(width, height, 4)"
+        },
+        {
+          "text": "The image is saved as RGBA (4 channels)"
+        },
+        {
+          "text": "RuntimeError from generator creation or generation is handled or mentioned"
+        },
+        {
+          "text": "The answer says the barcode generator is a license feature"
+        },
+        {
+          "text": "The license key placeholder `-- INSERT YOUR LICENSE KEY HERE --` is used (or the user's key, shown in chat only as a masked preview)"
+        },
+        {
+          "text": "The license key is NOT read from an environment variable in the code (no getenv / os.environ / dotenv)"
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "tags": [
+        "json-settings"
+      ],
+      "prompt": "Give me a JSON settings file for the Linux SDK: Code 128 (lengths 18-22), Data Matrix including dot-peen marks, up to 3 codes per frame.",
+      "expected_output": "Reads advanced.md; uses multiScanEnabled + maxNumLocationsToProcessPerFrame (not maxNumberOfCodesPerFrame), activeSymbolCounts, data-matrix extensions including direct_part_marking_mode AND keeps strip_leading_fnc1 (JSON extensions replace defaults); loads with sc_barcode_scanner_settings_new_from_json and checks as_json.",
+      "files": [],
+      "assertions": [
+        {
+          "text": "The JSON uses \"multiScanEnabled\": true and \"maxNumLocationsToProcessPerFrame\": 3"
+        },
+        {
+          "text": "maxNumberOfCodesPerFrame does NOT appear as a key in the JSON"
+        },
+        {
+          "text": "code128 has \"activeSymbolCounts\" as a contiguous range derived from 18–22: either [18..22] taken as symbol counts, or [21..25] after adding start, check and stop (characters + 3), and the answer states which counting it used"
+        },
+        {
+          "text": "data-matrix has \"extensions\" containing \"direct_part_marking_mode\""
+        },
+        {
+          "text": "The data-matrix extensions list also contains \"strip_leading_fnc1\", or the answer explains that a JSON extensions array replaces the default extensions"
+        },
+        {
+          "text": "The answer says unknown JSON keys are silently ignored and suggests comparing with sc_barcode_scanner_settings_as_json("
+        },
+        {
+          "text": "The answer mentions that multi-scan needs the \"tracking\" license feature"
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "tags": [
+        "licence-key"
+      ],
+      "prompt": "Here's our key: AbCdEf1234567890XYZ-placeholder-not-real. Put it into EmptyScanner.c after adding scanning for QR codes.",
+      "expected_output": "Writes the integration and puts the pasted key into the SCANDIT_SDK_LICENSE_KEY define in place of the placeholder; shows only a masked preview in chat; reminds to keep non-trial keys out of version control; app ID = executable name.",
+      "files": [
+        "fixtures/EmptyScanner.c"
+      ],
+      "assertions": [
+        {
+          "text": "The pasted key is written into the license-key constant (e.g. SCANDIT_SDK_LICENSE_KEY) in EmptyScanner.c"
+        },
+        {
+          "text": "The full key is NOT repeated in the chat response (at most a masked preview)"
+        },
+        {
+          "text": "The key is NOT read from an environment variable (no getenv)"
+        },
+        {
+          "text": "The answer reminds the user to keep non-trial keys out of version control"
+        },
+        {
+          "text": "The answer mentions the key's executable name must match the binary name (or be empty) to avoid status 15"
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "tags": [
+        "licence-key"
+      ],
+      "prompt": "Where do I get a Scandit license key for my Raspberry Pi scanner? Can you fetch one for me?",
+      "expected_output": "Linux keys come from the dashboard (ssl.scandit.com, trial sign-up); the Scandit MCP server doesn't provision Linux keys; Linux platform; executable name; features (tracking/parser/generator).",
+      "files": [],
+      "assertions": [
+        {
+          "text": "The answer points to the Scandit dashboard at https://ssl.scandit.com (or the trial sign-up link)"
+        },
+        {
+          "text": "The answer says Linux keys are not available through the Scandit MCP server (it does not try to provision a key itself)"
+        },
+        {
+          "text": "The answer says the key must be created for the Linux platform"
+        },
+        {
+          "text": "The answer explains the executable name / app ID (python3 for Python scripts)"
+        },
+        {
+          "text": "The answer does NOT ask the user to paste the key into a public place"
+        }
+      ]
+    }
+  ]
+}
