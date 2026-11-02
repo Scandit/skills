@@ -29,7 +29,7 @@
 | Result data | Bytes or string | `sc_barcode_get_data` → `ScByteArray` (may contain NUL bytes), plus `get_data_encoding` |
 | Symbology name | String or enum | `ScSymbology` enum, `sc_symbology_to_string` |
 | Position | Rectangle and/or polygon | `ScQuadrilateral` (4 corners, image pixels, origin top-left) |
-| Code length limits | Usually none | **Active symbol counts** per symbology: codes outside the range aren't returned (set them for unusually short or long 1D codes) |
+| Code length limits | Usually none | **Active symbol counts** per symbology: codes outside the range aren't returned. Defaults: Code 39, Code 93 and ITF 6–40, Codabar 7–20, MSI Plessey 6–32, Code 128 4–40 (6–40 before 8.5). Widen them to the allowed range for codes the old library returned (`sc_symbology_settings_set_active_symbol_counts` / `settings.symbologies[sym].active_symbol_counts = list(range(lo, hi + 1))`), then narrow to your label lengths to cut false reads |
 | Inverted (light-on-dark) codes | Library option or preprocessing (invert the image) | `colorInvertedEnabled` per symbology (on by default only for QR/MicroQR); don't invert the image yourself |
 | Region of interest | Crop the image yourself | `set_search_area`, code location areas, circle of interest; or crop (keep ≥ 320×160 px) |
 | Duplicates in video | Your own logic | `set_code_duplicate_filter` (ms, OFF, or INFINITE until `session_clear`) |
@@ -83,6 +83,24 @@ import scanditsdk as sc
 LICENSE_KEY = "-- INSERT YOUR LICENSE KEY HERE --"
 WRITABLE_DATA_PATH = "/tmp"  # use a directory that survives reboots
 
+# What a default pyzbar.decode() (symbols=None) returns, mapped to Scandit symbologies: ZBar's defaults
+# cover EAN/UPC (incl. ISBN), Code 128, Code 39, Code 93, Interleaved 2 of 5, Codabar, DataBar, PDF417, QR.
+PYZBAR_DEFAULT_SYMBOLOGIES = (
+    sc.SYMBOLOGY_EAN13_UPCA, sc.SYMBOLOGY_EAN8, sc.SYMBOLOGY_UPCE, sc.SYMBOLOGY_CODE128, sc.SYMBOLOGY_CODE39,
+    sc.SYMBOLOGY_CODE93, sc.SYMBOLOGY_INTERLEAVED_2_OF_5, sc.SYMBOLOGY_CODABAR, sc.SYMBOLOGY_GS1_DATABAR,
+    sc.SYMBOLOGY_GS1_DATABAR_EXPANDED, sc.SYMBOLOGY_PDF417, sc.SYMBOLOGY_QR,
+)
+# ZBar has no length limits. Scandit's default active symbol counts (Code 39/93/ITF 6-40, Codabar 7-20,
+# Code 128 4-40) would drop codes ZBar returned, so widen them to the allowed range (api-reference.md,
+# section 6). Narrow them to your real label lengths afterwards: shorter ranges mean fewer false reads.
+SYMBOL_COUNT_RANGES = {
+    sc.SYMBOLOGY_CODE128: (4, 50),
+    sc.SYMBOLOGY_CODE39: (3, 50),
+    sc.SYMBOLOGY_CODE93: (5, 60),
+    sc.SYMBOLOGY_INTERLEAVED_2_OF_5: (4, 50),
+    sc.SYMBOLOGY_CODABAR: (3, 34),
+}
+
 
 class Rect(NamedTuple):
     left: int
@@ -99,11 +117,14 @@ class Decoded(NamedTuple):
 
 
 class Decoder:
-    def __init__(self, symbologies=(sc.SYMBOLOGY_EAN13_UPCA, sc.SYMBOLOGY_CODE128, sc.SYMBOLOGY_QR)):
+    def __init__(self, symbologies=PYZBAR_DEFAULT_SYMBOLOGIES):
         self._context = sc.RecognitionContext(LICENSE_KEY, WRITABLE_DATA_PATH)
         settings = sc.BarcodeScannerSettings(preset=sc.PRESET_HIGH_EFFORT)
         for symbology in symbologies:  # Scandit starts with everything disabled
             settings.enable_symbology(symbology, True)
+            if symbology in SYMBOL_COUNT_RANGES:
+                lo, hi = SYMBOL_COUNT_RANGES[symbology]
+                settings.symbologies[symbology].active_symbol_counts = list(range(lo, hi + 1))
         settings.code_duplicate_filter = sc.DUPLICATE_FILTER_OFF
         settings.code_location_constraint_1d = sc.CODE_LOCATION_IGNORE
         settings.code_location_constraint_2d = sc.CODE_LOCATION_IGNORE
@@ -170,7 +191,7 @@ For C code using ZBar's `zbar_scan_image`, the same pattern applies: keep your f
 ## Checklist
 
 - [ ] Trial key from https://www.scandit.com/trial/ or a Linux key from the dashboard (right executable name or none; see **Licence key** in SKILL.md)
-- [ ] The symbologies and code lengths you scan are enabled; symbol counts set for unusual lengths
+- [ ] Every symbology the old library returned is enabled, and the active symbol counts cover the code lengths it accepted (`settings.symbologies[sym].active_symbol_counts = list(range(lo, hi + 1))`; Scandit's defaults are narrower than ZBar's "no limit")
 - [ ] Image source mapped to an `ScImageDescription` (layout + stride); preprocessing removed
 - [ ] Video: one frame sequence per stream. Single images: HIGH_EFFORT, new sequence per image, duplicate filter off, codes anywhere
 - [ ] Several codes per image: multi-scan enabled and the "tracking" feature on the key
