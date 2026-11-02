@@ -85,7 +85,7 @@ Check in this order:
 | Low or unexpected fps | Framerates depend on the resolution; query them for the resolution you use. Use `sc_framerate_get_fps`. |
 | Stream stalls after a few frames | `sc_camera_enqueue_frame_data` isn't called for every frame from `sc_camera_get_frame`. |
 | Garbled, shifted or striped image | Layout or row stride doesn't match the buffer. Pass the `ScImageDescription` filled by `get_frame` instead of building one; camera buffers often have padded rows. |
-| `Device or resource busy` / wrong format | Request the layout explicitly with `sc_camera_request_image_layout` before `start_stream` (not while streaming), confirm with `sc_camera_get_image_layout`. (7.2.1 ignored the request; fixed in 7.3.1.) |
+| `Device or resource busy` / wrong format | Request the layout explicitly with `sc_camera_request_image_layout` before `start_stream` (not while streaming), confirm with `sc_camera_get_image_layout`. (Fixed in 7.2.3: before that, some drivers failed with "Device busy".) |
 | Focus calls do nothing | `sc_camera_set_focus_mode` only works if the V4L2 driver exposes focus controls; many fixed-focus modules don't. Only the scanner-settings focus API was removed in 8.0. |
 | `get_frame` hangs when the camera is unplugged | Fixed in 8.6. |
 | Raspberry Pi camera not found | Install `v4l-utils`, add `bcm2835-v4l2` to `/etc/modules-load.d/modules.conf`, reboot. |

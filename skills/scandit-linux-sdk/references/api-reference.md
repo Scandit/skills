@@ -261,7 +261,7 @@ The camera API is a thin V4L2 wrapper (on non-V4L2 platforms it returns a dummy 
 
 - `get_frame` fills the `ScImageDescription` (width, height, layout, planes, row bytes) for exactly that frame. Pass it straight to `process_frame` rather than building your own.
 - **Forgetting `sc_camera_enqueue_frame_data` drains the buffer pool** and the stream stalls after a few frames (as many as the buffer count).
-- Fixes: **8.5** falls back to single-plane when a multi-planar request fails. **8.6** `get_frame` no longer hangs when the camera disconnects. **7.2.1** ignored `request_image_layout` (fixed in 7.3.1).
+- Fixes: **8.5** falls back to single-plane when a multi-planar request fails. **8.6** `get_frame` no longer hangs when the camera disconnects. **7.2.3** fixed `request_image_layout` failing with "Device busy" on some drivers.
 
 ## 10. Object tracker, parser, generator, info
 
