@@ -397,6 +397,11 @@ class TsScoreCase(FlatSuiteScoring):
         text = "<V symbologies={symbologies} />;\nconst symbologies = [Symbology.QR];"
         self.assertEqual(score.enabled_names(text, "js"), {"QR"})
 
+    def test_map_constructor_keys_resolve(self):
+        text = ("const formatNames = new Map<Symbology, string>([\n  [Symbology.QR, 'QR_CODE'],\n"
+                "  [Symbology.PDF417, 'PDF_417'],\n]);\nsettings.enableSymbologies([...formatNames.keys()]);")
+        self.assertEqual(score.enabled_names(text, "js"), {"QR", "PDF417"})
+
     def test_parameter_traced_only_into_the_enabling_function(self):
         text = ("function log(syms) {}\nfunction apply(syms) { s.enableSymbologies(syms); }\n"
                 "log([Symbology.QR]); apply([Symbology.EAN8]);")
