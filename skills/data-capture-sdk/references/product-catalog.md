@@ -57,7 +57,7 @@ When recommending a product, always include the relevant **docs link** and **sam
   - Capacitor: `01_Single_Scanning_Samples/02_Barcode_Scanning_with_Low_Level_API/BarcodeCaptureSimpleSample`
   - Cordova: `01_Single_Scanning_Samples/02_Barcode_Scanning_with_Low_Level_API/BarcodeCaptureSimpleSample`
   - Linux (in the SDK package): `samples/CommandLineBarcodeScannerImageProcessingSample.c`, `samples/CommandLineBarcodeScannerCameraSample.c`, `samples/CommandLineBarcodeScannerImageProcessingSample.py`
-- **Available skills**: `barcode-capture-ios`
+- **Available skills**: `barcode-capture-ios`; on Linux, `scandit-linux-sdk`
 
 ### SparkScan
 
