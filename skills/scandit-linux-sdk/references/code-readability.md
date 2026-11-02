@@ -248,7 +248,7 @@ For each cause: how to recognize it, why it happens, and how to improve it.
   - It tolerates a fair amount of damage, but when the printed code itself is invalid, no camera-based reader can recover it from a single image.
 - **How to improve it:**
   - Fix the printer (head cleaning, darkness, speed) and verify the codes.
-  - Keep the **quiet zone** clear, as required by the symbology spec. For EAN-13, EAN-8, Code 39 and DataBar Limited printed with a too-narrow quiet zone, the `relaxed_sharp_quiet_zone_check` extension accepts tighter margins, at the cost of possible false reads. Fixing the print is the better solution.
+  - Keep the **quiet zone** clear, as required by the symbology spec. For Code 39 and DataBar Limited printed with a too-narrow quiet zone, the `relaxed_sharp_quiet_zone_check` extension accepts tighter margins (EAN-8 and EAN-13/UPC-A use relaxed quiet-zone rules by default since 7.3), at the cost of possible false reads. Fixing the print is the better solution.
   - Overlay a freshly generated code with the same data on the image to show print defects clearly.
   - Generate codes according to the symbology standard. Scandit implements against these specifications:
 

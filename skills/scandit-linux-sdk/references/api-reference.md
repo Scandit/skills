@@ -193,7 +193,7 @@ Defaults are those of SDK 8.6 (as reported by `sc_barcode_scanner_settings_as_js
 | Extension | Symbologies | Effect |
 | --- | --- | --- |
 | `full_ascii` | Code 39 (always on for Code 93) | Full ASCII interpretation |
-| `relaxed_sharp_quiet_zone_check` | EAN-13, EAN-8, Code 39, DataBar Limited | Accepts tighter quiet zones; may add false positives |
+| `relaxed_sharp_quiet_zone_check` | Code 39, DataBar Limited (EAN-8 and EAN-13/UPC-A use relaxed rules by default since 7.3) | Accepts tighter quiet zones; may add false positives |
 | `return_as_upca`, `remove_leading_upca_zero` | EAN-13/UPC-A, UPC-E | Output format of leading zeros |
 | `strip_leading_fnc1` | Code 128; Data Matrix (on by default) | Removes the leading FNC1 |
 | `direct_part_marking_mode` | Data Matrix | DPM (dot-peen, laser) codes; slower, so restrict the area |
