@@ -279,7 +279,11 @@ def lint(repo_root: Path, manifest: dict, prefix: str | None = None) -> tuple[li
             if not isinstance(data, dict):
                 findings.append(f"{rel}: not an eval suite object")
                 continue
-            for ev in data.get("evals", []):
+            evals = data.get("evals", [])
+            if not isinstance(evals, list):
+                findings.append(f"{rel}: `evals` is not a list")
+                continue
+            for ev in evals:
                 if not isinstance(ev, dict):
                     findings.append(f"{rel}: an `evals` entry is not an object")
                     continue

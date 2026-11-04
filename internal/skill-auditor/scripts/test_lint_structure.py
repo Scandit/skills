@@ -168,6 +168,7 @@ class LintEvalFixturesTest(unittest.TestCase):
     def test_unexpected_suite_shapes_are_findings_not_crashes(self):
         for suite, finding in (
             ([], "evals/p-a/integration-evals.json: not an eval suite object"),
+            ({"evals": 1}, "evals/p-a/integration-evals.json: `evals` is not a list"),
             ({"evals": ["x"]}, "evals/p-a/integration-evals.json: an `evals` entry is not an object"),
             ({"evals": [{"id": 1, "files": [7]}]}, "evals/p-a/integration-evals.json: eval 1 `files` is not a list of fixture paths"),
         ):
