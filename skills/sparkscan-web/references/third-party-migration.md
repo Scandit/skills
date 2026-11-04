@@ -56,17 +56,17 @@ Map **only** the formats the app scanned, from the hint list, `formatsToSupport`
 | `DATA_MATRIX` | `DATA_MATRIX` | `'data_matrix'` | `Symbology.DataMatrix` |
 | `AZTEC` | `AZTEC` | `'aztec'` | `Symbology.Aztec` |
 | `PDF_417` | `PDF_417` | `'pdf417'` | `Symbology.PDF417` |
-| — | `RSS_14` | `'databar'` (`barcode-detector` polyfill only) | `Symbology.GS1Databar` |
+| `RSS_14` | `RSS_14` | `'databar'` (`barcode-detector` polyfill only) | `Symbology.GS1Databar` |
 | — | — | `'databar_limited'` (`barcode-detector` polyfill only) | `Symbology.GS1DatabarLimited` |
-| — | `RSS_EXPANDED` | `'databar_expanded'` (`barcode-detector` polyfill only) | `Symbology.GS1DatabarExpanded` |
-| — | `MAXICODE` | `'maxi_code'` (`barcode-detector` polyfill only) | `Symbology.MaxiCode` |
-| — | `UPC_EAN_EXTENSION` | — | No symbology of its own: the 2/5-digit add-on arrives as `barcode.addOnData` on the EAN/UPC result. Look up how to enable add-ons in the API reference before writing it. |
-| — | (`formatsToSupport` omitted) | (`formats` omitted) | No equivalent. Enable what the app really consumes; if nothing narrows it, the recommended default set below. Never enable everything. |
+| `RSS_EXPANDED` | `RSS_EXPANDED` | `'databar_expanded'` (`barcode-detector` polyfill only) | `Symbology.GS1DatabarExpanded` |
+| `MAXICODE` | `MAXICODE` | `'maxi_code'` (`barcode-detector` polyfill only) | `Symbology.MaxiCode` |
+| `UPC_EAN_EXTENSION` | `UPC_EAN_EXTENSION` | — | No symbology of its own: the 2/5-digit add-on arrives as `barcode.addOnData` on the EAN/UPC result. Look up how to enable add-ons in the API reference before writing it. |
+| (no `POSSIBLE_FORMATS` hint) | (`formatsToSupport` omitted) | (`formats` omitted) | No equivalent. Enable what the app really consumes; if nothing narrows it, the recommended default set below. Never enable everything. |
 
 **Recommended default set** when the source scanned every format and nothing in the app narrows it: `Symbology.QR`, `Symbology.EAN13UPCA`, `Symbology.EAN8`, `Symbology.UPCE`, `Symbology.Code39`, `Symbology.Code93`, `Symbology.Code128`, `Symbology.InterleavedTwoOfFive`, `Symbology.Codabar`, `Symbology.DataMatrix`, `Symbology.Aztec`, `Symbology.PDF417`.
 <!-- END GENERATED symbology-table -->
 
-ZXing-js `BarcodeFormat` also has `RSS_14`, `RSS_EXPANDED`, `MAXICODE` and `UPC_EAN_EXTENSION`: map them like the html5-qrcode values of the same name. For any other format (`MICRO_QR_CODE`, the polyfill's `micro_qr_code`, `code_32`, …), check the `Symbology` API reference before mapping it. "All formats" (no `POSSIBLE_FORMATS` hint, no `formatsToSupport`, no `formats`, the polyfill's `'any'`, or every value `getSupportedFormats()` returned): enable what the app really consumes, or the recommended default set above, and add a summary line "symbologies were not narrowed by the original; confirm this list". A polyfill group value narrows that to the default-set members of its group: `'linear_codes'` is EAN13UPCA, EAN8, UPCE, Code39, Code93, Code128, InterleavedTwoOfFive and Codabar; `'matrix_codes'` is QR, DataMatrix, Aztec and PDF417.
+For a format not in the table (`MICRO_QR_CODE`, the polyfill's `micro_qr_code`, `code_32`, …), check the `Symbology` API reference before mapping it. "All formats" (no `POSSIBLE_FORMATS` hint, no `formatsToSupport`, no `formats`, the polyfill's `'any'`, or every value `getSupportedFormats()` returned): enable what the app really consumes, or the recommended default set above, and add a summary line "symbologies were not narrowed by the original; confirm this list". A polyfill group value narrows that to the default-set members of its group: `'linear_codes'` is EAN13UPCA, EAN8, UPCE, Code39, Code93, Code128, InterleavedTwoOfFive and Codabar; `'matrix_codes'` is QR, DataMatrix, Aztec and PDF417.
 
 **UPC-A values.** These libraries return a UPC-A code as 12 digits when UPC-A is among the formats; `Symbology.EAN13UPCA` returns it as 13 digits with a leading `0`. When the app scanned UPC-A, keep the 12-digit values with `settings.settingsForSymbology(Symbology.EAN13UPCA).setExtensionEnabled("remove_leading_upca_zero", true)`, or flag the changed value as a judgment call.
 
@@ -181,19 +181,25 @@ export async function startScanner(): Promise<() => Promise<void>> {
 
   const view = SparkScanView.forElement(container, context, sparkScan, viewSettings);
   view.style.pointerEvents = "auto";
-  await view.prepareScanning();
 
-  return async () => {
+  const teardown = async (): Promise<void> => {
     sparkScan.removeListener(listener);
     await view.stopScanning();
     container.remove();
   };
+  try {
+    await view.prepareScanning();
+  } catch (error) {
+    await teardown();
+    throw error;
+  }
+  return teardown;
 }
 ```
 
 - On a scan-once page, use Step 4's `listener` instead of this one and leave `scanningBehavior` at its default.
 - The container rules (non-zero size, `pointer-events`, scoping SparkScan to part of the page) are in `references/integration.md`. Import `showMultithreadingWarning` from the `multithreading-warning` helper module in `references/integration.md`, which adds the dialog to the page itself; in React, render the dialog from component state instead (`references/react.md`). `libraryLocation` points at the self-hosted `sdc-lib` folder, or at the CDN pinned to the installed version (see **Loading the SDK from a CDN** there).
-- Call the returned teardown when the page or component unmounts, not on `pagehide`.
+- Call the returned teardown when the page or component unmounts, not on `pagehide`. When `prepareScanning()` rejects (camera refused or missing), `startScanner()` has already cleaned up and rethrows: show the app's camera message where it is called.
 
 ## Step 6: Camera controls, feedback and lifecycle
 

@@ -56,7 +56,14 @@
     },
     "zxing-js": {
       "label": "ZXing-js `BarcodeFormat`",
-      "rows_from": "zxing"
+      "rows": {
+        "qr": ["QR_CODE"], "ean-13": ["EAN_13"], "ean-8": ["EAN_8"], "upc-a": ["UPC_A"], "upc-e": ["UPC_E"],
+        "code-39": ["CODE_39"], "code-93": ["CODE_93"], "code-128": ["CODE_128"], "itf": ["ITF"], "codabar": ["CODABAR"],
+        "data-matrix": ["DATA_MATRIX"], "aztec": ["AZTEC"], "pdf-417": ["PDF_417"],
+        "gs1-databar": ["RSS_14"], "gs1-databar-expanded": ["RSS_EXPANDED"], "maxicode": ["MAXICODE"],
+        "upc-ean-extension": ["UPC_EAN_EXTENSION"],
+        "all-formats": {"names": [], "note": "no `POSSIBLE_FORMATS` hint"}
+      }
     },
     "html5-qrcode": {
       "label": "html5-qrcode `Html5QrcodeSupportedFormats`",
