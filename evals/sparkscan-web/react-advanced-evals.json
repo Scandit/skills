@@ -6,9 +6,9 @@
       "name": "react18-integration",
       "prompt": "I'm adding SparkScan to my React 18.3 + Vite app. Here's my component (empty-react-app.tsx) and my package.json. I need to scan EAN-13 and Code 128 barcodes.",
       "files": [
-        "eval-fixtures/empty-react-app.tsx",
-        "eval-fixtures/package-react18.json",
-        "eval-fixtures/spark-scan-view.d.ts"
+        "fixtures/empty-react-app.tsx",
+        "fixtures/package-react18.json",
+        "fixtures/spark-scan-view.d.ts"
       ],
       "assertions": [
         { "text": "Determines the React major version from package.json (recognizes React 18)" },
@@ -30,9 +30,9 @@
       "name": "react19-integration",
       "prompt": "Add SparkScan to my React 19 app (Vite). package.json attached. I want to scan QR codes. Here's my component: empty-react-app.tsx.",
       "files": [
-        "eval-fixtures/empty-react-app.tsx",
-        "eval-fixtures/package-react19.json",
-        "eval-fixtures/spark-scan-view.d.ts"
+        "fixtures/empty-react-app.tsx",
+        "fixtures/package-react19.json",
+        "fixtures/spark-scan-view.d.ts"
       ],
       "assertions": [
         { "text": "Determines the React major version from package.json (recognizes React 19)" },
@@ -41,7 +41,8 @@
         { "text": "DataCaptureContext is NOT disposed on component unmount" },
         { "text": "DataCaptureContext.forLicenseKey( is present with moduleLoaders including barcodeCaptureLoader()" },
         { "text": "Symbology.QR is enabled (and no unrelated symbologies)" },
-        { "text": "SparkScan.forSettings( is present and SparkScanView.register() is called" },
+        { "text": "SparkScan.forSettings( is present" },
+        { "text": "SparkScanView.register() is called" },
         { "text": "addListener/removeListener lifecycle is handled" },
         { "text": "The mount container wrapping <spark-scan-view> sets pointer-events: none, and <spark-scan-view> itself sets pointer-events: auto, so the empty overlay area does not block clicks on the rest of the page" }
       ]
@@ -51,9 +52,9 @@
       "name": "works-then-dies-singleton",
       "prompt": "My React SparkScan app works for a second, then dies — in dev the console shows 'forLicenseKey ... already initializing'. Here's the component (broken-react-app.tsx) and my package.json. Please fix it.",
       "files": [
-        "eval-fixtures/broken-react-app.tsx",
-        "eval-fixtures/package-react18.json",
-        "eval-fixtures/spark-scan-view.d.ts"
+        "fixtures/broken-react-app.tsx",
+        "fixtures/package-react18.json",
+        "fixtures/spark-scan-view.d.ts"
       ],
       "assertions": [
         { "text": "Identifies the root cause: DataCaptureContext is a process-wide singleton being disposed on component unmount" },
@@ -70,7 +71,7 @@
       "name": "custom-trigger-prepare-lifecycle",
       "prompt": "I built a custom trigger button that drives scanning myself (I hid the default trigger). After the user stops scanning and taps to start again, I get the error 'prepare should be called before calling switchToActiveState'. How do I fix my start/stop logic? Here's my file: integrated-app.ts.",
       "files": [
-        "eval-fixtures/integrated-app.ts"
+        "fixtures/integrated-app.ts"
       ],
       "assertions": [
         { "text": "Explains that stopScanning() un-prepares the view, so a later startScanning() throws unless the view is prepared again" },
@@ -85,7 +86,7 @@
       "name": "camera-not-opening-on-device",
       "prompt": "SparkScan works on localhost, but the camera never opens when I load the app on my phone at http://192.168.1.42:5173. It's a Vite app. What's wrong and how do I fix it? package.json attached.",
       "files": [
-        "eval-fixtures/package-react18.json"
+        "fixtures/package-react18.json"
       ],
       "assertions": [
         { "text": "Identifies the secure-context requirement: getUserMedia only runs in a secure context, and a plain http:// LAN IP is not secure (localhost is exempt)" },
@@ -105,7 +106,7 @@
         { "text": "Frames cross-origin isolation / the multithreaded engine as the higher-performance path worth keeping, and encourages configuring COOP/COEP correctly rather than dropping them by default" },
         { "text": "Recommends keeping isolation and fixing the images while preserving it — CORP (Cross-Origin-Resource-Policy: cross-origin) / CORS + crossorigin attribute, or switching to COEP: credentialless" },
         { "text": "If COEP: credentialless is suggested, the answer notes that Safari does not support it (semantic)" },
-        { "text": "Mentions the single-threaded fallback (self-host same-origin + drop COOP/COEP) only as a last resort when isolation cannot be configured, noting reduced performance" },
+        { "text": "Does not recommend dropping COOP/COEP as the fix; the single-threaded fallback (self-host same-origin + drop COOP/COEP), if mentioned, comes only as a last resort with reduced performance (semantic)" },
         { "text": "Does not suggest removing or relocating the product images as the fix" }
       ]
     }

@@ -6,7 +6,7 @@
       "prompt": "I have an Android app using ZXing for barcode scanning. I want to replace it with SparkScan. Here is my activity: ZxingActivity.kt",
       "expected_output": "Removes all ZXing APIs and intent-based scanner launch, adds SparkScan integration with matching symbologies (EAN13_UPCA, CODE128, QR), preserves ScannedBarcode data class and deduplication logic.",
       "files": [
-        "eval-fixtures/ZxingActivity.kt"
+        "fixtures/ZxingActivity.kt"
       ],
       "assertions": [
         {"text": "com.google.zxing import is NOT present in the output"},

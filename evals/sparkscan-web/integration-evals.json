@@ -29,7 +29,7 @@
       "prompt": "I want to add SparkScan to my web app. Here's my main file: empty-app.ts. I need to scan EAN-13 and Code 128 barcodes for a retail app.",
       "expected_output": "The skill reads integration.md, writes complete SparkScan integration code into empty-app.ts, and shows the setup checklist.",
       "files": [
-        "eval-fixtures/empty-app.ts"
+        "fixtures/empty-app.ts"
       ],
       "assertions": [
         {
@@ -42,7 +42,7 @@
           "text": "barcodeCaptureLoader() is present in moduleLoaders"
         },
         {
-          "text": "License key placeholder (e.g. ENTER YOUR SCANDIT LICENSE KEY or similar) is present"
+          "text": "A license key placeholder such as -- ENTER YOUR SCANDIT LICENSE KEY HERE -- is passed to DataCaptureContext.forLicenseKey (semantic)"
         },
         {
           "text": "SparkScanSettings is created with new SparkScanSettings()"
@@ -72,7 +72,7 @@
           "text": "SparkScanView.forElement( is present"
         },
         {
-          "text": "A dedicated mount element (NOT document.body itself) is created and styled with position: fixed or position: absolute before SparkScanView.forElement is called"
+          "text": "A dedicated mount element (not document.body itself) is created and styled with position: fixed or absolute before SparkScanView.forElement is called (semantic)"
         },
         {
           "text": "The mount element has non-zero width and height set (e.g. 100% or explicit px values)"
@@ -99,8 +99,8 @@
       "prompt": "I have a basic React app and need to integrate SparkScan barcode scanning. I want to scan EAN-13 and Code 128. Here's my component: empty-react-app.tsx.",
       "expected_output": "The skill integrates SparkScan into the React component using the web component pattern with <spark-scan-view>, proper React hooks, and cleanup on unmount.",
       "files": [
-        "eval-fixtures/empty-react-app.tsx",
-        "eval-fixtures/spark-scan-view.d.ts"
+        "fixtures/empty-react-app.tsx",
+        "fixtures/spark-scan-view.d.ts"
       ],
       "assertions": [
         {
@@ -113,7 +113,10 @@
           "text": "License key placeholder is present"
         },
         {
-          "text": "SparkScanSettings is created and enableSymbologies is called"
+          "text": "new SparkScanSettings() is called"
+        },
+        {
+          "text": "enableSymbologies( is called"
         },
         {
           "text": "Symbology.EAN13UPCA and Symbology.Code128 are enabled"
@@ -155,7 +158,7 @@
       "prompt": "When a barcode is scanned in my app, I want to reject it if the data is '123456789' and show an error message 'Wrong barcode' for 30 seconds before resuming scanning. All other barcodes should show success feedback.",
       "expected_output": "The skill modifies the existing feedbackDelegate to reject barcodes with data '123456789', returning SparkScanBarcodeErrorFeedback with 30-second resume delay and SparkScanBarcodeSuccessFeedback for valid ones.",
       "files": [
-        "eval-fixtures/integrated-app.ts"
+        "fixtures/integrated-app.ts"
       ],
       "assertions": [
         {
@@ -190,22 +193,22 @@
     {
       "id": 4,
       "prompt": "My app is used in a warehouse where workers wear gloves. Enable hardware trigger button support so they can scan using physical device buttons.",
-      "expected_output": "The skill enables hardwareTriggerEnabled on SparkScanViewSettings and passes the settings to SparkScanView.forElement.",
+      "expected_output": "The skill says SparkScan on web has no hardware (physical button) trigger and invents no API for it, and offers the on-screen alternative: hide the built-in trigger (triggerButtonVisible = false) and start scanning from the app's own control with startScanning().",
       "files": [
-        "eval-fixtures/integrated-app.ts"
+        "fixtures/integrated-app.ts"
       ],
       "assertions": [
         {
-          "text": "isHardwareTriggerEnabled = true is set on SparkScanViewSettings"
+          "text": "No hardware-trigger property (such as isHardwareTriggerEnabled) is set in the code (semantic)"
         },
         {
-          "text": "SparkScanViewSettings instance is created and configured before being passed to SparkScanView.forElement"
+          "text": "The answer says SparkScan on web has no hardware (physical button) trigger setting (semantic)"
         },
         {
-          "text": "SparkScanView.forElement receives the configured SparkScanViewSettings"
+          "text": "The answer offers an alternative that does exist: starting scans from the app's own control with startScanning(), optionally hiding the built-in trigger with triggerButtonVisible = false (semantic)"
         },
         {
-          "text": "Existing integration code (DataCaptureContext, SparkScan, listener, feedbackDelegate, mount/unmount) is preserved"
+          "text": "If code is shown, the existing integration (DataCaptureContext, SparkScan, listener, feedbackDelegate, mount/unmount) is preserved (semantic)"
         }
       ]
     },
@@ -214,11 +217,11 @@
       "prompt": "I want to hide the standard SparkScan trigger button and instead use a custom button in my app's UI. When the custom button is clicked, scanning should start. When clicked again while scanning, it should pause.",
       "expected_output": "The skill hides the standard trigger button, creates a custom HTML button element, and uses SparkScanViewUiListener to track the actual scanner state. The click handler calls startScanning() or pauseScanning() based on current state — not a local toggle — so it stays correct after the engine auto-idles following a scan.",
       "files": [
-        "eval-fixtures/integrated-app.ts"
+        "fixtures/integrated-app.ts"
       ],
       "assertions": [
         {
-          "text": "sparkScanView.isTriggerButtonVisible = false is set"
+          "text": "triggerButtonVisible = false is set"
         },
         {
           "text": "A custom button element is created (document.createElement(\"button\") or equivalent)"
@@ -230,7 +233,10 @@
           "text": "SparkScanViewUiListener is implemented with didChangeViewState"
         },
         {
-          "text": "uiListener is assigned on sparkScanView"
+          "text": "setListener( is called on the SparkScanView with the UI listener"
+        },
+        {
+          "text": "The UI listener is not assigned through a uiListener property on the SparkScanView (semantic)"
         },
         {
           "text": "Current view state is tracked (e.g. a variable updated inside didChangeViewState)"
@@ -251,7 +257,7 @@
           "text": "removeEventListener is called on the button in cleanup (unmount or equivalent)"
         },
         {
-          "text": "sparkScanView.uiListener is set to null in cleanup (unmount or equivalent)"
+          "text": "setListener(null) is called on the SparkScanView in cleanup (unmount or equivalent) (semantic)"
         },
         {
           "text": "Existing integration code (DataCaptureContext, SparkScan, listener, feedbackDelegate, mount/unmount) is preserved"
@@ -261,22 +267,25 @@
     {
       "id": 6,
       "prompt": "I need a custom trigger button that changes text and behavior based on the scanner state. Show 'START SCANNING' in IDLE state and 'STOP SCANNING' in ACTIVE state.",
-      "expected_output": "The skill implements SparkScanViewUiListener, tracks view state changes, and updates the button text and behavior based on state. Both the click handler and uiListener are stored as named references and removed in cleanup.",
+      "expected_output": "The skill implements SparkScanViewUiListener, tracks view state changes, and updates the button text and behavior based on state. Both the click handler and the UI listener are stored as named references and removed in cleanup (setListener(null)).",
       "files": [
-        "eval-fixtures/integrated-app.ts"
+        "fixtures/integrated-app.ts"
       ],
       "assertions": [
         {
           "text": "SparkScanViewUiListener is present"
         },
         {
-          "text": "uiListener is assigned on sparkScanView (via setListener or property)"
+          "text": "setListener( is called on the SparkScanView with the UI listener"
+        },
+        {
+          "text": "The UI listener is not assigned through a uiListener property on the SparkScanView (semantic)"
         },
         {
           "text": "didChangeViewState callback is implemented"
         },
         {
-          "text": "State comparison for idle or initial state is present"
+          "text": "The click handler chooses between startScanning() and pauseScanning() from the tracked view state, not from a toggled local flag (semantic)"
         },
         {
           "text": "State comparison for active state is present"
@@ -300,7 +309,7 @@
           "text": "removeEventListener is called on the button in cleanup (unmount or equivalent)"
         },
         {
-          "text": "sparkScanView.uiListener is set to null in cleanup (unmount or equivalent)"
+          "text": "setListener(null) is called on the SparkScanView in cleanup (unmount or equivalent) (semantic)"
         },
         {
           "text": "Existing integration code (DataCaptureContext, SparkScan, listener, feedbackDelegate, mount/unmount) is preserved"
@@ -310,13 +319,13 @@
     {
       "id": 7,
       "prompt": "When the trigger button is hidden, I want to let users click on the page background to pause scanning. The click handler should only be active when scanning is active.",
-      "expected_output": "The skill adds a click event listener on a background element, implements a handler that calls sparkScanView.pauseScanning(), and uses SparkScanViewUiListener to enable/disable the handler based on scanner state. Both the click handler and uiListener are stored as named references and removed in cleanup.",
+      "expected_output": "The skill adds a click event listener on a background element, implements a handler that calls sparkScanView.pauseScanning(), and uses SparkScanViewUiListener to enable/disable the handler based on scanner state. Both the click handler and the UI listener are stored as named references and removed in cleanup (setListener(null)).",
       "files": [
-        "eval-fixtures/integrated-app.ts"
+        "fixtures/integrated-app.ts"
       ],
       "assertions": [
         {
-          "text": "addEventListener(\"click\" is used on a background or container element"
+          "text": "A click or pointerup listener on the page background or a container element pauses scanning (semantic)"
         },
         {
           "text": "sparkScanView.pauseScanning() is called in the click handler"
@@ -340,7 +349,7 @@
           "text": "removeEventListener is called on the background element in cleanup (unmount or equivalent)"
         },
         {
-          "text": "sparkScanView.uiListener is set to null in cleanup (unmount or equivalent)"
+          "text": "setListener(null) is called on the SparkScanView in cleanup (unmount or equivalent) (semantic)"
         },
         {
           "text": "Existing integration code (DataCaptureContext, SparkScan, listener, feedbackDelegate, mount/unmount) is preserved"
@@ -352,7 +361,7 @@
       "prompt": "I need to set up SparkScan with an 'Aim-to-Scan' workflow for precise barcode scanning in crowded environments. The preview should always be visible (even when not scanning), target mode should always be enabled, and single scan behavior should be used.",
       "expected_output": "The skill configures SparkScanViewSettings with persistent preview behavior and target mode scanning, then passes these settings to SparkScanView.forElement.",
       "files": [
-        "eval-fixtures/integrated-app.ts"
+        "fixtures/integrated-app.ts"
       ],
       "assertions": [
         {
@@ -365,10 +374,10 @@
           "text": "SparkScanScanningModeTarget is used for the scanning mode"
         },
         {
-          "text": "SparkScanScanningBehavior.single is used"
+          "text": "SparkScanScanningBehavior.Single is present"
         },
         {
-          "text": "SparkScanPreviewBehavior.persistent is used"
+          "text": "SparkScanPreviewBehavior.Persistent is present"
         },
         {
           "text": "The configured SparkScanViewSettings is passed to SparkScanView.forElement"
@@ -383,23 +392,20 @@
       "prompt": "I'm building a high-volume warehouse scanning app where we need rapid, continuous barcode scanning without pausing between items. Set up SparkScan with CONTINUOUS scanning behavior and PERSISTENT preview so the camera stays visible the whole time.",
       "expected_output": "The skill configures SparkScanViewSettings with continuous scanning behavior and persistent preview behavior, keeping the scanner active and camera always visible.",
       "files": [
-        "eval-fixtures/integrated-app.ts"
+        "fixtures/integrated-app.ts"
       ],
       "assertions": [
         {
           "text": "SparkScanViewSettings is created"
         },
         {
-          "text": "defaultScanningMode is set on SparkScanViewSettings"
+          "text": "Continuous scanning and the persistent preview are applied to the SparkScanViewSettings passed to the view, through scanningBehavior / previewBehavior or a SparkScanScanningModeDefault in defaultScanningMode (semantic)"
         },
         {
-          "text": "SparkScanScanningBehavior.continuous is used (not single)"
+          "text": "SparkScanScanningBehavior.Continuous is present"
         },
         {
-          "text": "SparkScanPreviewBehavior.persistent is used (not default)"
-        },
-        {
-          "text": "SparkScanScanningMode wrapper is used (e.g., SparkScanScanningModeDefault or similar)"
+          "text": "SparkScanPreviewBehavior.Persistent is present"
         },
         {
           "text": "The configured SparkScanViewSettings is passed to SparkScanView.forElement"
@@ -412,22 +418,19 @@
     {
       "id": 10,
       "prompt": "I need to minimize the UI footprint of SparkScan in my app. Configure it so the camera preview only appears when actively scanning, not when idle. All other times it should be hidden.",
-      "expected_output": "The skill configures SparkScanViewSettings with default preview behavior (SparkScanPreviewBehavior.default), making the preview appear on-demand only during active scanning.",
+      "expected_output": "The skill configures SparkScanViewSettings with the default preview behavior (SparkScanPreviewBehavior.Default, which is already the default), making the preview appear on demand only during active scanning.",
       "files": [
-        "eval-fixtures/integrated-app.ts"
+        "fixtures/integrated-app.ts"
       ],
       "assertions": [
         {
           "text": "SparkScanViewSettings is created"
         },
         {
-          "text": "defaultScanningMode is set on SparkScanViewSettings"
+          "text": "The preview behavior is SparkScanPreviewBehavior.Default: set with previewBehavior or defaultScanningMode, or left at its default with the answer saying Default is already the default (semantic)"
         },
         {
-          "text": "SparkScanPreviewBehavior.default is used (not persistent)"
-        },
-        {
-          "text": "SparkScanScanningMode wrapper is used with the preview behavior"
+          "text": "The preview is not set to SparkScanPreviewBehavior.Persistent (semantic)"
         },
         {
           "text": "The configured SparkScanViewSettings is passed to SparkScanView.forElement"
@@ -440,25 +443,22 @@
     {
       "id": 11,
       "prompt": "I need a high-volume warehouse app with minimal UI footprint. Set up SparkScan with CONTINUOUS scanning behavior and POPUP preview behavior, so scanning happens rapidly and the preview only shows when needed.",
-      "expected_output": "The skill configures SparkScanViewSettings with continuous scanning behavior combined with default preview behavior (SparkScanPreviewBehavior.default).",
+      "expected_output": "The skill configures SparkScanViewSettings with continuous scanning behavior (SparkScanScanningBehavior.Continuous) combined with the default preview behavior (SparkScanPreviewBehavior.Default).",
       "files": [
-        "eval-fixtures/integrated-app.ts"
+        "fixtures/integrated-app.ts"
       ],
       "assertions": [
         {
           "text": "SparkScanViewSettings is created"
         },
         {
-          "text": "defaultScanningMode is set on SparkScanViewSettings"
+          "text": "Continuous scanning is applied to the SparkScanViewSettings passed to the view, through scanningBehavior or a SparkScanScanningModeDefault in defaultScanningMode (semantic)"
         },
         {
-          "text": "SparkScanScanningBehavior.continuous is used"
+          "text": "SparkScanScanningBehavior.Continuous is present"
         },
         {
-          "text": "SparkScanPreviewBehavior.default is used (not persistent)"
-        },
-        {
-          "text": "SparkScanScanningMode wrapper combines both continuous behavior and default preview"
+          "text": "The preview behavior stays SparkScanPreviewBehavior.Default (set explicitly or left at its default), not Persistent (semantic)"
         },
         {
           "text": "The configured SparkScanViewSettings is passed to SparkScanView.forElement"
@@ -473,7 +473,7 @@
       "prompt": "I want to add DataMatrix and QR symbology support to my scanning app. Also change the barcode rejection to reject any barcode with data shorter than 5 characters.",
       "expected_output": "The skill adds DataMatrix and QR to enableSymbologies, modifies isBarcodeRejected to check data length, and preserves all existing class structure and rendering logic.",
       "files": [
-        "eval-fixtures/product-list-app.ts"
+        "fixtures/product-list-app.ts"
       ],
       "assertions": [
         {
@@ -513,11 +513,11 @@
       "prompt": "I want to show the image of the scanned barcode next to each item in my list. How do I capture the frame image when a barcode is scanned?",
       "expected_output": "The skill updates didScan to use frameData.toBlob('image/jpeg', 0.3) without awaiting it, uses .then()/.catch() to add the result with or without the image, updates ScannedItem to include an image field, and preserves all existing class structure.",
       "files": [
-        "eval-fixtures/product-list-app.ts"
+        "fixtures/product-list-app.ts"
       ],
       "assertions": [
         {
-          "text": "frameData.toBlob(\"image/jpeg\", 0.3) is called (or equivalent JPEG blob conversion)"
+          "text": "toBlob(\"image/jpeg\" is called"
         },
         {
           "text": "toBlob is NOT awaited — .then()/.catch() is used instead"
@@ -526,16 +526,13 @@
           "text": "A success path adds the scan result with the blob"
         },
         {
-          "text": "A .catch() fallback adds the scan result with null or without an image"
+          "text": "When toBlob rejects, the scan result is still shown, without an image (semantic)"
         },
         {
           "text": "Rejected barcodes are skipped before attempting blob conversion"
         },
         {
-          "text": "ScannedItem interface (or equivalent) includes an image field of type Blob or Blob | null"
-        },
-        {
-          "text": "SymbologyDescription is used or imported to get a readable symbology name"
+          "text": "The list item keeps the frame image (a Blob, or an object URL made from it), with null or no image when the conversion fails (semantic)"
         },
         {
           "text": "Existing AppController class structure, connect(), disconnect(), and renderList() are preserved"
@@ -547,8 +544,8 @@
       "prompt": "I need to add custom feedback to my React SparkScan app. Reject barcodes with data '999' and show an error message 'Item not found' with a 10 second resume delay. Show success for all other barcodes.",
       "expected_output": "The skill adds a feedbackDelegate with SparkScanBarcodeErrorFeedback for rejected barcodes and SparkScanBarcodeSuccessFeedback for valid ones, integrated into the React component via the <spark-scan-view> web component.",
       "files": [
-        "eval-fixtures/integrated-react-app.tsx",
-        "eval-fixtures/spark-scan-view.d.ts"
+        "fixtures/integrated-react-app.tsx",
+        "fixtures/spark-scan-view.d.ts"
       ],
       "assertions": [
         {

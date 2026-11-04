@@ -6,7 +6,7 @@
       "prompt": "I'm upgrading my Label Capture integration from Scandit SDK 7.6 to 8.0. Update the regex-property names in before-8.0-regex.ts.",
       "expected_output": "The skill renames pattern→valueRegex, patterns→valueRegexes, dataTypePattern→anchorRegex, dataTypePatterns→anchorRegexes (and the corresponding setter methods) throughout the file; leaves everything else untouched.",
       "files": [
-        "eval-fixtures/before-8.0-regex.ts"
+        "fixtures/before-8.0-regex.ts"
       ],
       "assertions": [
         { "text": "setPattern is renamed to setValueRegex" },
@@ -22,7 +22,7 @@
       "prompt": "Migrate my Validation Flow from Scandit SDK 8.1 to 8.2 in before-8.2-validation-flow.ts. Adopt the redesigned API.",
       "expected_output": "The skill adds the new required onManualInput method to the listener, replaces the deprecated async setters (setRequiredFieldErrorText, setMissingFieldsHintText, setManualInputButtonText) with setPlaceholderTextForLabelDefinition calls, and preserves the existing onValidationFlowLabelCaptured handler.",
       "files": [
-        "eval-fixtures/before-8.2-validation-flow.ts"
+        "fixtures/before-8.2-validation-flow.ts"
       ],
       "assertions": [
         { "text": "onManualInput is added to the overlay.listener object with signature (field, oldValue, newValue)" },
@@ -39,7 +39,7 @@
       "prompt": "Add the new optional onValidationFlowResultUpdate listener method to my Validation Flow listener in before-8.2-validation-flow.ts. We just upgraded to SDK 8.4 and want to react to partial result updates.",
       "expected_output": "The skill adds onValidationFlowResultUpdate(type, fields, frameData) to the listener object, imports LabelResultUpdateType and FrameData, and preserves the existing onManualInput and onValidationFlowLabelCaptured methods.",
       "files": [
-        "eval-fixtures/before-8.2-validation-flow.ts"
+        "fixtures/before-8.2-validation-flow.ts"
       ],
       "assertions": [
         { "text": "onValidationFlowResultUpdate is added to the overlay.listener object" },
@@ -55,7 +55,7 @@
       "prompt": "Rewrite before-8.5-builders.ts to use the new 8.5 ergonomic builder syntax. I'd like the less-verbose form where the name goes in the constructor and there's only a single outer await.",
       "expected_output": "The skill moves each field-builder name into the constructor (e.g. new CustomBarcodeBuilder(\"Barcode\")), removes the inner awaits and .build(name) calls, and leaves a single outer .build() + await on LabelCaptureSettingsBuilder.",
       "files": [
-        "eval-fixtures/before-8.5-builders.ts"
+        "fixtures/before-8.5-builders.ts"
       ],
       "assertions": [
         { "text": "new CustomBarcodeBuilder(\"Barcode\") (name in constructor) is used" },

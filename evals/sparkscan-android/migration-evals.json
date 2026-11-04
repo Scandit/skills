@@ -6,7 +6,7 @@
       "prompt": "I'm on Scandit SDK v6 and need to migrate my SparkScan to v7. Here's my scanner file: ScannerActivity_v6.kt",
       "expected_output": "The skill reads migration.md, applies the 6→7 renames and removes deprecated properties in ScannerActivity_v6.kt, and summarizes all changes made.",
       "files": [
-        "eval-fixtures/ScannerActivity_v6.kt"
+        "fixtures/ScannerActivity_v6.kt"
       ],
       "assertions": [
         {"text": "torchControlVisible is present in the output file"},
@@ -25,7 +25,7 @@
       "prompt": "We're upgrading our app from Scandit SDK 7 to 8. Here's our SparkScan activity: ScannerActivity_v7.kt. Please apply any necessary changes.",
       "expected_output": "The skill acknowledges that 7→8 has no breaking SparkScan changes for native Android and summarizes the outcome.",
       "files": [
-        "eval-fixtures/ScannerActivity_v7.kt"
+        "fixtures/ScannerActivity_v7.kt"
       ],
       "assertions": [
         {"text": "A summary or explanation is present"},
@@ -38,7 +38,7 @@
       "prompt": "We need to upgrade our SparkScan integration from SDK 6 all the way to v8. Here's our current code: ScannerActivity_v6.kt",
       "expected_output": "The skill applies both migrations in order (6→7 then 7→8) and summarizes all changes organized by migration step.",
       "files": [
-        "eval-fixtures/ScannerActivity_v6.kt"
+        "fixtures/ScannerActivity_v6.kt"
       ],
       "assertions": [
         {"text": "torchControlVisible is present (6→7 rename applied)"},

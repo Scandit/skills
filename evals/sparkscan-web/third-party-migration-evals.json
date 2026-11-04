@@ -104,6 +104,35 @@
       "tags": [
         "third-party-migration"
       ]
+    },
+    {
+      "id": 25,
+      "prompt": "Our web page scans product barcodes with html5-qrcode: the camera adds each new code to a list, and a photo upload input decodes a picture with scanner.scanFile() when the camera can't read a damaged label. Move it to Scandit SparkScan and keep the photo upload. Here is the file: html5-qrcode-upload.ts",
+      "expected_output": "The skill removes html5-qrcode (Html5Qrcode, start/stop, scanFile, Html5QrcodeSupportedFormats), enables exactly Symbology.EAN13UPCA and Symbology.Code128 on SparkScan with continuous scanning, keeps the photo input and decodes its file with a BarcodeCapture mode fed by ImageFrameSource.fromFile and switched on with FrameSourceState.On, stops SparkScan (stopScanning) before the image decode and prepares it again afterwards with the BarcodeCapture mode removed, keeps the 'No barcode found' status, feeds a decoded code into the same Set-deduped list, and lists the moved photo path as a judgment call.",
+      "files": [
+        "fixtures/html5-qrcode-upload.ts"
+      ],
+      "assertions": [
+        {"text": "html5-qrcode is NOT imported in the output code (it may appear in a before/after summary)"},
+        {"text": "scanFile is NOT called in the output code (it may appear in a before/after summary)"},
+        {"text": "SparkScanView.forElement( is present"},
+        {"text": "settings.enableSymbologies(...) on SparkScanSettings enables exactly Symbology.EAN13UPCA (from EAN_13) and Symbology.Code128, and nothing else"},
+        {"text": "scanningBehavior = SparkScanScanningBehavior.Continuous is present"},
+        {"text": "The photo upload input is kept, not dropped (semantic)"},
+        {"text": "ImageFrameSource.fromFile( is present"},
+        {"text": "BarcodeCapture.forContext( is present"},
+        {"text": "FrameSourceState.On is present"},
+        {"text": "The BarcodeCaptureSettings used for the photo enables the same Symbology.EAN13UPCA and Symbology.Code128 as the camera scan (semantic)"},
+        {"text": "SparkScan is stopped with stopScanning() before the photo is decoded, and prepareScanning() runs again after the decode, also when no barcode is found or the file is invalid (semantic)"},
+        {"text": "The BarcodeCapture mode is removed from the context (removeMode or removeAllModes) before SparkScan is prepared again (semantic)"},
+        {"text": "The photo decode is bounded by a timeout (or equivalent), so a photo that never produces a result cannot leave SparkScan stopped (semantic)"},
+        {"text": "A photo with no barcode still ends in the 'No barcode found in the photo' status instead of waiting forever (semantic)"},
+        {"text": "A code decoded from the photo goes through the same addCode / Set dedupe as camera scans (semantic)"},
+        {"text": "The summary lists the moved photo path (BarcodeCapture with ImageFrameSource instead of scanFile) as a judgment call to check in a browser (semantic)"}
+      ],
+      "tags": [
+        "third-party-migration"
+      ]
     }
   ]
 }

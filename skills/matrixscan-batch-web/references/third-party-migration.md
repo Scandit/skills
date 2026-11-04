@@ -6,7 +6,7 @@
 - **Behaviour changes.** Never present a visual or behaviour change (new default, different overlay look, changed feedback, changed scan timing) as a 1:1 rename. List each one in the summary as a judgment call the user must confirm.
 - **Compatibility layer.** When the scanning code sits behind a shared scanner library or wrapper that other code calls, keep that library's public API frozen (same types, method names, callbacks) and replace only the third-party scanner calls underneath with Scandit ones.
 
-This guide covers migrating a web app from **ZXing-js** (`@zxing/library`, also published as `@zxing/browser`) — the most common third-party multi-format browser scanner — to Scandit MatrixScan Batch (`BarcodeBatch*`).
+This guide covers migrating a web app from **ZXing-js** (`@zxing/library`, also published as `@zxing/browser`) — the most common third-party multi-format browser scanner — to Scandit MatrixScan Batch (`BarcodeBatch*`). The same steps apply to a page built on html5-qrcode (`Html5Qrcode`, `formatsToSupport`) or on the `BarcodeDetector` API (`detector.detect(video)` in a `requestAnimationFrame` loop over a `getUserMedia` stream, often with the `barcode-detector` polyfill): `detect()` already returns every code in the frame, as `rawValue`, `format` and `boundingBox`, which map to `trackedBarcode.barcode.data`, `trackedBarcode.barcode.symbology` and `trackedBarcode.location`. A photo decode (`scanFile()`, the file tab `Html5QrcodeScanner` shows by default, `detect(image)`) has no MatrixScan Batch equivalent: keep the upload path with a `BarcodeCapture` mode fed by `ImageFrameSource.fromFile(file)` (see the `barcode-capture-web` skill) and list it as a judgment call; never drop it silently.
 
 ## Before anything else
 
@@ -50,30 +50,35 @@ When configuring `BarcodeBatchSettings`, map formats from ZXing using the table 
 
 ### Symbology mapping
 
-<!-- BEGIN GENERATED symbology-table sources=zxing-js style=js -->
-| ZXing-js `BarcodeFormat` | Scandit `Symbology` |
-|---|---|
-| `QR_CODE` | `Symbology.QR` (**not** `QRCode`) |
-| `EAN_13` | `Symbology.EAN13UPCA` |
-| `EAN_8` | `Symbology.EAN8` |
-| `UPC_A` | `Symbology.EAN13UPCA` (UPC-A is read by the EAN-13/UPC-A symbology) |
-| `UPC_E` | `Symbology.UPCE` |
-| `CODE_39` | `Symbology.Code39` |
-| `CODE_93` | `Symbology.Code93` |
-| `CODE_128` | `Symbology.Code128` |
-| `ITF` | `Symbology.InterleavedTwoOfFive` (no ITF-14 symbology; ITF-14 is a 14-digit Interleaved 2 of 5) |
-| `CODABAR` | `Symbology.Codabar` |
-| `DATA_MATRIX` | `Symbology.DataMatrix` |
-| `AZTEC` | `Symbology.Aztec` |
-| `PDF_417` | `Symbology.PDF417` |
-| `RSS_14` | `Symbology.GS1Databar` |
-| `RSS_EXPANDED` | `Symbology.GS1DatabarExpanded` |
-| `MAXICODE` | `Symbology.MaxiCode` |
-| `UPC_EAN_EXTENSION` | No symbology of its own: the 2/5-digit add-on arrives as `barcode.addOnData` on the EAN/UPC result. Look up how to enable add-ons in the API reference before writing it. |
-| (no `POSSIBLE_FORMATS` hint) | No equivalent. Enable what the app really consumes; if nothing narrows it, the recommended default set below. Never enable everything. |
+<!-- BEGIN GENERATED symbology-table sources=zxing-js,html5-qrcode,barcode-detector style=js -->
+| ZXing-js `BarcodeFormat` | html5-qrcode `Html5QrcodeSupportedFormats` | `BarcodeDetector` `formats` | Scandit `Symbology` |
+|---|---|---|---|
+| `QR_CODE` | `QR_CODE` | `'qr_code'` | `Symbology.QR` (**not** `QRCode`) |
+| `EAN_13` | `EAN_13` | `'ean_13'` | `Symbology.EAN13UPCA` |
+| `EAN_8` | `EAN_8` | `'ean_8'` | `Symbology.EAN8` |
+| `UPC_A` | `UPC_A` | `'upc_a'` | `Symbology.EAN13UPCA` (UPC-A is read by the EAN-13/UPC-A symbology) |
+| `UPC_E` | `UPC_E` | `'upc_e'` | `Symbology.UPCE` |
+| `CODE_39` | `CODE_39` | `'code_39'` | `Symbology.Code39` |
+| `CODE_93` | `CODE_93` | `'code_93'` | `Symbology.Code93` |
+| `CODE_128` | `CODE_128` | `'code_128'` | `Symbology.Code128` |
+| `ITF` | `ITF` | `'itf'` / `'itf_14'` (`'itf_14'` with the `barcode-detector` polyfill only) | `Symbology.InterleavedTwoOfFive` (no ITF-14 symbology; ITF-14 is a 14-digit Interleaved 2 of 5) |
+| `CODABAR` | `CODABAR` | `'codabar'` | `Symbology.Codabar` |
+| `DATA_MATRIX` | `DATA_MATRIX` | `'data_matrix'` | `Symbology.DataMatrix` |
+| `AZTEC` | `AZTEC` | `'aztec'` | `Symbology.Aztec` |
+| `PDF_417` | `PDF_417` | `'pdf417'` | `Symbology.PDF417` |
+| `RSS_14` | `RSS_14` | `'databar'` (`barcode-detector` polyfill only) | `Symbology.GS1Databar` |
+| — | — | `'databar_limited'` (`barcode-detector` polyfill only) | `Symbology.GS1DatabarLimited` |
+| `RSS_EXPANDED` | `RSS_EXPANDED` | `'databar_expanded'` (`barcode-detector` polyfill only) | `Symbology.GS1DatabarExpanded` |
+| `MAXICODE` | `MAXICODE` | `'maxi_code'` (`barcode-detector` polyfill only) | `Symbology.MaxiCode` |
+| `UPC_EAN_EXTENSION` | `UPC_EAN_EXTENSION` | — | No symbology of its own: the 2/5-digit add-on arrives as `barcode.addOnData` on the EAN/UPC result. Look up how to enable add-ons in the API reference before writing it. |
+| (no `POSSIBLE_FORMATS` hint) | (`formatsToSupport` omitted) | (`formats` omitted) | No equivalent. Enable what the app really consumes; if nothing narrows it, the recommended default set below. Never enable everything. |
 
 **Recommended default set** when the source scanned every format and nothing in the app narrows it: `Symbology.QR`, `Symbology.EAN13UPCA`, `Symbology.EAN8`, `Symbology.UPCE`, `Symbology.Code39`, `Symbology.Code93`, `Symbology.Code128`, `Symbology.InterleavedTwoOfFive`, `Symbology.Codabar`, `Symbology.DataMatrix`, `Symbology.Aztec`, `Symbology.PDF417`.
 <!-- END GENERATED symbology-table -->
+
+**UPC-A values.** These libraries return a UPC-A code as 12 digits when UPC-A is among the formats; `Symbology.EAN13UPCA` returns it as 13 digits with a leading `0`. When the app scanned UPC-A, keep the 12-digit values with `settings.settingsForSymbology(Symbology.EAN13UPCA).setExtensionEnabled("remove_leading_upca_zero", true)`, or flag the changed value (and the dedupe key built on it) as a judgment call.
+
+**Format names.** `String(trackedBarcode.barcode.symbology)` gives Scandit's identifier (`ean13Upca`), not the old library's name (`EAN_13`, `'upc_a'`). When the app shows, stores or compares the old string, keep it with a small `Symbology` → old-string lookup (EAN-13 and UPC-A share `EAN13UPCA`; with `remove_leading_upca_zero` on, 12-digit data is UPC-A), or flag the changed names as a judgment call.
 
 > **Note on the web `Symbology` enum casing:** web uses `Symbology.QR` (the value `"qr"`) — **not** `Symbology.QrCode` (which does not exist) and not `Symbology.Qr` (that is the .NET/native form). Note also that some members are all-caps on web: `Symbology.PDF417`, `Symbology.UPCE`, `Symbology.EAN13UPCA`. When in doubt, check the BarcodeBatch API reference linked in `SKILL.md` before writing the code.
 
@@ -189,4 +194,10 @@ run();
 
 ---
 
-When done, show only what changed. Do not list APIs that were unchanged. Include the setup checklist from `references/integration.md` so the user knows which npm packages to add (`@scandit/web-datacapture-core`, `@scandit/web-datacapture-barcode`), the COOP/COEP header requirement (new — ZXing-js did not need it), and the license-key placeholder to replace.
+## Setup checklist and summary
+
+When done, show only what changed. Do not list APIs that were unchanged.
+
+**Setup checklist:** the one from `references/integration.md` (npm packages `@scandit/web-datacapture-core` and `@scandit/web-datacapture-barcode`, the license-key placeholder to replace), plus removing the old scanner packages and the COOP/COEP header requirement, which is new: the old libraries did not need it.
+
+**Summary:** always end with a "Summary of changes" section listing what was removed (the old scanner's APIs and markup), what was added (the `BarcodeBatch` set-up, view and overlay), the format → symbology mapping, and every judgment call.

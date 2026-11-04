@@ -4,7 +4,7 @@ description: MatrixScan Batch (MatrixScan, BarcodeBatch, legacy BarcodeTracking)
 license: Apache-2.0
 metadata:
   author: scandit
-  version: "1.0.6"
+  version: "1.0.7"
 ---
 
 # MatrixScan Batch Web Skill

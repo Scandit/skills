@@ -6,7 +6,7 @@
       "prompt": "I want to add SparkScan to my app. Here's my main activity: EmptyActivity.kt. I need to scan EAN-13 and Code 128 barcodes for a retail app.",
       "expected_output": "The skill reads integration.md, writes complete SparkScan integration code into EmptyActivity.kt, and shows the setup checklist.",
       "files": [
-        "eval-fixtures/EmptyActivity.kt"
+        "fixtures/EmptyActivity.kt"
       ],
       "assertions": [
         {"text": "Setup checklist is shown"},
@@ -36,7 +36,7 @@
       "prompt": "Add SparkScan barcode scanning to ProductListActivity.kt. When a barcode is scanned, add it to the scannedProducts list and update the total label.",
       "expected_output": "The skill adds SparkScan to ProductListActivity alongside the existing list view code. All existing fields, adapter setup, and helper methods are preserved.",
       "files": [
-        "eval-fixtures/ProductListActivity.kt"
+        "fixtures/ProductListActivity.kt"
       ],
       "assertions": [
         {"text": "Setup checklist mentions com.scandit.datacapture:barcode as a Gradle dependency"},
@@ -64,7 +64,7 @@
       "prompt": "When a barcode is scanned in my app, I want to reject it if the data is '123456789' and show an error message 'Wrong barcode' for 30 seconds before resuming scanning. All other barcodes should show success feedback.",
       "expected_output": "The skill adds SparkScanFeedbackDelegate conformance, implements getFeedbackForBarcode to return SparkScanBarcodeFeedback.Error for rejected barcodes and SparkScanBarcodeFeedback.Success for valid ones, and assigns feedbackDelegate on sparkScanView.",
       "files": [
-        "eval-fixtures/IntegratedActivity.kt"
+        "fixtures/IntegratedActivity.kt"
       ],
       "assertions": [
         {"text": "SparkScanFeedbackDelegate is implemented"},
@@ -83,7 +83,7 @@
       "prompt": "My app is used in a warehouse where workers wear gloves. Enable hardware trigger button support so they can scan using physical device buttons.",
       "expected_output": "The skill enables hardwareTriggerEnabled on SparkScanViewSettings and passes the settings to SparkScanView.",
       "files": [
-        "eval-fixtures/IntegratedActivity.kt"
+        "fixtures/IntegratedActivity.kt"
       ],
       "assertions": [
         {"text": "hardwareTriggerEnabled = true is set on SparkScanViewSettings"},
@@ -97,7 +97,7 @@
       "prompt": "I want to hide the standard SparkScan trigger button and instead use a custom button in my app's UI. When the custom button is tapped, scanning should start. When tapped again while scanning, it should pause.",
       "expected_output": "The skill sets triggerButtonVisible = false, creates a custom button, and implements button logic that calls sparkScanView.startScanning() and sparkScanView.pauseScanning().",
       "files": [
-        "eval-fixtures/IntegratedActivity.kt"
+        "fixtures/IntegratedActivity.kt"
       ],
       "assertions": [
         {"text": "sparkScanView.triggerButtonVisible = false is set"},
@@ -112,7 +112,7 @@
       "prompt": "I need a custom trigger button that changes text based on the scanner state. Show 'START SCANNING' in IDLE state and 'STOP SCANNING' in ACTIVE state.",
       "expected_output": "The skill implements SparkScanViewUiListener, registers it with setListener, and updates the button text in onViewStateChanged based on IDLE/ACTIVE states.",
       "files": [
-        "eval-fixtures/IntegratedActivity.kt"
+        "fixtures/IntegratedActivity.kt"
       ],
       "assertions": [
         {"text": "SparkScanViewUiListener is implemented"},
@@ -129,7 +129,7 @@
       "prompt": "I need to set up SparkScan with an 'Aim-to-Scan' workflow for precise barcode scanning in crowded environments.",
       "expected_output": "The skill configures SparkScanViewSettings with defaultScanningMode set to SparkScanScanningModeTarget, then passes these settings to SparkScanView.",
       "files": [
-        "eval-fixtures/IntegratedActivity.kt"
+        "fixtures/IntegratedActivity.kt"
       ],
       "assertions": [
         {"text": "SparkScanViewSettings is created"},

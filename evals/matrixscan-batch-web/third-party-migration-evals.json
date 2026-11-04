@@ -43,7 +43,7 @@
           "text": "Symbology.QrCode does NOT appear as a Symbology enum value in the migrated code (the deprecated/nonexistent web casing is not used)"
         },
         {
-          "text": "A DataCaptureView is created (DataCaptureView.forContext or new DataCaptureView) and connectToElement is called"
+          "text": "A DataCaptureView is created (DataCaptureView.forContext or new DataCaptureView) and connected to the page with connectToElement (semantic)"
         },
         {
           "text": "BarcodeBatchBasicOverlay is created (withBarcodeBatchForView or withBarcodeBatchForViewWithStyle)"
@@ -71,6 +71,65 @@
         },
         {
           "text": "A summary of changes is shown describing what was removed (ZXing) and what was added (BarcodeBatch) (semantic)"
+        }
+      ],
+      "tags": ["third-party-migration"]
+    },
+    {
+      "id": "tpm1",
+      "prompt": "My shelf-audit web page uses the BarcodeDetector API (with the barcode-detector polyfill): getUserMedia into a <video>, detector.detect() every animation frame, a box drawn on a canvas over every barcode it finds, and each new EAN code added to a list. Replace it with Scandit MatrixScan Batch. Here is the code: barcode-detector-shelf.ts",
+      "expected_output": "The skill removes BarcodeDetector (the declare class, detect, the polyfill import), getUserMedia, the <video> stream, the requestAnimationFrame loop and the canvas boxes, and replaces them with MatrixScan Batch: DataCaptureContext.forLicenseKey, BarcodeBatchSettings with exactly EAN13UPCA and EAN8 (ean_13 and upc_a both map to EAN13UPCA), BarcodeBatch.forContext, a DataCaptureView connected to an element, a BarcodeBatchBasicOverlay for the highlights, and didUpdateSession iterating session.addedTrackedBarcodes with trackedBarcode.barcode.data. The seen Set and ShelfItem list are kept, and the setup checklist removes barcode-detector and adds the COOP/COEP headers.",
+      "files": [
+        "fixtures/barcode-detector-shelf.ts"
+      ],
+      "assertions": [
+        {
+          "text": "getUserMedia is NOT called in the output code (it may appear in a before/after summary)"
+        },
+        {
+          "text": "requestAnimationFrame is NOT called in the output code (it may appear in a before/after summary)"
+        },
+        {
+          "text": "barcode-detector/polyfill is NOT present in the output code (it may appear in a before/after summary)"
+        },
+        {
+          "text": "No BarcodeDetector is declared or constructed and no detect( call remains in the output code (semantic)"
+        },
+        {
+          "text": "The hand-drawn canvas boxes (getContext(\"2d\"), strokeRect) are not used in the output code; BarcodeBatchBasicOverlay draws the highlights (semantic)"
+        },
+        {
+          "text": "BarcodeBatch.forContext( is present"
+        },
+        {
+          "text": "BarcodeBatchBasicOverlay is present"
+        },
+        {
+          "text": "settings.enableSymbologies(...) on BarcodeBatchSettings enables exactly Symbology.EAN13UPCA (from ean_13 and upc_a) and Symbology.EAN8, and nothing else"
+        },
+        {
+          "text": "Symbology.UPCA is NOT present"
+        },
+        {
+          "text": "UPC-A codes keep the 12-digit values BarcodeDetector returned: settings.settingsForSymbology(Symbology.EAN13UPCA).setExtensionEnabled(\"remove_leading_upca_zero\", true) is set, or the summary flags that UPC-A codes now arrive as 13 digits with a leading zero (semantic)"
+        },
+        {
+          "text": "The format stored in ShelfItem keeps the old BarcodeDetector format strings through a Symbology → old-string lookup (telling ean_13 from upc_a, which share EAN13UPCA), or the summary flags the changed format names (semantic)"
+        },
+        {
+          "text": "didUpdateSession iterates session.addedTrackedBarcodes and reads trackedBarcode.barcode.data in place of rawValue"
+        },
+        {
+          "text": "The seen Set dedupe on the code value and the ShelfItem list are preserved (semantic)"
+        },
+        {
+          "text": "connectToElement( is present"
+        },
+        {
+          "text": "Setup checklist says to remove the barcode-detector package (semantic)"
+        },
+        {
+          "text": "Setup checklist mentions serving the page with Cross-Origin-Opener-Policy: same-origin and Cross-Origin-Embedder-Policy: require-corp"
         }
       ],
       "tags": ["third-party-migration"]
