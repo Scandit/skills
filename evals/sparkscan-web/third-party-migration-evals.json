@@ -1,0 +1,106 @@
+{
+  "skill_name": "sparkscan-web",
+  "evals": [
+    {
+      "id": 22,
+      "prompt": "My inventory web page scans barcodes with ZXing (@zxing/browser BrowserMultiFormatReader.decodeFromVideoDevice into a <video> element). Replace it with Scandit SparkScan. Keep the item list with quantities, the total, the Clear button and the torch. Here is the scanner module: zxing-inventory-scanner.ts",
+      "expected_output": "The skill removes @zxing/browser and @zxing/library (reader, hints, decodeFromVideoDevice, controls, the <video> preview), initializes the context with DataCaptureContext.forLicenseKey and barcodeCaptureLoader, enables exactly Symbology.EAN13UPCA and Symbology.Code128 on SparkScanSettings, replaces the 1500 ms repeat cooldown with codeDuplicateFilter, moves the scan handler into a didScan listener reading session.newlyRecognizedBarcode, mounts SparkScanView.forElement on a container, sets SparkScanScanningBehavior.Continuous to keep the hands-free decode loop, keeps the torch on SparkScan's toolbar (torchControlVisible defaults to true), keeps UPC-A at 12 digits with remove_leading_upca_zero or flags the change, drops the pagehide handler, keeps the quantity increment, total and Clear, and shows a setup checklist (packages, COOP/COEP headers) plus a summary of judgment calls.",
+      "files": [
+        "fixtures/zxing-inventory-scanner.ts"
+      ],
+      "assertions": [
+        {"text": "@zxing/browser is NOT imported in the output code (it may appear in a before/after summary)"},
+        {"text": "@zxing/library is NOT imported in the output code (it may appear in a before/after summary)"},
+        {"text": "decodeFromVideoDevice is NOT called in the output code (it may appear in a before/after summary)"},
+        {"text": "No pagehide or visibilitychange listener remains in the output code, and the old pagehide → controls.stop() handler is not ported to stopScanning() or the teardown (semantic)"},
+        {"text": "DataCaptureContext.forLicenseKey( is present"},
+        {"text": "barcodeCaptureLoader() is passed in the moduleLoaders option of DataCaptureContext.forLicenseKey"},
+        {"text": "SparkScan.forSettings( is present"},
+        {"text": "settings.enableSymbologies(...) enables exactly Symbology.EAN13UPCA (from EAN_13 and UPC_A) and Symbology.Code128, and nothing else"},
+        {"text": "UPC-A codes keep the 12-digit values ZXing returned: settings.settingsForSymbology(Symbology.EAN13UPCA).setExtensionEnabled(\"remove_leading_upca_zero\", true) is set, or the summary flags that UPC-A codes now arrive as 13 digits with a leading zero (semantic)"},
+        {"text": "Symbology.QRCode is NOT present"},
+        {"text": "The 1500 ms REPEAT_COOLDOWN_MS check is replaced by setting codeDuplicateFilter to 1500 on the SparkScanSettings (semantic)"},
+        {"text": "addListener( is called on the SparkScan mode with a didScan callback that reads session.newlyRecognizedBarcode and does not loop over an array of barcodes"},
+        {"text": "SparkScanView.forElement( is present"},
+        {"text": "scanningBehavior = SparkScanScanningBehavior.Continuous is present"},
+        {"text": "The torch stays on SparkScan's toolbar torch control: torchControlVisible is left at its default or set to true, never set to false (semantic)"},
+        {"text": "The app's own torch button handler and switchTorch call are removed from the output code (semantic)"},
+        {"text": "Scanning a code that is already in the list increments its quantity instead of adding a second row (semantic)"},
+        {"text": "The total of the quantities and the Clear button that empties the list are preserved (semantic)"},
+        {"text": "Setup checklist mentions @scandit/web-datacapture-core and @scandit/web-datacapture-barcode"},
+        {"text": "Setup checklist says to remove @zxing/browser and @zxing/library from package.json (semantic)"},
+        {"text": "Setup checklist mentions serving the page with Cross-Origin-Opener-Policy: same-origin and Cross-Origin-Embedder-Policy: require-corp"},
+        {"text": "The summary lists the SparkScan trigger button and mini preview replacing the full camera preview as a UI change for the user to confirm (semantic)"}
+      ],
+      "tags": [
+        "third-party-migration"
+      ]
+    },
+    {
+      "id": 23,
+      "prompt": "Our event check-in page uses html5-qrcode (Html5Qrcode.start with fps and qrbox) to scan one ticket, stop the camera, check the ticket in and show a Scan again button. Migrate it to Scandit SparkScan for web, keeping the check-in call, the one-ticket-at-a-time flow and the torch. Here is the file: html5-qrcode-checkout.ts",
+      "expected_output": "The skill removes html5-qrcode (Html5Qrcode, Html5QrcodeSupportedFormats, start/stop, fps/qrbox, getRunningTrackCameraCapabilities), enables exactly Symbology.QR and Symbology.EAN13UPCA, keeps the default single scanning behavior, moves the success handler into didScan reading session.newlyRecognizedBarcode with the existing `current` guard (under any name), relies on single scanning going inactive after the ticket (no stopScanning() inside didScan), calls startScanning() from Scan again with its pointerup propagation stopped, keeps the check-in fetch, keeps the torch on SparkScan's toolbar, explains that fps and qrbox have no SparkScan equivalent, and shows a setup checklist (packages, COOP/COEP headers) plus a summary of judgment calls.",
+      "files": [
+        "fixtures/html5-qrcode-checkout.ts"
+      ],
+      "assertions": [
+        {"text": "html5-qrcode is NOT imported in the output code (it may appear in a before/after summary)"},
+        {"text": "Html5QrcodeSupportedFormats is NOT present in the output code (it may appear in a before/after summary)"},
+        {"text": "getRunningTrackCameraCapabilities is NOT called in the output code (it may appear in a before/after summary)"},
+        {"text": "DataCaptureContext.forLicenseKey( is present"},
+        {"text": "SparkScan.forSettings( is present"},
+        {"text": "settings.enableSymbologies(...) enables exactly Symbology.QR (from QR_CODE) and Symbology.EAN13UPCA (from EAN_13), and nothing else"},
+        {"text": "Symbology.QRCode is NOT present"},
+        {"text": "SparkScanView.forElement( is present"},
+        {"text": "The didScan callback reads session.newlyRecognizedBarcode and returns early while a ticket is already being shown, keeping the old `current` guard under any name (semantic)"},
+        {"text": "Neither stopScanning() nor a teardown that calls it runs inside the didScan callback (semantic)"},
+        {"text": "The Scan again button's pointerup event is stopped from propagating (or the code otherwise keeps SparkScan's click-outside handler from sending the view to idle when the button is tapped) (semantic)"},
+        {"text": "The Scan again button clears the current ticket and calls startScanning() on the SparkScanView (semantic)"},
+        {"text": "The check-in fetch to /api/tickets/<code>/check-in is preserved"},
+        {"text": "The scanning behavior stays at SparkScan's default single scanning: SparkScanScanningBehavior.Continuous is not set (semantic)"},
+        {"text": "The torch stays on SparkScan's toolbar torch control: torchControlVisible is left at its default or set to true, never set to false (semantic)"},
+        {"text": "The answer says fps and qrbox have no SparkScan equivalent and were removed (semantic)"},
+        {"text": "Setup checklist mentions @scandit/web-datacapture-core and @scandit/web-datacapture-barcode"},
+        {"text": "Setup checklist says to remove html5-qrcode from package.json (semantic)"},
+        {"text": "Setup checklist mentions serving the page with Cross-Origin-Opener-Policy: same-origin and Cross-Origin-Embedder-Policy: require-corp"},
+        {"text": "The summary lists the SparkScan trigger button and mini preview replacing the html5-qrcode camera box as a UI change for the user to confirm (semantic)"}
+      ],
+      "tags": [
+        "third-party-migration"
+      ]
+    },
+    {
+      "id": 24,
+      "prompt": "I built a web scanner on the BarcodeDetector API: getUserMedia into a <video>, a requestAnimationFrame loop that calls detector.detect() every 250 ms, and the barcode-detector polyfill for browsers without it. It adds each new code to a list. I want to switch to Scandit SparkScan. Here is the code: barcode-detector-scanner.ts",
+      "expected_output": "The skill removes BarcodeDetector (the declare class, getSupportedFormats, detect), the barcode-detector polyfill import, getUserMedia, the <video> stream, the requestAnimationFrame loop with its 250 ms throttle, the visibilitychange handler and navigator.vibrate, enables exactly Symbology.QR, Symbology.Code128, Symbology.EAN13UPCA and Symbology.EAN8, sets SparkScanScanningBehavior.Continuous to keep hands-free scanning, keeps the seen-Set dedupe and the list prepend in didScan using barcode.data, mounts SparkScanView.forElement, and shows a setup checklist (packages, remove barcode-detector, COOP/COEP headers) plus a summary of judgment calls.",
+      "files": [
+        "fixtures/barcode-detector-scanner.ts"
+      ],
+      "assertions": [
+        {"text": "No BarcodeDetector is declared or constructed and no detect( call remains in the output code (semantic)"},
+        {"text": "barcode-detector/polyfill is NOT present in the output code (it may appear in a before/after summary)"},
+        {"text": "getUserMedia is NOT called in the output code (it may appear in a before/after summary)"},
+        {"text": "requestAnimationFrame is NOT called in the output code (it may appear in a before/after summary)"},
+        {"text": "No visibilitychange listener is added in the output code (semantic)"},
+        {"text": "rawValue is NOT present in the output code (it may appear in a before/after summary)"},
+        {"text": "DataCaptureContext.forLicenseKey( is present"},
+        {"text": "SparkScan.forSettings( is present"},
+        {"text": "settings.enableSymbologies(...) enables exactly Symbology.QR (from qr_code), Symbology.Code128, Symbology.EAN13UPCA (from ean_13) and Symbology.EAN8, and nothing else"},
+        {"text": "Symbology.QRCode is NOT present"},
+        {"text": "scanningBehavior = SparkScanScanningBehavior.Continuous is present"},
+        {"text": "SparkScanView.forElement( is present"},
+        {"text": "The didScan callback reads session.newlyRecognizedBarcode and uses barcode.data, keeping the seen Set so a code already in the list is not added again (semantic)"},
+        {"text": "New scans are still prepended to the #scans list (semantic)"},
+        {"text": "navigator.vibrate is NOT called in the output code (it may appear in a before/after summary)"},
+        {"text": "The answer says SparkScan's built-in sound and haptic feedback replaces navigator.vibrate (semantic)"},
+        {"text": "The summary says the 250 ms SCAN_INTERVAL_MS throttle was removed because SparkScan runs its own frame loop (semantic)"},
+        {"text": "Setup checklist mentions @scandit/web-datacapture-core and @scandit/web-datacapture-barcode"},
+        {"text": "Setup checklist says to remove the barcode-detector package from package.json (semantic)"},
+        {"text": "Setup checklist mentions serving the page with Cross-Origin-Opener-Policy: same-origin and Cross-Origin-Embedder-Policy: require-corp"}
+      ],
+      "tags": [
+        "third-party-migration"
+      ]
+    }
+  ]
+}
