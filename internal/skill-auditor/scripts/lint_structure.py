@@ -18,12 +18,14 @@ Checks (per skill, and across siblings sharing a product prefix):
   policy        no skill or README.md text the Claude plugin-directory scan flags: a
                 download run through an interpreter, an unpinned registry launcher, a
                 key taken from `.env` or the environment
+  fixtures      every eval suite is valid JSON and every file an eval names exists
   routing       every skills/<dir> is referenced in the router skill's SKILL.md and vice versa
 
 Product prefixes and parity exemptions live in ../manifest.json, not in code.
 Exit code 1 on any finding, so it can run as a CI gate.
 """
 import argparse
+import json
 import re
 import sys
 from collections import defaultdict
@@ -262,6 +264,36 @@ def lint(repo_root: Path, manifest: dict, prefix: str | None = None) -> tuple[li
                 if f"**{label}.**" not in block:
                     findings.append(f"{d.name}: migration-principles — "
                                     f"`references/{guide}` missing \"{label}\"")
+
+    # --- every fixture an eval names exists: the assertion-eval runner reads
+    # evals/<skill>/<file> and errors out on a missing one.
+    for d in list_skill_dirs(skills_dir, prefix):  # the router has evals too
+        ed = eval_dir(d.name, evals_root)
+        for suite in eval_suite_files(d.name, evals_root):
+            rel = suite.relative_to(repo_root)
+            try:
+                data = json.loads(read(suite))
+            except json.JSONDecodeError as error:
+                findings.append(f"{rel}: not valid JSON ({error})")
+                continue
+            if not isinstance(data, dict):
+                findings.append(f"{rel}: not an eval suite object")
+                continue
+            evals = data.get("evals", [])
+            if not isinstance(evals, list):
+                findings.append(f"{rel}: `evals` is not a list")
+                continue
+            for ev in evals:
+                if not isinstance(ev, dict):
+                    findings.append(f"{rel}: an `evals` entry is not an object")
+                    continue
+                files = ev.get("files", [])
+                if not isinstance(files, list) or not all(isinstance(name, str) for name in files):
+                    findings.append(f"{rel}: eval {ev.get('id')} `files` is not a list of fixture paths")
+                    continue
+                for name in files:
+                    if not (ed / name).is_file():
+                        findings.append(f"{rel}: eval {ev.get('id')} names fixture `{name}`, which does not exist")
 
     # --- routing table sync (always over the full catalog)
     root = skills_dir / router / "SKILL.md"

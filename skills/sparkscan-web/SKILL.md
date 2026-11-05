@@ -4,7 +4,7 @@ description: SparkScan single-barcode scanning with the pre-built scanning UI (f
 license: Apache-2.0
 metadata:
   author: scandit
-  version: "1.2.6"
+  version: "1.2.7"
 ---
 
 # SparkScan Web Skill
@@ -18,6 +18,7 @@ Your training data may contain outdated or incorrect Scandit SDK APIs. The Spark
 Web-specific gotchas worth flagging:
 
 - Do not add a `visibilitychange` handler to pause scanning: `SparkScanView` already switches to its idle state when the page is hidden.
+- SparkScan on web has no hardware (physical button) trigger: do not set `isHardwareTriggerEnabled` or invent a SparkScan setting for it. Say so, and offer the on-screen alternative: hide the built-in trigger (`triggerButtonVisible = false`) and start scanning from the app's own control with `startScanning()` (references/integration.md, **Custom trigger button**).
 - When the SDK is loaded from a CDN, pin one exact version (for example `@8.6.1`) in every URL: the import map and `libraryLocation`. A floating `@8` lets the JavaScript and the engine resolve to different releases, which breaks start-up.
 - Cross-origin isolation needs `Cross-Origin-Opener-Policy: same-origin` and `Cross-Origin-Embedder-Policy: require-corp`, also when the SDK comes from the jsDelivr CDN. Do not recommend `credentialless` for the SDK. In the page code, start `BrowserHelper.checkMultithreadingSupport()` (from `@scandit/web-datacapture-core`) without awaiting it, before `await DataCaptureContext.forLicenseKey()`, so the two run in parallel and set-up never waits for the check. When it resolves `false`, show the multithreading dialog unless the user asked to run single-threaded: import `showMultithreadingWarning` from the `multithreading-warning` helper module in references/integration.md, which needs no page markup. In React, render the same dialog from component state instead of importing the helper. The dialog shows at most once per page load and honors the "don't show again this session" checkbox. COEP `credentialless` is not a request to run single-threaded: Safari does not support it, so the dialog still shows there.
 
@@ -64,5 +65,5 @@ Direct users to the right resource based on their question:
 |---|---|
 | Basic integration | [Get Started](https://docs.scandit.com/sdks/web/sparkscan/get-started/) · [Sample](https://github.com/Scandit/datacapture-web-samples/tree/master/01_Single_Scanning_Samples/01_Barcode_Scanning_with_Pre-built_UI/ListBuildingSample) |
 | React integration | [Get Started](https://docs.scandit.com/sdks/web/sparkscan/get-started/) · [Sample](https://github.com/Scandit/datacapture-web-samples/tree/master/05_Framework_Integration_Samples/SparkScanReactSample) |
-| Advanced topics (custom feedback, hardware triggers, scanning modes, UI customization) | [Advanced Configurations](https://docs.scandit.com/sdks/web/sparkscan/advanced/) |
+| Advanced topics (custom feedback, scanning modes, UI customization) | [Advanced Configurations](https://docs.scandit.com/sdks/web/sparkscan/advanced/) |
 | Full API reference | [SparkScan API](https://docs.scandit.com/data-capture-sdk/web/barcode-capture/api.html#:~:text=SymbologySettings-,SparkScan,-SparkScan) |

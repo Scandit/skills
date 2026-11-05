@@ -4,6 +4,7 @@ Fixture tree in a tempdir: skills/p-a, p-b, p-c (product prefix "p-", platforms
 a/b/c) plus their evals/ dirs. manifest is a plain dict, passed straight to
 lint() — no repo checkout, no ../manifest.json involved.
 """
+import json
 import sys
 import tempfile
 import unittest
@@ -126,6 +127,60 @@ class LintScopedParityTest(unittest.TestCase):
             routing,
             ["routing: router/SKILL.md references `p-nonexistent` which does not exist"],
         )
+
+
+class LintEvalFixturesTest(unittest.TestCase):
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.tmp.cleanup)
+        self.root = Path(self.tmp.name)
+        (self.root / "skills" / "p-a").mkdir(parents=True)
+        (self.root / "skills" / "p-a" / "SKILL.md").write_text(FRONTMATTER.format(name="p-a"))
+        self.evals = self.root / "evals" / "p-a"
+        (self.evals / "fixtures").mkdir(parents=True)
+        (self.evals / "fixtures" / "app.ts").write_text("")
+
+    def write_suite(self, *files):
+        suite = {"skill_name": "p-a", "evals": [{"id": 1, "prompt": "p", "files": list(files), "assertions": []}]}
+        (self.evals / "integration-evals.json").write_text(json.dumps(suite))
+
+    def fixture_findings(self):
+        findings, _ = lint(self.root, MANIFEST)
+        return [f for f in findings if "fixture" in f]
+
+    def test_missing_fixture_is_a_finding(self):
+        self.write_suite("eval-fixtures/app.ts")
+        self.assertEqual(self.fixture_findings(), [
+            "evals/p-a/integration-evals.json: eval 1 names fixture `eval-fixtures/app.ts`, which does not exist",
+        ])
+
+    def test_existing_fixture_is_not_a_finding(self):
+        self.write_suite("fixtures/app.ts")
+        self.assertEqual(self.fixture_findings(), [])
+
+    def test_files_that_is_not_a_list_is_a_finding(self):
+        suite = {"skill_name": "p-a", "evals": [{"id": 1, "prompt": "p", "files": "fixtures/app.ts", "assertions": []}]}
+        (self.evals / "integration-evals.json").write_text(json.dumps(suite))
+        self.assertEqual(self.fixture_findings(), [
+            "evals/p-a/integration-evals.json: eval 1 `files` is not a list of fixture paths",
+        ])
+
+    def test_unexpected_suite_shapes_are_findings_not_crashes(self):
+        for suite, finding in (
+            ([], "evals/p-a/integration-evals.json: not an eval suite object"),
+            ({"evals": 1}, "evals/p-a/integration-evals.json: `evals` is not a list"),
+            ({"evals": ["x"]}, "evals/p-a/integration-evals.json: an `evals` entry is not an object"),
+            ({"evals": [{"id": 1, "files": [7]}]}, "evals/p-a/integration-evals.json: eval 1 `files` is not a list of fixture paths"),
+        ):
+            with self.subTest(suite=suite):
+                (self.evals / "integration-evals.json").write_text(json.dumps(suite))
+                findings, _ = lint(self.root, MANIFEST)
+                self.assertIn(finding, findings)
+
+    def test_malformed_suite_is_a_finding_not_a_crash(self):
+        (self.evals / "integration-evals.json").write_text('{"evals": [')
+        findings, _ = lint(self.root, MANIFEST)
+        self.assertIn("evals/p-a/integration-evals.json: not valid JSON", [f.split(" (")[0] for f in findings])
 
 
 LICENCE_REFERENCE = """# Licence products and platforms

@@ -211,7 +211,64 @@ export async function startScanner(): Promise<() => Promise<void>> {
 
 ## Step 7: Still images
 
-html5-qrcode `scanFile()` / `scanFileV2()` and the file tab `Html5QrcodeScanner` shows by default (`supportedScanTypes`), ZXing `decodeFromImageUrl()` / `decodeFromImageElement()`, and `detector.detect(image)` on an uploaded photo have no SparkScan equivalent: SparkScan owns its camera and takes no other frame source. Decode the file with a `BarcodeCapture` mode fed by `await ImageFrameSource.fromFile(file)` (from `@scandit/web-datacapture-core`), set as the context's mode and frame source and switched on with `switchToDesiredState(FrameSourceState.On)`. `prepareScanning()` puts SparkScan's mode and camera on that same context, so call `await view.stopScanning()` first and `await view.prepareScanning()` when the user is back on the scanning page. Feed the result into the same list. Never drop the upload path; list the moved path as a judgment call to check in a browser. If the page's main job is decoding photos, SparkScan does not fit: use `barcode-capture-web` for the whole page.
+html5-qrcode `scanFile()` / `scanFileV2()` and the file tab `Html5QrcodeScanner` shows by default (`supportedScanTypes`), ZXing `decodeFromImageUrl()` / `decodeFromImageElement()`, and `detector.detect(image)` on an uploaded photo have no SparkScan equivalent: SparkScan owns its camera and takes no other frame source. Decode the file with a `BarcodeCapture` mode fed by an `ImageFrameSource` on the same context. `prepareScanning()` puts SparkScan's mode and camera on that context, so stop SparkScan first and prepare it again afterwards, whatever the outcome. Compiled against 8.6.1:
+
+```typescript
+import {
+  BarcodeCapture,
+  BarcodeCaptureSettings,
+  ScanIntention,
+  type SparkScanView,
+  type Symbology,
+} from "@scandit/web-datacapture-barcode";
+import { DataCaptureContext, FrameSourceState, ImageFrameSource } from "@scandit/web-datacapture-core";
+
+const PHOTO_DECODE_TIMEOUT_MS = 10_000;
+
+export async function decodePhoto(
+  view: SparkScanView | null,
+  file: File,
+  symbologies: Symbology[],
+  onCameraError: (error: unknown) => void,
+): Promise<string | null> {
+  const context = DataCaptureContext.sharedInstance;
+  const settings = new BarcodeCaptureSettings();
+  settings.scanIntention = ScanIntention.Manual;
+  settings.enableSymbologies(symbologies);
+
+  await view?.stopScanning();
+  let timeout: ReturnType<typeof setTimeout> | undefined;
+  try {
+    const barcodeCapture = await BarcodeCapture.forContext(context, settings);
+    const decoded = new Promise<string | null>((resolve) => {
+      barcodeCapture.addListener({
+        didScan: (_barcodeCapture, session) => resolve(session.newlyRecognizedBarcode?.data ?? null),
+        didUpdateSession: (_barcodeCapture, session) => {
+          if (session.newlyRecognizedBarcode == null) {
+            resolve(null);
+          }
+        },
+      });
+    });
+    const imageSource = await ImageFrameSource.fromFile(file);
+    await context.setFrameSource(imageSource);
+    await imageSource.switchToDesiredState(FrameSourceState.On);
+    const timedOut = new Promise<never>((_resolve, reject) => {
+      timeout = setTimeout(() => reject(new Error("The photo was not processed in time")), PHOTO_DECODE_TIMEOUT_MS);
+    });
+    return await Promise.race([decoded, timedOut]);
+  } finally {
+    clearTimeout(timeout);
+    try {
+      await context.removeAllModes();
+    } finally {
+      await view?.prepareScanning().catch(onCameraError);
+    }
+  }
+}
+```
+
+`decodePhoto` resolves `null` for a photo without a code (the session update for that frame has no new barcode). It rejects for a file that is not an image, and when no result arrives in time. The photo path runs Barcode Capture, so the licence key must cover it as well as SparkScan; a key without it shows up as that timeout. Pass the symbologies the camera scan enables, and `null` as the view when the camera was refused (Step 5's `startScanner()` rejected), so the upload still works. `onCameraError` shows the app's camera message when SparkScan cannot reopen the camera. Disable the photo input while a decode runs, and let a running decode settle before Step 5's teardown, or its re-prepare reopens the camera for a view that is gone. Preparing SparkScan again resets its camera choice and the torch control's visibility (Step 6). Feed a decoded code into the same list and keep the app's "nothing found" message. Never drop the upload path; list the moved path as a judgment call to check in a browser. If the page's main job is decoding photos, SparkScan does not fit: use `barcode-capture-web` for the whole page.
 
 ## Step 8: Verify
 

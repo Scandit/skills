@@ -6,7 +6,7 @@
       "prompt": "I want to add Scandit Label Capture to my web app. Here's my main file: empty-app.ts. The label is a perishable-product sticker with an EAN-13 barcode and an expiry date (required) and a total price (optional).",
       "expected_output": "The user has answered Questions A and B (fields + required/optional + symbology) but is silent on the overlay choice. Per the skill's recommended-default policy, the agent writes a Validation Flow integration into empty-app.ts, shows the setup checklist, and ends with a brief offer to swap to the Basic Overlay if the user wants no confirmation step.",
       "files": [
-        "eval-fixtures/empty-app.ts"
+        "fixtures/empty-app.ts"
       ],
       "assertions": [
         { "text": "Setup checklist is shown and mentions @scandit/web-datacapture-core, @scandit/web-datacapture-barcode, and @scandit/web-datacapture-label npm packages" },
@@ -40,8 +40,8 @@
       "prompt": "Add Label Capture to my empty-app.ts with the redesigned Validation Flow. The label is a perishable-product sticker with an EAN-13 barcode (required) and an expiry date (required). My package.json pins @scandit/web-datacapture-label to 8.2.0.",
       "expected_output": "The skill detects the SDK version from package.json and uses the redesigned Validation Flow API (no deprecated text properties, uses setPlaceholderTextForLabelDefinition).",
       "files": [
-        "eval-fixtures/empty-app.ts",
-        "eval-fixtures/package-8.2.json"
+        "fixtures/empty-app.ts",
+        "fixtures/package-8.2.json"
       ],
       "assertions": [
         { "text": "A minimal integration with context, view, camera, settings, and mode is present (semantic)" },
@@ -58,8 +58,8 @@
       "prompt": "Add Label Capture with the Validation Flow to my empty-app.ts. The label is a perishable-product sticker with an EAN-13 barcode (required) and an expiry date (required). My package.json pins @scandit/web-datacapture-label to 8.1.0.",
       "expected_output": "The skill detects the v8.1 SDK version and uses the v8.1 Validation Flow API: async setter methods for text customisation and a listener with only onValidationFlowLabelCaptured (onManualInput was added in v8.2 and does not exist yet in v8.1).",
       "files": [
-        "eval-fixtures/empty-app.ts",
-        "eval-fixtures/package-8.1.json"
+        "fixtures/empty-app.ts",
+        "fixtures/package-8.1.json"
       ],
       "assertions": [
         { "text": "LabelCaptureValidationFlowOverlay.withLabelCaptureForView( is used" },
@@ -76,7 +76,7 @@
       "prompt": "I'm scanning a smart-device box label on web (empty-app.ts). It has two IMEI barcodes, a serial number barcode, and a part number barcode. Use the pre-built semantic barcode field types rather than plain custom barcodes so I get the tuned defaults.",
       "expected_output": "The skill uses the semantic pre-built barcode field builders ImeiOneBarcodeBuilder, ImeiTwoBarcodeBuilder, SerialNumberBarcodeBuilder, and PartNumberBarcodeBuilder (each awaited and built with .build(name)) instead of CustomBarcodeBuilder, and adds them to the LabelDefinitionBuilder with the matching addXxxBarcode methods.",
       "files": [
-        "eval-fixtures/empty-app.ts"
+        "fixtures/empty-app.ts"
       ],
       "assertions": [
         { "text": "new ImeiOneBarcodeBuilder() is used and added via .addImeiOneBarcode(...) for the first IMEI field" },
@@ -95,7 +95,7 @@
       "prompt": "I want to scan a retail price tag (price, unit price, weight) on web. Is there a ready-made label for this so I don't have to define each field myself? Write the setup into empty-app.ts.",
       "expected_output": "The skill uses the pre-built LabelDefinition.createPriceCaptureDefinition(name) (awaited) instead of hand-defining fields, and warns that the PriceCapture pre-made definition is NOT compatible with the Validation Flow (so the Basic Overlay path must be used).",
       "files": [
-        "eval-fixtures/empty-app.ts"
+        "fixtures/empty-app.ts"
       ],
       "assertions": [
         { "text": "await LabelDefinition.createPriceCaptureDefinition( is used to create the price label definition" },

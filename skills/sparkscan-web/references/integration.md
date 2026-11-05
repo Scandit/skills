@@ -428,6 +428,24 @@ Adapt `addScanResult` to your app's data model — it receives a `Blob | null` i
 
 ---
 
+## Scanning and preview behavior
+
+`SparkScanViewSettings` sets how the trigger scans and when the mini preview shows. Set them before passing the settings to `SparkScanView.forElement` (or to `<spark-scan-view>`'s `sparkScanViewSettings`):
+
+```typescript
+import { SparkScanPreviewBehavior, SparkScanScanningBehavior, SparkScanViewSettings } from "@scandit/web-datacapture-barcode";
+
+const sparkScanViewSettings = new SparkScanViewSettings();
+sparkScanViewSettings.scanningBehavior = SparkScanScanningBehavior.Continuous;
+sparkScanViewSettings.previewBehavior = SparkScanPreviewBehavior.Persistent;
+```
+
+- `scanningBehavior`: `SparkScanScanningBehavior.Single` (the default) scans one code per trigger press. `Continuous` keeps scanning after one press until the user taps the trigger again, or until `inactiveStateTimeout` (10 000 ms by default) passes without a scan.
+- `previewBehavior`: `SparkScanPreviewBehavior.Default` (the default) fades the mini preview out when the scanner is off. `Persistent` keeps it visible, darkened, while scanning is paused, until the trigger collapses (`triggerButtonCollapseTimeout`, 5 000 ms by default) and the view goes idle.
+- Target mode (aiming at one code among many) has no shortcut setter: `sparkScanViewSettings.defaultScanningMode = new SparkScanScanningModeTarget(SparkScanScanningBehavior.Single, SparkScanPreviewBehavior.Persistent)`. `SparkScanScanningModeDefault` takes the same two arguments for the default mode.
+
+---
+
 ## Custom trigger button
 
 Hiding the built-in trigger and driving scanning from your own UI is fully supported. The subsections below cover the behaviors you need to handle when you take over the trigger.
@@ -490,18 +508,18 @@ When hiding the default trigger button and providing your own, a naive click-tog
 3. User clicks again → handler still thinks scanner is active → calls `pauseScanning()` on an already-idle engine → **nothing happens**
 4. Another click is needed to restart, leaving the user stuck
 
-**The fix:** always use `SparkScanViewUiListener.didChangeViewState` to keep the button in sync with the actual scanner state. Drive click behavior from the current state, not from a toggled local flag. The camera preview is only visible in the `Active` state (the default scanning mode is single-shot and non-persistent), so map your label/preview UI off `Active` specifically — keying off anything else makes the label lag a frame behind the preview.
+**The fix:** always use `SparkScanViewUiListener.didChangeViewState`, registered with `sparkScanView.setListener(...)` (there is no `uiListener` property on web), to keep the button in sync with the actual scanner state. Drive click behavior from the current state, not from a toggled local flag. The camera preview is only visible in the `Active` state (the default scanning mode is single-shot and non-persistent), so map your label/preview UI off `Active` specifically — keying off anything else makes the label lag a frame behind the preview.
 
 ```typescript
 let currentViewState: SparkScanViewState = SparkScanViewState.Idle;
 
-const uiListener = {
-    didChangeViewState: (_view: SparkScanView, viewState: SparkScanViewState) => {
+const uiListener: SparkScanViewUiListener = {
+    didChangeViewState: (viewState: SparkScanViewState) => {
         currentViewState = viewState;
         button.textContent = viewState === SparkScanViewState.Active ? "STOP SCANNING" : "START SCANNING";
     },
 };
-sparkScanView.uiListener = uiListener;
+sparkScanView.setListener(uiListener);
 
 const handleButtonClick = async () => {
     if (currentViewState === SparkScanViewState.Active) {
@@ -515,7 +533,7 @@ button.addEventListener("click", handleButtonClick);
 // In the unmount/cleanup function:
 async function unmount() {
     button.removeEventListener("click", handleButtonClick);
-    sparkScanView.uiListener = null;
+    sparkScanView.setListener(null);
     await sparkScanView.stopScanning();
 }
 ```
