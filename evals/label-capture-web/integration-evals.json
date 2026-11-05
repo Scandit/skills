@@ -66,7 +66,7 @@
         { "text": "LabelCaptureValidationFlowSettings.create() is called" },
         { "text": "At least one of await validationFlowSettings.setRequiredFieldErrorText, setMissingFieldsHintText, or setManualInputButtonText is called (v8.1 async setter API)" },
         { "text": "Text customisation is done via async method calls (setXxx(...)) not property assignments (xxx = ...)" },
-        { "text": "setPlaceholderTextForLabelDefinition is NOT called (not available in v8.1)" },
+        { "text": "The output code never calls setPlaceholderTextForLabelDefinition (not available in v8.1); naming it in prose, for example as the 8.2 replacement, is fine (semantic)" },
         { "text": "overlay.listener is assigned with only onValidationFlowLabelCaptured — onManualInput is NOT in the listener object (it was added in v8.2)" },
         { "text": "Symbology.EAN13UPCA is enabled" }
       ]
@@ -143,7 +143,7 @@
       "assertions": [
         { "text": "LabelCaptureAdaptiveRecognitionOverlay.withLabelCaptureForView( is used (the separate receipt-scanning overlay, NOT the standard Basic or Validation Flow overlay)" },
         { "text": "The overlay listener implements onRecognized and reads fields off the ReceiptScanningResult (e.g. result.storeName, result.paymentTotal, result.lineItems)" },
-        { "text": "LabelCaptureAdaptiveRecognitionOverlay (and ReceiptScanningResult) are imported from @scandit/web-datacapture-label" },
+        { "text": "LabelCaptureAdaptiveRecognitionOverlay is imported from @scandit/web-datacapture-label, and in TypeScript code that reads the result fields ReceiptScanningResult is imported from it too (plain JavaScript has no type to import) (semantic)" },
         { "text": "The response flags that Receipt Scanning is a Beta feature built on the Adaptive Recognition Engine and may change in future SDK versions" },
         { "text": "The response states that enabling it requires contacting Scandit Support at support@scandit.com" }
       ],
