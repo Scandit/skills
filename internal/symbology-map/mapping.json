@@ -56,7 +56,39 @@
     },
     "zxing-js": {
       "label": "ZXing-js `BarcodeFormat`",
-      "rows_from": "zxing"
+      "rows": {
+        "qr": ["QR_CODE"], "ean-13": ["EAN_13"], "ean-8": ["EAN_8"], "upc-a": ["UPC_A"], "upc-e": ["UPC_E"],
+        "code-39": ["CODE_39"], "code-93": ["CODE_93"], "code-128": ["CODE_128"], "itf": ["ITF"], "codabar": ["CODABAR"],
+        "data-matrix": ["DATA_MATRIX"], "aztec": ["AZTEC"], "pdf-417": ["PDF_417"],
+        "gs1-databar": ["RSS_14"], "gs1-databar-expanded": ["RSS_EXPANDED"], "maxicode": ["MAXICODE"],
+        "upc-ean-extension": ["UPC_EAN_EXTENSION"],
+        "all-formats": {"names": [], "note": "no `POSSIBLE_FORMATS` hint"}
+      }
+    },
+    "html5-qrcode": {
+      "label": "html5-qrcode `Html5QrcodeSupportedFormats`",
+      "rows": {
+        "qr": ["QR_CODE"], "ean-13": ["EAN_13"], "ean-8": ["EAN_8"], "upc-a": ["UPC_A"], "upc-e": ["UPC_E"],
+        "code-39": ["CODE_39"], "code-93": ["CODE_93"], "code-128": ["CODE_128"], "itf": ["ITF"], "codabar": ["CODABAR"],
+        "data-matrix": ["DATA_MATRIX"], "aztec": ["AZTEC"], "pdf-417": ["PDF_417"],
+        "gs1-databar": ["RSS_14"], "gs1-databar-expanded": ["RSS_EXPANDED"], "maxicode": ["MAXICODE"],
+        "upc-ean-extension": ["UPC_EAN_EXTENSION"],
+        "all-formats": {"names": [], "note": "`formatsToSupport` omitted"}
+      }
+    },
+    "barcode-detector": {
+      "label": "`BarcodeDetector` `formats`",
+      "rows": {
+        "qr": ["'qr_code'"], "ean-13": ["'ean_13'"], "ean-8": ["'ean_8'"], "upc-a": ["'upc_a'"], "upc-e": ["'upc_e'"],
+        "code-39": ["'code_39'"], "code-93": ["'code_93'"], "code-128": ["'code_128'"], "codabar": ["'codabar'"],
+        "itf": {"names": ["'itf'", "'itf_14'"], "note": "`'itf_14'` with the `barcode-detector` polyfill only"},
+        "data-matrix": ["'data_matrix'"], "aztec": ["'aztec'"], "pdf-417": ["'pdf417'"],
+        "gs1-databar": {"names": ["'databar'", "'databar_omni'", "'databar_stacked'", "'databar_stacked_omni'"], "note": "`barcode-detector` polyfill only"},
+        "gs1-databar-limited": {"names": ["'databar_limited'"], "note": "`barcode-detector` polyfill only"},
+        "gs1-databar-expanded": {"names": ["'databar_expanded'", "'databar_expanded_stacked'"], "note": "`barcode-detector` polyfill only"},
+        "maxicode": {"names": ["'maxi_code'"], "note": "`barcode-detector` polyfill only"},
+        "all-formats": {"names": [], "note": "`formats` omitted"}
+      }
     },
     "mlkit": {
       "label": "ML Kit `Barcode.FORMAT_*`",

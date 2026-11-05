@@ -66,6 +66,11 @@ When configuring `BarcodeBatchSettings`, map formats from ZXing using the table 
 | `DATA_MATRIX` | `Symbology.DataMatrix` |
 | `AZTEC` | `Symbology.Aztec` |
 | `PDF_417` | `Symbology.PDF417` |
+| `RSS_14` | `Symbology.GS1Databar` |
+| `RSS_EXPANDED` | `Symbology.GS1DatabarExpanded` |
+| `MAXICODE` | `Symbology.MaxiCode` |
+| `UPC_EAN_EXTENSION` | No symbology of its own: the 2/5-digit add-on arrives as `barcode.addOnData` on the EAN/UPC result. Look up how to enable add-ons in the API reference before writing it. |
+| (no `POSSIBLE_FORMATS` hint) | No equivalent. Enable what the app really consumes; if nothing narrows it, the recommended default set below. Never enable everything. |
 
 **Recommended default set** when the source scanned every format and nothing in the app narrows it: `Symbology.QR`, `Symbology.EAN13UPCA`, `Symbology.EAN8`, `Symbology.UPCE`, `Symbology.Code39`, `Symbology.Code93`, `Symbology.Code128`, `Symbology.InterleavedTwoOfFive`, `Symbology.Codabar`, `Symbology.DataMatrix`, `Symbology.Aztec`, `Symbology.PDF417`.
 <!-- END GENERATED symbology-table -->

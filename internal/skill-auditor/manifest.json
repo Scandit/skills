@@ -88,8 +88,8 @@
       "references/react.md": ["web"],
       "references/troubleshooting.md": ["web"],
       "evals/react-advanced-evals.json": ["web"],
-      "references/third-party-migration.md": ["android", "capacitor", "cordova", "flutter", "ios", "net-android", "net-ios", "net-maui", "rn"],
-      "evals/third-party-migration-evals.json": ["android", "capacitor", "cordova", "flutter", "ios", "net-android", "net-ios", "net-maui", "rn"]
+      "references/third-party-migration.md": ["android", "capacitor", "cordova", "flutter", "ios", "net-android", "net-ios", "net-maui", "rn", "web"],
+      "evals/third-party-migration-evals.json": ["android", "capacitor", "cordova", "flutter", "ios", "net-android", "net-ios", "net-maui", "rn", "web"]
     }
   },
   "parity_known_gaps": {

@@ -1,10 +1,10 @@
 ---
 name: sparkscan-web
-description: SparkScan single-barcode scanning with the pre-built scanning UI (floating trigger button, `<spark-scan-view>`) in web/browser projects (`@scandit/web-datacapture-barcode`), including React/Vite/Next.js apps. Use for integration, scan settings, result handling, trigger-button customization, React-specific issues (StrictMode, React 18 vs 19 binding), camera/HTTPS/COOP-COEP troubleshooting, or SDK version migration — not for SparkScan on native or hybrid platforms.
+description: SparkScan single-barcode scanning with the pre-built scanning UI (floating trigger button, `<spark-scan-view>`) in web/browser projects (`@scandit/web-datacapture-barcode`), including React/Vite/Next.js apps. Use for integration, scan settings, result handling, trigger-button customization, React-specific issues (StrictMode, React 18 vs 19 binding), camera/HTTPS/COOP-COEP troubleshooting, SDK version migration, or replacing a third-party scanner (ZXing-js, html5-qrcode, BarcodeDetector) — not for SparkScan on native or hybrid platforms.
 license: Apache-2.0
 metadata:
   author: scandit
-  version: "1.2.5"
+  version: "1.2.6"
 ---
 
 # SparkScan Web Skill
@@ -28,6 +28,7 @@ Based on the user's request, load the appropriate reference file before respondi
 - **Integrating SparkScan from scratch** (e.g. "add SparkScan to my app", "set up barcode scanning", "how do I use SparkScan", "how do I handle feedback in SparkScan", "I want to build a scanning app") → read [references/integration.md](references/integration.md) and follow the instructions there. If the user has no existing project, the guide will direct you to offer the pre-built sample first.
 - **The project uses React** (a `react` dependency in `package.json`, `.tsx`/`.jsx` files, hooks, JSX) → also read [references/react.md](references/react.md). The correct way to bind the `<spark-scan-view>` custom element differs by React major version, so **check the `react` version in `package.json` first** — the guide explains the React 18 vs 19 difference and the context/lifecycle pitfalls. Always consult it before writing React code; the generic `integration.md` example is vanilla TS.
 - **Migrating or upgrading an existing SparkScan integration** (e.g. "upgrade from v6 to v7", "migrate my SparkScan", "what changed between SDK versions") → read [references/migration.md](references/migration.md) and follow the instructions there.
+- **Replacing a third-party scanner with SparkScan** (e.g. "migrate from @zxing/browser BrowserMultiFormatReader to SparkScan", "replace html5-qrcode Html5Qrcode / Html5QrcodeScanner with Scandit", "swap our BarcodeDetector getUserMedia loop for SparkScan") → read [references/third-party-migration.md](references/third-party-migration.md) and follow the instructions there.
 - **Runtime, camera, or deployment trouble** (e.g. "camera won't open on my phone", "works for a second then dies", cross-origin/COOP/COEP/header issues, "blank preview over a LAN IP") → read [references/troubleshooting.md](references/troubleshooting.md). These are environment/hosting issues, not API mistakes, and are easy to misdiagnose as code bugs.
 
 ## API Usage Policy

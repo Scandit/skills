@@ -70,6 +70,15 @@ class MappingTest(unittest.TestCase):
             for fmt in generate.rows(name, self.mapping):
                 self.assertIn(fmt, self.mapping["formats"], f"{name}: {fmt}")
 
+    def test_a_source_name_maps_to_one_format(self):
+        for source in self.mapping["sources"]:
+            formats_by_name = {}
+            for fmt, row in generate.rows(source, self.mapping).items():
+                for name in row if isinstance(row, list) else row["names"]:
+                    formats_by_name.setdefault(name, set()).add(fmt)
+            clashes = {name: sorted(fmts) for name, fmts in formats_by_name.items() if len(fmts) > 1}
+            self.assertEqual(clashes, {}, source)
+
     def test_unknown_source_in_marker_is_an_error(self):
         text = "<!-- BEGIN GENERATED symbology-table sources=nope style=js -->\n<!-- END GENERATED symbology-table -->\n"
         with self.assertRaises(ValueError):
