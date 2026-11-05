@@ -248,7 +248,7 @@ Before writing any code, walk the user through their label. Ask one question at 
 | **Basic Overlay** | Fully automated scanning with no confirmation step. The app processes results as soon as all required fields match, with no chance for the user to review or correct. Use when the label is very clean and OCR accuracy is not a concern. |
 | **Advanced Overlay** | The app needs fully custom AR rendering — drawing its own overlays on top of the camera feed with full control over position, style, and animations. Only choose this if Basic Overlay and Validation Flow are not flexible enough visually. |
 
-Default to recommending Validation Flow unless the user explicitly says they do not want a confirmation step or need a fully custom AR experience.
+Default to recommending Validation Flow unless the user explicitly says they do not want a confirmation step or need a fully custom AR experience. When you pick the Validation Flow without the user having chosen it, say in one line that the Basic Overlay can replace it for fully automated scanning with no confirmation step.
 
 > **VIN and price label use cases with the Validation Flow:** The web SDK ships ready-made `LabelDefinition.createVinLabelDefinition(name)` and `LabelDefinition.createPriceCaptureDefinition(name)` definitions (see **Pre-built Label Definitions** below). These pre-made definitions are **not compatible with the Validation Flow overlay** — use them only with the Basic Overlay. If the user specifically wants VIN or price capture *inside the Validation Flow*, build the label by hand with custom field builders (`CustomBarcodeBuilder` + `CustomTextBuilder`) instead; the builder API gives full control over the fields the Validation Flow can render.
 
@@ -749,7 +749,7 @@ Both factories accept an optional second `AdaptiveRecognitionMode` argument (see
 
 ## Receipt Scanning (Beta)
 
-> **Beta.** Receipt Scanning is built on the Adaptive Recognition Engine and is still in Beta — it may change in future SDK versions. It requires a subscription with the feature enabled; tell the user to contact <support@scandit.com> to enable it. Do not suggest it by default.
+> **Beta.** Receipt Scanning is built on the Adaptive Recognition Engine and is still in Beta — it may change in future SDK versions. It requires a subscription with the feature enabled. Tell the user all three: it is a Beta feature built on the Adaptive Recognition Engine, it may change in future SDK versions, and they must contact <support@scandit.com> to enable it. Do not suggest it by default.
 
 Receipt Scanning extracts structured data from a whole receipt (store details, payment totals, line items) in the cloud. It uses a **different integration pattern** from standard label capture — a dedicated overlay and listener rather than the Basic / Validation Flow overlays:
 
