@@ -83,9 +83,9 @@
         "code-39": ["'code_39'"], "code-93": ["'code_93'"], "code-128": ["'code_128'"], "codabar": ["'codabar'"],
         "itf": {"names": ["'itf'", "'itf_14'"], "note": "`'itf_14'` with the `barcode-detector` polyfill only"},
         "data-matrix": ["'data_matrix'"], "aztec": ["'aztec'"], "pdf-417": ["'pdf417'"],
-        "gs1-databar": {"names": ["'databar'"], "note": "`barcode-detector` polyfill only"},
+        "gs1-databar": {"names": ["'databar'", "'databar_omni'", "'databar_stacked'", "'databar_stacked_omni'"], "note": "`barcode-detector` polyfill only"},
         "gs1-databar-limited": {"names": ["'databar_limited'"], "note": "`barcode-detector` polyfill only"},
-        "gs1-databar-expanded": {"names": ["'databar_expanded'"], "note": "`barcode-detector` polyfill only"},
+        "gs1-databar-expanded": {"names": ["'databar_expanded'", "'databar_expanded_stacked'"], "note": "`barcode-detector` polyfill only"},
         "maxicode": {"names": ["'maxi_code'"], "note": "`barcode-detector` polyfill only"},
         "all-formats": {"names": [], "note": "`formats` omitted"}
       }

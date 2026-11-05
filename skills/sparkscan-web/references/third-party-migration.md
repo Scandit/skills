@@ -56,9 +56,9 @@ Map **only** the formats the app scanned, from the hint list, `formatsToSupport`
 | `DATA_MATRIX` | `DATA_MATRIX` | `'data_matrix'` | `Symbology.DataMatrix` |
 | `AZTEC` | `AZTEC` | `'aztec'` | `Symbology.Aztec` |
 | `PDF_417` | `PDF_417` | `'pdf417'` | `Symbology.PDF417` |
-| `RSS_14` | `RSS_14` | `'databar'` (`barcode-detector` polyfill only) | `Symbology.GS1Databar` |
+| `RSS_14` | `RSS_14` | `'databar'` / `'databar_omni'` / `'databar_stacked'` / `'databar_stacked_omni'` (`barcode-detector` polyfill only) | `Symbology.GS1Databar` |
 | — | — | `'databar_limited'` (`barcode-detector` polyfill only) | `Symbology.GS1DatabarLimited` |
-| `RSS_EXPANDED` | `RSS_EXPANDED` | `'databar_expanded'` (`barcode-detector` polyfill only) | `Symbology.GS1DatabarExpanded` |
+| `RSS_EXPANDED` | `RSS_EXPANDED` | `'databar_expanded'` / `'databar_expanded_stacked'` (`barcode-detector` polyfill only) | `Symbology.GS1DatabarExpanded` |
 | `MAXICODE` | `MAXICODE` | `'maxi_code'` (`barcode-detector` polyfill only) | `Symbology.MaxiCode` |
 | `UPC_EAN_EXTENSION` | `UPC_EAN_EXTENSION` | — | No symbology of its own: the 2/5-digit add-on arrives as `barcode.addOnData` on the EAN/UPC result. Look up how to enable add-ons in the API reference before writing it. |
 | (no `POSSIBLE_FORMATS` hint) | (`formatsToSupport` omitted) | (`formats` omitted) | No equivalent. Enable what the app really consumes; if nothing narrows it, the recommended default set below. Never enable everything. |
@@ -70,7 +70,7 @@ For a format not in the table (`MICRO_QR_CODE`, the polyfill's `micro_qr_code`, 
 
 **UPC-A values.** These libraries return a UPC-A code as 12 digits when UPC-A is among the formats; `Symbology.EAN13UPCA` returns it as 13 digits with a leading `0`. When the app scanned UPC-A, keep the 12-digit values with `settings.settingsForSymbology(Symbology.EAN13UPCA).setExtensionEnabled("remove_leading_upca_zero", true)`, or flag the changed value as a judgment call.
 
-Symbologies go on `SparkScanSettings` (`settings.enableSymbologies([...])`, Step 5). `settings.codeDuplicateFilter` is the time in milliseconds before the same code is reported again; leave it at the default unless the old code skipped repeats of the same code, and list any value you set as a judgment call. A manual same-code cooldown (a `lastCode` / `lastScanAt` check) becomes `codeDuplicateFilter` with that many milliseconds, and the manual check goes. A `Set` that never adds a code twice is the app's own list logic: keep it as it is.
+Symbologies go on `SparkScanSettings` (`settings.enableSymbologies([...])`, Step 5). `settings.codeDuplicateFilter` is the time in milliseconds before the same code is reported again; leave it at the default unless the old code skipped repeats of the same code, and list any value you set as a judgment call. A manual same-code cooldown (a `lastCode` / `lastScanAt` check) becomes `codeDuplicateFilter` with that many milliseconds, and the manual check goes. The two differ: the cooldown only skipped a repeat of the last code, while `codeDuplicateFilter` holds back every code seen within the window, so A, B, A inside it now reports A once. Where the page counts quantities, list that as a judgment call. A `Set` that never adds a code twice is the app's own list logic: keep it as it is.
 
 ## Step 4: Replace the callback with `didScan`
 

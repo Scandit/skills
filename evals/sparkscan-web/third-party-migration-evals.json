@@ -21,6 +21,7 @@
         {"text": "UPC-A codes keep the 12-digit values ZXing returned: settings.settingsForSymbology(Symbology.EAN13UPCA).setExtensionEnabled(\"remove_leading_upca_zero\", true) is set, or the summary flags that UPC-A codes now arrive as 13 digits with a leading zero (semantic)"},
         {"text": "Symbology.QRCode is NOT present"},
         {"text": "The 1500 ms REPEAT_COOLDOWN_MS check is replaced by setting codeDuplicateFilter to 1500 on the SparkScanSettings (semantic)"},
+        {"text": "The summary lists as a judgment call that codeDuplicateFilter holds back every code seen within the 1500 ms, not only a repeat of the last code, so a quantity can now count lower (for example A, B, A within 1.5 s counts A once instead of twice) (semantic)"},
         {"text": "addListener( is called on the SparkScan mode with a didScan callback that reads session.newlyRecognizedBarcode and does not loop over an array of barcodes"},
         {"text": "SparkScanView.forElement( is present"},
         {"text": "scanningBehavior = SparkScanScanningBehavior.Continuous is present"},
