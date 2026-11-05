@@ -28,7 +28,7 @@ MatrixScan Batch owns the camera and renders through a `DataCaptureView`, so the
 
 ## Remove
 
-- The `@zxing/library` / `@zxing/browser` `import`s and the `<PackageReference>` (`dependencies`) entries from `package.json`.
+- The old library's `import`s and its `dependencies` entry in `package.json`: `@zxing/library` / `@zxing/browser`, `html5-qrcode`, or the `barcode-detector` polyfill (the browser's own `BarcodeDetector` has no package).
 - The `BrowserMultiFormatReader` (or `BrowserQRCodeReader` / `MultiFormatReader`) instance and its `decodeFromVideoDevice` / `decodeFromConstraints` / `decodeFromVideoElement` call.
 - The `DecodeHintType` / `BarcodeFormat` hint configuration.
 - The callback's continuous-scan re-trigger and any `reader.reset()` / `controls.stop()` teardown that exists only to restart decoding.
@@ -258,7 +258,7 @@ export async function decodePhoto(
 }
 ```
 
-`decodePhoto` resolves `null` for a photo without a code as soon as that frame is processed (its session update has no new barcode); `didScan` alone would leave it waiting for the timeout. It rejects for a file that is not an image, and when no result arrives in time. The photo path runs Barcode Capture, so the license key must cover it as well as MatrixScan Batch; a key without it shows up as that timeout. Pass the symbologies the camera scan enables. Disable the photo input while a decode runs. Feed a decoded code through the same dedupe and list as the camera codes, and keep the app's "nothing found" message.
+`decodePhoto` resolves `null` for a photo without a code as soon as that frame is processed (its session update has no new barcode); `didScan` alone would leave it waiting for the timeout. It rejects for a file that is not an image, and when no result arrives in time. The photo path runs Barcode Capture, so the license key must cover it as well as MatrixScan Batch; a key without it shows up as that timeout. Pass the symbologies the camera scan enables. Barcode Capture reports one barcode per photo, where `detect(image)` or `scanFile()` could return several: list that as a judgment call. Disable the photo input while a decode runs. Feed a decoded code through the same dedupe and list as the camera codes, and keep the app's "nothing found" message.
 
 ---
 
@@ -266,6 +266,6 @@ export async function decodePhoto(
 
 When done, show only what changed. Do not list APIs that were unchanged.
 
-**Setup checklist:** the one from `references/integration.md` (npm packages `@scandit/web-datacapture-core` and `@scandit/web-datacapture-barcode`, the license-key placeholder to replace), plus removing the old scanner packages and the COOP/COEP header requirement, which is new: the old libraries did not need it.
+**Setup checklist:** the one from `references/integration.md` (npm packages `@scandit/web-datacapture-core` and `@scandit/web-datacapture-barcode`, the license-key placeholder to replace), plus removing each old scanner package by name (for example `npm uninstall barcode-detector`) and the COOP/COEP header requirement, which is new: the old libraries did not need it.
 
 **Summary:** always end with a "Summary of changes" section listing what was removed (the old scanner's APIs and markup), what was added (the `BarcodeBatch` set-up, view and overlay), the format → symbology mapping, and every judgment call.

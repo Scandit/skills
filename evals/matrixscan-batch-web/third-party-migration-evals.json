@@ -168,6 +168,9 @@
         },
         {
           "text": "The summary lists the photo path as a judgment call to check (semantic)"
+        },
+        {
+          "text": "The summary lists as a judgment call that the photo path now adds one code per photo (Barcode Capture reports one barcode), where detect() added every code in the photo (semantic)"
         }
       ],
       "tags": ["third-party-migration"]
