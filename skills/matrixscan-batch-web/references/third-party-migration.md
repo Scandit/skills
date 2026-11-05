@@ -6,7 +6,9 @@
 - **Behaviour changes.** Never present a visual or behaviour change (new default, different overlay look, changed feedback, changed scan timing) as a 1:1 rename. List each one in the summary as a judgment call the user must confirm.
 - **Compatibility layer.** When the scanning code sits behind a shared scanner library or wrapper that other code calls, keep that library's public API frozen (same types, method names, callbacks) and replace only the third-party scanner calls underneath with Scandit ones.
 
-This guide covers migrating a web app from **ZXing-js** (`@zxing/library`, also published as `@zxing/browser`) — the most common third-party multi-format browser scanner — to Scandit MatrixScan Batch (`BarcodeBatch*`). The same steps apply to a page built on html5-qrcode (`Html5Qrcode`, `formatsToSupport`) or on the `BarcodeDetector` API (`detector.detect(video)` in a `requestAnimationFrame` loop over a `getUserMedia` stream, often with the `barcode-detector` polyfill): `detect()` already returns every code in the frame, as `rawValue`, `format` and `boundingBox`, which map to `trackedBarcode.barcode.data`, `trackedBarcode.barcode.symbology` and `trackedBarcode.location`. A photo decode (`scanFile()`, the file tab `Html5QrcodeScanner` shows by default, `detect(image)`) has no MatrixScan Batch equivalent: keep the upload path with a `BarcodeCapture` mode fed by `await ImageFrameSource.fromFile(file)`. It shares the `DataCaptureContext` with `BarcodeBatch` and the camera: first `barcodeBatch.setEnabled(false)` and switch the camera to `FrameSourceState.Off`, then decode (the sparkscan-web skill's third-party guide, Step 7, shows the decode), then restore in a `finally`, whatever the outcome (a file that is not an image, a timeout): `context.setMode(barcodeBatch)`, `context.setFrameSource(camera)`, the camera back to `FrameSourceState.On` and `barcodeBatch.setEnabled(true)`. List it as a judgment call; never drop it silently.
+This guide covers migrating a web app from **ZXing-js** (`@zxing/library`, also published as `@zxing/browser`) — the most common third-party multi-format browser scanner — to Scandit MatrixScan Batch (`BarcodeBatch*`). The same steps apply to a page built on html5-qrcode (`Html5Qrcode`, `formatsToSupport`) or on the `BarcodeDetector` API (`detector.detect(video)` in a `requestAnimationFrame` loop over a `getUserMedia` stream, often with the `barcode-detector` polyfill): `detect()` already returns every code in the frame, as `rawValue`, `format` and `boundingBox`, which map to `trackedBarcode.barcode.data`, `trackedBarcode.barcode.symbology` and `trackedBarcode.location`.
+
+A photo decode (`scanFile()`, the file tab `Html5QrcodeScanner` shows by default, `detect(image)`) has no MatrixScan Batch equivalent: keep the upload path and decode the file as in **Photo upload** below. List it as a judgment call; never drop it silently.
 
 ## Before anything else
 
@@ -191,6 +193,72 @@ async function run(): Promise<void> {
 
 run();
 ```
+
+## Photo upload
+
+Decode an uploaded photo with a `BarcodeCapture` mode fed by `ImageFrameSource.fromFile(file)` on the same context. `BarcodeCapture.forContext` replaces `BarcodeBatch` on the context and the image replaces the camera, so disable `BarcodeBatch` and switch the camera off first, and put both back in a `finally`, whatever the outcome (a file that is not an image, a timeout). Compiled against 8.6.1:
+
+```typescript
+import {
+  BarcodeCapture,
+  BarcodeCaptureSettings,
+  ScanIntention,
+  type BarcodeBatch,
+  type Symbology,
+} from "@scandit/web-datacapture-barcode";
+import {
+  type Camera,
+  type DataCaptureContext,
+  FrameSourceState,
+  ImageFrameSource,
+} from "@scandit/web-datacapture-core";
+
+const PHOTO_DECODE_TIMEOUT_MS = 10_000;
+
+export async function decodePhoto(
+  context: DataCaptureContext,
+  barcodeBatch: BarcodeBatch,
+  camera: Camera,
+  file: File,
+  symbologies: Symbology[],
+): Promise<string | null> {
+  const settings = new BarcodeCaptureSettings();
+  settings.scanIntention = ScanIntention.Manual;
+  settings.enableSymbologies(symbologies);
+
+  let timeout: ReturnType<typeof setTimeout> | undefined;
+  try {
+    await barcodeBatch.setEnabled(false);
+    await camera.switchToDesiredState(FrameSourceState.Off);
+    const barcodeCapture = await BarcodeCapture.forContext(context, settings);
+    const decoded = new Promise<string | null>((resolve) => {
+      barcodeCapture.addListener({
+        didScan: (_barcodeCapture, session) => resolve(session.newlyRecognizedBarcode?.data ?? null),
+        didUpdateSession: (_barcodeCapture, session) => {
+          if (session.newlyRecognizedBarcode == null) {
+            resolve(null);
+          }
+        },
+      });
+    });
+    const imageSource = await ImageFrameSource.fromFile(file);
+    await context.setFrameSource(imageSource);
+    await imageSource.switchToDesiredState(FrameSourceState.On);
+    const timedOut = new Promise<never>((_resolve, reject) => {
+      timeout = setTimeout(() => reject(new Error("The photo was not processed in time")), PHOTO_DECODE_TIMEOUT_MS);
+    });
+    return await Promise.race([decoded, timedOut]);
+  } finally {
+    clearTimeout(timeout);
+    await context.setMode(barcodeBatch);
+    await context.setFrameSource(camera);
+    await camera.switchToDesiredState(FrameSourceState.On);
+    await barcodeBatch.setEnabled(true);
+  }
+}
+```
+
+`decodePhoto` resolves `null` for a photo without a code as soon as that frame is processed (its session update has no new barcode); `didScan` alone would leave it waiting for the timeout. It rejects for a file that is not an image, and when no result arrives in time. The photo path runs Barcode Capture, so the license key must cover it as well as MatrixScan Batch; a key without it shows up as that timeout. Pass the symbologies the camera scan enables. Disable the photo input while a decode runs. Feed a decoded code through the same dedupe and list as the camera codes, and keep the app's "nothing found" message.
 
 ---
 

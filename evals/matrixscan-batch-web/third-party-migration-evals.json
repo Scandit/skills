@@ -133,6 +133,44 @@
         }
       ],
       "tags": ["third-party-migration"]
+    },
+    {
+      "id": "tpm2",
+      "prompt": "My shelf-audit web page uses the BarcodeDetector API (with the barcode-detector polyfill): detector.detect() on the camera video every animation frame, plus a photo input that runs detect() on an uploaded picture. Every new EAN code goes into one list. Replace the scanning with Scandit MatrixScan Batch and keep the photo upload working. Here is the code: barcode-detector-shelf-upload.ts",
+      "expected_output": "Live scanning moves to BarcodeBatch with a DataCaptureView and BarcodeBatchBasicOverlay. The photo input stays: it disables BarcodeBatch and switches the camera Off, decodes the file with BarcodeCapture fed by ImageFrameSource.fromFile, resolves null for a photo without a code and bounds the wait with a timeout, then in a finally restores setMode(barcodeBatch), setFrameSource(camera), camera On and setEnabled(true). Decoded codes reuse addItem, no SparkScan API appears, and the summary lists the photo path as a judgment call.",
+      "files": [
+        "fixtures/barcode-detector-shelf-upload.ts"
+      ],
+      "assertions": [
+        {
+          "text": "BarcodeBatch.forContext( is present"
+        },
+        {
+          "text": "The photo input is kept: the uploaded file is decoded with a BarcodeCapture mode fed by ImageFrameSource.fromFile(file) on the same DataCaptureContext (semantic)"
+        },
+        {
+          "text": "No BarcodeDetector is declared or constructed, no detect( call and no createImageBitmap( call remain in the output code (semantic)"
+        },
+        {
+          "text": "Before decoding the photo, BarcodeBatch is disabled (setEnabled(false)) and the camera is switched to FrameSourceState.Off (semantic)"
+        },
+        {
+          "text": "The restore (context.setMode(barcodeBatch), context.setFrameSource(camera), the camera back to FrameSourceState.On, barcodeBatch.setEnabled(true)) runs in a finally block, so it also runs when the decode throws or times out (semantic)"
+        },
+        {
+          "text": "A photo without a barcode ends the decode with a 'nothing found' result instead of waiting forever: a didUpdateSession with no newlyRecognizedBarcode resolves it, and a timeout bounds the wait (semantic)"
+        },
+        {
+          "text": "The output code uses no SparkScan API (SparkScanView, stopScanning, prepareScanning) (semantic)"
+        },
+        {
+          "text": "A code decoded from the photo goes through the same addItem / seen dedupe as the camera codes, and the 'No barcode found in this photo' message is kept (semantic)"
+        },
+        {
+          "text": "The summary lists the photo path as a judgment call to check (semantic)"
+        }
+      ],
+      "tags": ["third-party-migration"]
     }
   ]
 }
