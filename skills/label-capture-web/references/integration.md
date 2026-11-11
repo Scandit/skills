@@ -365,7 +365,7 @@ await new ExpiryDateTextBuilder()
   .build("Expiry Date")
 ```
 
-**Keep regexes simple.** The SDK regex engine supports standard character classes (`\d`, `[A-Z]`), quantifiers (`{2}`, `+`, `*`), and groups. Lookahead and lookbehind assertions are not supported and will cause the pattern to fail to match.
+**Keep regexes bounded.** The SDK regex engine is PCRE2. Lookahead and lookbehind (`(?=…)`, `(?!…)`, `(?<=…)`, `(?<!…)`) are supported in value and anchor regexes; a negative lookahead or lookbehind keeps a value regex from matching inside a longer number (for example card-number digits read as an expiry date). Give every value regex explicit length limits (`\d{2}`, `{4,6}`) rather than open-ended `+`/`*`.
 
 ## Notes when generating this code
 

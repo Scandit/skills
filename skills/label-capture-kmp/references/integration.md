@@ -304,7 +304,7 @@ Every field builder shares a common base (`LabelFieldDefinitionBuilder`): `.isOp
 
 **Pre-built fields ship with default value and anchor regexes.** Call `.resetAnchorRegexes()` on a text/custom-barcode builder to drop the default anchor keywords and rely solely on the value regex — useful when the label has no consistent keyword near the value.
 
-**Keep regexes simple** — standard character classes/quantifiers/groups are supported; lookahead/lookbehind assertions are not and cause the pattern to silently fail to match.
+**Keep regexes bounded.** The SDK regex engine is PCRE2. Lookahead and lookbehind (`(?=…)`, `(?!…)`, `(?<=…)`, `(?<!…)`) are supported in value and anchor regexes; a negative lookahead or lookbehind keeps a value regex from matching inside a longer number (for example card-number digits read as an expiry date). Give every value regex explicit length limits (`\d{2}`, `{4,6}`) rather than open-ended `+`/`*`.
 
 ### Constraining a field's location
 
@@ -544,7 +544,7 @@ For finer control, the module also exposes the building blocks the high-level co
 - **Price capture "builds and launches but never scans"** — `createPriceCaptureDefinition` needs `com.scandit.datacapture.kmp:price-label` *in addition to* `label-text`. Missing it is a silent runtime failure, not a compile error.
 - **Black / blank camera preview, no error** — the runtime camera permission was never granted, or the camera was never switched on. Confirm the platform permission flow ran before `camera.switchToDesiredState(FrameSourceState.ON)`, that `dataCaptureContext.setFrameSource(camera)` was called, and that `Camera.getDefaultCamera(...)` did not return `null`.
 - **Camera preview shows but nothing is ever captured** — confirm the `DataCaptureView` was actually embedded (`toAndroidView()`/`toUIView()` called and added to the view hierarchy) and an overlay was attached, `labelCapture.isEnabled` is `true`, and the mode wasn't left disabled after a previous capture.
-- **A field never matches** — the `valueRegex`/`anchorRegex` doesn't match the real label; prefer the pre-built field (its regexes are tuned), or call `.resetAnchorRegexes()` if there's no consistent keyword near the value. Lookahead/lookbehind in a regex silently fails to match.
+- **A field never matches** — the `valueRegex`/`anchorRegex` doesn't match the real label; prefer the pre-built field (its regexes are tuned), or call `.resetAnchorRegexes()` if there's no consistent keyword near the value.
 - **Handwritten text is never read** — expected; Label Capture reads printed text only. Point the user at the Validation Flow's manual-entry fallback.
 - **Compose: overlay rebuilt every frame / camera flicker** — key `remember`/`rememberLabelCapture*` calls on the mode and view, not on a freshly-allocated `settings` instance passed in from a recomposition; the high-level `LabelCaptureView` composable already keys correctly, but hand-rolled compositions using the `remember*` building blocks must do the same.
 - **Reusing single-platform Android/iOS snippets verbatim** — `LabelCapture.forDataCaptureContext(...)`, an Android `LabelCaptureBasicOverlay.newInstance(...)`, or a Swift `LabelCaptureValidationFlowOverlay(labelCapture:view:)` initializer do not exist on the KMP `expect`/`actual` surface. Use `LabelCapture.forContext(...)` and the `withLabelCapture(ForView)(...)` factories documented above instead.

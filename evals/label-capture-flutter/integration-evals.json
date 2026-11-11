@@ -173,7 +173,7 @@
     {
       "id": 4,
       "prompt": "I'm scanning a grocery label on Flutter. The label has a 'BBE' best-before keyword printed next to the date, but also a separate packaging date that matches the same date format. I'm using ExpiryDateText. How do I make sure it locks onto the best-before value and not the packaging date? And what if a different label has the date but no keyword at all?",
-      "expected_output": "The skill explains the difference between anchorRegexes (the contextual keyword that locates the value, e.g. 'BBE'/'EXP') and valueRegexes (the value format). It shows setAnchorRegexes / setAnchorRegex on ExpiryDateTextBuilder to pin the keyword, and resetAnchorRegexes() (or setAnchorRegexes([])) to clear anchors when there is no keyword. It notes the regex engine has no lookahead/lookbehind/backreferences.",
+      "expected_output": "The skill explains the difference between anchorRegexes (the contextual keyword that locates the value, e.g. 'BBE'/'EXP') and valueRegexes (the value format). It shows setAnchorRegexes / setAnchorRegex on ExpiryDateTextBuilder to pin the keyword, and resetAnchorRegexes() (or setAnchorRegexes([])) to clear anchors when there is no keyword. It advises bounded value regexes and does not claim lookarounds are unsupported.",
       "files": [],
       "tags": [
         "field-regex-anchors"
@@ -189,7 +189,7 @@
           "text": "The response shows how to handle a missing keyword: resetAnchorRegexes() (or setAnchorRegexes([])) on the pre-built field builder to clear the default anchor patterns and rely on valueRegexes alone"
         },
         {
-          "text": "The response notes the SDK regex engine does NOT support lookahead/lookbehind assertions (and ideally also backreferences), or otherwise tells the user to keep regexes to standard character classes, quantifiers, alternation, and groups"
+          "text": "The response does not claim the SDK regex engine lacks lookahead/lookbehind (it is PCRE2 and supports them), and advises keeping value regexes bounded with explicit length limits"
         },
         {
           "text": "setValueRegexes([...]) is named as the way to override the value pattern (the list form — there is no singular setValueRegex String setter on Flutter)"
