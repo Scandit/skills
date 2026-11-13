@@ -151,7 +151,7 @@ Every text field definition has two kinds of regex:
 
 **Resetting anchors** — call `.resetAnchorRegexes()` on a pre-built field to drop its default anchor keywords and rely solely on the value regex. Useful when the label has no consistent keyword near the value.
 
-**Keep regexes simple.** The SDK regex engine supports standard character classes (`\d`, `[A-Z]`), quantifiers (`{2}`, `+`, `*`), and groups. Lookahead/lookbehind assertions are not supported and cause the pattern to fail to match.
+**Keep regexes bounded.** The SDK regex engine is PCRE2. Lookahead and lookbehind (`(?=…)`, `(?!…)`, `(?<=…)`, `(?<!…)`) are supported in value and anchor regexes; a negative lookahead or lookbehind keeps a value regex from matching inside a longer number (for example card-number digits read as an expiry date). Give every value regex explicit length limits (`\d{2}`, `{4,6}`) rather than open-ended `+`/`*`.
 
 ## Constraint: cannot run alongside Barcode Capture
 
@@ -351,7 +351,7 @@ When the user reports a problem, map the symptom to its cause before suggesting 
 
 - **Camera preview shows but nothing is ever captured** — verify the `DataCaptureView` was actually added to the view hierarchy and an overlay (`LabelCaptureBasicOverlay.newInstance(...)` or a Validation Flow overlay) was attached, that `labelCapture.isEnabled` is `true`, and that the mode was not left disabled after a previous capture (re-enable with `labelCapture.isEnabled = true`). Remember `onSessionUpdated` runs on a background thread — if your handler throws or blocks, it can look like nothing happens.
 
-- **A field never matches** — the field's `valueRegex` or `anchorRegex` doesn't match the real label. Prefer the pre-built field for that data (its regexes are tuned) over a hand-written one. If the label has no keyword near the value, call `.resetAnchorRegexes()` on the field to drop the default anchor keywords and rely on the value regex alone. Keep regexes simple — lookahead/lookbehind are not supported and silently fail to match.
+- **A field never matches** — the field's `valueRegex` or `anchorRegex` doesn't match the real label. Prefer the pre-built field for that data (its regexes are tuned) over a hand-written one. If the label has no keyword near the value, call `.resetAnchorRegexes()` on the field to drop the default anchor keywords and rely on the value regex alone. Keep each value regex bounded with explicit length limits; lookahead and lookbehind are supported.
 
 - **Handwritten text is never read** — this is expected. Label Capture reads **printed text only**; the on-device OCR and the Adaptive Recognition Engine do not recognise handwriting. Use the Validation Flow's manual-entry fallback so the user can type the value when it cannot be scanned (see `references/validation-flow.md`).
 

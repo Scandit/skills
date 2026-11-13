@@ -340,7 +340,7 @@
     {
       "id": 13,
       "prompt": "What's the difference between anchorRegex and valueRegex in iOS Smart Label Capture? My customer's label has the expiry date but no 'EXP' keyword printed next to it \u2014 how do I make it match?",
-      "expected_output": "The skill explains anchorRegex identifies the context/keyword near the value, valueRegex validates the value content. To handle a label with no anchor keyword, call .anchorRegexes([]) on the pre-built builder to clear the defaults and let valueRegex do the work. It also notes the regex-engine limitations (no lookahead/lookbehind, no backreferences).",
+      "expected_output": "The skill explains anchorRegex identifies the context/keyword near the value, valueRegex validates the value content. To handle a label with no anchor keyword, call .anchorRegexes([]) on the pre-built builder to clear the defaults and let valueRegex do the work. It advises bounded value regexes and does not claim lookarounds are unsupported.",
       "files": [],
       "assertions": [
         {
@@ -350,10 +350,10 @@
           "text": "The response explains how to handle a missing anchor keyword: call .anchorRegexes([]) on the pre-built field builder to clear default anchor patterns"
         },
         {
-          "text": "The response notes that the SDK regex engine does NOT support lookahead/lookbehind assertions (and ideally also notes it doesn't support backreferences or unicode property escapes), or otherwise tells the user to keep regexes simple \u2014 standard character classes, quantifiers, alternation, groups"
+          "text": "The response does not claim the SDK regex engine lacks lookahead/lookbehind (it is PCRE2 and supports them), and advises keeping value regexes bounded with explicit length limits"
         },
         {
-          "text": "If example regex is shown, it uses the supported subset only \u2014 no (?= ...) or (?<= ...) constructs"
+          "text": "If an example value regex is shown, it uses explicit length limits rather than open-ended + or *"
         }
       ]
     },
