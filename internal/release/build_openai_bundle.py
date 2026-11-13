@@ -51,6 +51,7 @@ EXCLUDE_DIRS = [
     "evals",             # the eval harness after #85 moved it out of skills/; see EXCLUDE_SKILL_DIRS
     ".claude-plugin",    # other hosts' manifests: noise in a reviewed bundle
     ".cursor-plugin",
+    ".antigravity-plugin",
     ".github",
     ".agents",
 ]
@@ -58,6 +59,7 @@ EXCLUDE_FILES = [
     "skills.sh.json",    # third-party marketplace page-grouping config
     "README.md",         # repo-oriented, and advertises the other install channels
     ".gitignore",
+    "mcp_config.json",   # Antigravity's MCP config; the bundle uses .mcp.json
 ]
 # Removed from every skill: the eval harness ships competitor migration fixtures
 # and is not one of OpenAI's documented skill conventions. #85 relocated these to a
