@@ -102,93 +102,93 @@ For product + platform combinations not in the table (e.g., MatrixScan Count on 
 
 Always include both the docs.scandit.com link and the platform-specific sample-app link from the product catalog. The sample is the working starting point; the docs are the reference.
 
-| Product | Platform | Skill | Suggested Invocation |
-|---|---|---|---|
-| SparkScan | iOS | `sparkscan-ios` | "Ask me to integrate SparkScan into your iOS app" |
-| SparkScan | Web | `sparkscan-web` | "Ask me to integrate SparkScan into your web app" |
-| SparkScan | Android | `sparkscan-android` | "Ask me to integrate SparkScan into your Android app" |
-| SparkScan | React Native | `sparkscan-rn` | "Ask me to integrate SparkScan into your React Native app" |
-| SparkScan | Flutter | `sparkscan-flutter` | "Ask me to integrate SparkScan into your Flutter app" |
-| SparkScan | Capacitor | `sparkscan-capacitor` | "Ask me to integrate SparkScan into your Capacitor app" |
-| SparkScan | Cordova | `sparkscan-cordova` | "Ask me to integrate SparkScan into your Cordova app" |
-| SparkScan | .NET for Android | `sparkscan-net-android` | "Ask me to integrate SparkScan into your .NET Android app" |
-| SparkScan | .NET for iOS | `sparkscan-net-ios` | "Ask me to integrate SparkScan into your .NET iOS app" |
-| SparkScan | .NET MAUI | `sparkscan-net-maui` | "Ask me to integrate SparkScan into your .NET MAUI app" |
-| SparkScan | Kotlin Multiplatform | `sparkscan-kmp` | "Ask me to integrate SparkScan into your Kotlin Multiplatform app" |
-| Barcode Capture | iOS | `barcode-capture-ios` | "Ask me to integrate Barcode Capture into your iOS app" |
-| Barcode Capture | Android | `barcode-capture-android` | "Ask me to integrate Barcode Capture into your Android app" |
-| Barcode Capture | Web | `barcode-capture-web` | "Ask me to integrate Barcode Capture into your web app" |
-| Barcode Capture | .NET for Android | `barcode-capture-net-android` | "Ask me to integrate Barcode Capture into your .NET Android app" |
-| Barcode Capture | .NET for iOS | `barcode-capture-net-ios` | "Ask me to integrate Barcode Capture into your .NET iOS app" |
-| Barcode Capture | .NET MAUI | `barcode-capture-net-maui` | "Ask me to integrate Barcode Capture into your .NET MAUI app" |
-| Barcode Capture | React Native | `barcode-capture-rn` | "Ask me to integrate Barcode Capture into your React Native app" |
-| Barcode Capture | Flutter | `barcode-capture-flutter` | "Ask me to integrate Barcode Capture into your Flutter app" |
-| Barcode Capture | Capacitor | `barcode-capture-capacitor` | "Ask me to integrate Barcode Capture into your Capacitor app" |
-| Barcode Capture | Cordova | `barcode-capture-cordova` | "Ask me to integrate Barcode Capture into your Cordova app" |
-| Barcode Capture | Kotlin Multiplatform | `barcode-capture-kmp` | "Ask me to integrate Barcode Capture into your Kotlin Multiplatform app" |
-| Barcode Selection | Kotlin Multiplatform | `barcode-selection-kmp` | "Ask me to integrate Barcode Selection into your Kotlin Multiplatform app" |
-| Smart Label Capture | iOS | `label-capture-ios` | "Ask me to integrate Label Capture into your iOS app" |
-| Smart Label Capture | Web | `label-capture-web` | "Ask me to integrate Label Capture into your web app" |
-| Smart Label Capture | Android | `label-capture-android` | "Ask me to integrate Label Capture into your Android app" |
-| Smart Label Capture | React Native | `label-capture-rn` | "Ask me to integrate Label Capture into your React Native app" |
-| Smart Label Capture | Flutter | `label-capture-flutter` | "Ask me to integrate Label Capture into your Flutter app" |
-| Smart Label Capture | Capacitor | `label-capture-capacitor` | "Ask me to integrate Label Capture into your Capacitor app" |
-| Smart Label Capture | Cordova | `label-capture-cordova` | "Ask me to integrate Label Capture into your Cordova app" |
-| Smart Label Capture | .NET for Android | `label-capture-net-android` | "Ask me to integrate Label Capture into your .NET Android app" |
-| Smart Label Capture | .NET for iOS | `label-capture-net-ios` | "Ask me to integrate Label Capture into your .NET iOS app" |
-| Smart Label Capture | .NET MAUI | `label-capture-net-maui` | "Ask me to integrate Label Capture into your .NET MAUI app" |
-| Smart Label Capture | Kotlin Multiplatform | `label-capture-kmp` | "Ask me to integrate Label Capture into your Kotlin Multiplatform app" |
-| ID Capture | iOS | `id-capture-ios` | "Ask me to integrate ID Capture into your iOS app" |
-| ID Capture | Web | `id-capture-web` | "Ask me to integrate ID Capture into your web app" |
-| ID Capture | Android | `id-capture-android` | "Ask me to integrate ID Capture into your Android app" |
-| ID Capture | React Native | `id-capture-rn` | "Ask me to integrate ID Capture into your React Native app" |
-| ID Capture | Flutter | `id-capture-flutter` | "Ask me to integrate ID Capture into your Flutter app" |
-| ID Capture | Capacitor | `id-capture-capacitor` | "Ask me to integrate ID Capture into your Capacitor app" |
-| ID Capture | Cordova | `id-capture-cordova` | "Ask me to integrate ID Capture into your Cordova app" |
-| ID Capture | .NET for Android | `id-capture-net-android` | "Ask me to integrate ID Capture into your .NET Android app" |
-| ID Capture | .NET for iOS | `id-capture-net-ios` | "Ask me to integrate ID Capture into your .NET iOS app" |
-| ID Capture | .NET MAUI | `id-capture-net-maui` | "Ask me to integrate ID Capture into your .NET MAUI app" |
-| ID Capture | Kotlin Multiplatform | `id-capture-kmp` | "Ask me to integrate ID Capture into your Kotlin Multiplatform app" |
-| ID Bolt | Web | `id-bolt` | "Ask me to add ID Bolt to your website" |
-| MatrixScan AR | iOS | `matrixscan-ar-ios` | "Ask me to integrate MatrixScan AR into your iOS app" |
-| MatrixScan AR | Web | `matrixscan-ar-web` | "Ask me to integrate MatrixScan AR into your web app" |
-| MatrixScan AR | Android | `matrixscan-ar-android` | "Ask me to integrate MatrixScan AR into your Android app" |
-| MatrixScan AR | React Native | `matrixscan-ar-rn` | "Ask me to integrate MatrixScan AR into your React Native app" |
-| MatrixScan AR | Flutter | `matrixscan-ar-flutter` | "Ask me to integrate MatrixScan AR into your Flutter app" |
-| MatrixScan AR | Capacitor | `matrixscan-ar-capacitor` | "Ask me to integrate MatrixScan AR into your Capacitor app" |
-| MatrixScan AR | Cordova | `matrixscan-ar-cordova` | "Ask me to integrate MatrixScan AR into your Cordova app" |
-| MatrixScan AR | .NET for Android | `matrixscan-ar-net-android` | "Ask me to integrate MatrixScan AR into your .NET Android app" |
-| MatrixScan AR | .NET for iOS | `matrixscan-ar-net-ios` | "Ask me to integrate MatrixScan AR into your .NET iOS app" |
-| MatrixScan AR | .NET MAUI | `matrixscan-ar-net-maui` | "Ask me to integrate MatrixScan AR into your .NET MAUI app" |
-| MatrixScan AR | Kotlin Multiplatform | `matrixscan-ar-kmp` | "Ask me to integrate MatrixScan AR into your Kotlin Multiplatform app" |
-| MatrixScan Batch | iOS | `matrixscan-batch-ios` | "Ask me to integrate MatrixScan Batch into your iOS app" |
-| MatrixScan Batch | Web | `matrixscan-batch-web` | "Ask me to integrate MatrixScan Batch into your web app" |
-| MatrixScan Batch | Android | `matrixscan-batch-android` | "Ask me to integrate MatrixScan Batch into your Android app" |
-| MatrixScan Batch | React Native | `matrixscan-batch-rn` | "Ask me to integrate MatrixScan Batch into your React Native app" |
-| MatrixScan Batch | Flutter | `matrixscan-batch-flutter` | "Ask me to integrate MatrixScan Batch into your Flutter app" |
-| MatrixScan Batch | Capacitor | `matrixscan-batch-capacitor` | "Ask me to integrate MatrixScan Batch into your Capacitor app" |
-| MatrixScan Batch | Cordova | `matrixscan-batch-cordova` | "Ask me to integrate MatrixScan Batch into your Cordova app" |
-| MatrixScan Batch | .NET for Android | `matrixscan-batch-net-android` | "Ask me to integrate MatrixScan Batch into your .NET Android app" |
-| MatrixScan Batch | .NET for iOS | `matrixscan-batch-net-ios` | "Ask me to integrate MatrixScan Batch into your .NET iOS app" |
-| MatrixScan Batch | .NET MAUI | `matrixscan-batch-net-maui` | "Ask me to integrate MatrixScan Batch into your .NET MAUI app" |
-| MatrixScan Batch | Kotlin Multiplatform | `matrixscan-batch-kmp` | "Ask me to integrate MatrixScan Batch into your Kotlin Multiplatform app" |
-| MatrixScan Count | iOS | `matrixscan-count-ios` | "Ask me to integrate MatrixScan Count into your iOS app" |
-| MatrixScan Count | Android | `matrixscan-count-android` | "Ask me to integrate MatrixScan Count into your Android app" |
-| MatrixScan Count | React Native | `matrixscan-count-rn` | "Ask me to integrate MatrixScan Count into your React Native app" |
-| MatrixScan Count | Flutter | `matrixscan-count-flutter` | "Ask me to integrate MatrixScan Count into your Flutter app" |
-| MatrixScan Count | Capacitor | `matrixscan-count-capacitor` | "Ask me to integrate MatrixScan Count into your Capacitor app" |
-| MatrixScan Count | Cordova | `matrixscan-count-cordova` | "Ask me to integrate MatrixScan Count into your Cordova app" |
-| MatrixScan Count | .NET for Android | `matrixscan-count-net-android` | "Ask me to integrate MatrixScan Count into your .NET Android app" |
-| MatrixScan Count | .NET for iOS | `matrixscan-count-net-ios` | "Ask me to integrate MatrixScan Count into your .NET iOS app" |
-| MatrixScan Count | .NET MAUI | `matrixscan-count-net-maui` | "Ask me to integrate MatrixScan Count into your .NET MAUI app" |
-| MatrixScan Count | Kotlin Multiplatform | `matrixscan-count-kmp` | "Ask me to integrate MatrixScan Count into your Kotlin Multiplatform app" |
-| MatrixScan Find | Kotlin Multiplatform | `matrixscan-find-kmp` | "Ask me to integrate MatrixScan Find into your Kotlin Multiplatform app" |
-| MatrixScan Pick | iOS | `matrixscan-pick-ios` | "Ask me to integrate MatrixScan Pick into your iOS app" |
-| MatrixScan Pick | Kotlin Multiplatform | `matrixscan-pick-kmp` | "Ask me to integrate MatrixScan Pick into your Kotlin Multiplatform app" |
-| Parser | Kotlin Multiplatform | `parser-kmp` | "Ask me to integrate the Scandit Parser into your Kotlin Multiplatform app" |
-| Barcode Capture | Linux | `scandit-linux-sdk` | "Ask me to add barcode scanning to your Linux C, C++ or Python app" |
-| MatrixScan Batch | Linux | `scandit-linux-sdk` | "Ask me to add multi-barcode tracking (MatrixScan) to your Linux app" |
-| Parser | Linux | `scandit-linux-sdk` | "Ask me to parse GS1, HIBC or AAMVA data in your Linux app" |
+| Product | Platform | Skill |
+|---|---|---|
+| SparkScan | iOS | `sparkscan-ios` |
+| SparkScan | Web | `sparkscan-web` |
+| SparkScan | Android | `sparkscan-android` |
+| SparkScan | React Native | `sparkscan-rn` |
+| SparkScan | Flutter | `sparkscan-flutter` |
+| SparkScan | Capacitor | `sparkscan-capacitor` |
+| SparkScan | Cordova | `sparkscan-cordova` |
+| SparkScan | .NET for Android | `sparkscan-net-android` |
+| SparkScan | .NET for iOS | `sparkscan-net-ios` |
+| SparkScan | .NET MAUI | `sparkscan-net-maui` |
+| SparkScan | Kotlin Multiplatform | `sparkscan-kmp` |
+| Barcode Capture | iOS | `barcode-capture-ios` |
+| Barcode Capture | Android | `barcode-capture-android` |
+| Barcode Capture | Web | `barcode-capture-web` |
+| Barcode Capture | .NET for Android | `barcode-capture-net-android` |
+| Barcode Capture | .NET for iOS | `barcode-capture-net-ios` |
+| Barcode Capture | .NET MAUI | `barcode-capture-net-maui` |
+| Barcode Capture | React Native | `barcode-capture-rn` |
+| Barcode Capture | Flutter | `barcode-capture-flutter` |
+| Barcode Capture | Capacitor | `barcode-capture-capacitor` |
+| Barcode Capture | Cordova | `barcode-capture-cordova` |
+| Barcode Capture | Kotlin Multiplatform | `barcode-capture-kmp` |
+| Barcode Selection | Kotlin Multiplatform | `barcode-selection-kmp` |
+| Smart Label Capture | iOS | `label-capture-ios` |
+| Smart Label Capture | Web | `label-capture-web` |
+| Smart Label Capture | Android | `label-capture-android` |
+| Smart Label Capture | React Native | `label-capture-rn` |
+| Smart Label Capture | Flutter | `label-capture-flutter` |
+| Smart Label Capture | Capacitor | `label-capture-capacitor` |
+| Smart Label Capture | Cordova | `label-capture-cordova` |
+| Smart Label Capture | .NET for Android | `label-capture-net-android` |
+| Smart Label Capture | .NET for iOS | `label-capture-net-ios` |
+| Smart Label Capture | .NET MAUI | `label-capture-net-maui` |
+| Smart Label Capture | Kotlin Multiplatform | `label-capture-kmp` |
+| ID Capture | iOS | `id-capture-ios` |
+| ID Capture | Web | `id-capture-web` |
+| ID Capture | Android | `id-capture-android` |
+| ID Capture | React Native | `id-capture-rn` |
+| ID Capture | Flutter | `id-capture-flutter` |
+| ID Capture | Capacitor | `id-capture-capacitor` |
+| ID Capture | Cordova | `id-capture-cordova` |
+| ID Capture | .NET for Android | `id-capture-net-android` |
+| ID Capture | .NET for iOS | `id-capture-net-ios` |
+| ID Capture | .NET MAUI | `id-capture-net-maui` |
+| ID Capture | Kotlin Multiplatform | `id-capture-kmp` |
+| ID Bolt | Web | `id-bolt` |
+| MatrixScan AR | iOS | `matrixscan-ar-ios` |
+| MatrixScan AR | Web | `matrixscan-ar-web` |
+| MatrixScan AR | Android | `matrixscan-ar-android` |
+| MatrixScan AR | React Native | `matrixscan-ar-rn` |
+| MatrixScan AR | Flutter | `matrixscan-ar-flutter` |
+| MatrixScan AR | Capacitor | `matrixscan-ar-capacitor` |
+| MatrixScan AR | Cordova | `matrixscan-ar-cordova` |
+| MatrixScan AR | .NET for Android | `matrixscan-ar-net-android` |
+| MatrixScan AR | .NET for iOS | `matrixscan-ar-net-ios` |
+| MatrixScan AR | .NET MAUI | `matrixscan-ar-net-maui` |
+| MatrixScan AR | Kotlin Multiplatform | `matrixscan-ar-kmp` |
+| MatrixScan Batch | iOS | `matrixscan-batch-ios` |
+| MatrixScan Batch | Web | `matrixscan-batch-web` |
+| MatrixScan Batch | Android | `matrixscan-batch-android` |
+| MatrixScan Batch | React Native | `matrixscan-batch-rn` |
+| MatrixScan Batch | Flutter | `matrixscan-batch-flutter` |
+| MatrixScan Batch | Capacitor | `matrixscan-batch-capacitor` |
+| MatrixScan Batch | Cordova | `matrixscan-batch-cordova` |
+| MatrixScan Batch | .NET for Android | `matrixscan-batch-net-android` |
+| MatrixScan Batch | .NET for iOS | `matrixscan-batch-net-ios` |
+| MatrixScan Batch | .NET MAUI | `matrixscan-batch-net-maui` |
+| MatrixScan Batch | Kotlin Multiplatform | `matrixscan-batch-kmp` |
+| MatrixScan Count | iOS | `matrixscan-count-ios` |
+| MatrixScan Count | Android | `matrixscan-count-android` |
+| MatrixScan Count | React Native | `matrixscan-count-rn` |
+| MatrixScan Count | Flutter | `matrixscan-count-flutter` |
+| MatrixScan Count | Capacitor | `matrixscan-count-capacitor` |
+| MatrixScan Count | Cordova | `matrixscan-count-cordova` |
+| MatrixScan Count | .NET for Android | `matrixscan-count-net-android` |
+| MatrixScan Count | .NET for iOS | `matrixscan-count-net-ios` |
+| MatrixScan Count | .NET MAUI | `matrixscan-count-net-maui` |
+| MatrixScan Count | Kotlin Multiplatform | `matrixscan-count-kmp` |
+| MatrixScan Find | Kotlin Multiplatform | `matrixscan-find-kmp` |
+| MatrixScan Pick | iOS | `matrixscan-pick-ios` |
+| MatrixScan Pick | Kotlin Multiplatform | `matrixscan-pick-kmp` |
+| Parser | Kotlin Multiplatform | `parser-kmp` |
+| Barcode Capture | Linux | `scandit-linux-sdk` |
+| MatrixScan Batch | Linux | `scandit-linux-sdk` |
+| Parser | Linux | `scandit-linux-sdk` |
 
 **Linux has one skill for all its products**: `scandit-linux-sdk` covers the Linux SDK's low-level C API (usable from C++) and its Python bindings — single barcode scanning, multi-barcode scanning and tracking (MatrixScan), the parser and the barcode generator, from images, V4L2 cameras or the app's own frames. The Linux SDK has no SparkScan, MatrixScan AR/Count/Find/Pick, Smart Label Capture, ID Capture or any UI: for those products on a Linux device, say so instead of offering the skill. Linux licence keys don't come from the Scandit MCP server; the skill's own `## Licence key` section sends the user to the dashboard.
 

@@ -953,3 +953,40 @@ xmlns:scandit="clr-namespace:Scandit.DataCapture.Barcode.Ar.UI.Maui;assembly=Sca
 15. **No `ShouldShowMacroModeControl` in MAUI** — iOS-only on the native binding, not exposed cross-platform.
 16. **No `BarcodeArView.Create(...)` in MAUI** — the factory is per-TFM. In MAUI, use the XAML control or the `new BarcodeArView(...)` constructors.
 17. **Camera permission** — `await Permissions.CheckStatusAsync<Permissions.Camera>()` + `await Permissions.RequestAsync<Permissions.Camera>()`. On iOS, set `NSCameraUsageDescription` in `Platforms/iOS/Info.plist`. There is no `CameraPermissionActivity` helper in MAUI.
+
+## API surface this skill covers
+
+All classes documented with `:available: dotnet.android` and / or `:available: dotnet.ios` in the official RST docs (`docs/source/barcode-capture/api/barcode-ar*.rst` and `api/ui/barcode-ar-*.rst`) are addressed in [references/integration.md](integration.md) and [references/advanced.md](advanced.md), plus the MAUI-specific surface:
+
+- **Cross-platform Barcode AR API** (shared with the per-TFM skills, same namespaces):
+  - `BarcodeAr` — `new BarcodeAr(DataCaptureContext?, BarcodeArSettings)`, `Feedback` (get/set), `ApplySettingsAsync(BarcodeArSettings)` → `Task`, `AddListener(IBarcodeArListener)` / `RemoveListener(IBarcodeArListener)`, `event EventHandler<BarcodeArEventArgs> SessionUpdated`, static `RecommendedCameraSettings`, `Dispose`.
+  - `BarcodeArSettings` — `new BarcodeArSettings()`, `EnableSymbology(Symbology, bool)`, `EnableSymbologies(ICollection<Symbology>)`, `GetSymbologySettings(Symbology)`, `EnabledSymbologies` (get), `ExpectsOnlyUniqueBarcodes` (get/set), `SetProperty` / `GetProperty<T>` / `TryGetProperty<T>`, `Dispose`.
+  - `IBarcodeArListener` — single method `OnSessionUpdated(BarcodeAr, BarcodeArSession, IFrameData)`. (No `OnObservation*` callbacks.)
+  - `BarcodeArSession` — `AddedTrackedBarcodes` (`IReadOnlyList<TrackedBarcode>`), `RemovedTrackedBarcodes` (`IReadOnlyList<int>` — identifiers, not the barcode objects), `TrackedBarcodes` (`IReadOnlyDictionary<int, TrackedBarcode>`), `Reset()`.
+  - `BarcodeArEventArgs` — `BarcodeAr`, `Session`, `FrameData`.
+  - `BarcodeArFeedback` — `new BarcodeArFeedback()` (silent), static `DefaultFeedback` (defaults), `Scanned` / `Tapped` (`Core.Common.Feedback.Feedback`), `Dispose`.
+  - `BarcodeArViewSettings` — `SoundEnabled` (default `true`), `HapticEnabled` (default `true`), `DefaultCameraPosition` (default `WorldFacing`).
+  - `HighlightForBarcodeTappedEventArgs` — `BarcodeAr`, `Barcode`, `Highlight` (`IBarcodeArHighlight`).
+  - Highlights: `IBarcodeArHighlight : IDisposable`, `IBarcodeArHighlightProvider.HighlightForBarcodeAsync(Barcode) → Task<IBarcodeArHighlight?>`, `BarcodeArRectangleHighlight(Barcode)` with `Barcode` / `Brush` / `Icon`, `BarcodeArCircleHighlight(Barcode, BarcodeArCircleHighlightPreset)` with `Barcode` / `Brush` / `Icon` / `Size`, `BarcodeArCircleHighlightPreset` enum (`Dot`, `Icon`).
+  - Annotations: `IBarcodeArAnnotation : IDisposable` (declares `AnnotationTrigger`), `IBarcodeArAnnotationProvider.AnnotationForBarcodeAsync(Barcode) → Task<IBarcodeArAnnotation?>`.
+    - `BarcodeArStatusIconAnnotation(Barcode)` — `AnnotationTrigger`, `HasTip`, `Icon`, `Text`, `TextColor`, `BackgroundColor`.
+    - `BarcodeArInfoAnnotation(Barcode)` — `HasTip`, `EntireAnnotationTappable`, `Anchor` (`BarcodeArInfoAnnotationAnchor`), `AnnotationTrigger`, `Width` (`BarcodeArInfoAnnotationWidthPreset`), `Body`, `Header`, `Footer`, `BackgroundColor`, `Listener` (`IBarcodeArInfoAnnotationListener?`).
+    - `BarcodeArPopoverAnnotation(Barcode, IList<BarcodeArPopoverAnnotationButton>)` — `AnnotationTrigger`, `EntirePopoverTappable`, `Listener` (`IBarcodeArPopoverAnnotationListener?`), `Buttons`.
+    - `BarcodeArPopoverAnnotationButton(ScanditIcon, string)` — `Text`, `TextSize`, `Typeface`, `TextColor`, `Enabled`, `Icon`.
+    - `BarcodeArAnnotationTrigger` enum: `HighlightTapAndBarcodeScan`, `HighlightTap`.
+  - Info-annotation sub-package (`Scandit.DataCapture.Barcode.Ar.UI.Annotations.Info`): `BarcodeArInfoAnnotationBodyComponent` (`Text`, `TextColor`, `TextSize`, `Typeface`, `StyledTextFormatted`, `LeftIcon`, `RightIcon`, `LeftIconTappable`, `RightIconTappable`, `TextAlignment`), `BarcodeArInfoAnnotationHeader` (`Text`, `TextSize`, `Typeface`, `TextColor`, `Icon`, `BackgroundColor`), `BarcodeArInfoAnnotationFooter` (`Text`, `TextSize`, `Typeface`, `TextColor`, `Icon`, `BackgroundColor`), `BarcodeArInfoAnnotationAnchor` enum (`Left`, `Right`, `Bottom`, `Top`), `BarcodeArInfoAnnotationWidthPreset` enum (`Small`, `Medium`, `Large`), `IBarcodeArInfoAnnotationListener` (`OnInfoAnnotationHeaderTapped`, `OnInfoAnnotationFooterTapped`, `OnInfoAnnotationLeftIconTapped`, `OnInfoAnnotationRightIconTapped`, `OnInfoAnnotationTapped`).
+  - `IBarcodeArPopoverAnnotationListener` — `OnPopoverButtonTapped`, `OnPopoverTapped`.
+  - `TrackedBarcode` (in `Scandit.DataCapture.Barcode.Batch.Data`) — `Barcode`, `Identifier`, `Location`.
+
+- **MAUI-only surface** (assembly `ScanditBarcodeCaptureMaui`):
+  - `Scandit.DataCapture.Barcode.MauiBuilderExtension.UseScanditBarcode(this MauiAppBuilder, Action<ScanditBarcodeCaptureMauiBuilder>)` — the configure lambda exposes `AddBarcodeArView()` (plus `AddBarcodeCountView`, `AddBarcodeFindView`, `AddBarcodePickView`, `AddSparkScanView` for other modes).
+  - `Scandit.DataCapture.Core.MauiBuilderExtension.UseScanditCore(this MauiAppBuilder)` — no configure lambda is needed for a BarcodeAr-only app.
+  - `Scandit.DataCapture.Barcode.Ar.UI.Maui.BarcodeArView` (`Microsoft.Maui.Controls.View`) — XAML control with:
+    - **Constructors:** `BarcodeArView()`, `BarcodeArView(DataCaptureContext, BarcodeAr, BarcodeArViewSettings)`, `BarcodeArView(DataCaptureContext, BarcodeAr, BarcodeArViewSettings, CameraSettings)`.
+    - **Bindable properties (OneTime):** `DataCaptureContext`, `BarcodeAr`, `BarcodeArViewSettings`, `CameraSettings` (nullable).
+    - **Bindable properties (TwoWay):** `HighlightProvider` (`IBarcodeArHighlightProvider?`), `AnnotationProvider` (`IBarcodeArAnnotationProvider?`).
+    - **Bindable properties (TwoWay, simple values):** `ShouldShowTorchControl` (bool, default false), `ShouldShowZoomControl` (bool, default false), `ShouldShowCameraSwitchControl` (bool, default false), `TorchControlPosition` / `ZoomControlPosition` / `CameraSwitchControlPosition` (`Anchor`, default `TopRight`).
+    - **Methods:** `Start()`, `Stop()`, `Pause()`, `Reset()`, `OnResume()` (Android-only behavior; safe no-op on iOS), `OnPause()` (same), `ClearPendingCommands()`, `GetNotificationPresenter()`.
+    - **Events:** `HighlightForBarcodeTapped` (`EventHandler<HighlightForBarcodeTappedEventArgs>`), `HandlerReady` (`EventHandler`).
+    - **Other:** `PendingCommandCount` (int, get) — diagnostic for the queued-command system.
+  - **Not exposed in MAUI:** `ShouldShowMacroModeControl`, `MacroModeControlPosition` (iOS-only on the native binding; not surfaced as MAUI bindable properties).

@@ -111,39 +111,4 @@ Direct users to the right resource based on their question:
 
 ## API surface this skill covers
 
-All classes documented with `:available: dotnet.ios` in the official RST docs (`docs/source/id-capture/api/**`) are addressed in the references. The .NET managed binding is shared across iOS and Android — the API surface is identical; only the platform plumbing (hosting, lifecycle, initialization, camera permission, image type) differs. ID Capture is available on `dotnet.ios` since **6.16**, but the modern document/scanner API (`AcceptedDocuments`, `IdCaptureScanner`, `FullDocumentScanner`) landed at **7.0**, the rejection flags at **7.6**, and the verification result model at **8.0** — so this skill targets a current **8.x** stable.
-
-- **`IdCapture`** (`Scandit.DataCapture.ID.Capture`) — static `Create(DataCaptureContext?, IdCaptureSettings)` / `Create(IdCaptureSettings)`; `Context` (get); `Enabled` (get/set — `false` while a result is shown, `true` to scan); `ApplySettings(IdCaptureSettings)`; `AddListener` / `RemoveListener(IIdCaptureListener)`; static `RecommendedCameraSettings` (property); `Feedback` (get/set); `Reset()`; `Dispose()`.
-- **`IdCaptureSettings`** — `new IdCaptureSettings()` then set properties: `Scanner` (`IdCaptureScanner`), `AcceptedDocuments` / `RejectedDocuments` (`IList<IIdCaptureDocument>`), `RejectVoidedIds`, `RejectExpiredIds`, `RejectIdsExpiringIn` (`Duration?`), `RejectNotRealIdCompliant`, `RejectForgedAamvaBarcodes`, `RejectInconsistentData`, `RejectHolderBelowAge` (`int?`), `DecodeBackOfEuropeanDrivingLicense`, `AnonymizationMode` (`IdAnonymizationMode`), `AnonymizeDefaultFields`; methods `AddAnonymizedField(doc, IdFieldType)`, `Get/SetShouldPassImageTypeToResult(IdImageType, bool)`, `SetProperty`/`GetProperty`. **No builder.**
-- **`IdCaptureScanner`** — `new IdCaptureScanner(IPhysicalDocumentScanner? physicalDocument, MobileDocumentScanner? mobileDocument)`; `PhysicalDocument` / `MobileDocument` (get).
-- **Physical scanners** (`IPhysicalDocumentScanner`): `new FullDocumentScanner()`; `new SingleSideScanner(bool barcode, bool machineReadableZone, bool visualInspectionZone)` (props `Barcode`/`MachineReadableZone`/`VisualInspectionZone`).
-- **`MobileDocumentScanner`** — `new MobileDocumentScanner(bool iso180135, bool ocr)`; `Ocr` (get). (The ISO getter is bound as `GetIso180135` — rarely read.)
-- **Documents** (`IIdCaptureDocument`, props `Region` + `DocumentType`): `new IdCard(IdCaptureRegion)`, `new DriverLicense(IdCaptureRegion)`, `new Passport(IdCaptureRegion)`, `new VisaIcao(IdCaptureRegion)`, `new ResidencePermit(IdCaptureRegion)`, `new HealthInsuranceCard(IdCaptureRegion)`, `new RegionSpecific(RegionSpecificSubtype)` (also exposes `Subtype`).
-- **`IdCaptureRegion`** enum — `Any`, `EuAndSchengen`, and ~250 PascalCase country values (`Us`, `Uk`, `Uae`, `Germany`, …).
-- **`IIdCaptureListener`** — `OnIdCaptured(IdCapture, CapturedId)`, `OnIdRejected(IdCapture, CapturedId?, RejectionReason)`.
-- **`CapturedId`** (`Scandit.DataCapture.ID.Data`) — `FirstName`/`LastName`/`FullName`, `Sex`/`SexType`, `DateOfBirth`/`DateOfExpiry`/`DateOfIssue` (`DateResult?`), `Nationality`/`NationalityISO`, `Address`, `Age` (`int?`), `Expired` (`bool?`), `Document` (`IIdCaptureDocument?`), `IssuingCountry`/`IssuingCountryIso`, `DocumentNumber`/`DocumentAdditionalNumber`, `Barcode`/`Mrz`/`Viz`/`MobileDocument`/`MobileDocumentOcr` (sub-results), `Images` (`IdImages`), `VerificationResult`, `UsRealIdStatus`, `CitizenPassport`, `AnonymizedFields`; methods `IsRegionSpecific(subtype)`, `IsAnonymized(field)`.
-- **`DateResult`** — `Day`/`Month`/`Year` (`int`), `LocalDate`/`UtcDate` (`DateTime`).
-- **Sub-results**: `MrzResult`, `VizResult`, `BarcodeResult` (large AAMVA surface), `MobileDocumentResult`, `MobileDocumentOcrResult`, `DrivingLicenseDetails` / `DrivingLicenseCategory`, `ProfessionalDrivingPermit`, `VehicleRestriction` — see [references/advanced.md](references/advanced.md) and the docs for full field lists.
-- **`IdImages`** — `Face`, `Frame`, `GetCroppedDocument(IdSide)`, `GetFrame(IdSide)` (each a **`UIKit.UIImage?`** on iOS).
-- **`IdCaptureOverlay`** (`Scandit.DataCapture.ID.UI.Overlay`) — static `Create(IdCapture, DataCaptureView?)` / `Create(IdCapture)`; `IdLayoutStyle` (`Rounded`/`Square`), `IdLayoutLineStyle` (`Bold`/`Light`), `TextHintPosition`, `ShowTextHints`, `CapturedBrush`/`LocalizedBrush`/`RejectedBrush` + static `Default*Brush`; `SetFrontSideTextHint`/`SetBackSideTextHint`.
-- **`IdCaptureFeedback`** — static `DefaultFeedback` (property); `IdCaptured` / `IdRejected` (`Feedback`).
-- **Verification** (`Scandit.DataCapture.ID.Verification`) — `VerificationResult` (`DataConsistency` / `AamvaBarcodeVerification`), `DataConsistencyResult` (`AllChecksPassed`, `FailedChecks`/`PassedChecks`/`SkippedChecks` as `DataConsistencyCheck` flags, `FrontReviewImage` as `UIImage?`), `AamvaBarcodeVerificationResult` (`AllChecksPassed`, `Status`), `AamvaBarcodeVerificationStatus` (`Authentic`/`LikelyForged`/`Forged`). **No verifier classes — settings-driven.**
-- **Enums**: `RejectionReason`, `IdCaptureDocumentType`, `RegionSpecificSubtype`, `IdSide`, `CapturedSides`, `Sex`, `UsRealIdStatus`, `IdAnonymizationMode`, `IdImageType`, `IdFieldType`. **`Duration`** — `new Duration(days, months, years)`.
-
-### Documented for other platforms but NOT on `dotnet.ios` — do not use
-
-- **NFC** (`NfcScanner`, `NfcResult`, `NfcScannerListener`, `CapturedId.Nfc`) — native iOS/Android only; not in the .NET surface.
-- **Deserializer** (`IdCaptureDeserializer`, `IIdCaptureDeserializerListener`) — not on .NET.
-- **Standalone `AamvaBarcodeVerifier`** — web/Xamarin only; on .NET use `RejectForgedAamvaBarcodes` + `CapturedId.VerificationResult`.
-- **`CapturedId.VisaDetails` / `VisaDetails` / `ApplicationStatus`, `PassportType`, `MobileDocumentDataElement` / `MobileDocumentScanner.ElementsToRetain`, `LocalizedOnlyId`, `BarcodeMetadata`, `IdCaptureTrigger`** — not available on `dotnet.ios`.
-- **`CapturedId.IsIdCard()` / `IsPassport()` / `IsDriverLicense()` / … helper methods** — not on .NET; use `Document?.DocumentType`.
-- **Most name/identity fields on `VizResult`** (`Sex`, `DateOfBirth`, `Nationality`, `Address`, `DocumentNumber`, `DateOfExpiry`, `DateOfIssue`) — not on `dotnet.ios`; read them from the top-level `CapturedId`.
-
-### iOS vs Android binding differences (do not cross-pollinate)
-
-- **`DataCaptureView` factory**: iOS `DataCaptureView.Create(context, CGRect frame)` + `this.View.AddSubview(view)`; Android `DataCaptureView.Create(context)` + `container.AddView(view)`. Using a bare `Create(context)` on iOS won't compile, and `AddView` doesn't exist on `UIView`.
-- **Host & lifecycle**: iOS `UIViewController` (`ViewDidLoad`/`ViewWillAppear`/`ViewWillDisappear`); Android `Activity` (`OnCreate`/`OnResume`/`OnPause`). No `CameraPermissionActivity` on iOS — permission is automatic via `NSCameraUsageDescription`.
-- **SDK init**: iOS `AppDelegate.FinishedLaunching`; Android `MainApplication.OnCreate`.
-- **Main-thread dispatch**: iOS `DispatchQueue.MainQueue.DispatchAsync(...)` / `UIApplication.SharedApplication.InvokeOnMainThread(...)`; Android `RunOnUiThread(...)`.
-- **Listener base class**: iOS `NSObject` (a `UIViewController` already is one); Android `Java.Lang.Object`.
-- **Document images**: iOS `UIKit.UIImage?`; Android `Android.Graphics.Bitmap?`.
+Read the "API surface this skill covers" section at the end of [references/integration.md](references/integration.md) before writing or reviewing code. It lists every class and member this skill covers, the APIs documented for other platforms that do not exist here, and the binding differences between platforms. Do not emit an API that is not in that section or in the official API reference.
