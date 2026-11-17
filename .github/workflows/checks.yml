@@ -1,0 +1,24 @@
+# Runs the pre-push checks on every pull request and push to main, so they no
+# longer depend on each contributor enabling the hook. CI-only: excluded from dist.
+
+name: checks
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  pre-push:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version-file: .python-version
+      - name: Lint, generated files, release and eval-tooling tests
+        run: sh internal/githooks/pre-push

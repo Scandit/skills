@@ -75,7 +75,8 @@ and a dirty checkout cannot leak into an upload. Output is deterministic: the
 same ref always yields the same bytes and the same SHA-256, which is what makes
 "the tree we tested is the tree we submitted" checkable rather than assumed.
 
-Stripped from the bundle: `internal/`, the Claude, Cursor and Copilot manifests,
+Stripped from the bundle: `internal/`, the Claude, Cursor, Copilot and Antigravity
+manifests (with Antigravity's `mcp_config.json`),
 `.agents/`, `skills.sh.json`, `README.md`, `.gitignore`, and every
 `skills/*/evals/` directory. `internal/` is the one exclusion that is a real
 risk rather than hygiene: `skill-auditor/sources.yaml` names private Scandit

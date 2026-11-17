@@ -23,6 +23,7 @@ Or install from your agent's own marketplace:
 | Cursor | [One click install](https://cursor.com/marketplace/scandit), or `/add-plugin scandit-sdk` in the editor | Automatic, on each Scandit release |
 | Codex CLI | `codex plugin marketplace add scandit/skills`<br>`codex plugin add scandit-sdk@scandit-plugins` | `codex plugin marketplace upgrade scandit-plugins` |
 | Copilot CLI | `copilot plugin marketplace add scandit/skills`<br>`copilot plugin install scandit-sdk@scandit-plugins` | `copilot plugin update scandit-sdk` |
+| Antigravity | `agy plugin install https://github.com/scandit/skills` | Re-run the install command |
 | Everyone else | `npx plugins@1.3.4 add scandit/skills` | Re-run `npx plugins@1.3.4 add scandit/skills` |
 
 **Just one skill?** Your agent only loads the skills your prompt needs, so the full bundle is the right choice — install once with `npx plugins@1.3.4 add scandit/skills`.
