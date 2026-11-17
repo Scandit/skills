@@ -19,6 +19,10 @@ ALLOWED_KEYS = {
     "disabled", "logo", "suggestedPrompts", "suggested_prompts", "skills",
     "author", "homepage", "repository", "license", "keywords", "extensions",
 }
+# Antigravity loads only the first 24,000 bytes of a skill body (the text after
+# the frontmatter) and cuts off the rest without telling the agent (see #151).
+SKILL_BODY_LIMIT = 24_000
+FRONTMATTER_RE = re.compile(rb"^---\n.*?\n---\n", re.S)
 # Fields the Antigravity Marketplace requires.
 MARKETPLACE_KEYS = {"name", "displayName", "description", "version", "logo", "suggestedPrompts", "author"}
 
@@ -64,6 +68,19 @@ class AntigravityManifestTest(unittest.TestCase):
             name = re.search(r"^name:\s*(\S+)\s*$", text, re.M)
             self.assertIsNotNone(name, skill.name)
             self.assertEqual(name.group(1), skill.name)
+
+    def test_skill_bodies_fit_load_limit(self):
+        too_long = {}
+        for skill_md in sorted((REPO / "skills").glob("*/SKILL.md")):
+            raw = skill_md.read_bytes()
+            match = FRONTMATTER_RE.match(raw)
+            body = raw[match.end():] if match else raw
+            if len(body) > SKILL_BODY_LIMIT:
+                too_long[skill_md.parent.name] = len(body)
+        self.assertEqual(
+            too_long, {},
+            f"SKILL.md bodies over {SKILL_BODY_LIMIT:,} bytes; move detail into references/",
+        )
 
 
 if __name__ == "__main__":
