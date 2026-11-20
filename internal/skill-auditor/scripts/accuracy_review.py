@@ -26,6 +26,14 @@ def load_registry(path: Path) -> dict:
                 raise ValueError(f"platform {key!r} needs a string 'notes' and a list of names 'skills'")
         if not isinstance(not_assessed, dict) or not all(isinstance(v, str) for v in not_assessed.values()):
             raise ValueError("'not_assessed' must map skill names to reasons")
+        products, sections = registry["products"], registry["sections"]
+        if not isinstance(products, dict) or not products or not all(
+                v == "all" or (isinstance(v, list) and v and all(isinstance(p, str) and p for p in v))
+                for v in products.values()):
+            raise ValueError("'products' must map product names to \"all\" or a list of dir prefixes")
+        if not isinstance(sections, list) or not sections \
+                or not all(isinstance(s, str) and s for s in sections):
+            raise ValueError("'sections' must be a non-empty list of section headings")
     except (OSError, ValueError, KeyError, TypeError, AttributeError) as exc:
         raise UsageError(f"invalid registry {path}: {exc!r}")
     overlap = sorted(set(not_assessed) & {s for e in platforms.values() for s in e["skills"]})
@@ -39,9 +47,9 @@ def inventory(registry: dict, skills_dir: Path, docs_dir: Path, only: str | None
     not_assessed = registry["not_assessed"]
     if only is not None and only not in platforms:
         raise UsageError(f"unknown platform {only!r}; known: {', '.join(platforms)}")
-    if not skills_dir.is_dir():
-        raise UsageError(f"--skills is not a directory: {skills_dir}")
     try:
+        if not skills_dir.is_dir():
+            raise UsageError(f"--skills is not a directory: {skills_dir}")
         dirs = [d.name for d in list_skill_dirs(skills_dir)]
     except OSError as exc:
         raise UsageError(f"cannot list --skills {skills_dir}: {exc}")
@@ -54,11 +62,14 @@ def inventory(registry: dict, skills_dir: Path, docs_dir: Path, only: str | None
     selected = {only: platforms[only]} if only else platforms
     out_platforms = []
     for key, entry in selected.items():
-        notes_path = (docs_dir / entry["notes"]).resolve()
-        if not notes_path.is_relative_to(docs_dir.resolve()):
-            raise UsageError(f"notes file for {key} is outside --docs: {entry['notes']}")
-        if not notes_path.is_file():
-            raise UsageError(f"notes file for {key} missing: {notes_path}")
+        try:
+            notes_path = (docs_dir / entry["notes"]).resolve()
+            if not notes_path.is_relative_to(docs_dir.resolve()):
+                raise UsageError(f"notes file for {key} is outside --docs: {entry['notes']}")
+            if not notes_path.is_file():
+                raise UsageError(f"notes file for {key} missing: {notes_path}")
+        except OSError as exc:
+            raise UsageError(f"cannot check notes file for {key} under --docs {docs_dir}: {exc}")
         out_platforms.append({
             "key": key,
             "notes": entry["notes"],

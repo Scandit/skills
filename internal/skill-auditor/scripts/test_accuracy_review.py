@@ -1,5 +1,6 @@
 """Tests for accuracy_review.py --dry-run, run as a subprocess so exit codes and stderr are real."""
 import json
+import os
 import subprocess
 import sys
 import tempfile
@@ -60,16 +61,17 @@ class AccuracyDryRunTest(unittest.TestCase):
         proc = self.dry()
         self.assertEqual(proc.returncode, 0, proc.stderr)
         out = json.loads(proc.stdout)
+        registry = json.loads(REGISTRY.read_text())
         dirs = [s["dir"] for s in out["skills"]]
-        self.assertEqual(len(dirs), 87)
-        self.assertEqual(dirs, sorted(set(dirs)))
+        self.assertEqual(dirs, sorted(set(REAL_SKILLS)))
         by_dir = {s["dir"]: s for s in out["skills"]}
         for shared in ("barcode-capture-net-maui", "scandit-xamarin-to-net-migration"):
             self.assertEqual(by_dir[shared]["platforms"], ["net-ios", "net-android"])
-        platforms = {p["key"]: p for p in out["platforms"]}
-        self.assertEqual(platforms["titanium"]["status"], "gap")
-        self.assertEqual(platforms["ios"]["status"], "ok")
-        self.assertEqual(len([s for s in out["skills"] if s["status"] == "not-assessed"]), 2)
+        for p in out["platforms"]:
+            expected = "ok" if registry["platforms"][p["key"]]["skills"] else "gap"
+            self.assertEqual(p["status"], expected, p["key"])
+        self.assertEqual({s["dir"] for s in out["skills"] if s["status"] == "not-assessed"},
+                         set(registry["not_assessed"]))
         self.assertEqual(len([s for s in out["skills"] if s["status"] == "gap"]), 0)
 
     def test_unregistered_dir_is_gap(self):
@@ -108,6 +110,36 @@ class AccuracyDryRunTest(unittest.TestCase):
         skills.chmod(0o000)
         self.addCleanup(skills.chmod, 0o755)
         self.assertDryUsageError("--skills", str(skills), needle="cannot list --skills")
+
+    @unittest.skipIf(os.geteuid() == 0, "chmod does not restrict root")
+    def test_untraversable_docs_dir_exits_2(self):
+        locked = self.docs / "docs"
+        locked.chmod(0o000)
+        self.addCleanup(locked.chmod, 0o755)
+        self.assertDryUsageError("--platform", "ios", needle="notes file for ios")
+
+    @unittest.skipIf(os.geteuid() == 0, "chmod does not restrict root")
+    def test_untraversable_skills_parent_exits_2(self):
+        skills = self.skills_tree(REAL_SKILLS)
+        self.tmp.chmod(0o000)
+        self.addCleanup(self.tmp.chmod, 0o755)
+        self.assertDryUsageError("--skills", str(skills), needle="--skills")
+
+    def test_registry_missing_rules_field_exits_2(self):
+        for field in ("products", "sections"):
+            with self.subTest(field=field):
+                path = self.registry_with(lambda d: d.pop(field))
+                self.assertDryUsageError("--registry", str(path), needle=repr(field))
+
+    def test_registry_malformed_rules_field_exits_2(self):
+        cases = {
+            "must map product names": lambda d: d.update(products={"Barcode": "barcode-"}),
+            "must be a non-empty list": lambda d: d.update(sections=[]),
+        }
+        for needle, mutate in cases.items():
+            with self.subTest(needle=needle):
+                path = self.registry_with(mutate)
+                self.assertDryUsageError("--registry", str(path), needle=needle)
 
     def test_notes_path_outside_docs_exits_2(self):
         outside = self.tmp / "other-clone" / "notes.md"
