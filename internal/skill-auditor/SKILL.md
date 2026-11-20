@@ -23,7 +23,7 @@ data, and print what's missing. A human decides what to fix.
 | Add a new platform to an existing product (e.g. `sparkscan-vue`) | List the new directory under its platform in `accuracy/registry.json` (the release check reports it as `gap` until then); the other audits auto-discover it by directory name |
 | Add an eval for a feature already covered | Nothing — tagged evals are picked up automatically |
 | Add an eval for a brand-new capability | One line in that product's `taxonomies/*.yaml` (or let `audit taxonomy` regenerate it) |
-| Add a whole new product family | One `taxonomies/<product>.yaml` + one line in `manifest.json` |
+| Add a whole new product family | One `taxonomies/<product>.yaml` + one line in `manifest.json` + its directories under their platforms in `accuracy/registry.json` |
 
 You do **not** re-edit the taxonomy every time you touch evals. The taxonomy is the
 "what should exist" checklist; evals are "what does exist." They only meet when you

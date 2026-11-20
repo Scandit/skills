@@ -41,7 +41,10 @@ def inventory(registry: dict, skills_dir: Path, docs_dir: Path, only: str | None
         raise UsageError(f"unknown platform {only!r}; known: {', '.join(platforms)}")
     if not skills_dir.is_dir():
         raise UsageError(f"--skills is not a directory: {skills_dir}")
-    dirs = [d.name for d in list_skill_dirs(skills_dir)]
+    try:
+        dirs = [d.name for d in list_skill_dirs(skills_dir)]
+    except OSError as exc:
+        raise UsageError(f"cannot list --skills {skills_dir}: {exc}")
 
     registered = {s for entry in platforms.values() for s in entry["skills"]} | set(not_assessed)
     missing = sorted(registered - set(dirs))
@@ -51,7 +54,9 @@ def inventory(registry: dict, skills_dir: Path, docs_dir: Path, only: str | None
     selected = {only: platforms[only]} if only else platforms
     out_platforms = []
     for key, entry in selected.items():
-        notes_path = docs_dir / entry["notes"]
+        notes_path = (docs_dir / entry["notes"]).resolve()
+        if not notes_path.is_relative_to(docs_dir.resolve()):
+            raise UsageError(f"notes file for {key} is outside --docs: {entry['notes']}")
         if not notes_path.is_file():
             raise UsageError(f"notes file for {key} missing: {notes_path}")
         out_platforms.append({

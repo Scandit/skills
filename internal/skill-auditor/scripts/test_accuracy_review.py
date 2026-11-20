@@ -103,6 +103,19 @@ class AccuracyDryRunTest(unittest.TestCase):
     def test_skills_not_a_directory_exits_2(self):
         self.assertDryUsageError("--skills", str(self.tmp / "nope"), needle="--skills is not a directory")
 
+    def test_unlistable_skills_dir_exits_2(self):
+        skills = self.skills_tree(REAL_SKILLS)
+        skills.chmod(0o000)
+        self.addCleanup(skills.chmod, 0o755)
+        self.assertDryUsageError("--skills", str(skills), needle="cannot list --skills")
+
+    def test_notes_path_outside_docs_exits_2(self):
+        outside = self.tmp / "other-clone" / "notes.md"
+        outside.parent.mkdir()
+        outside.write_text("# notes\n")
+        path = self.registry_with(lambda d: d["platforms"]["ios"].update(notes=str(outside)))
+        self.assertDryUsageError("--registry", str(path), needle="outside --docs")
+
     def test_registry_skills_not_directories_listed_together(self):
         skills = self.skills_tree([n for n in REAL_SKILLS if n not in ("id-bolt", "scandit-linux-sdk")])
         self.assertDryUsageError("--skills", str(skills), needle="id-bolt, scandit-linux-sdk")
