@@ -1,0 +1,186 @@
+{
+  "platforms": {
+    "ios": {
+      "notes": "docs/sdks/ios/release-notes.md",
+      "skills": [
+        "barcode-capture-ios",
+        "id-capture-ios",
+        "label-capture-ios",
+        "matrixscan-ar-annotation-ios",
+        "matrixscan-ar-highlight-ios",
+        "matrixscan-ar-ios",
+        "matrixscan-batch-ios",
+        "matrixscan-count-ios",
+        "matrixscan-pick-ios",
+        "sparkscan-ios"
+      ]
+    },
+    "android": {
+      "notes": "docs/sdks/android/release-notes.md",
+      "skills": [
+        "barcode-capture-android",
+        "id-capture-android",
+        "label-capture-android",
+        "matrixscan-ar-android",
+        "matrixscan-batch-android",
+        "matrixscan-count-android",
+        "sparkscan-android"
+      ]
+    },
+    "web": {
+      "notes": "docs/sdks/web/release-notes.md",
+      "skills": [
+        "barcode-capture-web",
+        "id-capture-web",
+        "label-capture-web",
+        "matrixscan-ar-web",
+        "matrixscan-batch-web",
+        "sparkscan-web"
+      ]
+    },
+    "cordova": {
+      "notes": "docs/sdks/cordova/release-notes.md",
+      "skills": [
+        "barcode-capture-cordova",
+        "id-capture-cordova",
+        "label-capture-cordova",
+        "matrixscan-ar-cordova",
+        "matrixscan-batch-cordova",
+        "matrixscan-count-cordova",
+        "sparkscan-cordova"
+      ]
+    },
+    "react-native": {
+      "notes": "docs/sdks/react-native/release-notes.md",
+      "skills": [
+        "barcode-capture-rn",
+        "id-capture-rn",
+        "label-capture-rn",
+        "matrixscan-ar-rn",
+        "matrixscan-batch-rn",
+        "matrixscan-count-rn",
+        "sparkscan-rn"
+      ]
+    },
+    "flutter": {
+      "notes": "docs/sdks/flutter/release-notes.md",
+      "skills": [
+        "barcode-capture-flutter",
+        "id-capture-flutter",
+        "label-capture-flutter",
+        "matrixscan-ar-flutter",
+        "matrixscan-batch-flutter",
+        "matrixscan-count-flutter",
+        "sparkscan-flutter"
+      ]
+    },
+    "kmp": {
+      "notes": "docs/sdks/kmp/release-notes.md",
+      "skills": [
+        "barcode-capture-kmp",
+        "barcode-selection-kmp",
+        "id-capture-kmp",
+        "label-capture-kmp",
+        "matrixscan-ar-kmp",
+        "matrixscan-batch-kmp",
+        "matrixscan-count-kmp",
+        "matrixscan-find-kmp",
+        "matrixscan-pick-kmp",
+        "parser-kmp",
+        "sparkscan-kmp"
+      ]
+    },
+    "capacitor": {
+      "notes": "docs/sdks/capacitor/release-notes.md",
+      "skills": [
+        "barcode-capture-capacitor",
+        "id-capture-capacitor",
+        "label-capture-capacitor",
+        "matrixscan-ar-capacitor",
+        "matrixscan-batch-capacitor",
+        "matrixscan-count-capacitor",
+        "sparkscan-capacitor"
+      ]
+    },
+    "titanium": {
+      "notes": "docs/sdks/titanium/release-notes.md",
+      "skills": []
+    },
+    "net-ios": {
+      "notes": "docs/sdks/net/ios/release-notes.md",
+      "skills": [
+        "barcode-capture-net-ios",
+        "barcode-capture-net-maui",
+        "id-capture-net-ios",
+        "id-capture-net-maui",
+        "label-capture-net-ios",
+        "label-capture-net-maui",
+        "matrixscan-ar-net-ios",
+        "matrixscan-ar-net-maui",
+        "matrixscan-batch-net-ios",
+        "matrixscan-batch-net-maui",
+        "matrixscan-count-net-ios",
+        "matrixscan-count-net-maui",
+        "scandit-xamarin-to-net-migration",
+        "sparkscan-net-ios",
+        "sparkscan-net-maui"
+      ]
+    },
+    "net-android": {
+      "notes": "docs/sdks/net/android/release-notes.md",
+      "skills": [
+        "barcode-capture-net-android",
+        "barcode-capture-net-maui",
+        "id-capture-net-android",
+        "id-capture-net-maui",
+        "label-capture-net-android",
+        "label-capture-net-maui",
+        "matrixscan-ar-net-android",
+        "matrixscan-ar-net-maui",
+        "matrixscan-batch-net-android",
+        "matrixscan-batch-net-maui",
+        "matrixscan-count-net-android",
+        "matrixscan-count-net-maui",
+        "scandit-xamarin-to-net-migration",
+        "sparkscan-net-android",
+        "sparkscan-net-maui"
+      ]
+    },
+    "linux": {
+      "notes": "docs/sdks/linux/release-notes.md",
+      "skills": [
+        "scandit-linux-sdk"
+      ]
+    }
+  },
+  "not_assessed": {
+    "data-capture-sdk": "cross-platform overview, no single platform's notes",
+    "id-bolt": "ID Bolt ships its own release notes outside docs/sdks"
+  },
+  "products": {
+    "Barcode": [
+      "barcode-",
+      "matrixscan-",
+      "sparkscan-",
+      "parser-"
+    ],
+    "Id": [
+      "id-capture-"
+    ],
+    "ID": [
+      "id-capture-"
+    ],
+    "Smart Label Capture": [
+      "label-capture-"
+    ],
+    "Label": [
+      "label-capture-"
+    ],
+    "Core": "all"
+  },
+  "sections": [
+    "New Features",
+    "Behavioral Changes",
+    "Deprecations"
+  ]
+}
