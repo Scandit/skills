@@ -185,6 +185,29 @@ class ReleaseCheckTest(unittest.TestCase):
         self.assertEqual(proc.returncode, 2, proc.stderr)
         self.assertIn("cannot read docs/sdks/linux/release-notes.md", proc.stderr)
 
+    def test_missing_tree_object_exits_2(self):
+        clone = self.tmp / "broken-tree"
+        shutil.copytree(self.docs, clone)
+        self.addCleanup(shutil.rmtree, clone)
+        tree = git(clone, "rev-parse", f"{self.sha['ae41ae70']}:docs/sdks/web")
+        (clone / ".git" / "objects" / tree[:2] / tree[2:]).unlink()
+        proc = run("--dry-run", "--docs", str(clone), "--from", self.sha["92a9e4d1"], "--to", self.sha["ae41ae70"])
+        self.assertEqual(proc.returncode, 2, proc.stderr)
+        self.assertIn("cannot read docs/sdks/web/release-notes.md", proc.stderr)
+
+    def test_notes_absent_at_to_is_reported(self):
+        self.assertEqual(self.releases()["missing_notes"], [])
+        clone = self.tmp / "dropped-web"
+        shutil.copytree(self.docs, clone)
+        self.addCleanup(shutil.rmtree, clone)
+        git(clone, "rm", "-q", "--cached", "docs/sdks/web/release-notes.md")
+        git(clone, "commit", "-q", "-m", "drop web notes")
+        proc = run("--dry-run", "--docs", str(clone), "--from", self.sha["92a9e4d1"])
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        out = json.loads(proc.stdout)
+        self.assertEqual(out["missing_notes"], ["web"])
+        self.assertNotIn("web", {p["key"] for r in out["releases"] for p in r["platforms"]})
+
     def test_unknown_product_is_no_skill(self):
         before = self.by_version(self.releases())["8.7.0"]["ios"]
         ids = sum(1 for e in before["entries"] if e["product"] == "Id")

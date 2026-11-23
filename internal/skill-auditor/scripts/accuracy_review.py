@@ -115,12 +115,15 @@ def resolve_ref(docs_dir: Path, ref: str) -> str:
     return proc.stdout.strip()
 
 
-def notes_at(docs_dir: Path, sha: str, rel: str) -> str:
+def notes_at(docs_dir: Path, sha: str, rel: str) -> str | None:
+    """Notes text at ``sha``; None when the tree has no such path. A git read failure is a UsageError."""
     git = ["git", "-C", str(docs_dir)]
     try:
-        if subprocess.run([*git, "rev-parse", "--verify", "--quiet", f"{sha}:{rel}"], capture_output=True).returncode != 0:
-            return ""
-        proc = subprocess.run([*git, "show", f"{sha}:{rel}"], capture_output=True)
+        proc = subprocess.run([*git, "ls-tree", "--name-only", sha, "--", rel], capture_output=True)
+        if proc.returncode == 0 and not proc.stdout.strip():
+            return None
+        if proc.returncode == 0:
+            proc = subprocess.run([*git, "show", f"{sha}:{rel}"], capture_output=True)
     except OSError as exc:
         raise UsageError(f"cannot run git: {exc}")
     if proc.returncode != 0:
@@ -228,12 +231,18 @@ def platform_row(key: str, entries: list[dict], skills_dir: Path, max_batch_byte
 
 
 def new_releases(registry: dict, skills_dir: Path, docs_dir: Path, only: str | None,
-                 from_sha: str, to_sha: str, max_batch_bytes: int) -> list[dict]:
+                 from_sha: str, to_sha: str, max_batch_bytes: int) -> tuple[list[dict], list[str]]:
+    """(releases, platforms whose notes file is absent at ``to_sha``)."""
     platforms = registry["platforms"]
     by_version: dict[str, list[dict]] = {}
+    missing = []
     for key, entry in ({only: platforms[only]} if only else platforms).items():
-        old = parse_releases(notes_at(docs_dir, from_sha, entry["notes"]), registry["sections"])
-        new = parse_releases(notes_at(docs_dir, to_sha, entry["notes"]), registry["sections"])
+        new_text = notes_at(docs_dir, to_sha, entry["notes"])
+        if new_text is None:
+            missing.append(key)
+            continue
+        old = parse_releases(notes_at(docs_dir, from_sha, entry["notes"]) or "", registry["sections"])
+        new = parse_releases(new_text, registry["sections"])
         for version in new.keys() - old.keys():
             entries = [{
                 "id": f"{key}/{version}/{n}",
@@ -250,7 +259,7 @@ def new_releases(registry: dict, skills_dir: Path, docs_dir: Path, only: str | N
                   for name in ("items", "mapped", "no_skill", "planned_calls", "input_bytes")}
         totals["estimated_tokens"] = totals["input_bytes"] // BYTES_PER_TOKEN
         releases.append({"version": version, "platforms": rows, "totals": totals})
-    return releases
+    return releases, missing
 
 
 def main() -> int:
@@ -276,7 +285,7 @@ def main() -> int:
         if args.from_ref:
             result["from"] = resolve_ref(args.docs, args.from_ref)
             result["to"] = resolve_ref(args.docs, args.to_ref or "HEAD")
-            result["releases"] = new_releases(registry, args.skills, args.docs, args.platform,
+            result["releases"], result["missing_notes"] = new_releases(registry, args.skills, args.docs, args.platform,
                                               result["from"], result["to"], args.max_batch_bytes)
     except UsageError as exc:
         print(f"accuracy_review: {exc}", file=sys.stderr)
