@@ -7,16 +7,30 @@ from pathlib import Path
 import yaml
 
 
+def position_after(prefix, first_line):
+    prefix = prefix.replace("\r\n", "\n").replace("\r", "\n")
+    lines = prefix.split("\n")
+    line = first_line + len(lines) - 1
+    return f"{line}:{len(lines[-1]) + 1}"
+
+
 def validate_skill(path):
-    lines = path.read_text(encoding="utf-8").splitlines()
+    try:
+        lines = path.read_bytes().decode("utf-8").splitlines()
+    except UnicodeDecodeError as error:
+        prefix = error.object[:error.start].decode("utf-8")
+        return f"{position_after(prefix, 1)}: invalid UTF-8"
     if not lines or lines[0] != "---":
         return "1:1: missing opening frontmatter delimiter"
     try:
         end = lines.index("---", 1)
     except ValueError:
         return "1:1: missing closing frontmatter delimiter"
+    header = "\n".join(lines[1:end])
     try:
-        metadata = yaml.safe_load("\n".join(lines[1:end]))
+        metadata = yaml.safe_load(header)
+    except yaml.reader.ReaderError as error:
+        return f"{position_after(header[:error.position], 2)}: {error.reason}"
     except yaml.MarkedYAMLError as error:
         mark = error.problem_mark
         return f"{mark.line + 2}:{mark.column + 1}: {error.problem}"

@@ -58,3 +58,14 @@ class PackageValidationTests(unittest.TestCase):
         result = self.validate()
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertIn(f"Validated {len(manifests)} skills", result.stdout)
+
+    def test_unreadable_manifest_does_not_hide_later_errors(self):
+        first = self.package / "skills/first/SKILL.md"
+        first.parent.mkdir()
+        for invalid in (b"\x00", b"\xff"):
+            with self.subTest(invalid=invalid):
+                first.write_bytes("---\nname: café".encode() + invalid + b"\n---\n")
+                result = self.validate()
+                self.assertEqual(result.returncode, 1)
+                self.assertIn("skills/first/SKILL.md:2:11:", result.stderr)
+                self.assertIn("skills/scandit-linux-sdk/SKILL.md:3:77:", result.stderr)

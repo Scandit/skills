@@ -46,8 +46,10 @@ The Codex project-local inventory check renders with a clean profile and the aut
 
 ```sh
 python3 internal/discovery-evals/run.py stage --out /tmp/scandit-packages
+python3 internal/discovery-evals/run.py guides --out /tmp/scandit-packages
 python3 internal/discovery-evals/validate.py /tmp/scandit-packages/baseline
 python3 internal/discovery-evals/validate.py /tmp/scandit-packages/candidate
+python3 internal/discovery-evals/validate.py /tmp/scandit-packages/split
 python3 -m unittest discover -s internal/discovery-evals -p test_validate.py
 python3 internal/discovery-evals/run.py matrix --out /tmp/scandit-discovery
 python3 internal/discovery-evals/run.py guide-matrix --out /tmp/scandit-guides
