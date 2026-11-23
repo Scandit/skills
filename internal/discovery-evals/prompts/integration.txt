@@ -1,0 +1,1 @@
+Our stockroom Android app needs Scandit Barcode Capture in MainActivity. Show the Kotlin changes and Gradle setup to scan only QR and Data Matrix, log each decoded value, and manage the camera when the Activity resumes or pauses. Inspect the project and answer with the proposed changes here.

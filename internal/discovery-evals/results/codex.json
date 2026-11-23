@@ -1,0 +1,983 @@
+{
+  "harness": "codex-cli 0.171.0",
+  "model_selection_before_trials_utc": "2026-11-23T11:16:52.724963+00:00",
+  "model_tiers": {
+    "affordable": "gpt-6-luna",
+    "standard": "gpt-6.2-sol"
+  },
+  "effort": "low",
+  "backend_snapshot": "not reported",
+  "method": "Independent ephemeral project-local sessions. Native debug prompt-input verified the installed catalog before each session. Marketplace inventory was measured offline separately. Usage is cumulative across model turns, includes cache hits in input_tokens, and does not isolate the first request. Diagnostic repeats are separate from primary totals.",
+  "trace_fields": "Targeted reads include deliberate content opens or targeted searches. Search excerpts are additional paths whose content appeared in indexed output. Directory listings alone are excluded. Paths are relative to the package. Expected reference is null for cases without one.",
+  "inventory": {
+    "baseline-gpt-6-luna-marketplace": {
+      "scandit_count": 87,
+      "other": [
+        "imagegen",
+        "openai-docs",
+        "skill-creator",
+        "skill-installer"
+      ],
+      "scandit_catalog_characters": 20705,
+      "sorted_scandit_names_sha256": "bb38773a6ed90c64d1c571240de8a40be8b6fb1c3516d76bf7d3a0bd305919fe"
+    },
+    "baseline-gpt-6.2-sol-marketplace": {
+      "scandit_count": 87,
+      "other": [
+        "imagegen",
+        "openai-docs",
+        "skill-creator",
+        "skill-installer"
+      ],
+      "scandit_catalog_characters": 38353,
+      "sorted_scandit_names_sha256": "bb38773a6ed90c64d1c571240de8a40be8b6fb1c3516d76bf7d3a0bd305919fe"
+    },
+    "baseline-gpt-6-luna-project-local": {
+      "scandit_count": 87,
+      "other": [
+        "imagegen",
+        "openai-docs",
+        "skill-creator",
+        "skill-installer"
+      ],
+      "scandit_catalog_characters": 20759,
+      "sorted_scandit_names_sha256": "bb38773a6ed90c64d1c571240de8a40be8b6fb1c3516d76bf7d3a0bd305919fe"
+    },
+    "baseline-gpt-6.2-sol-project-local": {
+      "scandit_count": 87,
+      "other": [
+        "imagegen",
+        "openai-docs",
+        "skill-creator",
+        "skill-installer"
+      ],
+      "scandit_catalog_characters": 38409,
+      "sorted_scandit_names_sha256": "bb38773a6ed90c64d1c571240de8a40be8b6fb1c3516d76bf7d3a0bd305919fe"
+    },
+    "candidate-gpt-6-luna-marketplace": {
+      "scandit_count": 87,
+      "other": [
+        "imagegen",
+        "openai-docs",
+        "skill-creator",
+        "skill-installer"
+      ],
+      "scandit_catalog_characters": 20713,
+      "sorted_scandit_names_sha256": "bb38773a6ed90c64d1c571240de8a40be8b6fb1c3516d76bf7d3a0bd305919fe"
+    },
+    "candidate-gpt-6.2-sol-marketplace": {
+      "scandit_count": 87,
+      "other": [
+        "imagegen",
+        "openai-docs",
+        "skill-creator",
+        "skill-installer"
+      ],
+      "scandit_catalog_characters": 38286,
+      "sorted_scandit_names_sha256": "bb38773a6ed90c64d1c571240de8a40be8b6fb1c3516d76bf7d3a0bd305919fe"
+    },
+    "candidate-gpt-6-luna-project-local": {
+      "scandit_count": 87,
+      "other": [
+        "imagegen",
+        "openai-docs",
+        "skill-creator",
+        "skill-installer"
+      ],
+      "scandit_catalog_characters": 20757,
+      "sorted_scandit_names_sha256": "bb38773a6ed90c64d1c571240de8a40be8b6fb1c3516d76bf7d3a0bd305919fe"
+    },
+    "candidate-gpt-6.2-sol-project-local": {
+      "scandit_count": 87,
+      "other": [
+        "imagegen",
+        "openai-docs",
+        "skill-creator",
+        "skill-installer"
+      ],
+      "scandit_catalog_characters": 38327,
+      "sorted_scandit_names_sha256": "bb38773a6ed90c64d1c571240de8a40be8b6fb1c3516d76bf7d3a0bd305919fe"
+    }
+  },
+  "primary_totals": [
+    {
+      "variant": "baseline",
+      "model": "gpt-6-luna",
+      "trials": 5,
+      "routes_passed": 3,
+      "quality_passed": 2,
+      "criteria_passed": 15,
+      "criteria_assessed": 18,
+      "expected_reference_hits": 2,
+      "expected_references": 3,
+      "input_tokens": 332678,
+      "cached_input_tokens": 217216,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 2680,
+      "reasoning_output_tokens": 0
+    },
+    {
+      "variant": "baseline",
+      "model": "gpt-6.2-sol",
+      "trials": 5,
+      "routes_passed": 5,
+      "quality_passed": 4,
+      "criteria_passed": 17,
+      "criteria_assessed": 18,
+      "expected_reference_hits": 3,
+      "expected_references": 3,
+      "input_tokens": 494416,
+      "cached_input_tokens": 323072,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 3865,
+      "reasoning_output_tokens": 61
+    },
+    {
+      "variant": "candidate",
+      "model": "gpt-6-luna",
+      "trials": 5,
+      "routes_passed": 2,
+      "quality_passed": 2,
+      "criteria_passed": 13,
+      "criteria_assessed": 18,
+      "expected_reference_hits": 1,
+      "expected_references": 3,
+      "input_tokens": 282866,
+      "cached_input_tokens": 177792,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 2449,
+      "reasoning_output_tokens": 0
+    },
+    {
+      "variant": "candidate",
+      "model": "gpt-6.2-sol",
+      "trials": 5,
+      "routes_passed": 5,
+      "quality_passed": 4,
+      "criteria_passed": 17,
+      "criteria_assessed": 18,
+      "expected_reference_hits": 3,
+      "expected_references": 3,
+      "input_tokens": 492983,
+      "cached_input_tokens": 328192,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 3664,
+      "reasoning_output_tokens": 56
+    }
+  ],
+  "trials": [
+    {
+      "variant": "baseline",
+      "model": "gpt-6-luna",
+      "case": "integration",
+      "kind": "primary",
+      "inventory": "baseline-gpt-6-luna-project-local",
+      "prompt_sha256": "70746bfe04475c396b92af661f3ed3656a567b3819950d519c1c26d61dbcd5d4",
+      "route": true,
+      "expected_reference_hit": true,
+      "targeted_reads": [
+        "skills/barcode-capture-android/SKILL.md",
+        "skills/barcode-capture-android/references/integration.md"
+      ],
+      "criteria": {
+        "I1": true,
+        "I2": true,
+        "I3": true,
+        "I4": true,
+        "I5": true
+      },
+      "quality": true,
+      "notes": "Enabled only QR and Data Matrix, used the factory and scan callback, managed both camera lifecycle transitions and supplied both artifacts.",
+      "additional_search_excerpts": [],
+      "usage": {
+        "input_tokens": 93708,
+        "cached_input_tokens": 51840,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 1259,
+        "reasoning_output_tokens": 0
+      }
+    },
+    {
+      "variant": "baseline",
+      "model": "gpt-6-luna",
+      "case": "advisor",
+      "kind": "primary",
+      "inventory": "baseline-gpt-6-luna-project-local",
+      "prompt_sha256": "a468977c166c11f4ac71e5393cfa74d66375207843ec4e10be522d8efe92b81e",
+      "route": false,
+      "expected_reference_hit": null,
+      "targeted_reads": [],
+      "criteria": {
+        "A1": true,
+        "A2": false,
+        "A3": true
+      },
+      "quality": false,
+      "notes": "Recommended MatrixScan Count without code or a skill read. Did not advise contacting Scandit before integration.",
+      "additional_search_excerpts": [],
+      "usage": {
+        "input_tokens": 16525,
+        "cached_input_tokens": 0,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 63,
+        "reasoning_output_tokens": 0
+      }
+    },
+    {
+      "variant": "baseline",
+      "model": "gpt-6-luna",
+      "case": "advisor",
+      "kind": "diagnostic-repeat",
+      "inventory": "baseline-gpt-6-luna-project-local",
+      "prompt_sha256": "a468977c166c11f4ac71e5393cfa74d66375207843ec4e10be522d8efe92b81e",
+      "route": false,
+      "expected_reference_hit": null,
+      "targeted_reads": [],
+      "criteria": {
+        "A1": true,
+        "A2": false,
+        "A3": true
+      },
+      "quality": false,
+      "notes": "Recommended MatrixScan Count without code or a skill read. Did not advise contacting Scandit before integration.",
+      "additional_search_excerpts": [],
+      "usage": {
+        "input_tokens": 16523,
+        "cached_input_tokens": 0,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 96,
+        "reasoning_output_tokens": 0
+      }
+    },
+    {
+      "variant": "baseline",
+      "model": "gpt-6-luna",
+      "case": "migration",
+      "kind": "primary",
+      "inventory": "baseline-gpt-6-luna-project-local",
+      "prompt_sha256": "e6144d437afa13f1515035c6d960f9e23eb36dad18d00923b3220754acaa72ef",
+      "route": true,
+      "expected_reference_hit": true,
+      "targeted_reads": [
+        "skills/barcode-capture-android/SKILL.md",
+        "skills/barcode-capture-android/references/migration.md"
+      ],
+      "criteria": {
+        "M1": true,
+        "M2": true,
+        "M3": true
+      },
+      "quality": true,
+      "notes": "Retained the native Android factory, identified VideoResolution.AUTO and linked the canonical migration guide.",
+      "additional_search_excerpts": [],
+      "usage": {
+        "input_tokens": 110863,
+        "cached_input_tokens": 88320,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 722,
+        "reasoning_output_tokens": 0
+      }
+    },
+    {
+      "variant": "baseline",
+      "model": "gpt-6-luna",
+      "case": "migration",
+      "kind": "diagnostic-repeat",
+      "inventory": "baseline-gpt-6-luna-project-local",
+      "prompt_sha256": "e6144d437afa13f1515035c6d960f9e23eb36dad18d00923b3220754acaa72ef",
+      "route": true,
+      "expected_reference_hit": true,
+      "targeted_reads": [
+        "skills/data-capture-sdk/SKILL.md",
+        "skills/barcode-capture-android/SKILL.md",
+        "skills/barcode-capture-android/references/migration.md"
+      ],
+      "criteria": {
+        "M1": true,
+        "M2": true,
+        "M3": true
+      },
+      "quality": true,
+      "notes": "Retained the native Android factory, identified VideoResolution.AUTO and linked the canonical migration guide.",
+      "additional_search_excerpts": [],
+      "usage": {
+        "input_tokens": 119974,
+        "cached_input_tokens": 93184,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 641,
+        "reasoning_output_tokens": 0
+      }
+    },
+    {
+      "variant": "baseline",
+      "model": "gpt-6-luna",
+      "case": "unrelated",
+      "kind": "primary",
+      "inventory": "baseline-gpt-6-luna-project-local",
+      "prompt_sha256": "a507505f7f9cb95dce22a204062756e14b09743aaa65d38c98e38d1ab3eda239",
+      "route": true,
+      "expected_reference_hit": null,
+      "targeted_reads": [],
+      "criteria": {
+        "U1": true,
+        "U2": true,
+        "U3": false
+      },
+      "quality": false,
+      "notes": "Used qrcode and passed order.pickupUrl but targeted pickup-qr. The existing canvas ID is pickup. No Scandit access.",
+      "additional_search_excerpts": [],
+      "usage": {
+        "input_tokens": 16516,
+        "cached_input_tokens": 0,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 108,
+        "reasoning_output_tokens": 0
+      }
+    },
+    {
+      "variant": "baseline",
+      "model": "gpt-6-luna",
+      "case": "react-native",
+      "kind": "primary",
+      "inventory": "baseline-gpt-6-luna-project-local",
+      "prompt_sha256": "a0fac4bd64444529c90401a5008f3cd06e2b4701fa67cd3cbdc87bc8a46485ae",
+      "route": false,
+      "expected_reference_hit": false,
+      "targeted_reads": [
+        "skills/barcode-capture-android/SKILL.md",
+        "skills/barcode-capture-android/references/integration.md",
+        "skills/barcode-capture-rn/SKILL.md"
+      ],
+      "criteria": {
+        "R1": true,
+        "R2": true,
+        "R3": false,
+        "R4": true
+      },
+      "quality": false,
+      "notes": "Identified React Native. Omitted the two exact React Native dependency names. Loaded Android before React Native and reported missing React Native guidance despite opening the skill.",
+      "additional_search_excerpts": [],
+      "usage": {
+        "input_tokens": 95066,
+        "cached_input_tokens": 77056,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 528,
+        "reasoning_output_tokens": 0
+      }
+    },
+    {
+      "variant": "baseline",
+      "model": "gpt-6-luna",
+      "case": "react-native",
+      "kind": "diagnostic-repeat",
+      "inventory": "baseline-gpt-6-luna-project-local",
+      "prompt_sha256": "a0fac4bd64444529c90401a5008f3cd06e2b4701fa67cd3cbdc87bc8a46485ae",
+      "route": false,
+      "expected_reference_hit": false,
+      "targeted_reads": [
+        "skills/barcode-capture-android/SKILL.md",
+        "skills/barcode-capture-android/references/integration.md"
+      ],
+      "criteria": {
+        "R1": true,
+        "R2": false,
+        "R3": false,
+        "R4": false
+      },
+      "quality": false,
+      "notes": "Identified React Native. Omitted the two exact React Native dependency names. Used the native Android implementation route and recommended native Gradle setup.",
+      "additional_search_excerpts": [],
+      "usage": {
+        "input_tokens": 71032,
+        "cached_input_tokens": 58624,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 430,
+        "reasoning_output_tokens": 0
+      }
+    },
+    {
+      "variant": "baseline",
+      "model": "gpt-6.2-sol",
+      "case": "integration",
+      "kind": "primary",
+      "inventory": "baseline-gpt-6.2-sol-project-local",
+      "prompt_sha256": "70746bfe04475c396b92af661f3ed3656a567b3819950d519c1c26d61dbcd5d4",
+      "route": true,
+      "expected_reference_hit": true,
+      "targeted_reads": [
+        "skills/barcode-capture-android/SKILL.md",
+        "skills/barcode-capture-android/references/integration.md",
+        "skills/barcode-capture-android/references/migration.md"
+      ],
+      "criteria": {
+        "I1": true,
+        "I2": true,
+        "I3": true,
+        "I4": true,
+        "I5": true
+      },
+      "quality": true,
+      "notes": "Enabled only QR and Data Matrix, used the factory and scan callback, managed both camera lifecycle transitions and supplied both artifacts.",
+      "additional_search_excerpts": [
+        "skills/barcode-capture-android/references/third-party-migration.md"
+      ],
+      "usage": {
+        "input_tokens": 141578,
+        "cached_input_tokens": 119936,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 1990,
+        "reasoning_output_tokens": 35
+      }
+    },
+    {
+      "variant": "baseline",
+      "model": "gpt-6.2-sol",
+      "case": "advisor",
+      "kind": "primary",
+      "inventory": "baseline-gpt-6.2-sol-project-local",
+      "prompt_sha256": "a468977c166c11f4ac71e5393cfa74d66375207843ec4e10be522d8efe92b81e",
+      "route": true,
+      "expected_reference_hit": null,
+      "targeted_reads": [
+        "skills/data-capture-sdk/SKILL.md",
+        "skills/data-capture-sdk/references/product-catalog.md",
+        "skills/data-capture-sdk/references/decision-guide.md",
+        "skills/matrixscan-count-android/SKILL.md",
+        "skills/matrixscan-count-android/references/list-scanning.md"
+      ],
+      "criteria": {
+        "A1": true,
+        "A2": true,
+        "A3": true
+      },
+      "quality": true,
+      "notes": "Recommended MatrixScan Count and contacting Scandit support before integration, without implementation code. Also consulted the optional Android Count skill and list-scanning guide.",
+      "additional_search_excerpts": [],
+      "usage": {
+        "input_tokens": 85338,
+        "cached_input_tokens": 51968,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 456,
+        "reasoning_output_tokens": 0
+      }
+    },
+    {
+      "variant": "baseline",
+      "model": "gpt-6.2-sol",
+      "case": "advisor",
+      "kind": "diagnostic-repeat",
+      "inventory": "baseline-gpt-6.2-sol-project-local",
+      "prompt_sha256": "a468977c166c11f4ac71e5393cfa74d66375207843ec4e10be522d8efe92b81e",
+      "route": true,
+      "expected_reference_hit": null,
+      "targeted_reads": [
+        "skills/data-capture-sdk/SKILL.md",
+        "skills/data-capture-sdk/references/product-catalog.md",
+        "skills/data-capture-sdk/references/decision-guide.md",
+        "skills/matrixscan-count-android/SKILL.md",
+        "skills/matrixscan-count-android/references/list-scanning.md"
+      ],
+      "criteria": {
+        "A1": true,
+        "A2": true,
+        "A3": true
+      },
+      "quality": true,
+      "notes": "Recommended MatrixScan Count and contacting Scandit support before integration, without implementation code. Also consulted the optional Android Count skill and list-scanning guide.",
+      "additional_search_excerpts": [],
+      "usage": {
+        "input_tokens": 85416,
+        "cached_input_tokens": 52352,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 473,
+        "reasoning_output_tokens": 0
+      }
+    },
+    {
+      "variant": "baseline",
+      "model": "gpt-6.2-sol",
+      "case": "migration",
+      "kind": "primary",
+      "inventory": "baseline-gpt-6.2-sol-project-local",
+      "prompt_sha256": "e6144d437afa13f1515035c6d960f9e23eb36dad18d00923b3220754acaa72ef",
+      "route": true,
+      "expected_reference_hit": true,
+      "targeted_reads": [
+        "skills/barcode-capture-android/SKILL.md",
+        "skills/barcode-capture-android/references/migration.md"
+      ],
+      "criteria": {
+        "M1": true,
+        "M2": true,
+        "M3": true
+      },
+      "quality": true,
+      "notes": "Retained the native Android factory, identified VideoResolution.AUTO and linked the canonical migration guide.",
+      "additional_search_excerpts": [],
+      "usage": {
+        "input_tokens": 101150,
+        "cached_input_tokens": 71680,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 671,
+        "reasoning_output_tokens": 11
+      }
+    },
+    {
+      "variant": "baseline",
+      "model": "gpt-6.2-sol",
+      "case": "unrelated",
+      "kind": "primary",
+      "inventory": "baseline-gpt-6.2-sol-project-local",
+      "prompt_sha256": "a507505f7f9cb95dce22a204062756e14b09743aaa65d38c98e38d1ab3eda239",
+      "route": true,
+      "expected_reference_hit": null,
+      "targeted_reads": [],
+      "criteria": {
+        "U1": true,
+        "U2": true,
+        "U3": false
+      },
+      "quality": false,
+      "notes": "Used qrcode and passed order.pickupUrl but targeted pickup-qr. The existing canvas ID is pickup. No Scandit access.",
+      "additional_search_excerpts": [],
+      "usage": {
+        "input_tokens": 22168,
+        "cached_input_tokens": 0,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 147,
+        "reasoning_output_tokens": 15
+      }
+    },
+    {
+      "variant": "baseline",
+      "model": "gpt-6.2-sol",
+      "case": "react-native",
+      "kind": "primary",
+      "inventory": "baseline-gpt-6.2-sol-project-local",
+      "prompt_sha256": "a0fac4bd64444529c90401a5008f3cd06e2b4701fa67cd3cbdc87bc8a46485ae",
+      "route": true,
+      "expected_reference_hit": true,
+      "targeted_reads": [
+        "skills/data-capture-sdk/SKILL.md",
+        "skills/data-capture-sdk/references/product-catalog.md",
+        "skills/barcode-capture-rn/SKILL.md",
+        "skills/barcode-capture-rn/references/integration.md"
+      ],
+      "criteria": {
+        "R1": true,
+        "R2": true,
+        "R3": true,
+        "R4": true
+      },
+      "quality": true,
+      "notes": "Identified React Native, gave both React Native dependency names and directed the user to React Native Barcode Capture.",
+      "additional_search_excerpts": [],
+      "usage": {
+        "input_tokens": 144182,
+        "cached_input_tokens": 79488,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 601,
+        "reasoning_output_tokens": 0
+      }
+    },
+    {
+      "variant": "candidate",
+      "model": "gpt-6-luna",
+      "case": "integration",
+      "kind": "primary",
+      "inventory": "candidate-gpt-6-luna-project-local",
+      "prompt_sha256": "70746bfe04475c396b92af661f3ed3656a567b3819950d519c1c26d61dbcd5d4",
+      "route": true,
+      "expected_reference_hit": true,
+      "targeted_reads": [
+        "skills/barcode-capture-android/SKILL.md",
+        "skills/barcode-capture-android/references/integration.md"
+      ],
+      "criteria": {
+        "I1": true,
+        "I2": true,
+        "I3": true,
+        "I4": true,
+        "I5": true
+      },
+      "quality": true,
+      "notes": "Enabled only QR and Data Matrix, used the factory and scan callback, managed both camera lifecycle transitions and supplied both artifacts.",
+      "additional_search_excerpts": [],
+      "usage": {
+        "input_tokens": 110603,
+        "cached_input_tokens": 85120,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 1382,
+        "reasoning_output_tokens": 0
+      }
+    },
+    {
+      "variant": "candidate",
+      "model": "gpt-6-luna",
+      "case": "advisor",
+      "kind": "primary",
+      "inventory": "candidate-gpt-6-luna-project-local",
+      "prompt_sha256": "a468977c166c11f4ac71e5393cfa74d66375207843ec4e10be522d8efe92b81e",
+      "route": false,
+      "expected_reference_hit": null,
+      "targeted_reads": [],
+      "criteria": {
+        "A1": true,
+        "A2": true,
+        "A3": true
+      },
+      "quality": true,
+      "notes": "Recommended MatrixScan Count without code or a skill read. A2 credited the explicit instruction to check licensing and setup with Scandit before integration, even though it did not use the word support.",
+      "additional_search_excerpts": [],
+      "usage": {
+        "input_tokens": 16511,
+        "cached_input_tokens": 0,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 85,
+        "reasoning_output_tokens": 0
+      }
+    },
+    {
+      "variant": "candidate",
+      "model": "gpt-6-luna",
+      "case": "advisor",
+      "kind": "diagnostic-repeat",
+      "inventory": "candidate-gpt-6-luna-project-local",
+      "prompt_sha256": "a468977c166c11f4ac71e5393cfa74d66375207843ec4e10be522d8efe92b81e",
+      "route": false,
+      "expected_reference_hit": null,
+      "targeted_reads": [],
+      "criteria": {
+        "A1": true,
+        "A2": false,
+        "A3": true
+      },
+      "quality": false,
+      "notes": "Recommended MatrixScan Count without code or a skill read. Did not advise contacting Scandit before integration.",
+      "additional_search_excerpts": [],
+      "usage": {
+        "input_tokens": 16518,
+        "cached_input_tokens": 0,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 100,
+        "reasoning_output_tokens": 0
+      }
+    },
+    {
+      "variant": "candidate",
+      "model": "gpt-6-luna",
+      "case": "migration",
+      "kind": "primary",
+      "inventory": "candidate-gpt-6-luna-project-local",
+      "prompt_sha256": "e6144d437afa13f1515035c6d960f9e23eb36dad18d00923b3220754acaa72ef",
+      "route": false,
+      "expected_reference_hit": false,
+      "targeted_reads": [],
+      "criteria": {
+        "M1": false,
+        "M2": false,
+        "M3": false
+      },
+      "quality": false,
+      "notes": "Proposed BarcodeCapture.create in place of the existing factory. Omitted VideoResolution.AUTO. The alternative migration link returned HTTP 404.",
+      "additional_search_excerpts": [],
+      "usage": {
+        "input_tokens": 89183,
+        "cached_input_tokens": 50816,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 612,
+        "reasoning_output_tokens": 0
+      }
+    },
+    {
+      "variant": "candidate",
+      "model": "gpt-6-luna",
+      "case": "migration",
+      "kind": "diagnostic-repeat",
+      "inventory": "candidate-gpt-6-luna-project-local",
+      "prompt_sha256": "e6144d437afa13f1515035c6d960f9e23eb36dad18d00923b3220754acaa72ef",
+      "route": false,
+      "expected_reference_hit": false,
+      "targeted_reads": [],
+      "criteria": {
+        "M1": false,
+        "M2": false,
+        "M3": false
+      },
+      "quality": false,
+      "notes": "Described initialization as potentially breaking. Omitted VideoResolution.AUTO. The alternative migration link returned HTTP 404.",
+      "additional_search_excerpts": [],
+      "usage": {
+        "input_tokens": 70034,
+        "cached_input_tokens": 60032,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 741,
+        "reasoning_output_tokens": 0
+      }
+    },
+    {
+      "variant": "candidate",
+      "model": "gpt-6-luna",
+      "case": "unrelated",
+      "kind": "primary",
+      "inventory": "candidate-gpt-6-luna-project-local",
+      "prompt_sha256": "a507505f7f9cb95dce22a204062756e14b09743aaa65d38c98e38d1ab3eda239",
+      "route": true,
+      "expected_reference_hit": null,
+      "targeted_reads": [],
+      "criteria": {
+        "U1": true,
+        "U2": true,
+        "U3": false
+      },
+      "quality": false,
+      "notes": "Used qrcode and passed order.pickupUrl but targeted pickup-qr. The existing canvas ID is pickup. No Scandit access.",
+      "additional_search_excerpts": [],
+      "usage": {
+        "input_tokens": 16507,
+        "cached_input_tokens": 0,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 79,
+        "reasoning_output_tokens": 0
+      }
+    },
+    {
+      "variant": "candidate",
+      "model": "gpt-6-luna",
+      "case": "react-native",
+      "kind": "primary",
+      "inventory": "candidate-gpt-6-luna-project-local",
+      "prompt_sha256": "a0fac4bd64444529c90401a5008f3cd06e2b4701fa67cd3cbdc87bc8a46485ae",
+      "route": false,
+      "expected_reference_hit": false,
+      "targeted_reads": [],
+      "criteria": {
+        "R1": true,
+        "R2": true,
+        "R3": false,
+        "R4": true
+      },
+      "quality": false,
+      "notes": "Identified React Native. Omitted the two exact React Native dependency names. Named the correct React Native skill without opening it.",
+      "additional_search_excerpts": [],
+      "usage": {
+        "input_tokens": 50062,
+        "cached_input_tokens": 41856,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 291,
+        "reasoning_output_tokens": 0
+      }
+    },
+    {
+      "variant": "candidate",
+      "model": "gpt-6-luna",
+      "case": "react-native",
+      "kind": "diagnostic-repeat",
+      "inventory": "candidate-gpt-6-luna-project-local",
+      "prompt_sha256": "a0fac4bd64444529c90401a5008f3cd06e2b4701fa67cd3cbdc87bc8a46485ae",
+      "route": true,
+      "expected_reference_hit": false,
+      "targeted_reads": [
+        "skills/barcode-capture-rn/SKILL.md"
+      ],
+      "criteria": {
+        "R1": true,
+        "R2": true,
+        "R3": false,
+        "R4": true
+      },
+      "quality": false,
+      "notes": "Identified React Native. Omitted the two exact React Native dependency names. Opened the correct React Native skill without its integration guide.",
+      "additional_search_excerpts": [],
+      "usage": {
+        "input_tokens": 71694,
+        "cached_input_tokens": 50816,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 446,
+        "reasoning_output_tokens": 0
+      }
+    },
+    {
+      "variant": "candidate",
+      "model": "gpt-6.2-sol",
+      "case": "integration",
+      "kind": "primary",
+      "inventory": "candidate-gpt-6.2-sol-project-local",
+      "prompt_sha256": "70746bfe04475c396b92af661f3ed3656a567b3819950d519c1c26d61dbcd5d4",
+      "route": true,
+      "expected_reference_hit": true,
+      "targeted_reads": [
+        "skills/barcode-capture-android/SKILL.md",
+        "skills/barcode-capture-android/references/integration.md"
+      ],
+      "criteria": {
+        "I1": true,
+        "I2": true,
+        "I3": true,
+        "I4": true,
+        "I5": true
+      },
+      "quality": true,
+      "notes": "Enabled only QR and Data Matrix, used the factory and scan callback, managed both camera lifecycle transitions and supplied both artifacts.",
+      "additional_search_excerpts": [
+        "skills/barcode-capture-android/references/third-party-migration.md",
+        "skills/matrixscan-batch-android/SKILL.md",
+        "skills/matrixscan-batch-android/references/third-party-migration.md",
+        "skills/matrixscan-count-android/SKILL.md",
+        "skills/matrixscan-count-android/references/integration.md"
+      ],
+      "usage": {
+        "input_tokens": 171503,
+        "cached_input_tokens": 116992,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 2059,
+        "reasoning_output_tokens": 56
+      }
+    },
+    {
+      "variant": "candidate",
+      "model": "gpt-6.2-sol",
+      "case": "advisor",
+      "kind": "primary",
+      "inventory": "candidate-gpt-6.2-sol-project-local",
+      "prompt_sha256": "a468977c166c11f4ac71e5393cfa74d66375207843ec4e10be522d8efe92b81e",
+      "route": true,
+      "expected_reference_hit": null,
+      "targeted_reads": [
+        "skills/data-capture-sdk/SKILL.md",
+        "skills/data-capture-sdk/references/product-catalog.md",
+        "skills/data-capture-sdk/references/decision-guide.md"
+      ],
+      "criteria": {
+        "A1": true,
+        "A2": true,
+        "A3": true
+      },
+      "quality": true,
+      "notes": "Recommended MatrixScan Count and contacting Scandit support before integration, without implementation code.",
+      "additional_search_excerpts": [],
+      "usage": {
+        "input_tokens": 80169,
+        "cached_input_tokens": 49408,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 287,
+        "reasoning_output_tokens": 0
+      }
+    },
+    {
+      "variant": "candidate",
+      "model": "gpt-6.2-sol",
+      "case": "advisor",
+      "kind": "diagnostic-repeat",
+      "inventory": "candidate-gpt-6.2-sol-project-local",
+      "prompt_sha256": "a468977c166c11f4ac71e5393cfa74d66375207843ec4e10be522d8efe92b81e",
+      "route": true,
+      "expected_reference_hit": null,
+      "targeted_reads": [
+        "skills/data-capture-sdk/SKILL.md",
+        "skills/data-capture-sdk/references/product-catalog.md",
+        "skills/data-capture-sdk/references/decision-guide.md"
+      ],
+      "criteria": {
+        "A1": true,
+        "A2": true,
+        "A3": true
+      },
+      "quality": true,
+      "notes": "Recommended MatrixScan Count and contacting Scandit support before integration, without implementation code.",
+      "additional_search_excerpts": [],
+      "usage": {
+        "input_tokens": 80259,
+        "cached_input_tokens": 27520,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 301,
+        "reasoning_output_tokens": 0
+      }
+    },
+    {
+      "variant": "candidate",
+      "model": "gpt-6.2-sol",
+      "case": "migration",
+      "kind": "primary",
+      "inventory": "candidate-gpt-6.2-sol-project-local",
+      "prompt_sha256": "e6144d437afa13f1515035c6d960f9e23eb36dad18d00923b3220754acaa72ef",
+      "route": true,
+      "expected_reference_hit": true,
+      "targeted_reads": [
+        "skills/barcode-capture-android/SKILL.md",
+        "skills/barcode-capture-android/references/migration.md"
+      ],
+      "criteria": {
+        "M1": true,
+        "M2": true,
+        "M3": true
+      },
+      "quality": true,
+      "notes": "Retained the native Android factory, identified VideoResolution.AUTO and linked the canonical migration guide.",
+      "additional_search_excerpts": [],
+      "usage": {
+        "input_tokens": 100638,
+        "cached_input_tokens": 83968,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 755,
+        "reasoning_output_tokens": 0
+      }
+    },
+    {
+      "variant": "candidate",
+      "model": "gpt-6.2-sol",
+      "case": "unrelated",
+      "kind": "primary",
+      "inventory": "candidate-gpt-6.2-sol-project-local",
+      "prompt_sha256": "a507505f7f9cb95dce22a204062756e14b09743aaa65d38c98e38d1ab3eda239",
+      "route": true,
+      "expected_reference_hit": null,
+      "targeted_reads": [],
+      "criteria": {
+        "U1": true,
+        "U2": true,
+        "U3": false
+      },
+      "quality": false,
+      "notes": "Used qrcode and passed order.pickupUrl but targeted pickup-qr. The existing canvas ID is pickup. No Scandit access.",
+      "additional_search_excerpts": [],
+      "usage": {
+        "input_tokens": 22113,
+        "cached_input_tokens": 11136,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 145,
+        "reasoning_output_tokens": 0
+      }
+    },
+    {
+      "variant": "candidate",
+      "model": "gpt-6.2-sol",
+      "case": "react-native",
+      "kind": "primary",
+      "inventory": "candidate-gpt-6.2-sol-project-local",
+      "prompt_sha256": "a0fac4bd64444529c90401a5008f3cd06e2b4701fa67cd3cbdc87bc8a46485ae",
+      "route": true,
+      "expected_reference_hit": true,
+      "targeted_reads": [
+        "skills/barcode-capture-rn/SKILL.md",
+        "skills/barcode-capture-rn/references/integration.md"
+      ],
+      "criteria": {
+        "R1": true,
+        "R2": true,
+        "R3": true,
+        "R4": true
+      },
+      "quality": true,
+      "notes": "Identified React Native, gave both React Native dependency names and directed the user to React Native Barcode Capture.",
+      "additional_search_excerpts": [],
+      "usage": {
+        "input_tokens": 118560,
+        "cached_input_tokens": 66688,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 418,
+        "reasoning_output_tokens": 0
+      }
+    }
+  ]
+}

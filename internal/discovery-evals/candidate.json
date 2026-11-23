@@ -1,0 +1,10 @@
+{
+  "barcode-capture-android": "Native Android (Kotlin/Java Activity or Fragment): integrate or migrate Scandit BarcodeCapture, configure symbologies, overlay, listener and camera lifecycle. For React Native Android targets use barcode-capture-rn.",
+  "barcode-capture-rn": "React Native apps on Android or iOS (react-native in package.json): integrate or migrate BarcodeCapture with scandit-react-native-datacapture-barcode, configure symbologies, overlay, feedback and scan listeners.",
+  "barcode-capture-ios": "Native iOS (Swift): integrate or migrate Scandit BarcodeCapture with a custom DataCaptureView, scan listener and overlay, replace scanners or troubleshoot.",
+  "barcode-capture-web": "Browser JavaScript/TypeScript: integrate or migrate Scandit Web BarcodeCapture, configure symbologies, results and custom overlays. Hybrid Cordova and Capacitor apps use their plugin skills.",
+  "barcode-capture-flutter": "Flutter (Dart): integrate or migrate Scandit BarcodeCapture, configure scan settings, results and overlays, replace mobile_scanner or ML Kit, or troubleshoot.",
+  "matrixscan-count-android": "Native Android (Kotlin/Java): implement MatrixScan Count (BarcodeCount) for bulk counting, receiving lists, UI or camera lifecycle in an Activity or Fragment.",
+  "matrixscan-count-rn": "React Native (Android/iOS): implement MatrixScan Count with BarcodeCountView, counting or receiving lists, symbologies, status and toolbar customization.",
+  "data-capture-sdk": "Choosing a Scandit product or evaluating a workflow before integration? Recommend scanning products by use case, compare features, check device support, symbologies or pricing, and point to platform documentation and next steps."
+}

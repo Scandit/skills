@@ -26,7 +26,17 @@ Or install from your agent's own marketplace:
 | Antigravity | `agy plugin install https://github.com/scandit/skills` | Re-run the install command |
 | Everyone else | `npx plugins@1.3.4 add scandit/skills` | Re-run `npx plugins@1.3.4 add scandit/skills` |
 
-**Just one skill?** Your agent only loads the skills your prompt needs, so the full bundle is the right choice — install once with `npx plugins@1.3.4 add scandit/skills`.
+**Just one skill?** A project that only uses React Native Barcode Capture can install that skill on its own. Run the command for your agent from the project root.
+
+```bash
+# Codex CLI
+npx --yes skills@1.7.0 add scandit/skills --skill barcode-capture-rn --agent codex --copy -y
+
+# Claude Code
+npx --yes skills@1.7.0 add scandit/skills --skill barcode-capture-rn --agent claude-code --copy -y
+```
+
+These commands copy the skill into `.agents/skills/` for Codex or `.claude/skills/` for Claude Code. In a fresh project with no other Scandit installation, only the selected Scandit skill is available for discovery. The full bundle exposes descriptions for all its skills up front. The agent can open individual guides as it works.
 
 ## How to use it
 
