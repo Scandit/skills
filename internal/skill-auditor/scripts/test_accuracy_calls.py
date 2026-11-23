@@ -310,6 +310,35 @@ class AccuracyCallsTest(unittest.TestCase):
         (self.skills / "id-capture-ios" / "leak.md").symlink_to(secret)
         self.assertEqual(self.run_ok(dry=True)["releases"][0]["totals"]["input_bytes"], planned)
 
+    def test_hidden_files_are_not_sent(self):
+        planned = self.run_ok(dry=True)["releases"][0]["totals"]["input_bytes"]
+        (self.skills / "id-capture-ios" / ".env").write_text("x" * 5000)
+        (self.skills / "id-capture-ios" / ".scratch").mkdir()
+        (self.skills / "id-capture-ios" / ".scratch" / "notes.md").write_text("x" * 5000)
+        self.assertEqual(self.run_ok(dry=True)["releases"][0]["totals"]["input_bytes"], planned)
+
+    def test_failed_call_without_a_cost_report_stops_a_cost_limited_run(self):
+        out = self.run_ok("--max-calls", "10", "--max-cost-usd", "5", env=self.scripted({"exit": 1}))
+        self.assertEqual((self.calls(), out["usage"]["unknown_cost_calls"]), (1, 1))
+
+    def test_non_finite_or_negative_usage_fails_the_batch(self):
+        for bad in ({**GOOD_BARCODE, "usage": {"input_tokens": 1e999}}, {**GOOD_BARCODE, "cost": -1}):
+            with self.subTest(bad=bad):
+                self.log.unlink(missing_ok=True)
+                self.assert_barcode_batch_not_checked(bad, "invalid reply")
+
+    def test_mapped_skill_without_files_is_not_checked(self):
+        (self.skills / "id-capture-ios" / "SKILL.md").unlink()
+        out = self.run_ok("--max-calls", "10", env=self.scripted(GOOD_BARCODE, GOOD_CORE))
+        self.assertEqual(self.outcomes(out)[ID_ID], ("not-checked", "no skill files: id-capture-ios"))
+        self.assertEqual(self.calls(), 2)
+
+    def test_unreadable_skill_file_exits_2_before_any_call(self):
+        (self.skills / "id-capture-ios" / "SKILL.md").chmod(0)
+        proc = self.run_script("--max-calls", "10")
+        self.assertEqual((proc.returncode, self.calls()), (2, 0))
+        self.assertIn("cannot read skill file", proc.stderr)
+
     def test_skill_dir_linking_outside_the_skills_tree_exits_2(self):
         outside = self.work / "outside"
         outside.mkdir()

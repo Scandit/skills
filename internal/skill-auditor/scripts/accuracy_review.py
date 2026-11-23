@@ -9,6 +9,7 @@ import argparse
 from collections import Counter
 import functools
 import json
+import math
 import os
 import re
 import shutil
@@ -193,9 +194,11 @@ def _one_skill_files(root: Path) -> tuple[tuple[Path, int], ...]:
         real = root.resolve()
         if not real.is_relative_to(root.parent.resolve()):
             raise UsageError(f"skill directory {root} resolves outside {root.parent}")
-        files = sorted(f for d, _, names in os.walk(root, onerror=fail) for n in names
-                       if (f := Path(d, n)).resolve().is_relative_to(real))
-        return tuple((f, f.stat().st_size) for f in files)
+        files = []
+        for d, dirs, names in os.walk(root, onerror=fail):
+            dirs[:] = [x for x in dirs if not x.startswith(".")]
+            files += [f for n in names if not n.startswith(".") and (f := Path(d, n)).resolve().is_relative_to(real)]
+        return tuple((f, f.stat().st_size) for f in sorted(files))
     except OSError as exc:
         raise UsageError(f"cannot read skill files under {root}: {exc}")
 
@@ -206,6 +209,8 @@ def skill_files(skills_dir: Path, skills: list[str]) -> list[tuple[Path, int]]:
 
 def plan_group(items_bytes: int, files: list[tuple[Path, int]], max_batch_bytes: int) -> list[list[tuple[Path, int]]]:
     """Batches of one group: every batch carries all items plus a run of files."""
+    if not files:
+        return []
     batches: list[list[tuple[Path, int]]] = [[]]
     used = 0
     for file in files:
@@ -328,7 +333,7 @@ class BatchFailure(Exception):
 
 
 def number(value) -> TypeGuard[int | float]:
-    return isinstance(value, (int, float)) and not isinstance(value, bool)
+    return isinstance(value, (int, float)) and not isinstance(value, bool) and math.isfinite(value) and value >= 0
 
 
 CONFIDENCES = ("high", "medium", "low")
@@ -358,7 +363,7 @@ def call_claude(user: str, system_file: Path, model: str, timeout: int) -> tuple
             or not isinstance(data.get("result"), str):
         spent = data.get("total_cost_usd") if isinstance(data, dict) else None
         raise BatchFailure(f"call failed: exit {proc.returncode} {(proc.stderr or proc.stdout)[-200:]}",
-                           float(spent) if number(spent) else 0.0)
+                           float(spent) if number(spent) else None)
     cost = data.get("total_cost_usd") or 0.0
     if not number(cost):
         raise BatchFailure(f"invalid reply: total_cost_usd {cost!r}"[:300], None)
@@ -366,9 +371,9 @@ def call_claude(user: str, system_file: Path, model: str, timeout: int) -> tuple
     tokens = None
     if isinstance(usage, dict) and "input_tokens" in usage:
         counts = [usage.get(k) or 0 for k in ("input_tokens", "cache_creation_input_tokens", "cache_read_input_tokens")]
-        if not all(number(c) for c in counts):
+        if not all(number(c) and isinstance(c, int) for c in counts):
             raise BatchFailure(f"invalid reply: usage {usage!r}"[:300], float(cost))
-        tokens = int(sum(counts))
+        tokens = sum(counts)
     return data["result"], tokens, float(cost)
 
 
@@ -507,6 +512,11 @@ def run_batches(releases: list[dict], skills_dir: Path, args) -> dict:
         system_file.write_text(SYSTEM_PROMPT)
         for release in releases:
             for row in release["platforms"]:
+                for group in group_entries(row["entries"]):
+                    for path, _ in skill_files(skills_dir, group[0]["skills"]):
+                        read_lines(path)
+        for release in releases:
+            for row in release["platforms"]:
                 failed: dict[str, str] = {}
                 partial: dict[str, str] = {}
                 for entry in row["entries"]:
@@ -533,6 +543,10 @@ def run_batches(releases: list[dict], skills_dir: Path, args) -> dict:
                     if split:
                         note = f"not-covered unchecked, skill split across batches: {', '.join(sorted(split))}"
                         partial.update({i: note for i in ids})
+                    empty = sorted(s for s in group[0]["skills"] if not _one_skill_files(skills_dir / s))
+                    if empty:
+                        note = f"no skill files: {', '.join(empty)}"
+                        (failed if len(empty) == len(group[0]["skills"]) else partial).update({i: note for i in ids})
                 row["outcomes"] = settle(row["entries"], failed, partial)
     return {"calls": budget.calls, "input_tokens": budget.tokens, "cost_usd": budget.cost,
             "unknown_cost_calls": budget.unknown_cost_calls}
