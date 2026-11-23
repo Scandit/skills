@@ -1,0 +1,1 @@
+We're planning an Android app for stocktaking. Staff need to scan several barcodes in one view, count items, and verify them against the delivery manifest. Which Scandit product fits, and what should our team do before starting integration? We only need a recommendation.

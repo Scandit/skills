@@ -1,0 +1,1 @@
+We want Scandit Barcode Capture on the stockroom screen. Our app ships on Android. Inspect this project and tell us which integration guidance we should use and the first setup step. If that guidance is missing from this installation, tell us what to get. Just give us the plan.

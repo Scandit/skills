@@ -1,0 +1,1 @@
+Our checkout page should display a QR code for pickup. Show a small JavaScript example that turns the order's pickup URL into a QR code displayed in the existing canvas. Include the dependency and return the snippet here.

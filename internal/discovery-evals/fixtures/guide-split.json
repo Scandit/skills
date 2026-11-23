@@ -1,0 +1,44 @@
+{
+  "SKILL.md": {
+    "source": "SKILL.md",
+    "lines": [
+      [1, 41],
+      "- **Setting up a counting screen**, enabling symbologies, customizing brushes, translating hints, adding status overlays, or managing the camera lifecycle → read [references/integration.md](references/integration.md).",
+      "- **Changing view controls on an existing screen**, including hiding the exit button or toolbar, changing toolbar labels, or configuring toolbar accessibility → read [references/toolbar.md](references/toolbar.md).",
+      "- **Scanning against an expected list**, picklist, or packing slip → read [references/capture-list.md](references/capture-list.md). For an empty screen, also read [references/integration.md](references/integration.md) for setup.",
+      [43, 82]
+    ]
+  },
+  "references/integration.md": {
+    "source": "references/integration.md",
+    "lines": [
+      [1, 272],
+      "For visibility toggles and the exit, shutter, list and toolbar buttons, see [View controls and toolbar](toolbar.md).",
+      [307, 528],
+      "For the toolbar settings example and button labels and accessibility strings, see [View controls and toolbar](toolbar.md).",
+      [687, 804],
+      "For expected quantities, completion callbacks, and the correct, wrong and missing barcodes in a session, see [Scanning against a capture list](capture-list.md).",
+      [1313, 1648]
+    ]
+  },
+  "references/toolbar.md": {
+    "source": "references/integration.md",
+    "lines": [
+      "# MatrixScan Count view controls and toolbar in React Native",
+      [2, 2],
+      "For an existing `BarcodeCountView`, keep its mode, camera lifecycle and listeners. Apply the visibility properties in the existing view ref callback.",
+      [272, 307],
+      "### Applying toolbar settings",
+      [528, 686]
+    ]
+  },
+  "references/capture-list.md": {
+    "source": "references/integration.md",
+    "lines": [
+      "# Scanning Against a List (BarcodeCountCaptureList)",
+      [804, 810],
+      "For a new React Native screen, follow the [integration setup](integration.md) for packages, permissions and camera lifecycle.",
+      [812, 1312]
+    ]
+  }
+}

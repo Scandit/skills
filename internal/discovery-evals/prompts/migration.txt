@@ -1,0 +1,1 @@
+We're upgrading the Scandit SDK in this project from v7 to v8. Inspect MainActivity and tell me what needs changing in our Barcode Capture initialization and whether there are camera-setting deprecations to watch for. Please include the official migration guide.

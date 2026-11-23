@@ -69,6 +69,8 @@
       "evals/third-party-migration-evals.json": {"except": ["kmp"]}
     },
     "matrixscan-count-": {
+      "references/capture-list.md": ["rn"],
+      "references/toolbar.md": ["rn"],
       "references/clustering.md": ["android", "ios"],
       "evals/clustering-evals.json": ["android", "ios"],
       "references/group-scanning.md": ["android", "ios"],

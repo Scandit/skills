@@ -1,0 +1,958 @@
+{
+  "suite": "evals/matrixscan-count-rn/integration-evals.json",
+  "packages_sha256": {
+    "original": "beaea17fb0277a7400b721d60267ae44c773e534c1d547dedb282aa3c12d56df",
+    "split": "08cc3909bb978977a91f293f5ba90a0b209c2941bdb20d621968c229d723e6ad"
+  },
+  "mode": "One fresh low-effort session per case, model and arm. Both arms use the same original fixture and ask for a complete updated screen in a code block. No native build.",
+  "grading": "One-based original assertion IDs. Literal checks use internal/assertion-evals/score.py, other checks use manual review of the answer against the fixture. Assertion 4 of eval 3 requires preserving the existing explicit camera-off transition.",
+  "token_measure": "gpt-tokenizer 3.4.0, o200k_base. Returned reference body text per tool call, excluding fixture, SKILL.md, tool metadata and paths. Searches returning source lines count as excerpts. Repeated openings count separately. These counts do not measure total session usage.",
+  "unknown_grep": "Three primary Claude toolbar runs recorded package Grep without the returned text. Their measured token figures are lower bounds. Zero with an unknown search does not establish that no reference content was seen.",
+  "protocols": {
+    "primary": "Original prompt with common read-only output format.",
+    "controlled": "Same toolbar case and output format plus the single skill/reference instruction in internal/discovery-evals/controlled-toolbar.md."
+  },
+  "assertions": {
+    "1": [
+      {
+        "id": 1,
+        "text": "Setup checklist is shown (mentions scandit-react-native-datacapture-core and scandit-react-native-datacapture-barcode)",
+        "grading": "semantic"
+      },
+      {
+        "id": 2,
+        "text": "Setup checklist mentions npx pod-install for iOS",
+        "grading": "semantic"
+      },
+      {
+        "id": 3,
+        "text": "Setup checklist mentions NSCameraUsageDescription in ios Info.plist",
+        "grading": "semantic"
+      },
+      {
+        "id": 4,
+        "text": "DataCaptureContext.initialize( is present (v8 API)",
+        "grading": "literal"
+      },
+      {
+        "id": 5,
+        "text": "DataCaptureContext.forLicenseKey( is NOT present",
+        "grading": "literal"
+      },
+      {
+        "id": 6,
+        "text": "DataCaptureContext.sharedInstance is present (semantic)",
+        "grading": "semantic"
+      },
+      {
+        "id": 7,
+        "text": "'-- ENTER YOUR SCANDIT LICENSE KEY HERE --' is present",
+        "grading": "semantic"
+      },
+      {
+        "id": 8,
+        "text": "new BarcodeCount(settings) is present (constructor pattern, not forDataCaptureContext factory)",
+        "grading": "literal"
+      },
+      {
+        "id": 9,
+        "text": "Symbology.EAN13UPCA is enabled",
+        "grading": "literal"
+      },
+      {
+        "id": 10,
+        "text": "Symbology.Code128 is enabled",
+        "grading": "literal"
+      },
+      {
+        "id": 11,
+        "text": "<BarcodeCountView is rendered in the JSX tree",
+        "grading": "semantic"
+      },
+      {
+        "id": 12,
+        "text": "BarcodeCountView has a barcodeCount prop and a context prop (semantic)",
+        "grading": "semantic"
+      },
+      {
+        "id": 13,
+        "text": "view.listener or view.uiListener is set inside the BarcodeCountView ref callback",
+        "grading": "semantic"
+      },
+      {
+        "id": 14,
+        "text": "view.start() is NOT present (BarcodeCountView does not require explicit start)",
+        "grading": "literal"
+      },
+      {
+        "id": 15,
+        "text": "The camera is switched on with switchToDesiredState (semantic)",
+        "grading": "semantic"
+      },
+      {
+        "id": 16,
+        "text": "The component is written as a function component (no class syntax)",
+        "grading": "semantic"
+      },
+      {
+        "id": 17,
+        "text": "useRef is used to hold the BarcodeCount mode reference",
+        "grading": "semantic"
+      },
+      {
+        "id": 18,
+        "text": "useEffect cleanup calls dataCaptureContext.setFrameSource(null)",
+        "grading": "semantic"
+      },
+      {
+        "id": 19,
+        "text": "Import from 'scandit-react-native-datacapture-core' is present",
+        "grading": "literal"
+      },
+      {
+        "id": 20,
+        "text": "Import from 'scandit-react-native-datacapture-barcode' is present",
+        "grading": "literal"
+      }
+    ],
+    "3": [
+      {
+        "id": 1,
+        "text": "view.shouldShowExitButton = false is present",
+        "grading": "literal"
+      },
+      {
+        "id": 2,
+        "text": "view.shouldShowToolbar = false is present",
+        "grading": "literal"
+      },
+      {
+        "id": 3,
+        "text": "Both properties are set inside the BarcodeCountView ref callback (semantic)",
+        "grading": "semantic"
+      },
+      {
+        "id": 4,
+        "text": "Existing BarcodeCount mode, BarcodeCountView JSX, and camera lifecycle are preserved (semantic)",
+        "grading": "semantic"
+      },
+      {
+        "id": 5,
+        "text": "view.listener is still set in the ref callback (semantic)",
+        "grading": "semantic"
+      },
+      {
+        "id": 6,
+        "text": "view.uiListener is still set in the ref callback (semantic)",
+        "grading": "semantic"
+      }
+    ]
+  },
+  "summary": {
+    "primary": [
+      {
+        "eval_id": 1,
+        "variant": "baseline",
+        "sessions": 4,
+        "sessions_passing_all": 0,
+        "assertions_passed": 73,
+        "assertions_total": 80
+      },
+      {
+        "eval_id": 1,
+        "variant": "split",
+        "sessions": 4,
+        "sessions_passing_all": 2,
+        "assertions_passed": 76,
+        "assertions_total": 80
+      },
+      {
+        "eval_id": 3,
+        "variant": "baseline",
+        "sessions": 4,
+        "sessions_passing_all": 3,
+        "assertions_passed": 19,
+        "assertions_total": 24
+      },
+      {
+        "eval_id": 3,
+        "variant": "split",
+        "sessions": 4,
+        "sessions_passing_all": 3,
+        "assertions_passed": 20,
+        "assertions_total": 24
+      }
+    ],
+    "controlled": [
+      {
+        "eval_id": 3,
+        "variant": "baseline",
+        "sessions": 4,
+        "sessions_passing_all": 4,
+        "assertions_passed": 24,
+        "assertions_total": 24
+      },
+      {
+        "eval_id": 3,
+        "variant": "split",
+        "sessions": 4,
+        "sessions_passing_all": 4,
+        "assertions_passed": 24,
+        "assertions_total": 24
+      }
+    ]
+  },
+  "observations": {
+    "primary": [
+      {
+        "harness": "Claude Code",
+        "model": "claude-haiku-5-5",
+        "eval_id": 1,
+        "variant": "baseline",
+        "assertions_passed": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          18,
+          19,
+          20
+        ],
+        "assertions_failed": {
+          "17": "Mode stored in useState."
+        },
+        "reference_reads": [
+          {
+            "reference": "integration.md",
+            "returned_lines": 1227,
+            "tool": "Read",
+            "start_line": 1,
+            "tokens": 12097
+          }
+        ],
+        "reference_tokens": 12097,
+        "unmeasured_package_grep": false
+      },
+      {
+        "harness": "Claude Code",
+        "model": "claude-haiku-5-5",
+        "eval_id": 1,
+        "variant": "split",
+        "assertions_passed": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18,
+          19,
+          20
+        ],
+        "assertions_failed": {},
+        "reference_reads": [
+          {
+            "reference": "integration.md",
+            "returned_lines": 951,
+            "tool": "Read",
+            "start_line": 1,
+            "tokens": 9760
+          }
+        ],
+        "reference_tokens": 9760,
+        "unmeasured_package_grep": false
+      },
+      {
+        "harness": "Claude Code",
+        "model": "claude-haiku-5-5",
+        "eval_id": 3,
+        "variant": "baseline",
+        "assertions_passed": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "assertions_failed": {},
+        "reference_reads": [],
+        "reference_tokens": 0,
+        "unmeasured_package_grep": true
+      },
+      {
+        "harness": "Claude Code",
+        "model": "claude-haiku-5-5",
+        "eval_id": 3,
+        "variant": "split",
+        "assertions_passed": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "assertions_failed": {},
+        "reference_reads": [
+          {
+            "reference": "toolbar.md",
+            "returned_lines": 199,
+            "tool": "Read",
+            "start_line": 1,
+            "tokens": 2190
+          }
+        ],
+        "reference_tokens": 2190,
+        "unmeasured_package_grep": true
+      },
+      {
+        "harness": "Claude Code",
+        "model": "claude-sonnet-5-5",
+        "eval_id": 1,
+        "variant": "baseline",
+        "assertions_passed": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          14,
+          15,
+          16,
+          17,
+          18,
+          19,
+          20
+        ],
+        "assertions_failed": {
+          "13": "Ref callback only comments an example listener assignment."
+        },
+        "reference_reads": [
+          {
+            "reference": "integration.md",
+            "returned_lines": 1227,
+            "tool": "Read",
+            "start_line": 1,
+            "tokens": 12097
+          },
+          {
+            "reference": "integration.md",
+            "returned_lines": 421,
+            "tool": "Read",
+            "start_line": 1228,
+            "tokens": 4188
+          }
+        ],
+        "reference_tokens": 16285,
+        "unmeasured_package_grep": false
+      },
+      {
+        "harness": "Claude Code",
+        "model": "claude-sonnet-5-5",
+        "eval_id": 1,
+        "variant": "split",
+        "assertions_passed": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18,
+          19,
+          20
+        ],
+        "assertions_failed": {},
+        "reference_reads": [
+          {
+            "reference": "integration.md",
+            "returned_lines": 951,
+            "tool": "Read",
+            "start_line": 1,
+            "tokens": 9760
+          }
+        ],
+        "reference_tokens": 9760,
+        "unmeasured_package_grep": false
+      },
+      {
+        "harness": "Claude Code",
+        "model": "claude-sonnet-5-5",
+        "eval_id": 3,
+        "variant": "baseline",
+        "assertions_passed": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "assertions_failed": {},
+        "reference_reads": [
+          {
+            "reference": "integration.md",
+            "returned_lines": 39,
+            "tool": "Read",
+            "start_line": 270,
+            "tokens": 517
+          }
+        ],
+        "reference_tokens": 517,
+        "unmeasured_package_grep": true
+      },
+      {
+        "harness": "Claude Code",
+        "model": "claude-sonnet-5-5",
+        "eval_id": 3,
+        "variant": "split",
+        "assertions_passed": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "assertions_failed": {},
+        "reference_reads": [
+          {
+            "reference": "toolbar.md",
+            "returned_lines": 199,
+            "tool": "Read",
+            "start_line": 1,
+            "tokens": 2190
+          }
+        ],
+        "reference_tokens": 2190,
+        "unmeasured_package_grep": false
+      },
+      {
+        "harness": "Codex CLI",
+        "model": "gpt-6-luna",
+        "eval_id": 1,
+        "variant": "baseline",
+        "assertions_passed": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          8,
+          9,
+          10,
+          11,
+          12,
+          14,
+          15,
+          16,
+          17,
+          18,
+          19,
+          20
+        ],
+        "assertions_failed": {
+          "7": "Different license placeholder.",
+          "13": "No BarcodeCountView ref callback."
+        },
+        "reference_reads": [
+          {
+            "reference": "integration.md",
+            "returned_lines": 1648,
+            "tool": "cat",
+            "tokens": 16285
+          }
+        ],
+        "reference_tokens": 16285,
+        "unmeasured_package_grep": false
+      },
+      {
+        "harness": "Codex CLI",
+        "model": "gpt-6-luna",
+        "eval_id": 1,
+        "variant": "split",
+        "assertions_passed": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          14,
+          15,
+          16,
+          17,
+          18,
+          19,
+          20
+        ],
+        "assertions_failed": {
+          "13": "No BarcodeCountView ref callback."
+        },
+        "reference_reads": [
+          {
+            "reference": "integration.md",
+            "returned_lines": 951,
+            "tool": "cat",
+            "tokens": 9760
+          }
+        ],
+        "reference_tokens": 9760,
+        "unmeasured_package_grep": false
+      },
+      {
+        "harness": "Codex CLI",
+        "model": "gpt-6-luna",
+        "eval_id": 3,
+        "variant": "baseline",
+        "assertions_passed": [
+          5
+        ],
+        "assertions_failed": {
+          "1": "Invented JSX prop for exit visibility.",
+          "2": "Invented JSX prop for toolbar visibility.",
+          "3": "Visibility set as JSX properties outside ref callback.",
+          "4": "Removed fixture exit handler with its explicit camera-off state transition.",
+          "6": "Removed UI listener assignment."
+        },
+        "reference_reads": [],
+        "reference_tokens": 0,
+        "unmeasured_package_grep": false
+      },
+      {
+        "harness": "Codex CLI",
+        "model": "gpt-6-luna",
+        "eval_id": 3,
+        "variant": "split",
+        "assertions_passed": [
+          5,
+          6
+        ],
+        "assertions_failed": {
+          "1": "Invented JSX prop for exit visibility.",
+          "2": "Invented JSX prop for toolbar visibility.",
+          "3": "Visibility set as JSX properties outside ref callback.",
+          "4": "Removed fixture exit handler with its explicit camera-off state transition."
+        },
+        "reference_reads": [],
+        "reference_tokens": 0,
+        "unmeasured_package_grep": false
+      },
+      {
+        "harness": "Codex CLI",
+        "model": "gpt-6.2-sol",
+        "eval_id": 1,
+        "variant": "baseline",
+        "assertions_passed": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          8,
+          9,
+          10,
+          11,
+          12,
+          14,
+          15,
+          16,
+          18,
+          19,
+          20
+        ],
+        "assertions_failed": {
+          "7": "Different license placeholder.",
+          "13": "Ref sets button visibility only.",
+          "17": "Mode is a module-level constant."
+        },
+        "reference_reads": [
+          {
+            "reference": "integration.md",
+            "returned_lines": 1648,
+            "tool": "cat",
+            "tokens": 16285
+          }
+        ],
+        "reference_tokens": 16285,
+        "unmeasured_package_grep": false
+      },
+      {
+        "harness": "Codex CLI",
+        "model": "gpt-6.2-sol",
+        "eval_id": 1,
+        "variant": "split",
+        "assertions_passed": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          8,
+          9,
+          10,
+          11,
+          12,
+          14,
+          15,
+          16,
+          18,
+          19,
+          20
+        ],
+        "assertions_failed": {
+          "7": "Different license placeholder.",
+          "13": "Ref sets button visibility only.",
+          "17": "Mode is a module-level constant."
+        },
+        "reference_reads": [
+          {
+            "reference": "integration.md",
+            "returned_lines": 951,
+            "tool": "cat",
+            "tokens": 9760
+          },
+          {
+            "reference": "toolbar.md",
+            "returned_lines": 4,
+            "tool": "rg",
+            "tokens": 75
+          },
+          {
+            "reference": "migration.md",
+            "returned_lines": 7,
+            "tool": "rg",
+            "tokens": 181
+          }
+        ],
+        "reference_tokens": 10016,
+        "unmeasured_package_grep": false
+      },
+      {
+        "harness": "Codex CLI",
+        "model": "gpt-6.2-sol",
+        "eval_id": 3,
+        "variant": "baseline",
+        "assertions_passed": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "assertions_failed": {},
+        "reference_reads": [
+          {
+            "reference": "integration.md",
+            "returned_lines": 80,
+            "tool": "rg",
+            "tokens": 1360
+          }
+        ],
+        "reference_tokens": 1360,
+        "unmeasured_package_grep": false
+      },
+      {
+        "harness": "Codex CLI",
+        "model": "gpt-6.2-sol",
+        "eval_id": 3,
+        "variant": "split",
+        "assertions_passed": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "assertions_failed": {},
+        "reference_reads": [
+          {
+            "reference": "toolbar.md",
+            "returned_lines": 199,
+            "tool": "cat",
+            "tokens": 2190
+          }
+        ],
+        "reference_tokens": 2190,
+        "unmeasured_package_grep": false
+      }
+    ],
+    "controlled": [
+      {
+        "harness": "Claude Code",
+        "model": "claude-haiku-5-5",
+        "eval_id": 3,
+        "variant": "baseline",
+        "assertions_passed": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "assertions_failed": {},
+        "reference_reads": [
+          {
+            "reference": "integration.md",
+            "returned_lines": 1227,
+            "tool": "Read",
+            "start_line": 1,
+            "tokens": 12097
+          }
+        ],
+        "reference_tokens": 12097,
+        "unmeasured_package_grep": false
+      },
+      {
+        "harness": "Claude Code",
+        "model": "claude-haiku-5-5",
+        "eval_id": 3,
+        "variant": "split",
+        "assertions_passed": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "assertions_failed": {},
+        "reference_reads": [
+          {
+            "reference": "toolbar.md",
+            "returned_lines": 199,
+            "tool": "Read",
+            "start_line": 1,
+            "tokens": 2190
+          }
+        ],
+        "reference_tokens": 2190,
+        "unmeasured_package_grep": false
+      },
+      {
+        "harness": "Claude Code",
+        "model": "claude-sonnet-5-5",
+        "eval_id": 3,
+        "variant": "baseline",
+        "assertions_passed": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "assertions_failed": {},
+        "reference_reads": [
+          {
+            "reference": "integration.md",
+            "returned_lines": 1227,
+            "tool": "Read",
+            "start_line": 1,
+            "tokens": 12097
+          }
+        ],
+        "reference_tokens": 12097,
+        "unmeasured_package_grep": false
+      },
+      {
+        "harness": "Claude Code",
+        "model": "claude-sonnet-5-5",
+        "eval_id": 3,
+        "variant": "split",
+        "assertions_passed": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "assertions_failed": {},
+        "reference_reads": [
+          {
+            "reference": "toolbar.md",
+            "returned_lines": 199,
+            "tool": "Read",
+            "start_line": 1,
+            "tokens": 2190
+          }
+        ],
+        "reference_tokens": 2190,
+        "unmeasured_package_grep": false
+      },
+      {
+        "harness": "Codex CLI",
+        "model": "gpt-6-luna",
+        "eval_id": 3,
+        "variant": "baseline",
+        "assertions_passed": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "assertions_failed": {},
+        "reference_reads": [
+          {
+            "reference": "integration.md",
+            "returned_lines": 1648,
+            "tool": "cat",
+            "tokens": 16285
+          },
+          {
+            "reference": "migration.md",
+            "returned_lines": 4,
+            "tool": "rg",
+            "tokens": 39
+          },
+          {
+            "reference": "integration.md",
+            "returned_lines": 160,
+            "tool": "rg",
+            "tokens": 2860
+          }
+        ],
+        "reference_tokens": 19184,
+        "unmeasured_package_grep": false
+      },
+      {
+        "harness": "Codex CLI",
+        "model": "gpt-6-luna",
+        "eval_id": 3,
+        "variant": "split",
+        "assertions_passed": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "assertions_failed": {},
+        "reference_reads": [
+          {
+            "reference": "toolbar.md",
+            "returned_lines": 199,
+            "tool": "cat",
+            "tokens": 2190
+          }
+        ],
+        "reference_tokens": 2190,
+        "unmeasured_package_grep": false
+      },
+      {
+        "harness": "Codex CLI",
+        "model": "gpt-6.2-sol",
+        "eval_id": 3,
+        "variant": "baseline",
+        "assertions_passed": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "assertions_failed": {},
+        "reference_reads": [
+          {
+            "reference": "integration.md",
+            "returned_lines": 79,
+            "tool": "rg",
+            "tokens": 1254
+          },
+          {
+            "reference": "integration.md",
+            "returned_lines": 39,
+            "tool": "sed",
+            "tokens": 516
+          }
+        ],
+        "reference_tokens": 1770,
+        "unmeasured_package_grep": false
+      },
+      {
+        "harness": "Codex CLI",
+        "model": "gpt-6.2-sol",
+        "eval_id": 3,
+        "variant": "split",
+        "assertions_passed": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "assertions_failed": {},
+        "reference_reads": [
+          {
+            "reference": "toolbar.md",
+            "returned_lines": 199,
+            "tool": "cat",
+            "tokens": 2190
+          }
+        ],
+        "reference_tokens": 2190,
+        "unmeasured_package_grep": false
+      }
+    ]
+  }
+}
