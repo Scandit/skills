@@ -54,9 +54,6 @@ ref={view => {
     toolbarSettings.audioOffButtonText = 'Sound Off';
 
     view.setToolbarSettings(toolbarSettings);
-
-    // Set a status provider (RN 8.3+)
-    view.setStatusProvider(myStatusProvider);
   }
 }}
 ```

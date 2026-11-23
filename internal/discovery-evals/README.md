@@ -40,7 +40,9 @@ All four models passed all six toolbar assertions on both controlled variants, i
 
 ## Reproduction
 
-From the repository root at the pilot revision, use Python 3.9+ with PyYAML 6.x and authenticated native CLIs for the model trials. Each matrix command creates its own new output directory. Staging checks the package hashes below before running model sessions. The focused trials read their original prompts and screen fixtures from the baseline commit, which must be available locally. The stage and validator run offline.
+From the repository root, use Python 3.9+ with PyYAML 6.x and authenticated native CLIs for the model trials. Each matrix command creates its own new output directory. Staging checks the package hashes below before running model sessions. The focused trials read their original prompts and screen fixtures from the baseline commit, which must be available locally. The stage and validator run offline.
+
+After package validation, the matrix attempts both harnesses and reports incomplete runs at the end. To repeat only an invalid observation, run `claude.py` with the same stages, output, case, model and variant plus a fresh `--round`, or `codex.py` with the same package, case, model and `--measure` plus a fresh `--out`.
 
 The Codex project-local inventory check renders with a clean profile and the authenticated profile's cached model metadata when available. An offline rerun on Luna found the same 87 Scandit and four system skills. Its original-package catalog occupied 20,695 characters, compared with 20,759 in the trial.
 
@@ -50,13 +52,15 @@ python3 internal/discovery-evals/run.py guides --out /tmp/scandit-packages
 python3 internal/discovery-evals/validate.py /tmp/scandit-packages/baseline
 python3 internal/discovery-evals/validate.py /tmp/scandit-packages/candidate
 python3 internal/discovery-evals/validate.py /tmp/scandit-packages/split
-python3 -m unittest discover -s internal/discovery-evals -p test_validate.py
+python3 -m unittest discover -s internal/discovery-evals
 python3 internal/discovery-evals/run.py matrix --out /tmp/scandit-discovery
 python3 internal/discovery-evals/run.py guide-matrix --out /tmp/scandit-guides
 python3 internal/discovery-evals/run.py controlled-toolbar --out /tmp/scandit-toolbar
 ```
 
 Staging archives the publish allowlist from `5fc47c9f1e51b04237864c8b65026dc2665cd822`. It applies the Linux frontmatter correction from PR #153 identically before creating the comparison packages. The original unquoted description fails safe YAML parsing at `skills/scandit-linux-sdk/SKILL.md:3:77`. The regression fixture preserves that failure. All 87 corrected headers pass. The experimental package changes only eight descriptions. The guide-split package starts from the corrected original descriptions.
+
+The [frozen extraction recipe](fixtures/guide-split.json) rebuilds the four evaluated split files from that baseline using inclusive line ranges and literal lines. The recorded toolbar counts include a status-provider call that was removed from the published toolbar example after the trials. Replays use the evaluated example.
 
 | Package | SHA-256 over sorted relative paths and file digests |
 | --- | --- |

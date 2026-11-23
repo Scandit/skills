@@ -47,8 +47,7 @@ def fingerprint(root):
 def checked_fingerprint(root):
     checksum = fingerprint(root)
     if checksum != PACKAGE_HASHES[root.name]:
-        raise ValueError(f"{root.name} differs from the frozen pilot package. "
-                         "Run the reproduction from the pilot revision.")
+        raise ValueError(f"{root.name} differs from the frozen pilot package: {checksum}")
     return checksum
 
 
@@ -86,9 +85,16 @@ def stage_guides(out):
         split = Path(tmp) / "split"
         shutil.copytree(baseline, split)
         skill = Path("skills/matrixscan-count-rn")
-        for name in ("SKILL.md", "references/integration.md", "references/toolbar.md",
-                     "references/capture-list.md"):
-            shutil.copyfile(REPO / skill / name, split / skill / name)
+        recipe = json.loads((HERE / "fixtures/guide-split.json").read_text())
+        for name, spec in recipe.items():
+            source = (baseline / skill / spec["source"]).read_text().splitlines(keepends=True)
+            with (split / skill / name).open("w", encoding="utf-8", newline="\n") as target:
+                for chunk in spec["lines"]:
+                    if isinstance(chunk, str):
+                        target.write(chunk + "\n")
+                    else:
+                        first, last = chunk  # Inclusive, one-based baseline line numbers.
+                        target.writelines(source[first - 1:last])
         manifest = {"original": expected, "split": checked_fingerprint(split)}
         split.rename(out / "split")
     (out / "guide-manifest.json").write_text(json.dumps(manifest, indent=2) + "\n")
@@ -108,15 +114,23 @@ def matrix(out, mode):
              "controlled-toolbar": ("toolbar-controlled",)}[mode]
     for variant in variants:
         subprocess.run([sys.executable, HERE / "validate.py", packages / variant], check=True)
-    subprocess.run([sys.executable, HERE / "claude.py", "--stages", packages, "--output",
-                    out / "claude", "--round", "initial", "--variant", *variants,
-                    "--case", *cases], check=True)
+    failures = []
+    claude_result = subprocess.run([sys.executable, HERE / "claude.py", "--stages", packages,
+                                   "--output", out / "claude", "--round", "initial",
+                                   "--variant", *variants, "--case", *cases])
+    if claude_result.returncode:
+        failures.append(str(out / "claude" / "initial"))
     for model in codex.MODELS:
         for case in cases:
             for variant in variants:
-                subprocess.run([sys.executable, HERE / "codex.py", "--package", packages / variant,
-                                "--case", case, "--model", model, "--out",
-                                out / "codex" / model / case / variant, "--measure"], check=True)
+                dest = out / "codex" / model / case / variant
+                result = subprocess.run([sys.executable, HERE / "codex.py", "--package",
+                                         packages / variant, "--case", case, "--model", model,
+                                         "--out", dest, "--measure"])
+                if result.returncode:
+                    failures.append(str(dest))
+    if failures:
+        raise SystemExit("Incomplete runs. Inspect these outputs:\n" + "\n".join(failures))
 
 
 if __name__ == "__main__":

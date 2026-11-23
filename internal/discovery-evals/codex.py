@@ -77,6 +77,26 @@ def inventory(flags, env, project, expected, prefix=""):
             "entries": [row.replace(str(project), "<project>") for row in package]}
 
 
+def record_result(result, dest, project):
+    def normalize(text):
+        return text.replace(str(project), "<project>").replace(str(Path.home()), "<home>")
+
+    (dest / "events.jsonl").write_text(normalize(result.stdout))
+    (dest / "stderr.log").write_text(normalize(result.stderr))
+    for line in reversed(result.stdout.splitlines()):
+        try:
+            event = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        if isinstance(event, dict) and "type" in event:
+            if (result.returncode == 0 and event["type"] == "turn.completed"
+                    and isinstance(event.get("usage"), dict)):
+                save(dest / "usage.json", event["usage"])
+                return
+            break
+    raise RuntimeError(f"Run incomplete. See {dest}/events.jsonl and stderr.log")
+
+
 def run(args):
     dest = args.out.resolve()
     dest.mkdir(parents=True, exist_ok=False)
@@ -129,14 +149,7 @@ def run(args):
             result = subprocess.run([*flags, "exec", "--ignore-user-config", "--ignore-rules", "--ephemeral",
                                      "--skip-git-repo-check", "--json", "-"], cwd=project, env=env, input=prompt,
                                     text=True, capture_output=True, timeout=600)
-            def normalize(text):
-                return text.replace(str(project), "<project>").replace(str(Path.home()), "<home>")
-            (dest / "events.jsonl").write_text(normalize(result.stdout))
-            (dest / "stderr.log").write_text(normalize(result.stderr))
-            events = [json.loads(line) for line in result.stdout.splitlines()]
-            if result.returncode or not events or events[-1]["type"] != "turn.completed":
-                raise RuntimeError(f"Run incomplete. See {dest}/events.jsonl and stderr.log")
-            save(dest / "usage.json", events[-1]["usage"])
+            record_result(result, dest, project)
 
 
 if __name__ == "__main__":
