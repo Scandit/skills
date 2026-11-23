@@ -164,6 +164,26 @@ class ReleaseCheckTest(unittest.TestCase):
         core = versions["8.6.3"]["ios"]["entries"][0]
         self.assertIn("barcode-capture-ios", core["skills"])
         self.assertEqual(len(core["skills"]), 10)
+        linux = [e for e in versions["8.7.0"]["linux"]["entries"] if e["product"] == "Barcode"]
+        self.assertGreater(len(linux), 0)
+        self.assertTrue(all(e["skills"] == ["scandit-linux-sdk"] for e in linux))
+
+    def test_docs_inside_another_repo_exits_2(self):
+        shutil.copytree(self.docs / "docs", self.docs / "plain" / "docs")
+        self.addCleanup(shutil.rmtree, self.docs / "plain")
+        proc = run("--dry-run", "--docs", str(self.docs / "plain"), "--from", self.sha["92a9e4d1"])
+        self.assertEqual(proc.returncode, 2, proc.stderr)
+        self.assertIn("not the root of a git worktree", proc.stderr)
+
+    def test_unreadable_notes_blob_exits_2(self):
+        clone = self.tmp / "broken-clone"
+        shutil.copytree(self.docs, clone)
+        self.addCleanup(shutil.rmtree, clone)
+        blob = git(clone, "rev-parse", f"{self.sha['ae41ae70']}:docs/sdks/linux/release-notes.md")
+        (clone / ".git" / "objects" / blob[:2] / blob[2:]).unlink()
+        proc = run("--dry-run", "--docs", str(clone), "--from", self.sha["92a9e4d1"], "--to", self.sha["ae41ae70"])
+        self.assertEqual(proc.returncode, 2, proc.stderr)
+        self.assertIn("cannot read docs/sdks/linux/release-notes.md", proc.stderr)
 
     def test_unknown_product_is_no_skill(self):
         before = self.by_version(self.releases())["8.7.0"]["ios"]

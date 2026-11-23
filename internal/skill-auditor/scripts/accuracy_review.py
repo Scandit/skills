@@ -102,11 +102,14 @@ HEADING = re.compile(r"^(#{1,6})\s+(.*?)\s*$")
 
 
 def resolve_ref(docs_dir: Path, ref: str) -> str:
+    git = ["git", "-C", str(docs_dir), "rev-parse"]
     try:
-        proc = subprocess.run(["git", "-C", str(docs_dir), "rev-parse", "--verify", "--quiet", f"{ref}^{{commit}}"],
-                              capture_output=True, text=True)
+        top = subprocess.run([*git, "--show-toplevel"], capture_output=True, text=True)
+        proc = subprocess.run([*git, "--verify", "--quiet", f"{ref}^{{commit}}"], capture_output=True, text=True)
     except OSError as exc:
         raise UsageError(f"cannot run git: {exc}")
+    if top.returncode != 0 or Path(top.stdout.strip()).resolve() != docs_dir.resolve():
+        raise UsageError(f"--docs {docs_dir} is not the root of a git worktree")
     if proc.returncode != 0:
         raise UsageError(f"unknown commit {ref!r} in --docs {docs_dir}")
     return proc.stdout.strip()
@@ -115,7 +118,7 @@ def resolve_ref(docs_dir: Path, ref: str) -> str:
 def notes_at(docs_dir: Path, sha: str, rel: str) -> str:
     git = ["git", "-C", str(docs_dir)]
     try:
-        if subprocess.run([*git, "cat-file", "-e", f"{sha}:{rel}"], capture_output=True).returncode != 0:
+        if subprocess.run([*git, "rev-parse", "--verify", "--quiet", f"{sha}:{rel}"], capture_output=True).returncode != 0:
             return ""
         proc = subprocess.run([*git, "show", f"{sha}:{rel}"], capture_output=True)
     except OSError as exc:

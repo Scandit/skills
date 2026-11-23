@@ -162,7 +162,8 @@
       "barcode-",
       "matrixscan-",
       "sparkscan-",
-      "parser-"
+      "parser-",
+      "scandit-linux-"
     ],
     "Id": [
       "id-capture-"
