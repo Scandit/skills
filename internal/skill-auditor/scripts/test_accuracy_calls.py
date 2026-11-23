@@ -267,7 +267,7 @@ class AccuracyCallsTest(unittest.TestCase):
             with self.subTest(flag=flag):
                 proc = self.run_script("--max-calls", "5", flag, "0")
                 self.assertEqual((proc.returncode, self.calls()), (2, 0))
-                self.assertIn("must be positive", proc.stderr)
+                self.assertIn("finite and positive", proc.stderr)
 
     def test_real_run_without_from_exits_2(self):
         cmd = [sys.executable, str(SCRIPT), "--docs", str(self.docs), "--skills", str(self.skills),
@@ -316,6 +316,36 @@ class AccuracyCallsTest(unittest.TestCase):
         (self.skills / "id-capture-ios" / ".scratch").mkdir()
         (self.skills / "id-capture-ios" / ".scratch" / "notes.md").write_text("x" * 5000)
         self.assertEqual(self.run_ok(dry=True)["releases"][0]["totals"]["input_bytes"], planned)
+
+    def test_visible_symlink_to_a_hidden_file_is_not_sent(self):
+        planned = self.run_ok(dry=True)["releases"][0]["totals"]["input_bytes"]
+        (self.skills / "id-capture-ios" / ".env").write_text("x" * 5000)
+        (self.skills / "id-capture-ios" / "config.txt").symlink_to(".env")
+        self.assertEqual(self.run_ok(dry=True)["releases"][0]["totals"]["input_bytes"], planned)
+
+    def test_dry_run_prompt_tokens_is_the_limit_the_real_run_needs(self):
+        need = self.run_ok(dry=True)["releases"][0]["totals"]["prompt_tokens"]
+        env = self.scripted(*({**r, "usage": {}} for r in (GOOD_BARCODE, GOOD_CORE, GOOD_ID)))
+        self.run_ok("--max-calls", "10", "--max-input-tokens", str(need), env=env)
+        self.assertEqual(self.calls(), 3)
+        self.log.unlink()
+        self.run_ok("--max-calls", "10", "--max-input-tokens", str(need - 1), env=env)
+        self.assertEqual(self.calls(), 2)
+
+    def test_success_without_a_cost_report_stops_a_cost_limited_run(self):
+        for cost in (None, "__absent__"):
+            with self.subTest(cost=cost):
+                self.log.unlink(missing_ok=True)
+                good = {**GOOD_BARCODE, "cost": cost}
+                out = self.run_ok("--max-calls", "10", "--max-cost-usd", "0.5", env=self.scripted(good))
+                self.assertEqual((self.calls(), out["usage"]["unknown_cost_calls"]), (1, 1))
+
+    def test_non_finite_max_cost_exits_2(self):
+        for value in ("nan", "inf"):
+            with self.subTest(value=value):
+                proc = self.run_script("--max-calls", "5", "--max-cost-usd", value)
+                self.assertEqual((proc.returncode, self.calls()), (2, 0))
+                self.assertIn("finite and positive", proc.stderr)
 
     def test_failed_call_without_a_cost_report_stops_a_cost_limited_run(self):
         out = self.run_ok("--max-calls", "10", "--max-cost-usd", "5", env=self.scripted({"exit": 1}))

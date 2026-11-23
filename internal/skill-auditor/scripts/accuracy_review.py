@@ -185,6 +185,11 @@ def map_skills(product: str | None, platform_skills: list[str], products: dict) 
     return []
 
 
+def visible(path: Path, root: Path) -> bool:
+    """Inside ``root`` with no hidden component below it."""
+    return path.is_relative_to(root) and not any(p.startswith(".") for p in path.relative_to(root).parts)
+
+
 @functools.cache
 def _one_skill_files(root: Path) -> tuple[tuple[Path, int], ...]:
     def fail(exc: OSError):
@@ -197,7 +202,7 @@ def _one_skill_files(root: Path) -> tuple[tuple[Path, int], ...]:
         files = []
         for d, dirs, names in os.walk(root, onerror=fail):
             dirs[:] = [x for x in dirs if not x.startswith(".")]
-            files += [f for n in names if not n.startswith(".") and (f := Path(d, n)).resolve().is_relative_to(real)]
+            files += [f for n in names if visible((f := Path(d, n)).resolve(), real) and visible(f, root)]
         return tuple((f, f.stat().st_size) for f in sorted(files))
     except OSError as exc:
         raise UsageError(f"cannot read skill files under {root}: {exc}")
@@ -238,12 +243,14 @@ def group_batches(group: list[dict], skills_dir: Path, max_batch_bytes: int) -> 
     return plan_group(items_bytes_of(group), skill_files(skills_dir, group[0]["skills"]), max_batch_bytes)
 
 
-def platform_row(key: str, entries: list[dict], skills_dir: Path, max_batch_bytes: int) -> dict:
-    calls = input_bytes = 0
+def platform_row(version: str, key: str, entries: list[dict], skills_dir: Path, max_batch_bytes: int) -> dict:
+    calls = input_bytes = prompt_tokens = 0
     for group in group_entries(entries):
         batches = group_batches(group, skills_dir, max_batch_bytes)
         calls += len(batches)
         input_bytes += sum(items_bytes_of(group) + sum(size for _, size in batch) for batch in batches)
+        prompt_tokens += sum(prompt_tokens_of(build_prompt(version, key, group[0]["product"], group, batch,
+                                                           skills_dir)[0]) for batch in batches)
     mapped = sum(1 for e in entries if e["skills"])
     return {
         "key": key,
@@ -254,6 +261,7 @@ def platform_row(key: str, entries: list[dict], skills_dir: Path, max_batch_byte
         "planned_calls": calls,
         "input_bytes": input_bytes,
         "estimated_tokens": input_bytes // BYTES_PER_TOKEN,
+        "prompt_tokens": prompt_tokens,
         "entries": entries,
     }
 
@@ -279,12 +287,13 @@ def new_releases(registry: dict, skills_dir: Path, docs_dir: Path, only: str | N
                 "text": item["text"],
                 "skills": map_skills(item["product"], entry["skills"], registry["products"]),
             } for n, item in enumerate(new[version], 1)]
-            by_version.setdefault(version, []).append(platform_row(key, entries, skills_dir, max_batch_bytes))
+            by_version.setdefault(version, []).append(platform_row(version, key, entries, skills_dir,
+                                                                       max_batch_bytes))
     releases = []
     for version in sorted(by_version, key=lambda v: tuple(map(int, v.split("."))), reverse=True):
         rows = by_version[version]
         totals = {name: sum(r[name] for r in rows)
-                  for name in ("items", "mapped", "no_skill", "planned_calls", "input_bytes")}
+                  for name in ("items", "mapped", "no_skill", "planned_calls", "input_bytes", "prompt_tokens")}
         totals["estimated_tokens"] = totals["input_bytes"] // BYTES_PER_TOKEN
         releases.append({"version": version, "platforms": rows, "totals": totals})
     return releases, missing
@@ -311,6 +320,11 @@ def read_lines(path: Path) -> list[str]:
         return path.read_text(errors="replace").splitlines()
     except OSError as exc:
         raise UsageError(f"cannot read skill file {path}: {exc}")
+
+
+def prompt_tokens_of(user: str) -> int:
+    """The estimate the --max-input-tokens check uses for one call."""
+    return len((SYSTEM_PROMPT + user).encode()) // BYTES_PER_TOKEN
 
 
 def build_prompt(version: str, platform: str, product: str | None, group: list[dict],
@@ -344,8 +358,8 @@ def claude_bin() -> str:
     return os.environ.get("CLAUDE", "claude")
 
 
-def call_claude(user: str, system_file: Path, model: str, timeout: int) -> tuple[str, int | None, float]:
-    """(reply text, reported input tokens or None, reported cost); raises BatchFailure."""
+def call_claude(user: str, system_file: Path, model: str, timeout: int) -> tuple[str, int | None, float | None]:
+    """(reply text, reported input tokens or None, reported cost or None); raises BatchFailure."""
     cmd = [claude_bin(), "-p", "--output-format", "json", "--model", model,
            "--system-prompt-file", str(system_file), "--tools", "", "--setting-sources", "",
            "--strict-mcp-config", "--disable-slash-commands", "--no-session-persistence"]
@@ -364,17 +378,17 @@ def call_claude(user: str, system_file: Path, model: str, timeout: int) -> tuple
         spent = data.get("total_cost_usd") if isinstance(data, dict) else None
         raise BatchFailure(f"call failed: exit {proc.returncode} {(proc.stderr or proc.stdout)[-200:]}",
                            float(spent) if number(spent) else None)
-    cost = data.get("total_cost_usd") or 0.0
-    if not number(cost):
+    cost = data.get("total_cost_usd")
+    if cost is not None and not number(cost):
         raise BatchFailure(f"invalid reply: total_cost_usd {cost!r}"[:300], None)
     usage = data.get("usage")
     tokens = None
     if isinstance(usage, dict) and "input_tokens" in usage:
         counts = [usage.get(k) or 0 for k in ("input_tokens", "cache_creation_input_tokens", "cache_read_input_tokens")]
         if not all(number(c) and isinstance(c, int) for c in counts):
-            raise BatchFailure(f"invalid reply: usage {usage!r}"[:300], float(cost))
+            raise BatchFailure(f"invalid reply: usage {usage!r}"[:300], None if cost is None else float(cost))
         tokens = sum(counts)
-    return data["result"], tokens, float(cost)
+    return data["result"], tokens, None if cost is None else float(cost)
 
 
 def files_skills(files: dict[str, list[str]]) -> set[str]:
@@ -461,7 +475,7 @@ def check_batch(user: str, ids: list[str], files: dict[str, list[str]], complete
                 system_file: Path, args, budget: Budget) -> tuple[dict[str, list[dict]] | None, str | None, bool]:
     """(findings by item id, None, False), or (None, why the batch is not-checked, whether a limit stops the run);
     one retry, budget checked each call."""
-    estimate = len((SYSTEM_PROMPT + user).encode()) // BYTES_PER_TOKEN
+    estimate = prompt_tokens_of(user)
     reason = ""
     for _ in range(2):
         limit = budget.limit(estimate)
@@ -470,6 +484,8 @@ def check_batch(user: str, ids: list[str], files: dict[str, list[str]], complete
         budget.calls += 1
         try:
             text, tokens, cost = call_claude(user, system_file, args.model, args.timeout)
+            if cost is None:
+                budget.unknown_cost_calls += 1
         except BatchFailure as exc:
             budget.tokens += estimate
             if exc.cost is None:
@@ -479,7 +495,7 @@ def check_batch(user: str, ids: list[str], files: dict[str, list[str]], complete
             reason = str(exc)
             continue
         budget.tokens += estimate if tokens is None else tokens
-        budget.cost += cost
+        budget.cost += cost or 0.0
         try:
             return parse_reply(text, ids, files, complete), None, False
         except BatchFailure as exc:
@@ -574,8 +590,8 @@ def main() -> int:
         if not args.dry_run:
             if args.max_calls is None or args.max_calls < 1:
                 raise UsageError("a real run needs --max-calls (a positive number)")
-            if any(v is not None and v <= 0 for v in (args.max_input_tokens, args.max_cost_usd)):
-                raise UsageError("--max-input-tokens and --max-cost-usd must be positive")
+            if any(v is not None and not (math.isfinite(v) and v > 0) for v in (args.max_input_tokens, args.max_cost_usd)):
+                raise UsageError("--max-input-tokens and --max-cost-usd must be finite and positive")
             if not args.from_ref:
                 raise UsageError("a real run needs --from")
         if args.to_ref and not args.from_ref:

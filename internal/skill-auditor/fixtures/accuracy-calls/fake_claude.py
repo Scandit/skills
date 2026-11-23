@@ -41,6 +41,9 @@ if "sleep" in scripted:
     time.sleep(float(scripted["sleep"]))
 if "exit" in scripted:
     sys.exit(scripted["exit"])
-print(json.dumps({"result": scripted["result"], "is_error": False,
-                  "total_cost_usd": scripted.get("cost", float(os.environ.get("FAKE_CLAUDE_COST", "0"))),
-                  "usage": scripted.get("usage", {"input_tokens": int(os.environ.get("FAKE_CLAUDE_TOKENS", "100"))})}))
+out = {"result": scripted["result"], "is_error": False,
+       "total_cost_usd": scripted.get("cost", float(os.environ.get("FAKE_CLAUDE_COST", "0"))),
+       "usage": scripted.get("usage", {"input_tokens": int(os.environ.get("FAKE_CLAUDE_TOKENS", "100"))})}
+if out["total_cost_usd"] == "__absent__":
+    del out["total_cost_usd"]
+print(json.dumps(out))
