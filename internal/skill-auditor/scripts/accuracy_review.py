@@ -16,6 +16,7 @@ import subprocess
 import sys
 import tempfile
 from pathlib import Path
+from typing import TypeGuard
 
 from common import AUDITOR_ROOT, REPO_ROOT, list_skill_dirs
 
@@ -190,6 +191,8 @@ def _one_skill_files(root: Path) -> tuple[tuple[Path, int], ...]:
 
     try:
         real = root.resolve()
+        if not real.is_relative_to(root.parent.resolve()):
+            raise UsageError(f"skill directory {root} resolves outside {root.parent}")
         files = sorted(f for d, _, names in os.walk(root, onerror=fail) for n in names
                        if (f := Path(d, n)).resolve().is_relative_to(real))
         return tuple((f, f.stat().st_size) for f in files)
@@ -317,11 +320,15 @@ def build_prompt(version: str, platform: str, product: str | None, group: list[d
 
 
 class BatchFailure(Exception):
-    """A call or reply that cannot be used; ``cost`` is what the call reported spending."""
+    """A call or reply that cannot be used; ``cost`` is what the call reported spending, None if unknown."""
 
-    def __init__(self, message: str, cost: float = 0.0):
+    def __init__(self, message: str, cost: float | None = 0.0):
         super().__init__(message)
         self.cost = cost
+
+
+def number(value) -> TypeGuard[int | float]:
+    return isinstance(value, (int, float)) and not isinstance(value, bool)
 
 
 CONFIDENCES = ("high", "medium", "low")
@@ -339,8 +346,10 @@ def call_claude(user: str, system_file: Path, model: str, timeout: int) -> tuple
            "--strict-mcp-config", "--disable-slash-commands", "--no-session-persistence"]
     try:
         proc = subprocess.run(cmd, input=user, capture_output=True, text=True, timeout=timeout)
-    except (OSError, subprocess.TimeoutExpired) as exc:
+    except OSError as exc:
         raise BatchFailure(f"call failed: {exc!r}"[:300])
+    except subprocess.TimeoutExpired:
+        raise BatchFailure(f"call failed: timed out after {timeout}s", None)
     try:
         data = json.loads(proc.stdout)
     except ValueError:
@@ -349,13 +358,22 @@ def call_claude(user: str, system_file: Path, model: str, timeout: int) -> tuple
             or not isinstance(data.get("result"), str):
         spent = data.get("total_cost_usd") if isinstance(data, dict) else None
         raise BatchFailure(f"call failed: exit {proc.returncode} {(proc.stderr or proc.stdout)[-200:]}",
-                           float(spent) if isinstance(spent, (int, float)) else 0.0)
+                           float(spent) if number(spent) else 0.0)
+    cost = data.get("total_cost_usd") or 0.0
+    if not number(cost):
+        raise BatchFailure(f"invalid reply: total_cost_usd {cost!r}"[:300], None)
     usage = data.get("usage")
     tokens = None
     if isinstance(usage, dict) and "input_tokens" in usage:
-        tokens = sum(usage.get(k) or 0 for k in
-                     ("input_tokens", "cache_creation_input_tokens", "cache_read_input_tokens"))
-    return data["result"], tokens, float(data.get("total_cost_usd") or 0.0)
+        counts = [usage.get(k) or 0 for k in ("input_tokens", "cache_creation_input_tokens", "cache_read_input_tokens")]
+        if not all(number(c) for c in counts):
+            raise BatchFailure(f"invalid reply: usage {usage!r}"[:300], float(cost))
+        tokens = int(sum(counts))
+    return data["result"], tokens, float(cost)
+
+
+def files_skills(files: dict[str, list[str]]) -> set[str]:
+    return {rel.split("/")[0] for rel in files}
 
 
 def check_finding(finding, files: dict[str, list[str]], complete: set[str]) -> dict | None:
@@ -367,7 +385,7 @@ def check_finding(finding, files: dict[str, list[str]], complete: set[str]) -> d
     base = {"kind": kind, "why": finding["why"], "confidence": finding["confidence"]}
     if kind == "not-covered":
         skill = finding.get("skill")
-        if not isinstance(skill, str) or skill not in {rel.split("/")[0] for rel in files}:
+        if not isinstance(skill, str) or skill not in files_skills(files):
             raise BatchFailure(f"invalid reply: skill {skill!r} is not in this batch")
         return {**base, "skill": skill} if skill in complete else None
     if kind != "outdated":
@@ -413,7 +431,7 @@ def parse_reply(text: str, ids: list[str], files: dict[str, list[str]],
 class Budget:
     def __init__(self, max_calls: int, max_tokens: int | None, max_cost: float | None):
         self.max_calls, self.max_tokens, self.max_cost = max_calls, max_tokens, max_cost
-        self.calls = self.tokens = 0
+        self.calls = self.tokens = self.unknown_cost_calls = 0
         self.cost = 0.0
 
     def limit(self, estimated_tokens: int) -> str | None:
@@ -422,6 +440,8 @@ class Budget:
             return "max-calls"
         if self.max_tokens is not None and self.tokens + estimated_tokens > self.max_tokens:
             return "max-input-tokens"
+        if self.max_cost is not None and self.unknown_cost_calls:
+            return "max-cost-usd (a call's spend is unknown)"
         if self.max_cost is not None and self.cost >= self.max_cost:
             return "max-cost-usd"
         return None
@@ -447,7 +467,10 @@ def check_batch(user: str, ids: list[str], files: dict[str, list[str]], complete
             text, tokens, cost = call_claude(user, system_file, args.model, args.timeout)
         except BatchFailure as exc:
             budget.tokens += estimate
-            budget.cost += exc.cost
+            if exc.cost is None:
+                budget.unknown_cost_calls += 1
+            else:
+                budget.cost += exc.cost
             reason = str(exc)
             continue
         budget.tokens += estimate if tokens is None else tokens
@@ -459,18 +482,17 @@ def check_batch(user: str, ids: list[str], files: dict[str, list[str]], complete
     return None, reason, False
 
 
-def settle(entries: list[dict], failed: dict[str, str]) -> dict[str, int]:
+def settle(entries: list[dict], failed: dict[str, str], partial: dict[str, str]) -> dict[str, int]:
     for entry in entries:
         if not entry["skills"]:
             entry["outcome"] = "no-skill"
-        elif entry["findings"]:
-            entry["outcome"] = "finding"
-            if entry["id"] in failed:
-                entry["incomplete"] = failed[entry["id"]]
-        elif entry["id"] in failed:
+        elif entry["id"] in failed and not entry["findings"]:
             entry.update(outcome="not-checked", reason=failed[entry["id"]])
         else:
-            entry["outcome"] = "no-impact"
+            entry["outcome"] = "finding" if entry["findings"] else "no-impact"
+            incomplete = failed.get(entry["id"]) or partial.get(entry["id"])
+            if incomplete:
+                entry["incomplete"] = incomplete
     return {o: sum(e["outcome"] == o for e in entries) for o in OUTCOMES}
 
 
@@ -486,11 +508,13 @@ def run_batches(releases: list[dict], skills_dir: Path, args) -> dict:
         for release in releases:
             for row in release["platforms"]:
                 failed: dict[str, str] = {}
+                partial: dict[str, str] = {}
                 for entry in row["entries"]:
                     entry["findings"] = []
                 for group in group_entries(row["entries"]):
                     ids = [e["id"] for e in group]
                     by_id = {e["id"]: e for e in group}
+                    split: set[str] = set()
                     for batch in group_batches(group, skills_dir, args.max_batch_bytes):
                         if stopped:
                             failed.update({i: stopped for i in ids})
@@ -498,6 +522,7 @@ def run_batches(releases: list[dict], skills_dir: Path, args) -> dict:
                         user, files = build_prompt(release["version"], row["key"], group[0]["product"],
                                                    group, batch, skills_dir)
                         complete = whole_skills(batch, group[0]["skills"], skills_dir)
+                        split |= files_skills(files) - complete
                         findings, reason, stops = check_batch(user, ids, files, complete, system_file, args,
                                                               budget)
                         for item_id, found in (findings or {}).items():
@@ -505,8 +530,12 @@ def run_batches(releases: list[dict], skills_dir: Path, args) -> dict:
                         if reason:
                             failed.update({i: reason for i in ids})
                             stopped = reason if stops else None
-                row["outcomes"] = settle(row["entries"], failed)
-    return {"calls": budget.calls, "input_tokens": budget.tokens, "cost_usd": budget.cost}
+                    if split:
+                        note = f"not-covered unchecked, skill split across batches: {', '.join(sorted(split))}"
+                        partial.update({i: note for i in ids})
+                row["outcomes"] = settle(row["entries"], failed, partial)
+    return {"calls": budget.calls, "input_tokens": budget.tokens, "cost_usd": budget.cost,
+            "unknown_cost_calls": budget.unknown_cost_calls}
 
 
 def main() -> int:
@@ -521,8 +550,10 @@ def main() -> int:
     ap.add_argument("--max-batch-bytes", type=int, default=400000)
     ap.add_argument("--model", default="sonnet")
     ap.add_argument("--max-calls", type=int, help="required for a real run")
-    ap.add_argument("--max-input-tokens", type=int)
-    ap.add_argument("--max-cost-usd", type=float, help="checked before each call; the last call may overshoot")
+    ap.add_argument("--max-input-tokens", type=int,
+                    help="checked before each call against a bytes/4 estimate; the last call may overshoot")
+    ap.add_argument("--max-cost-usd", type=float,
+                    help="checked before each call; the last call may overshoot; a timed-out call stops the run")
     ap.add_argument("--timeout", type=int, default=600, help="seconds per call")
     args = ap.parse_args()
     try:

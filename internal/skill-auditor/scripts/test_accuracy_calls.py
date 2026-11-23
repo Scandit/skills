@@ -292,7 +292,7 @@ class AccuracyCallsTest(unittest.TestCase):
                          (SKILL_PATH, DEPRECATED_LINE))
         self.skills = self.make_skills("corrected")
         out = self.run_ok("--max-calls", "10", env=env)
-        self.assertNotIn("finding", {e["outcome"] for e in self.entries(out).values()})
+        self.assertEqual(self.entries(out)[BARCODE_IDS[0]]["outcome"], "no-impact")
 
     def test_non_positive_max_calls_exits_2(self):
         proc = self.run_script("--max-calls", "-1")
@@ -310,11 +310,35 @@ class AccuracyCallsTest(unittest.TestCase):
         (self.skills / "id-capture-ios" / "leak.md").symlink_to(secret)
         self.assertEqual(self.run_ok(dry=True)["releases"][0]["totals"]["input_bytes"], planned)
 
-    def test_not_covered_on_a_skill_split_across_batches_is_dropped(self):
+    def test_skill_dir_linking_outside_the_skills_tree_exits_2(self):
+        outside = self.work / "outside"
+        outside.mkdir()
+        (outside / "SKILL.md").write_text("secret\n")
+        shutil.rmtree(self.skills / "id-capture-ios")
+        (self.skills / "id-capture-ios").symlink_to(outside)
+        proc = self.run_script(dry=True)
+        self.assertEqual(proc.returncode, 2)
+        self.assertIn("resolves outside", proc.stderr)
+
+    def test_not_covered_on_a_skill_split_across_batches_is_dropped_and_marked_incomplete(self):
         split = reply((BARCODE_IDS[0], [not_covered()]), (BARCODE_IDS[1], []))
         env = self.scripted(split, GOOD_BARCODE, GOOD_CORE, GOOD_CORE, GOOD_CORE, GOOD_ID)
-        out = self.run_ok("--max-batch-bytes", "1", "--max-calls", "10", env=env)
-        self.assertEqual(self.outcomes(out)[BARCODE_IDS[0]], ("no-impact", None))
+        entry = self.entries(self.run_ok("--max-batch-bytes", "1", "--max-calls", "10", env=env))[BARCODE_IDS[0]]
+        self.assertEqual((entry["outcome"], entry["findings"]), ("no-impact", []))
+        self.assertIn("split across batches: barcode-capture-ios", entry["incomplete"])
+
+    def test_timed_out_call_stops_a_cost_limited_run(self):
+        env = self.scripted({"sleep": 5})
+        out = self.run_ok("--max-calls", "10", "--max-cost-usd", "5", "--timeout", "1", env=env)
+        self.assertEqual(self.calls(), 1)
+        self.assertEqual(out["usage"]["unknown_cost_calls"], 1)
+        self.assertEqual(self.outcomes(out)[CORE_ID], ("not-checked", "limit: max-cost-usd (a call's spend is unknown)"))
+
+    def test_malformed_usage_or_cost_fails_the_batch(self):
+        for bad in ({**GOOD_BARCODE, "usage": {"input_tokens": "100"}}, {**GOOD_BARCODE, "cost": "free"}):
+            with self.subTest(bad=bad):
+                self.log.unlink(missing_ok=True)
+                self.assert_barcode_batch_not_checked(bad, "invalid reply")
 
     def test_finding_survives_a_later_failed_batch_of_the_same_item(self):
         first = reply((BARCODE_IDS[0], [outdated()]), (BARCODE_IDS[1], []))

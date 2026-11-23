@@ -2,7 +2,7 @@
 """Fake `claude -p`: logs one line per call and answers from FAKE_CLAUDE_REPLIES or in smart mode.
 
 Env: FAKE_CLAUDE_LOG (file, one line appended per call), FAKE_CLAUDE_REPLIES (JSON file: list of
-{"result": str} | {"exit": int}, one per call, the last repeats),
+{"result": str, "cost"?: any, "usage"?: any} | {"exit": int} | {"sleep": seconds}, one per call, the last repeats),
 FAKE_CLAUDE_MARKER (smart mode: a skill line containing it gets an `outdated` finding),
 FAKE_CLAUDE_COST / FAKE_CLAUDE_TOKENS (total_cost_usd / input_tokens reported per call).
 """
@@ -10,6 +10,7 @@ import json
 import os
 import re
 import sys
+import time
 
 prompt = sys.stdin.read()
 with open(os.environ["FAKE_CLAUDE_LOG"], "a") as log:
@@ -36,8 +37,10 @@ else:
     reply = {"items": [{"id": i, "findings": findings if n == 0 else []} for n, i in enumerate(ids)]}
     scripted = {"result": json.dumps(reply)}
 
+if "sleep" in scripted:
+    time.sleep(float(scripted["sleep"]))
 if "exit" in scripted:
     sys.exit(scripted["exit"])
 print(json.dumps({"result": scripted["result"], "is_error": False,
-                  "total_cost_usd": float(os.environ.get("FAKE_CLAUDE_COST", "0")),
-                  "usage": {"input_tokens": int(os.environ.get("FAKE_CLAUDE_TOKENS", "100"))}}))
+                  "total_cost_usd": scripted.get("cost", float(os.environ.get("FAKE_CLAUDE_COST", "0"))),
+                  "usage": scripted.get("usage", {"input_tokens": int(os.environ.get("FAKE_CLAUDE_TOKENS", "100"))})}))
