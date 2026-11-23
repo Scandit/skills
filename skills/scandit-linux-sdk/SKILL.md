@@ -1,6 +1,6 @@
 ---
 name: scandit-linux-sdk
-description: Scandit Linux SDK (C/C++ API and Python bindings, x86_64/arm64): barcode scanning from images, V4L2 cameras or your own frames (OpenCV, GStreamer), MatrixScan tracking, parser, barcode generator. Use for integration, settings and JSON, troubleshooting status codes, SDK upgrades (7→8), replacing ZBar/pyzbar, ZXing, libdmtx or OpenCV, and why a code doesn't scan (pixels per module, camera/lens/distance, blur, print quality). Linux only.
+description: "Scandit Linux SDK (C/C++ API and Python bindings, x86_64/arm64): barcode scanning from images, V4L2 cameras or your own frames (OpenCV, GStreamer), MatrixScan tracking, parser, barcode generator. Use for integration, settings and JSON, troubleshooting status codes, SDK upgrades (7→8), replacing ZBar/pyzbar, ZXing, libdmtx or OpenCV, and why a code doesn't scan (pixels per module, camera/lens/distance, blur, print quality). Linux only."
 license: Apache-2.0
 metadata:
   author: scandit
