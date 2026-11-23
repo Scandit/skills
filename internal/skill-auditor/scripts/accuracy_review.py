@@ -1,14 +1,22 @@
 #!/usr/bin/env python3
-"""Release-check inventory: which platform release notes cover which skill dirs.
+"""Release-check: platform release notes vs skill dirs, and new releases between two docs commits.
 
-Only ``--dry-run`` is implemented: it prints the platform/skill inventory as JSON.
+Only ``--dry-run`` is implemented: it prints the platform/skill inventory as JSON and,
+with ``--from``, the releases new since that docs commit with their items and sizing.
 """
 import argparse
+import functools
 import json
+import os
+import re
+import subprocess
 import sys
 from pathlib import Path
 
 from common import AUDITOR_ROOT, REPO_ROOT, list_skill_dirs
+
+
+BYTES_PER_TOKEN = 4
 
 
 class UsageError(Exception):
@@ -89,6 +97,171 @@ def inventory(registry: dict, skills_dir: Path, docs_dir: Path, only: str | None
     return {"platforms": out_platforms, "skills": out_skills}
 
 
+RELEASE_HEADING = re.compile(r"^## (\d+\.\d+\.\d+)\s*$")
+HEADING = re.compile(r"^(#{1,6})\s+(.*?)\s*$")
+
+
+def resolve_ref(docs_dir: Path, ref: str) -> str:
+    git = ["git", "-C", str(docs_dir), "rev-parse"]
+    try:
+        top = subprocess.run([*git, "--show-toplevel"], capture_output=True, text=True)
+        proc = subprocess.run([*git, "--verify", "--quiet", f"{ref}^{{commit}}"], capture_output=True, text=True)
+    except OSError as exc:
+        raise UsageError(f"cannot run git: {exc}")
+    if top.returncode != 0 or Path(top.stdout.strip()).resolve() != docs_dir.resolve():
+        raise UsageError(f"--docs {docs_dir} is not the root of a git worktree")
+    if proc.returncode != 0:
+        raise UsageError(f"unknown commit {ref!r} in --docs {docs_dir}")
+    return proc.stdout.strip()
+
+
+def notes_at(docs_dir: Path, sha: str, rel: str) -> str | None:
+    """Notes text at ``sha``; None when the tree has no such path. A git read failure is a UsageError."""
+    git = ["git", "-C", str(docs_dir)]
+    try:
+        proc = subprocess.run([*git, "ls-tree", "--name-only", sha, "--", rel], capture_output=True)
+        if proc.returncode == 0 and not proc.stdout.strip():
+            return None
+        if proc.returncode == 0:
+            proc = subprocess.run([*git, "show", f"{sha}:{rel}"], capture_output=True)
+    except OSError as exc:
+        raise UsageError(f"cannot run git: {exc}")
+    if proc.returncode != 0:
+        raise UsageError(f"cannot read {rel} at {sha}: {proc.stderr.decode(errors='replace').strip()}")
+    return proc.stdout.decode("utf-8", "replace")
+
+
+def parse_releases(text: str, sections: list[str]) -> dict[str, list[dict]]:
+    """Version -> kept items (section in ``sections``) of one notes file, in file order."""
+    releases: dict[str, list[dict]] = {}
+    version = section = product = item = None
+    gap = False
+    for line in text.splitlines():
+        match = RELEASE_HEADING.match(line)
+        if match:
+            version, section, product, item = match.group(1), None, None, None
+            releases.setdefault(version, [])
+            continue
+        heading = HEADING.match(line)
+        if heading:
+            item = None
+            level, title = len(heading.group(1)), heading.group(2)
+            if level <= 2:
+                version = None
+            elif level == 3:
+                section, product = title, None
+            elif level == 4:
+                product = title
+        elif version is None:
+            continue
+        elif line.startswith("* "):
+            item = None
+            if section in sections:
+                item, gap = {"section": section, "product": product, "text": line[2:].rstrip()}, False
+                releases[version].append(item)
+        elif item is not None and not line.strip():
+            gap = True
+        elif item is not None and line[:1] in (" ", "\t"):
+            item["text"] += ("\n\n" if gap else "\n") + line.strip()
+            gap = False
+        else:
+            item = None
+    return releases
+
+
+def map_skills(product: str | None, platform_skills: list[str], products: dict) -> list[str]:
+    rule = products.get(product) if product else None
+    if rule == "all":
+        return list(platform_skills)
+    if isinstance(rule, list):
+        return [s for s in platform_skills if s.startswith(tuple(rule))]
+    return []
+
+
+@functools.cache
+def _one_skill_sizes(root: Path) -> tuple[int, ...]:
+    def fail(exc: OSError):
+        raise exc
+
+    try:
+        files = sorted(Path(d, f) for d, _, names in os.walk(root, onerror=fail) for f in names)
+        return tuple(f.stat().st_size for f in files)
+    except OSError as exc:
+        raise UsageError(f"cannot read skill files under {root}: {exc}")
+
+
+def skill_file_sizes(skills_dir: Path, skills: list[str]) -> list[int]:
+    return [size for skill in sorted(skills) for size in _one_skill_sizes(skills_dir / skill)]
+
+
+def plan_group(items_bytes: int, file_sizes: list[int], max_batch_bytes: int) -> tuple[int, int]:
+    """(planned_calls, input_bytes) for one group: every batch carries all items plus a run of files."""
+    batches = [0]
+    for size in file_sizes:
+        if batches[-1] and items_bytes + batches[-1] + size > max_batch_bytes:
+            batches.append(0)
+        batches[-1] += size
+    return len(batches), sum(items_bytes + b for b in batches)
+
+
+def platform_row(key: str, entries: list[dict], skills_dir: Path, max_batch_bytes: int) -> dict:
+    groups: dict[str | None, list[dict]] = {}
+    for entry in entries:
+        if entry["skills"]:
+            groups.setdefault(entry["product"], []).append(entry)
+    calls = input_bytes = 0
+    for group in groups.values():
+        items_bytes = sum(len(e["text"].encode()) for e in group)
+        group_calls, group_bytes = plan_group(
+            items_bytes, skill_file_sizes(skills_dir, group[0]["skills"]), max_batch_bytes)
+        calls += group_calls
+        input_bytes += group_bytes
+    mapped = sum(1 for e in entries if e["skills"])
+    return {
+        "key": key,
+        "items": len(entries),
+        "mapped": mapped,
+        "no_skill": len(entries) - mapped,
+        "skills": sorted({s for e in entries for s in e["skills"]}),
+        "planned_calls": calls,
+        "input_bytes": input_bytes,
+        "estimated_tokens": input_bytes // BYTES_PER_TOKEN,
+        "entries": entries,
+    }
+
+
+def new_releases(registry: dict, skills_dir: Path, docs_dir: Path, only: str | None,
+                 from_sha: str, to_sha: str, max_batch_bytes: int) -> tuple[list[dict], list[str]]:
+    """(releases, platforms whose notes file is absent at ``to_sha``)."""
+    platforms = registry["platforms"]
+    by_version: dict[str, list[dict]] = {}
+    missing = []
+    for key, entry in ({only: platforms[only]} if only else platforms).items():
+        new_text = notes_at(docs_dir, to_sha, entry["notes"])
+        if new_text is None:
+            missing.append(key)
+            continue
+        old = parse_releases(notes_at(docs_dir, from_sha, entry["notes"]) or "", registry["sections"])
+        new = parse_releases(new_text, registry["sections"])
+        for version in new.keys() - old.keys():
+            entries = [{
+                "id": f"{key}/{version}/{n}",
+                "section": item["section"],
+                "product": item["product"],
+                "text": item["text"],
+                "skills": map_skills(item["product"], entry["skills"], registry["products"]),
+            } for n, item in enumerate(new[version], 1)]
+            by_version.setdefault(version, []).append(platform_row(key, entries, skills_dir, max_batch_bytes))
+    releases = []
+    for version in sorted(by_version, key=lambda v: tuple(map(int, v.split("."))), reverse=True):
+        rows = by_version[version]
+        totals = {name: sum(r[name] for r in rows)
+                  for name in ("items", "mapped", "no_skill", "planned_calls", "input_bytes")}
+        totals["estimated_tokens"] = totals["input_bytes"] // BYTES_PER_TOKEN
+        releases.append({"version": version, "platforms": rows, "totals": totals})
+    return releases, missing
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--docs", type=Path, required=True, help="local clone of the documentation repo")
@@ -96,12 +269,24 @@ def main() -> int:
     ap.add_argument("--registry", type=Path, default=AUDITOR_ROOT / "accuracy" / "registry.json")
     ap.add_argument("--dry-run", action="store_true")
     ap.add_argument("--platform")
+    ap.add_argument("--from", dest="from_ref", help="older docs commit; lists the releases new since it")
+    ap.add_argument("--to", dest="to_ref", help="newer docs commit (default HEAD); needs --from")
+    ap.add_argument("--max-batch-bytes", type=int, default=400000)
     args = ap.parse_args()
     try:
         if not args.dry_run:
             raise UsageError("only --dry-run is implemented")
+        if args.to_ref and not args.from_ref:
+            raise UsageError("--to needs --from")
+        if args.max_batch_bytes <= 0:
+            raise UsageError("--max-batch-bytes must be positive")
         registry = load_registry(args.registry)
         result = inventory(registry, args.skills, args.docs, args.platform)
+        if args.from_ref:
+            result["from"] = resolve_ref(args.docs, args.from_ref)
+            result["to"] = resolve_ref(args.docs, args.to_ref or "HEAD")
+            result["releases"], result["missing_notes"] = new_releases(registry, args.skills, args.docs, args.platform,
+                                              result["from"], result["to"], args.max_batch_bytes)
     except UsageError as exc:
         print(f"accuracy_review: {exc}", file=sys.stderr)
         return 2
