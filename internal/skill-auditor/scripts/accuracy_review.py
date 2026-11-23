@@ -1,22 +1,27 @@
 #!/usr/bin/env python3
 """Release-check: platform release notes vs skill dirs, and new releases between two docs commits.
 
-Only ``--dry-run`` is implemented: it prints the platform/skill inventory as JSON and,
-with ``--from``, the releases new since that docs commit with their items and sizing.
+``--dry-run`` prints the platform/skill inventory as JSON and, with ``--from``, the releases new
+since that docs commit with their items and sizing. Without it, ``--from`` and ``--max-calls`` make
+one ``claude -p`` call per planned batch and add each item's outcome and findings to the same JSON.
 """
 import argparse
+from collections import Counter
 import functools
 import json
 import os
 import re
+import shutil
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 
 from common import AUDITOR_ROOT, REPO_ROOT, list_skill_dirs
 
 
 BYTES_PER_TOKEN = 4
+OUTCOMES = ("finding", "no-impact", "no-skill", "not-checked")
 
 
 class UsageError(Exception):
@@ -179,43 +184,58 @@ def map_skills(product: str | None, platform_skills: list[str], products: dict) 
 
 
 @functools.cache
-def _one_skill_sizes(root: Path) -> tuple[int, ...]:
+def _one_skill_files(root: Path) -> tuple[tuple[Path, int], ...]:
     def fail(exc: OSError):
         raise exc
 
     try:
-        files = sorted(Path(d, f) for d, _, names in os.walk(root, onerror=fail) for f in names)
-        return tuple(f.stat().st_size for f in files)
+        real = root.resolve()
+        files = sorted(f for d, _, names in os.walk(root, onerror=fail) for n in names
+                       if (f := Path(d, n)).resolve().is_relative_to(real))
+        return tuple((f, f.stat().st_size) for f in files)
     except OSError as exc:
         raise UsageError(f"cannot read skill files under {root}: {exc}")
 
 
-def skill_file_sizes(skills_dir: Path, skills: list[str]) -> list[int]:
-    return [size for skill in sorted(skills) for size in _one_skill_sizes(skills_dir / skill)]
+def skill_files(skills_dir: Path, skills: list[str]) -> list[tuple[Path, int]]:
+    return [f for skill in sorted(skills) for f in _one_skill_files(skills_dir / skill)]
 
 
-def plan_group(items_bytes: int, file_sizes: list[int], max_batch_bytes: int) -> tuple[int, int]:
-    """(planned_calls, input_bytes) for one group: every batch carries all items plus a run of files."""
-    batches = [0]
-    for size in file_sizes:
-        if batches[-1] and items_bytes + batches[-1] + size > max_batch_bytes:
-            batches.append(0)
-        batches[-1] += size
-    return len(batches), sum(items_bytes + b for b in batches)
+def plan_group(items_bytes: int, files: list[tuple[Path, int]], max_batch_bytes: int) -> list[list[tuple[Path, int]]]:
+    """Batches of one group: every batch carries all items plus a run of files."""
+    batches: list[list[tuple[Path, int]]] = [[]]
+    used = 0
+    for file in files:
+        if batches[-1] and items_bytes + used + file[1] > max_batch_bytes:
+            batches.append([])
+            used = 0
+        batches[-1].append(file)
+        used += file[1]
+    return batches
 
 
-def platform_row(key: str, entries: list[dict], skills_dir: Path, max_batch_bytes: int) -> dict:
+def group_entries(entries: list[dict]) -> list[list[dict]]:
     groups: dict[str | None, list[dict]] = {}
     for entry in entries:
         if entry["skills"]:
             groups.setdefault(entry["product"], []).append(entry)
+    return list(groups.values())
+
+
+def items_bytes_of(group: list[dict]) -> int:
+    return sum(len(e["text"].encode()) for e in group)
+
+
+def group_batches(group: list[dict], skills_dir: Path, max_batch_bytes: int) -> list[list[tuple[Path, int]]]:
+    return plan_group(items_bytes_of(group), skill_files(skills_dir, group[0]["skills"]), max_batch_bytes)
+
+
+def platform_row(key: str, entries: list[dict], skills_dir: Path, max_batch_bytes: int) -> dict:
     calls = input_bytes = 0
-    for group in groups.values():
-        items_bytes = sum(len(e["text"].encode()) for e in group)
-        group_calls, group_bytes = plan_group(
-            items_bytes, skill_file_sizes(skills_dir, group[0]["skills"]), max_batch_bytes)
-        calls += group_calls
-        input_bytes += group_bytes
+    for group in group_entries(entries):
+        batches = group_batches(group, skills_dir, max_batch_bytes)
+        calls += len(batches)
+        input_bytes += sum(items_bytes_of(group) + sum(size for _, size in batch) for batch in batches)
     mapped = sum(1 for e in entries if e["skills"])
     return {
         "key": key,
@@ -262,6 +282,233 @@ def new_releases(registry: dict, skills_dir: Path, docs_dir: Path, only: str | N
     return releases, missing
 
 
+SYSTEM_PROMPT = """\
+You check whether agent skills are still accurate for a new SDK release.
+You get the release items of one platform and product, and the skill files that cover them, each
+line numbered "<n>: <text>". For every item, report zero or more findings of two kinds:
+- "outdated": the skill contradicts the release. Give the file path exactly as in its "=== path ===" header,
+  the line number, and "quote": the exact text copied from that one line.
+- "not-covered": a new thing this skill should mention. Give the skill directory name and why.
+Every finding has a "confidence": "high", "medium" or "low". Report only what the items support.
+Reply with JSON only, no prose, listing every item id exactly once:
+{"items": [{"id": "<item id>", "findings": [
+  {"kind": "outdated", "path": "<path>", "line": <n>, "quote": "<text>", "why": "<reason>", "confidence": "high"},
+  {"kind": "not-covered", "skill": "<skill>", "why": "<reason>", "confidence": "medium"}]}]}
+"""
+
+
+@functools.cache
+def read_lines(path: Path) -> list[str]:
+    try:
+        return path.read_text(errors="replace").splitlines()
+    except OSError as exc:
+        raise UsageError(f"cannot read skill file {path}: {exc}")
+
+
+def build_prompt(version: str, platform: str, product: str | None, group: list[dict],
+                 batch: list[tuple[Path, int]], skills_dir: Path) -> tuple[str, dict[str, list[str]]]:
+    files = {path.relative_to(skills_dir).as_posix(): read_lines(path) for path, _ in batch}
+    parts = [f"Release {version}, platform {platform}, product {product}\n\n## Release items\n"]
+    parts += [f"### {e['id']} [{e['section']}]\n{e['text']}\n" for e in group]
+    parts.append("\n## Skill files\n")
+    for rel, lines in files.items():
+        parts.append(f"=== {rel} ===\n" + "\n".join(f"{n}: {text}" for n, text in enumerate(lines, 1)) + "\n")
+    return "\n".join(parts), files
+
+
+class BatchFailure(Exception):
+    """A call or reply that cannot be used; ``cost`` is what the call reported spending."""
+
+    def __init__(self, message: str, cost: float = 0.0):
+        super().__init__(message)
+        self.cost = cost
+
+
+CONFIDENCES = ("high", "medium", "low")
+FENCE = re.compile(r"```(?:json)?\s*(.*?)\s*```", re.S)
+
+
+def claude_bin() -> str:
+    return os.environ.get("CLAUDE", "claude")
+
+
+def call_claude(user: str, system_file: Path, model: str, timeout: int) -> tuple[str, int | None, float]:
+    """(reply text, reported input tokens or None, reported cost); raises BatchFailure."""
+    cmd = [claude_bin(), "-p", "--output-format", "json", "--model", model,
+           "--system-prompt-file", str(system_file), "--tools", "", "--setting-sources", "",
+           "--strict-mcp-config", "--disable-slash-commands", "--no-session-persistence"]
+    try:
+        proc = subprocess.run(cmd, input=user, capture_output=True, text=True, timeout=timeout)
+    except (OSError, subprocess.TimeoutExpired) as exc:
+        raise BatchFailure(f"call failed: {exc!r}"[:300])
+    try:
+        data = json.loads(proc.stdout)
+    except ValueError:
+        data = None
+    if proc.returncode or not isinstance(data, dict) or data.get("is_error") \
+            or not isinstance(data.get("result"), str):
+        spent = data.get("total_cost_usd") if isinstance(data, dict) else None
+        raise BatchFailure(f"call failed: exit {proc.returncode} {(proc.stderr or proc.stdout)[-200:]}",
+                           float(spent) if isinstance(spent, (int, float)) else 0.0)
+    usage = data.get("usage")
+    tokens = None
+    if isinstance(usage, dict) and "input_tokens" in usage:
+        tokens = sum(usage.get(k) or 0 for k in
+                     ("input_tokens", "cache_creation_input_tokens", "cache_read_input_tokens"))
+    return data["result"], tokens, float(data.get("total_cost_usd") or 0.0)
+
+
+def check_finding(finding, files: dict[str, list[str]], complete: set[str]) -> dict | None:
+    """The validated finding; None for a not-covered claim on a skill only partly in this batch."""
+    if not isinstance(finding, dict) or not isinstance(finding.get("why"), str) \
+            or finding.get("confidence") not in CONFIDENCES:
+        raise BatchFailure(f"invalid reply: bad finding {finding!r}"[:300])
+    kind = finding.get("kind")
+    base = {"kind": kind, "why": finding["why"], "confidence": finding["confidence"]}
+    if kind == "not-covered":
+        skill = finding.get("skill")
+        if not isinstance(skill, str) or skill not in {rel.split("/")[0] for rel in files}:
+            raise BatchFailure(f"invalid reply: skill {skill!r} is not in this batch")
+        return {**base, "skill": skill} if skill in complete else None
+    if kind != "outdated":
+        raise BatchFailure(f"invalid reply: unknown finding kind {kind!r}")
+    path, line, quote = finding.get("path"), finding.get("line"), finding.get("quote")
+    lines = files.get(path) if isinstance(path, str) else None
+    if lines is None:
+        raise BatchFailure(f"invalid reply: path {path!r} is not a file of this batch")
+    if not isinstance(line, int) or isinstance(line, bool) or not 1 <= line <= len(lines) \
+            or not isinstance(quote, str) or not quote or quote not in lines[line - 1]:
+        raise BatchFailure(f"invalid reply: quote {quote!r} not found at {path}:{line}")
+    return {**base, "path": path, "line": line, "quote": quote}
+
+
+def parse_reply(text: str, ids: list[str], files: dict[str, list[str]],
+                complete: set[str]) -> dict[str, list[dict]]:
+    """Item id -> findings for one batch; raises BatchFailure on anything off-schema."""
+    fence = FENCE.fullmatch(text.strip())
+    try:
+        data = json.loads(fence.group(1) if fence else text)
+    except ValueError:
+        raise BatchFailure("invalid reply: not JSON")
+    items = data.get("items") if isinstance(data, dict) else None
+    if not isinstance(items, list):
+        raise BatchFailure("invalid reply: no 'items' list")
+    found: dict[str, list[dict]] = {}
+    for item in items:
+        if not isinstance(item, dict) or not isinstance(item.get("id"), str) \
+                or not isinstance(item.get("findings"), list):
+            raise BatchFailure(f"invalid reply: bad item {item!r}"[:300])
+        if item["id"] not in ids:
+            raise BatchFailure(f"invalid reply: unknown item id {item['id']!r}")
+        if item["id"] in found:
+            raise BatchFailure(f"invalid reply: duplicate item id {item['id']!r}")
+        checked = [check_finding(f, files, complete) for f in item["findings"]]
+        found[item["id"]] = [f for f in checked if f]
+    missing = [i for i in ids if i not in found]
+    if missing:
+        raise BatchFailure(f"invalid reply: missing item ids {', '.join(missing)}")
+    return found
+
+
+class Budget:
+    def __init__(self, max_calls: int, max_tokens: int | None, max_cost: float | None):
+        self.max_calls, self.max_tokens, self.max_cost = max_calls, max_tokens, max_cost
+        self.calls = self.tokens = 0
+        self.cost = 0.0
+
+    def limit(self, estimated_tokens: int) -> str | None:
+        """The limit that forbids one more call of ``estimated_tokens``, if any."""
+        if self.calls + 1 > self.max_calls:
+            return "max-calls"
+        if self.max_tokens is not None and self.tokens + estimated_tokens > self.max_tokens:
+            return "max-input-tokens"
+        if self.max_cost is not None and self.cost >= self.max_cost:
+            return "max-cost-usd"
+        return None
+
+
+def whole_skills(batch: list[tuple[Path, int]], skills: list[str], skills_dir: Path) -> set[str]:
+    present = Counter(path.relative_to(skills_dir).parts[0] for path, _ in batch)
+    return {s for s in skills if present[s] and present[s] == len(_one_skill_files(skills_dir / s))}
+
+
+def check_batch(user: str, ids: list[str], files: dict[str, list[str]], complete: set[str],
+                system_file: Path, args, budget: Budget) -> tuple[dict[str, list[dict]] | None, str | None, bool]:
+    """(findings by item id, None, False), or (None, why the batch is not-checked, whether a limit stops the run);
+    one retry, budget checked each call."""
+    estimate = len((SYSTEM_PROMPT + user).encode()) // BYTES_PER_TOKEN
+    reason = ""
+    for _ in range(2):
+        limit = budget.limit(estimate)
+        if limit:
+            return None, f"limit: {limit}", True
+        budget.calls += 1
+        try:
+            text, tokens, cost = call_claude(user, system_file, args.model, args.timeout)
+        except BatchFailure as exc:
+            budget.tokens += estimate
+            budget.cost += exc.cost
+            reason = str(exc)
+            continue
+        budget.tokens += estimate if tokens is None else tokens
+        budget.cost += cost
+        try:
+            return parse_reply(text, ids, files, complete), None, False
+        except BatchFailure as exc:
+            reason = str(exc)
+    return None, reason, False
+
+
+def settle(entries: list[dict], failed: dict[str, str]) -> dict[str, int]:
+    for entry in entries:
+        if not entry["skills"]:
+            entry["outcome"] = "no-skill"
+        elif entry["findings"]:
+            entry["outcome"] = "finding"
+            if entry["id"] in failed:
+                entry["incomplete"] = failed[entry["id"]]
+        elif entry["id"] in failed:
+            entry.update(outcome="not-checked", reason=failed[entry["id"]])
+        else:
+            entry["outcome"] = "no-impact"
+    return {o: sum(e["outcome"] == o for e in entries) for o in OUTCOMES}
+
+
+def run_batches(releases: list[dict], skills_dir: Path, args) -> dict:
+    claude = claude_bin()
+    if shutil.which(claude) is None:
+        raise UsageError(f"claude binary not found: {claude} (set CLAUDE)")
+    budget = Budget(args.max_calls, args.max_input_tokens, args.max_cost_usd)
+    stopped = None
+    with tempfile.TemporaryDirectory() as tmp:
+        system_file = Path(tmp, "system.md")
+        system_file.write_text(SYSTEM_PROMPT)
+        for release in releases:
+            for row in release["platforms"]:
+                failed: dict[str, str] = {}
+                for entry in row["entries"]:
+                    entry["findings"] = []
+                for group in group_entries(row["entries"]):
+                    ids = [e["id"] for e in group]
+                    by_id = {e["id"]: e for e in group}
+                    for batch in group_batches(group, skills_dir, args.max_batch_bytes):
+                        if stopped:
+                            failed.update({i: stopped for i in ids})
+                            continue
+                        user, files = build_prompt(release["version"], row["key"], group[0]["product"],
+                                                   group, batch, skills_dir)
+                        complete = whole_skills(batch, group[0]["skills"], skills_dir)
+                        findings, reason, stops = check_batch(user, ids, files, complete, system_file, args,
+                                                              budget)
+                        for item_id, found in (findings or {}).items():
+                            by_id[item_id]["findings"] += found
+                        if reason:
+                            failed.update({i: reason for i in ids})
+                            stopped = reason if stops else None
+                row["outcomes"] = settle(row["entries"], failed)
+    return {"calls": budget.calls, "input_tokens": budget.tokens, "cost_usd": budget.cost}
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--docs", type=Path, required=True, help="local clone of the documentation repo")
@@ -272,10 +519,20 @@ def main() -> int:
     ap.add_argument("--from", dest="from_ref", help="older docs commit; lists the releases new since it")
     ap.add_argument("--to", dest="to_ref", help="newer docs commit (default HEAD); needs --from")
     ap.add_argument("--max-batch-bytes", type=int, default=400000)
+    ap.add_argument("--model", default="sonnet")
+    ap.add_argument("--max-calls", type=int, help="required for a real run")
+    ap.add_argument("--max-input-tokens", type=int)
+    ap.add_argument("--max-cost-usd", type=float, help="checked before each call; the last call may overshoot")
+    ap.add_argument("--timeout", type=int, default=600, help="seconds per call")
     args = ap.parse_args()
     try:
         if not args.dry_run:
-            raise UsageError("only --dry-run is implemented")
+            if args.max_calls is None or args.max_calls < 1:
+                raise UsageError("a real run needs --max-calls (a positive number)")
+            if any(v is not None and v <= 0 for v in (args.max_input_tokens, args.max_cost_usd)):
+                raise UsageError("--max-input-tokens and --max-cost-usd must be positive")
+            if not args.from_ref:
+                raise UsageError("a real run needs --from")
         if args.to_ref and not args.from_ref:
             raise UsageError("--to needs --from")
         if args.max_batch_bytes <= 0:
@@ -287,6 +544,8 @@ def main() -> int:
             result["to"] = resolve_ref(args.docs, args.to_ref or "HEAD")
             result["releases"], result["missing_notes"] = new_releases(registry, args.skills, args.docs, args.platform,
                                               result["from"], result["to"], args.max_batch_bytes)
+            if not args.dry_run:
+                result["usage"] = run_batches(result["releases"], args.skills, args)
     except UsageError as exc:
         print(f"accuracy_review: {exc}", file=sys.stderr)
         return 2
