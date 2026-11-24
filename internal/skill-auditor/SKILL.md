@@ -198,6 +198,18 @@ Propose the taxonomy delta to the user for blessing before writing; record prove
 (source + SHA) in the file header. Prioritize: this is a curated edge-case list, not an
 API dump. Use `taxonomies/sparkscan.yaml` as the format reference.
 
+### `accuracy-review`
+
+Checks the release notes that are new since a docs commit against the skills and reports
+what is outdated or not covered (detection only, no edits). Run it from the repo root:
+
+```
+python3 internal/skill-auditor/scripts/accuracy_review.py --docs <docs clone> --from <sha> [--to <sha>] --out <dir> --max-calls <n> [--max-input-tokens <n>] [--max-cost-usd <x>]
+```
+
+Add `--dry-run` to size the run without calling the model. `--out` receives `report.json`,
+`report.md` and, when a release is new, `digest.md` (the Slack summary).
+
 ### `audit all`
 
 Run routing + structure + evals + consistency for every product with a taxonomy, then

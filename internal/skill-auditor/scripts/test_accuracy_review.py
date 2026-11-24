@@ -18,7 +18,8 @@ NOTES = [f"docs/sdks/{p}/release-notes.md" for p in (
 
 
 def run(*args):
-    return subprocess.run([sys.executable, str(SCRIPT), *args], capture_output=True, text=True)
+    with tempfile.TemporaryDirectory() as out:
+        return subprocess.run([sys.executable, str(SCRIPT), *args, "--out", out], capture_output=True, text=True)
 
 
 class AccuracyDryRunTest(unittest.TestCase):

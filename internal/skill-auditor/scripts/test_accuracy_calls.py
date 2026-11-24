@@ -67,7 +67,9 @@ GOOD_CORE = reply((CORE_ID, []))
 GOOD_ID = reply((ID_ID, []))
 
 
-class AccuracyCallsTest(unittest.TestCase):
+class CallsFixture(unittest.TestCase):
+    """A docs clone with one new iOS release and a fake CLAUDE binary; no tests of its own."""
+
     @classmethod
     def setUpClass(cls):
         cls._tmp = tempfile.TemporaryDirectory()
@@ -119,7 +121,7 @@ class AccuracyCallsTest(unittest.TestCase):
     def run_script(self, *args, env=None, dry=False):
         full = {**os.environ, "CLAUDE": str(FAKE), "FAKE_CLAUDE_LOG": str(self.log), **(env or {})}
         cmd = [sys.executable, str(SCRIPT), "--docs", str(self.docs), "--skills", str(self.skills),
-               "--registry", str(self.registry), "--from", self.old]
+               "--registry", str(self.registry), "--from", self.old, "--out", str(self.work / "out")]
         if dry:
             cmd.append("--dry-run")
         return subprocess.run([*cmd, *args], capture_output=True, text=True, env=full)
@@ -132,6 +134,8 @@ class AccuracyCallsTest(unittest.TestCase):
     def entries(self, out):
         return {e["id"]: e for r in out["releases"] for p in r["platforms"] for e in p["entries"]}
 
+
+class AccuracyCallsTest(CallsFixture):
     def test_calls_made_equal_dry_run_planned_calls(self):
         planned = self.run_ok("--max-batch-bytes", "1", dry=True)["releases"][0]["totals"]["planned_calls"]
         out = self.run_ok("--max-batch-bytes", "1", "--max-calls", "100")

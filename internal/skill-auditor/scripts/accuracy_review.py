@@ -568,6 +568,150 @@ def run_batches(releases: list[dict], skills_dir: Path, args) -> dict:
             "unknown_cost_calls": budget.unknown_cost_calls}
 
 
+INPUT_USD_PER_MTOK = {"haiku": 1, "sonnet": 3, "opus": 5}
+
+
+def usage_block(result: dict, usage: dict | None, model: str) -> dict:
+    """Usage for the report: a real run's spend is labelled actual only on an API key, a dry run's is an estimate."""
+    if usage is None:
+        rows = [r for release in result["releases"] for r in release["platforms"]]
+        tokens = sum(r["prompt_tokens"] for r in rows)
+        price = next((p for name, p in INPUT_USD_PER_MTOK.items() if name in model), None)
+        return {"calls": sum(r["planned_calls"] for r in rows), "input_tokens": tokens,
+                "cost_usd": None if price is None else tokens * price / 1_000_000,
+                "cost_label": "unavailable" if price is None else "estimated", "unknown_cost_calls": 0}
+    known = bool(os.environ.get("ANTHROPIC_API_KEY")) and not usage["unknown_cost_calls"]
+    return {**usage, "cost_usd": usage["cost_usd"] if known else None,
+            "cost_label": "actual" if known else "unavailable"}
+
+
+def platform_report(row: dict) -> dict:
+    buckets: dict[str, list] = {outcome: [] for outcome in OUTCOMES}
+    partial = []
+    for entry in row["entries"]:
+        outcome = entry.get("outcome") or ("not-checked" if entry["skills"] else "no-skill")
+        item = {k: entry[k] for k in ("id", "section", "product", "text")}
+        if outcome == "finding":
+            item["findings"] = entry["findings"]
+        elif outcome == "not-checked":
+            item["reason"] = entry.get("reason", "dry run")
+        buckets[outcome].append(item)
+        if entry.get("incomplete"):
+            partial.append({"id": entry["id"], "reason": entry["incomplete"]})
+    checked = len(buckets["finding"]) + len(buckets["no-impact"])
+    kept = len(row["entries"])
+    complete = checked == kept - len(buckets["no-skill"]) and not partial
+    return {
+        "key": row["key"],
+        "coverage": {"kept": kept, "checked": checked, "complete": complete},
+        "outcomes": {outcome: len(items) for outcome, items in buckets.items()},
+        "findings": buckets["finding"],
+        "no_impact": [item["id"] for item in buckets["no-impact"]],
+        "no_skill": buckets["no-skill"],
+        "not_checked": buckets["not-checked"],
+        "partial": partial,
+    }
+
+
+def build_report(result: dict, usage: dict) -> dict:
+    return {
+        "from": result["from"], "to": result["to"],
+        "releases": [{"version": r["version"], "platforms": [platform_report(p) for p in r["platforms"]]}
+                     for r in result["releases"]],
+        "missing_notes": result["missing_notes"],
+        "usage": usage,
+    }
+
+
+def one_line(text: str) -> str:
+    return " ".join(text.replace("`", "").split())
+
+
+def finding_line(finding: dict, item_id: str) -> str:
+    why = one_line(finding["why"])
+    if finding["kind"] == "outdated":
+        where = f"`{one_line(finding['path'])}:{finding['line']}`"
+        return f"{where} ({finding['confidence']}) “{one_line(finding['quote'])}” — {why} [{item_id}]"
+    return f"{finding['skill']} ({finding['confidence']}) — {why} [{item_id}]"
+
+
+def render_digest(report: dict) -> str:
+    blocks = []
+    for release in report["releases"]:
+        platforms = release["platforms"]
+        lines = [f"*Release {release['version']}*"]
+        for platform in platforms:
+            if platform["findings"]:
+                lines.append(f"*{platform['key']}*")
+                lines += [f"• {finding_line(f, item['id'])}"
+                          for item in platform["findings"] for f in item["findings"]]
+        counts = (f"No skill: {sum(len(p['no_skill']) for p in platforms)}"
+                  f" · Not checked: {sum(len(p['not_checked']) for p in platforms)}")
+        for platform in platforms:
+            cov = platform["coverage"]
+            if not cov["complete"]:
+                counts += f" · {platform['key']} checked {cov['checked']} of {cov['kept']}"
+        blocks.append("\n".join([*lines, counts]))
+    if report["missing_notes"]:
+        blocks.append(f"Release notes missing for: {', '.join(report['missing_notes'])}")
+    text = "\n\n".join(blocks) + "\n"
+    return text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+
+
+def render_markdown(report: dict) -> str:
+    usage = report["usage"]
+    cost = "n/a" if usage["cost_usd"] is None else f"${usage['cost_usd']:.4f}"
+    lines = ["# Skill accuracy review", "", f"From `{report['from']}` to `{report['to']}`", "",
+             f"Usage: {usage['calls']} calls, {usage['input_tokens']} input tokens, "
+             f"cost {cost} ({usage['cost_label']}), "
+             f"{usage['unknown_cost_calls']} calls with unknown cost"]
+    if report["missing_notes"]:
+        lines += ["", f"Release notes missing for: {', '.join(report['missing_notes'])}"]
+    if not report["releases"]:
+        lines += ["", "No new releases."]
+    for release in report["releases"]:
+        lines += ["", f"## Release {release['version']}"]
+        for platform in release["platforms"]:
+            cov, counts = platform["coverage"], platform["outcomes"]
+            state = "complete" if cov["complete"] else "INCOMPLETE"
+            lines += ["", f"### {platform['key']}", "",
+                      f"Checked {cov['checked']} of {cov['kept']} items ({state}). Findings: {counts['finding']},"
+                      f" no impact: {counts['no-impact']}, no skill: {counts['no-skill']},"
+                      f" not checked: {counts['not-checked']}."]
+            for item in platform["findings"]:
+                lines += ["", f"- `{item['id']}` ({item['section']}, {item['product']}): {one_line(item['text'])}"]
+                lines += [f"  - {finding_line(f, item['id'])}" for f in item["findings"]]
+            if platform["no_skill"]:
+                lines += ["", "No skill:"] + [f"- `{i['id']}`: {one_line(i['text'])}" for i in platform["no_skill"]]
+            if platform["not_checked"]:
+                lines += ["", "Not checked:"] + [f"- `{i['id']}`: {i['reason']}" for i in platform["not_checked"]]
+            if platform["partial"]:
+                lines += ["", "Partly checked:"] + [f"- `{i['id']}`: {i['reason']}" for i in platform["partial"]]
+            if platform["no_impact"]:
+                lines += ["", "No impact: " + ", ".join(f"`{i}`" for i in platform["no_impact"])]
+    return "\n".join(lines) + "\n"
+
+
+def make_out_dir(out_dir: Path) -> None:
+    try:
+        out_dir.mkdir(parents=True, exist_ok=True)
+    except OSError as exc:
+        raise UsageError(f"cannot create --out {out_dir}: {exc}")
+
+
+def write_reports(out_dir: Path, report: dict) -> None:
+    try:
+        (out_dir / "report.json").write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
+        (out_dir / "report.md").write_text(render_markdown(report), encoding="utf-8")
+        digest = out_dir / "digest.md"
+        if report["releases"]:
+            digest.write_text(render_digest(report), encoding="utf-8")
+        else:
+            digest.unlink(missing_ok=True)
+    except OSError as exc:
+        raise UsageError(f"cannot write reports to {out_dir}: {exc}")
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--docs", type=Path, required=True, help="local clone of the documentation repo")
@@ -584,6 +728,8 @@ def main() -> int:
                     help="checked before each call against a bytes/4 estimate; the last call may overshoot")
     ap.add_argument("--max-cost-usd", type=float,
                     help="checked before each call; the last call may overshoot; a timed-out call stops the run")
+    ap.add_argument("--out", type=Path, default=REPO_ROOT / "eval-runs" / "accuracy-review",
+                    help="directory for report.json, report.md and digest.md; written whenever --from is given")
     ap.add_argument("--timeout", type=int, default=600, help="seconds per call")
     args = ap.parse_args()
     try:
@@ -603,6 +749,7 @@ def main() -> int:
         if args.from_ref:
             result["from"] = resolve_ref(args.docs, args.from_ref)
             result["to"] = resolve_ref(args.docs, args.to_ref or "HEAD")
+            make_out_dir(args.out)
             result["releases"], result["missing_notes"] = new_releases(registry, args.skills, args.docs, args.platform,
                                               result["from"], result["to"], args.max_batch_bytes)
             if not args.dry_run:
@@ -611,6 +758,12 @@ def main() -> int:
         print(f"accuracy_review: {exc}", file=sys.stderr)
         return 2
     print(json.dumps(result, indent=2))
+    if args.from_ref:
+        try:
+            write_reports(args.out, build_report(result, usage_block(result, result.get("usage"), args.model)))
+        except UsageError as exc:
+            print(f"accuracy_review: {exc}", file=sys.stderr)
+            return 2
     return 0
 
 
