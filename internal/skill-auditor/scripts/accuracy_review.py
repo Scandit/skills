@@ -651,6 +651,8 @@ def render_digest(report: dict) -> str:
             cov = platform["coverage"]
             if not cov["complete"]:
                 counts += f" · {platform['key']} checked {cov['checked']} of {cov['kept']}"
+                if platform["partial"]:
+                    counts += f", partly checked {len(platform['partial'])}"
         blocks.append("\n".join([*lines, counts]))
     if report["missing_notes"]:
         blocks.append(f"Release notes missing for: {', '.join(report['missing_notes'])}")
@@ -700,14 +702,16 @@ def make_out_dir(out_dir: Path) -> None:
 
 
 def write_reports(out_dir: Path, report: dict) -> None:
+    files = {"report.json": json.dumps(report, indent=2) + "\n", "report.md": render_markdown(report)}
+    if report["releases"]:
+        files["digest.md"] = render_digest(report)
     try:
-        (out_dir / "report.json").write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
-        (out_dir / "report.md").write_text(render_markdown(report), encoding="utf-8")
-        digest = out_dir / "digest.md"
-        if report["releases"]:
-            digest.write_text(render_digest(report), encoding="utf-8")
-        else:
-            digest.unlink(missing_ok=True)
+        for name, text in files.items():
+            (out_dir / f"{name}.tmp").write_text(text, encoding="utf-8")
+        for name in files:
+            (out_dir / f"{name}.tmp").replace(out_dir / name)
+        if "digest.md" not in files:
+            (out_dir / "digest.md").unlink(missing_ok=True)
     except OSError as exc:
         raise UsageError(f"cannot write reports to {out_dir}: {exc}")
 

@@ -112,7 +112,20 @@ class AccuracyReportTest(fixture.CallsFixture):
     def test_digest_counts_line_flags_an_incomplete_platform(self):
         self.run_ok("--max-batch-bytes", "1", "--max-calls", "2")
         lines = self.out("digest.md").read_text().splitlines()
-        self.assertEqual(lines[-1], "No skill: 1 · Not checked: 2 · ios checked 2 of 5")
+        self.assertEqual(lines[-1], "No skill: 1 · Not checked: 2 · ios checked 2 of 5, partly checked 2")
+
+    def test_digest_counts_line_flags_partly_checked_items(self):
+        self.run_ok("--max-batch-bytes", "1", "--max-calls", "100")
+        lines = self.out("digest.md").read_text().splitlines()
+        self.assertEqual(lines[-1], "No skill: 1 · Not checked: 0 · ios checked 4 of 5, partly checked 3")
+
+    def test_failed_write_keeps_the_previous_report_set(self):
+        self.run_ok("--max-calls", "10")
+        before = {name: self.out(name).read_text() for name in ("report.json", "report.md", "digest.md")}
+        self.out("report.md.tmp").mkdir()
+        proc = self.run_script("--max-calls", "10", "--to", self.old)
+        self.assertEqual(proc.returncode, 2)
+        self.assertEqual({name: self.out(name).read_text() for name in before}, before)
 
     def test_no_new_release_has_no_digest_and_removes_a_stale_one(self):
         self.run_ok("--max-calls", "10")
