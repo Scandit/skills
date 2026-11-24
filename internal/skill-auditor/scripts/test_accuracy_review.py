@@ -165,7 +165,7 @@ class AccuracyDryRunTest(unittest.TestCase):
         self.assertDryUsageError("--registry", str(path), needle="scandit-linux-sdk")
 
     def test_without_dry_run_exits_2(self):
-        self.assertUsageError("--docs", str(self.docs), needle="only --dry-run is implemented")
+        self.assertUsageError("--docs", str(self.docs), needle="--max-calls")
 
 
 if __name__ == "__main__":
