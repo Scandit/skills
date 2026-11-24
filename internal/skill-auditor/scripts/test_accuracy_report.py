@@ -2,10 +2,12 @@
 import json
 import os
 import unittest
+from pathlib import Path
+from unittest import mock
 
 import accuracy_review
 import test_accuracy_calls as fixture
-from test_accuracy_calls import BARCODE_IDS, CORE_ID, ID_ID, LABEL_ID
+from test_accuracy_calls import BARCODE_IDS, CORE_ID, ID_ID, LABEL_ID, not_covered, outdated, reply
 
 ALL_IDS = [*BARCODE_IDS, CORE_ID, ID_ID, LABEL_ID]
 MARKER = {"FAKE_CLAUDE_MARKER": ".legacy"}
@@ -68,7 +70,8 @@ class AccuracyReportTest(fixture.CallsFixture):
         self.assertEqual(self.calls(), 0)
 
     def test_report_write_failure_still_prints_the_results(self):
-        (self.work / "out" / "report.json").mkdir(parents=True)
+        self.out("").mkdir(0o500)
+        self.addCleanup(self.out("").chmod, 0o700)
         proc = self.run_script("--max-calls", "10")
         self.assertEqual(proc.returncode, 2)
         self.assertIn("cannot write reports", proc.stderr)
@@ -152,6 +155,49 @@ class AccuracyReportTest(fixture.CallsFixture):
         self.run_ok("--max-calls", "10", "--to", self.old)
         self.assertFalse(self.out("digest.md").exists())
         self.assertEqual(self.report()["releases"], [])
+
+    def test_failed_publish_after_staging_restores_the_previous_report_set(self):
+        self.run_ok("--max-calls", "10")
+        names = ("report.json", "report.md", "digest.md")
+        before = {name: self.out(name).read_bytes() for name in names}
+        report = {**self.report(), "releases": []}
+        real_replace = Path.replace
+
+        def flaky(src, dst):
+            if src.name == "report.md" and src.parent.name.startswith(".staging-"):
+                raise OSError("disk full")
+            return real_replace(src, dst)
+
+        with mock.patch.object(Path, "replace", autospec=True, side_effect=flaky):
+            with self.assertRaises(accuracy_review.UsageError):
+                accuracy_review.write_reports(self.out(""), report)
+        self.assertEqual({name: self.out(name).read_bytes() for name in names}, before)
+        self.assertEqual(sorted(p.name for p in self.out("").iterdir()), sorted(names))
+
+    def test_lone_surrogate_in_a_finding_still_writes_every_report(self):
+        bad = {**outdated(), "why": "broken \ud800 text"}
+        env = self.scripted(reply((BARCODE_IDS[0], [bad]), (BARCODE_IDS[1], [])), fixture.GOOD_CORE, fixture.GOOD_ID)
+        self.run_ok("--max-calls", "10", env=env)
+        self.assertEqual(self.ios()["findings"][0]["findings"][0]["why"], "broken \ud800 text")
+        self.assertIn("broken \\ud800 text", self.out("report.md").read_text())
+        self.assertIn("broken \\ud800 text", self.out("digest.md").read_text())
+
+    def test_report_md_keeps_the_exact_quote_and_the_finding_kind(self):
+        quote = "Use `Scanner`  with a frame."
+        (self.skills / "barcode-capture-ios" / "references" / "api.md").write_text(quote + "\n")
+        found = outdated(path="barcode-capture-ios/references/api.md", line=1, quote=quote)
+        env = self.scripted(reply((BARCODE_IDS[0], [found]), (BARCODE_IDS[1], [not_covered()])),
+                            fixture.GOOD_CORE, fixture.GOOD_ID)
+        self.run_ok("--max-calls", "10", env=env)
+        md = self.out("report.md").read_text()
+        self.assertIn("  - outdated `barcode-capture-ios/references/api.md:1` (high)"
+                      " ``Use `Scanner`  with a frame.`` — deprecated in 9.9.0", md)
+        self.assertIn("  - not-covered `barcode-capture-ios` (medium) — new feedback API", md)
+
+    def test_code_span_fences_past_inner_backticks(self):
+        self.assertEqual(accuracy_review.code_span("a"), "`a`")
+        self.assertEqual(accuracy_review.code_span("`x` ``y``"), "``` `x` ``y`` ```")
+        self.assertEqual(accuracy_review.code_span(" a "), "`  a  `")
 
 
 if __name__ == "__main__":

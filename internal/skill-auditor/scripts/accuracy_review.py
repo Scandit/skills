@@ -24,6 +24,7 @@ from common import AUDITOR_ROOT, REPO_ROOT, list_skill_dirs
 
 BYTES_PER_TOKEN = 4
 OUTCOMES = ("finding", "no-impact", "no-skill", "not-checked")
+REPORT_FILES = ("report.json", "report.md", "digest.md")
 
 
 class UsageError(Exception):
@@ -635,6 +636,21 @@ def finding_line(finding: dict, item_id: str) -> str:
     return f"{finding['skill']} ({finding['confidence']}) — {why} [{item_id}]"
 
 
+def code_span(text: str) -> str:
+    """A Markdown code span showing `text` verbatim, fenced past its longest backtick run."""
+    fence = "`" * (max(map(len, re.findall(r"`+", text)), default=0) + 1)
+    pad = " " if text[:1] == "`" or text[-1:] == "`" or (text[:1] == " " and text[-1:] == " ") else ""
+    return f"{fence}{pad}{text}{pad}{fence}"
+
+
+def markdown_finding_line(finding: dict, item_id: str) -> str:
+    why = one_line(finding["why"])
+    if finding["kind"] == "outdated":
+        where = code_span(f"{finding['path']}:{finding['line']}")
+        return f"outdated {where} ({finding['confidence']}) {code_span(finding['quote'])} — {why} [{item_id}]"
+    return f"not-covered {code_span(finding['skill'])} ({finding['confidence']}) — {why} [{item_id}]"
+
+
 def render_digest(report: dict) -> str:
     blocks = []
     for release in report["releases"]:
@@ -683,7 +699,7 @@ def render_markdown(report: dict) -> str:
                       f" not checked: {counts['not-checked']}."]
             for item in platform["findings"]:
                 lines += ["", f"- `{item['id']}` ({item['section']}, {item['product']}): {one_line(item['text'])}"]
-                lines += [f"  - {finding_line(f, item['id'])}" for f in item["findings"]]
+                lines += [f"  - {markdown_finding_line(f, item['id'])}" for f in item["findings"]]
             if platform["no_skill"]:
                 lines += ["", "No skill:"] + [f"- `{i['id']}`: {one_line(i['text'])}" for i in platform["no_skill"]]
             if platform["not_checked"]:
@@ -706,19 +722,35 @@ def write_reports(out_dir: Path, report: dict) -> None:
     files = {"report.json": json.dumps(report, indent=2) + "\n", "report.md": render_markdown(report)}
     if report["releases"]:
         files["digest.md"] = render_digest(report)
-    stage = None
+    stage, keep_stage = None, False
     try:
         stage = Path(tempfile.mkdtemp(dir=out_dir, prefix=".staging-"))
         for name, text in files.items():
-            (stage / name).write_text(text, encoding="utf-8")
-        for name in files:
-            (stage / name).replace(out_dir / name)
-        if "digest.md" not in files:
-            (out_dir / "digest.md").unlink(missing_ok=True)
+            (stage / name).write_text(text, encoding="utf-8", errors="backslashreplace")
+        backup = stage / "previous"
+        backup.mkdir()
+        moved, published = [], []
+        try:
+            for name in REPORT_FILES:
+                if os.path.lexists(out_dir / name):
+                    (out_dir / name).replace(backup / name)
+                    moved.append(name)
+            for name in files:
+                (stage / name).replace(out_dir / name)
+                published.append(name)
+        except OSError:
+            keep_stage = True  # if a restore fails, the previous set stays in the stage
+            for name in published:
+                (out_dir / name).unlink()
+            for name in moved:
+                (backup / name).replace(out_dir / name)
+            keep_stage = False
+            raise
     except OSError as exc:
-        raise UsageError(f"cannot write reports to {out_dir}: {exc}")
+        kept = f"; previous reports left in {stage}" if keep_stage else ""
+        raise UsageError(f"cannot write reports to {out_dir}: {exc}{kept}")
     finally:
-        if stage:
+        if stage and not keep_stage:
             shutil.rmtree(stage, ignore_errors=True)
 
 
