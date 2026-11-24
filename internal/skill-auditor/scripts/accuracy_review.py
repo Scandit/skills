@@ -675,7 +675,8 @@ def render_markdown(report: dict) -> str:
         lines += ["", f"## Release {release['version']}"]
         for platform in release["platforms"]:
             cov, counts = platform["coverage"], platform["outcomes"]
-            state = "complete" if cov["complete"] else "INCOMPLETE"
+            mapped = cov["kept"] - counts["no-skill"]
+            state = "no mapped items" if not mapped else "complete" if cov["complete"] else "INCOMPLETE"
             lines += ["", f"### {platform['key']}", "",
                       f"Checked {cov['checked']} of {cov['kept']} items ({state}). Findings: {counts['finding']},"
                       f" no impact: {counts['no-impact']}, no skill: {counts['no-skill']},"
@@ -705,15 +706,20 @@ def write_reports(out_dir: Path, report: dict) -> None:
     files = {"report.json": json.dumps(report, indent=2) + "\n", "report.md": render_markdown(report)}
     if report["releases"]:
         files["digest.md"] = render_digest(report)
+    stage = None
     try:
+        stage = Path(tempfile.mkdtemp(dir=out_dir, prefix=".staging-"))
         for name, text in files.items():
-            (out_dir / f"{name}.tmp").write_text(text, encoding="utf-8")
+            (stage / name).write_text(text, encoding="utf-8")
         for name in files:
-            (out_dir / f"{name}.tmp").replace(out_dir / name)
+            (stage / name).replace(out_dir / name)
         if "digest.md" not in files:
             (out_dir / "digest.md").unlink(missing_ok=True)
     except OSError as exc:
         raise UsageError(f"cannot write reports to {out_dir}: {exc}")
+    finally:
+        if stage:
+            shutil.rmtree(stage, ignore_errors=True)
 
 
 def main() -> int:

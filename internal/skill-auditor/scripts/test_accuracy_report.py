@@ -1,7 +1,9 @@
 """Tests for accuracy_review.py --out: report.json, report.md and digest.md written for a canned run."""
 import json
+import os
 import unittest
 
+import accuracy_review
 import test_accuracy_calls as fixture
 from test_accuracy_calls import BARCODE_IDS, CORE_ID, ID_ID, LABEL_ID
 
@@ -119,13 +121,30 @@ class AccuracyReportTest(fixture.CallsFixture):
         lines = self.out("digest.md").read_text().splitlines()
         self.assertEqual(lines[-1], "No skill: 1 · Not checked: 0 · ios checked 4 of 5, partly checked 3")
 
+    def test_platform_with_no_mapped_items_is_not_called_complete(self):
+        row = {"key": "titanium", "entries": [
+            {"id": "titanium/9.9.0/1", "section": "Added", "product": "barcode", "text": "x", "skills": []}]}
+        report = {"from": "a", "to": "b", "missing_notes": [], "usage": accuracy_review.usage_block({"releases": []}, None, "x"),
+                  "releases": [{"version": "9.9.0", "platforms": [accuracy_review.platform_report(row)]}]}
+        self.assertIn("Checked 0 of 1 items (no mapped items).", accuracy_review.render_markdown(report))
+
     def test_failed_write_keeps_the_previous_report_set(self):
         self.run_ok("--max-calls", "10")
         before = {name: self.out(name).read_text() for name in ("report.json", "report.md", "digest.md")}
-        self.out("report.md.tmp").mkdir()
+        self.out("").chmod(0o500)
+        self.addCleanup(self.out("").chmod, 0o700)
         proc = self.run_script("--max-calls", "10", "--to", self.old)
         self.assertEqual(proc.returncode, 2)
         self.assertEqual({name: self.out(name).read_text() for name in before}, before)
+
+    def test_staging_does_not_follow_a_symlink_in_the_out_dir(self):
+        victim = self.work / "victim.txt"
+        victim.write_text("keep")
+        self.out("").mkdir(parents=True)
+        os.symlink(victim, self.out("report.json.tmp"))
+        self.run_ok("--max-calls", "10")
+        self.assertEqual(victim.read_text(), "keep")
+        self.assertIn("releases", self.report())
 
     def test_no_new_release_has_no_digest_and_removes_a_stale_one(self):
         self.run_ok("--max-calls", "10")
